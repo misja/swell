@@ -1,0 +1,14 @@
+# Build output and SDK state
+/build/
+/RPMS/
+/.sfdk/
+*.o
+*.so
+moc_*
+qrc_*
+Makefile
+*.qm
+/harbour-swell
+/tests/**/tst_*
+!/tests/**/tst_*.cpp
+!/tests/**/tst_*.pro

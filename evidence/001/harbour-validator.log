@@ -1,0 +1,112 @@
+sfdk: [W] Error reading cygwin process status: cat: /proc/0/stat: No such file or directory
+
+sfdk: [W] Error gerring session leader process start time
+sfdk: [W] Error retrieving process information. Session management is not possible.
+NOTICE: Testing on levels: package
+NOTICE: Testing with suites: harbour
+Validating for target SailfishOS-5.1.0.11-aarch64.default
+Using validation suites: harbour
+RPM Validation script v1.110
+Created temporary directory /tmp/RPM-CHECK-UMuOA5RP
+Reading config scripts from /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/share/sdk-harbour-rpmvalidator
+Prepare for RPM validation of file /home/ubuntu/swell-001/RPMS/harbour-swell-0.1.0-1.aarch64.rpm
+./usr/bin/harbour-swell
+./usr/share/applications/harbour-swell.desktop
+./usr/share/harbour-swell
+./usr/share/harbour-swell/LICENSE
+./usr/share/harbour-swell/qml
+./usr/share/harbour-swell/qml/cover
+./usr/share/harbour-swell/qml/cover/CoverPage.qml
+./usr/share/harbour-swell/qml/harbour-swell.qml
+./usr/share/harbour-swell/qml/pages
+./usr/share/harbour-swell/qml/pages/PlayersPage.qml
+./usr/share/harbour-swell/translations
+./usr/share/harbour-swell/translations/harbour-swell-nl.qm
+./usr/share/icons/hicolor/108x108/apps/harbour-swell.png
+./usr/share/icons/hicolor/128x128/apps/harbour-swell.png
+./usr/share/icons/hicolor/172x172/apps/harbour-swell.png
+./usr/share/icons/hicolor/86x86/apps/harbour-swell.png
+216 blocks
+
+
+Package name
+============
+PASSED
+
+RPM file name
+=============
+PASSED
+
+QML files
+=========
+INFO [/home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/share/harbour-swell/qml/pages/PlayersPage.qml] Uses Sailfish Silica Components (only reported once)
+PASSED
+
+Desktop file
+============
+PASSED
+
+Paths
+=====
+INFO [/home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/share/icons/hicolor/[0-9x]{5,9}/apps/harbour-swell.png] All needed icons found!
+PASSED
+
+Libraries
+=========
+WARNING [/usr/bin/harbour-swell] file is not stripped!
+PASSED
+
+Icon
+====
+PASSED
+
+Symbols
+=======
+PASSED
+
+Permissions
+===========
+PASSED
+
+Scripts
+=======
+PASSED
+
+Triggers
+========
+PASSED
+
+Provides
+========
+PASSED
+
+Dependencies
+============
+PASSED
+
+Requires
+========
+PASSED
+
+Sandboxing
+==========
+PASSED
+
+RPATH
+=====
+OK [rpath in binary seems to be ok: '/home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/share/harbour-swell/lib']
+PASSED
+
+Architecture
+============
+PASSED
+
+Vendor check
+============
+OK [No vendor set!]
+PASSED
+
+
+
+Validation succeeded: /home/ubuntu/swell-001/RPMS/harbour-swell-0.1.0-1.aarch64.rpm
+Clean up

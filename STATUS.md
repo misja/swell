@@ -34,11 +34,14 @@ ip_forward=0, API timeout/Delete text) and applied to plan.md/spec.md:
 - qemu spike first, with an i486 fallback;
 - Layer B (demo-player) made optional and non-gating, using the same QtTest
   binary instead of a separate CLI driver;
-- swellbr0 as a pure L2 bridge;
+- container isolation (since superseded, see below);
 - RPM %files and OrgName rules; About firmware item dropped.
 Misja 2026-11-06: demo test (Layer B) approved; no Docker on the host (Docker
-inside a container is fine). The plan installs no host Docker; the LXD bridge
-swellbr0 is reconfirmed before it is created. Work on GitHub for now: private
-repo misja/swell, issue for 001 on the Sailfish project board.
+inside a container is fine). Layer B now runs swell-test on the existing br0
+(LAN address, reachable through sailfish-sdk's existing NAT): no new bridge,
+no sailfish-sdk NIC, no host change; demo-player without --announce. This
+isolation change needs a focused separate review before Layer B runs.
+GitHub: private repo misja/swell, issue #1 on the Sailfish board (In
+Progress), branch 001-core-controller.
 Remaining blockers, options and recommendation: none for Layer A.
 Next action: scaffold + qemu QtTest spike (Layer A), autonomous within scope.

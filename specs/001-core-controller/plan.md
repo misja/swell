@@ -122,21 +122,18 @@ another project's reading of the protocol, not only against our own fixtures.
     otherwise rustup with the exact pinned `1.98.0` inside the container only.
   - Build: `cargo build --locked -p fake-player --example demo-player` at
     commit 9375da6. Record the toolchain version and Cargo.lock hash.
-  - Run phase: the `br0` NIC is removed. The container keeps only a NIC on a
-    new LXD bridge `swellbr0` created as a pure layer-2 bridge
-    (`ipv4.address=none ipv6.address=none`). The host gets no address, DHCP,
-    routing or forwarding there; host `ip_forward` is 0 and stays 0.
-    Static addresses with no gateway are used in a subnet that does not
-    overlap 172.17/16, 172.18/16 or 192.168.1/24. The container's address is
-    the three room addresses that demo-player's `--at` needs. It can never
-    reach the LAN or a real player.
-- Reaching it from the SDK: during the run only, `sailfish-sdk` gets a second
-  NIC on `swellbr0` with a static address and no gateway. It is removed
-  afterwards. Docker's existing rules already NAT build-engine traffic leaving
-  its bridge (`-s 172.18.0.0/16 ! -o br-sfdk-ubuntu -j MASQUERADE`), and the
-  FORWARD policy is DROP, so `swell-test` cannot route through `sailfish-sdk`.
-  No new rules are needed. There is no simpler option, because the tests run
-  inside that build engine.
+  - Run phase (Misja, 2026-11-06): the container stays on the existing `br0`
+    with its own LAN address. The Docker build engine already reaches the LAN
+    through the existing masquerade rule of `sailfish-sdk`, so no new bridge,
+    no extra NIC and no host change are needed. demo-player binds its three
+    rooms to addresses inside the container: loopback aliases are not
+    reachable from outside, so rooms are given distinct ports or extra
+    addresses on the container's interface (decided at execution). It runs
+    **without `--announce`**, so no LSDP announcements reach the LAN or the
+    official BluOS controller. The rooms are added by address. Accepted
+    exposure: the fake rooms answer HTTP to the LAN while the test runs; they
+    serve invented data only and never contact real players. The container is
+    stopped after the run.
 - Check: the same QtTest binary has an integration test that runs only when
   `SWELL_TEST_HOST` is set; there is no separate CLI program. It adds the
   three rooms by address, verifies `/Status` and `/SyncStatus` parsing and a
@@ -165,10 +162,9 @@ RPM. No full rebuild of SDK components is needed.
 
 ## Risks, approval boundaries and remaining decisions
 
-- Approval needed before Layer B: creating host bridge `swellbr0` (a host
-  network change) and a temporary NIC plus static address for `sailfish-sdk`
-  on it. Container creation, the toolchain and the crates download inside
-  `swell-test` are approved.
+- Layer B uses only the approved `swell-test` LXC container on `br0`. Docker
+  stays inside containers, never on the host. A focused separate review of
+  this isolation change is due before Layer B runs.
 - No device installation, remote repository, OBS/Chum or Harbour submission
   is in this increment.
 - Risk: 5.1→5.2 compatibility is unproven until a runtime check on 5.2.

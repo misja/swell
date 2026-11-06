@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+X-Nemo-Application-Type=silica-qt5
+Icon=harbour-swell
+Exec=harbour-swell
+Name=Swell
+
+[X-Sailjail]
+OrganizationName=io.github.misja
+ApplicationName=swell
+Permissions=Internet
