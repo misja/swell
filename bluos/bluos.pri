@@ -5,9 +5,13 @@ QT += network
 INCLUDEPATH += $$PWD
 HEADERS += \
     $$PWD/client.h \
+    $$PWD/discovery.h \
     $$PWD/lsdp.h \
+    $$PWD/playermodel.h \
     $$PWD/xml.h
 SOURCES += \
     $$PWD/client.cpp \
+    $$PWD/discovery.cpp \
     $$PWD/lsdp.cpp \
+    $$PWD/playermodel.cpp \
     $$PWD/xml.cpp

@@ -5,7 +5,7 @@ Use this file for bounded implementation steps, not a second status board.
 
 - [x] Scaffold from the SDK `sailfishos-qtquick2app` qmake template (harbour-swell); empty app builds for aarch64.
 - [x] Spike: loopback QTcpServer + QUdpSocket QtTest via `make check` in the aarch64 target; record the result (i486 fallback only as a recorded deviation).
-- [ ] `lsdp::parse` (done, tests pass) and `LsdpDiscovery` with unit tests (AC2 cases).
+- [x] `lsdp::parse` and `Discovery` with unit tests (AC2 cases).
 - [x] `parseStatus` / `parseSyncStatus` / `parseVolume` with unit tests on synthetic fixtures.
 - [x] `PlayerClient` (shared NAM, long poll, one-second rule, backoff, commands, /SyncStatus policy) and `artworkUrl()`, with in-process fixture tests (AC3).
 - [ ] `PlayerModel`; QML pages (player list, add player, Now Playing, About/privacy); cover page and actions; Nemo.Configuration persistence.
