@@ -30,6 +30,9 @@ int countOf(const QString &text2)
 BrowseModel::BrowseModel(QObject *parent)
     : QAbstractListModel(parent)
 {
+    connect(this, &QAbstractItemModel::modelReset, this, &BrowseModel::countChanged);
+    connect(this, &QAbstractItemModel::rowsInserted, this, &BrowseModel::countChanged);
+    connect(this, &QAbstractItemModel::rowsRemoved, this, &BrowseModel::countChanged);
 }
 
 bool BrowseModel::knownAction(const QString &type)
@@ -305,8 +308,10 @@ void BrowseModel::onFirst(const Browse &reply)
     const QString bySection = QStringLiteral("LocalMusic:bySection:");
     if (m_sectioned && m_favouritesKey.isEmpty() && m_key.startsWith(bySection)) {
         const int slash = m_key.indexOf(QLatin1Char('/'), bySection.size());
-        if (slash > bySection.size())
-            findListFavourites(m_key.mid(bySection.size(), slash - bySection.size()));
+        const QString kind = slash > bySection.size() ? m_key.mid(bySection.size(), slash - bySection.size()) : QString();
+        // Agreed for Albums (a cover grid) and Artists (rows) only.
+        if (kind == QLatin1String("Album") || kind == QLatin1String("Artist"))
+            findListFavourites(kind);
     }
 }
 
@@ -493,6 +498,8 @@ void BrowseModel::askAgain()
 void BrowseModel::retryLater(int segment)
 {
     m_failed[segment].start();
+    if (!m_client || !m_client->online())
+        return;  // the page reloads when the player is back
     const int generation = m_generation;
     QPointer<BrowseModel> self(this);
     QTimer::singleShot(RetryAfterMs + 50, this, [self, generation]() {

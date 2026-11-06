@@ -42,6 +42,7 @@ private slots:
     void anArtistOpensOnItsAlbums();
     void aLetterListFindsItsFavourites();
     void noFavouritesWhenTheLibraryHasNone();
+    void songListsGetNoFavourites();
 
 private:
     void startClient();
@@ -135,6 +136,8 @@ void TstBrowse::init()
                    "<item browseKey=\"LocalMusic:Artist/%2Flibrary%2Fv1%2FArtists%3Fcategory=FAVOURITES&amp;service=LocalMusic\" text=\"Artists\" type=\"link\"/>"
                    "<item browseKey=\"LocalMusic:Album/%2Flibrary%2Fv1%2FAlbums%3Fcategory=FAVOURITES&amp;service=LocalMusic\" text=\"Albums\" type=\"link\"/></browse>";
         if (key == QLatin1String("LocalMusic:bySection:Album/%2Flibrary%2Fv1%2FAlbums%3Fservice=LocalMusic"))
+            return "<browse type=\"sections\">" + section("A", "3") + "</browse>";
+        if (key == QLatin1String("LocalMusic:bySection:Song/%2Flibrary%2Fv1%2FSongs%3Fall=1&service=LocalMusic"))
             return "<browse type=\"sections\">" + section("A", "3") + "</browse>";
         if (key == QLatin1String("Broken"))
             return "<error><message>Service unavailable</message></error>";
@@ -523,6 +526,18 @@ void TstBrowse::noFavouritesWhenTheLibraryHasNone()
     QTest::qWait(300);
     QCOMPARE(m->favouritesKey(), QString());
     QVERIFY(!browseKeys().contains(QStringLiteral("LocalMusic:MG/LocalMusic-Favourites")));
+}
+
+void TstBrowse::songListsGetNoFavourites()
+{
+    startClient();
+    QScopedPointer<BrowseModel> m(open(QStringLiteral("LocalMusic:bySection:Song/%2Flibrary%2Fv1%2FSongs%3Fall=1&service=LocalMusic")));
+    QTRY_VERIFY(m->ready());
+    QVERIFY(m->sectioned());
+    // Agreed for Albums and Artists only: the Library is not even asked.
+    QTest::qWait(300);
+    QVERIFY(!browseKeys().contains(QStringLiteral("LocalMusic:")));
+    QCOMPARE(m->favouritesKey(), QString());
 }
 
 QTEST_GUILESS_MAIN(TstBrowse)

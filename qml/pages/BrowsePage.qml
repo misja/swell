@@ -102,6 +102,8 @@ Page {
         key: browseModel.favouritesKey
         onKeyChanged: if (key !== "") load()
     }
+    readonly property bool _hasFavourites: browseModel.favouritesKey !== "" && favouritesModel.ready
+                                           && favouritesModel.count > 0
 
     // Only the page in front reacts: a favourite change must not reload (and
     // reset) the pages below it, and Home already reports failures.
@@ -111,6 +113,9 @@ Page {
             if (type.indexOf("favourite") === 0) {
                 app.notify(type === "favourite-add" ? qsTr("Added to favourites") : qsTr("Removed from favourites"))
                 browseModel.load()   // the menu label, and the Favourites list, change
+                if (favouritesModel.key !== "") {
+                    favouritesModel.load()
+                }
             } else if (type.indexOf("-now") > 0 || type === "add-shuffle") {
                 app.notify(qsTr("Playing"))
             } else {
@@ -145,6 +150,9 @@ Page {
                 description: {
                     if (page.root) {
                         return page._player ? (page._player.name !== "" ? page._player.name : page._player.host) : ""
+                    }
+                    if (page.headerSubtitle !== "" && !page.fromAlbum) {
+                        return page.headerSubtitle
                     }
                     return browseModel.serviceName !== page.title ? browseModel.serviceName : ""
                 }
@@ -207,7 +215,7 @@ Page {
             // a cover grid for albums, rows otherwise.
             Column {
                 width: parent.width
-                visible: browseModel.favouritesKey !== "" && favouritesModel.ready && favouriteRows.count + favouriteCovers.count > 0
+                visible: page._hasFavourites
 
                 SectionHeader {
                     text: qsTr("Favourites")
@@ -216,7 +224,8 @@ Page {
                 Grid {
                     id: coverGrid
                     readonly property int cell: Math.floor(width / columns)
-                    width: parent.width
+                    // Clear of the letter index on the right.
+                    width: parent.width - (browseModel.sectioned ? Theme.itemSizeExtraSmall : 0)
                     columns: page.isLandscape ? 6 : 3
                     visible: page._favouriteAlbums
 
@@ -236,6 +245,12 @@ Page {
                                 sourceSize.height: height
                                 source: model.image
                             }
+                            // The image covers BackgroundItem's own highlight.
+                            Rectangle {
+                                anchors.fill: parent
+                                color: Theme.highlightBackgroundColor
+                                opacity: parent.highlighted ? Theme.highlightBackgroundOpacity : 0
+                            }
                         }
                     }
                 }
@@ -251,7 +266,6 @@ Page {
                             width: parent.width - Theme.horizontalPageMargin - Theme.itemSizeExtraSmall
                             anchors.verticalCenter: parent.verticalCenter
                             truncationMode: TruncationMode.Fade
-                            color: highlighted ? Theme.highlightColor : Theme.primaryColor
                             text: model.text
                         }
                     }
@@ -261,7 +275,7 @@ Page {
 
         PullDownMenu {
             visible: page._searchKey !== "" || page.root || browseModel.moreLinks.length > 0
-                     || (page._tracks && browseModel.playUrl !== "")
+                     || (browseModel.listType === "tracks" && browseModel.playUrl !== "")
 
             // Other views of an artist (its songs), B8.
             Repeater {
@@ -269,7 +283,7 @@ Page {
                 MenuItem {
                     text: modelData.text
                     onClicked: page._open({ browseKey: modelData.browseKey, text: modelData.text,
-                                            text2: browseModel.serviceName, image: "", actions: [],
+                                            text2: page.title, image: "", actions: [],
                                             type: "link", favourites: false })
                 }
             }
@@ -288,8 +302,8 @@ Page {
                 onClicked: page._player.runAction(page._shuffleUrl(), "add-shuffle")
             }
             MenuItem {
-                text: qsTr("Play album")
-                visible: page._tracks && browseModel.playUrl !== ""
+                text: page._tracks ? qsTr("Play album") : qsTr("Play all")
+                visible: browseModel.listType === "tracks" && browseModel.playUrl !== ""
                 onClicked: page._player.playPath(browseModel.playUrl)
             }
         }
@@ -437,7 +451,7 @@ Page {
             bottomMargin: Theme.paddingLarge
         }
         letters: browseModel.letters
-        favourites: browseModel.favouritesKey !== ""
+        favourites: page._hasFavourites
         onJump: list.positionViewAtIndex(row, ListView.Beginning)
         onTop: list.positionViewAtBeginning()
     }

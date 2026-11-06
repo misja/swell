@@ -87,6 +87,15 @@ which Misja finds unclear.
 - Radio (`Airable:`) is a list of links (popular, Netherlands, local,
   podcasts, genres, location) and has a `searchKey`.
 - Playlists (`BluOS:`) is empty on this player.
+- Observed keys Swell relies on (not documented; NAD C 379, BluOS firmware
+  as on 2026-11-06):
+  - the Library letter lists are `LocalMusic:bySection:<Kind>/…`, with Kind
+    Album, Artist, Song or Composer;
+  - the Library Favourites menu (`LocalMusic:MG/LocalMusic-Favourites`) links
+    to `LocalMusic:<Kind>/…category=FAVOURITES…`;
+  - an artist (`LocalMusic:MG/LocalMusic-Artist?artist=…`) is a menu of two
+    links, Albums and Songs.
+  Each is only followed when the player offers it in a reply.
 - An album (`LocalMusic:MG/LocalMusic-Album?…`) is a `tracks` list whose
   `<browse>` element has a `playURL` for the whole album. Each `track` has:
   - `text` ("1. How Did This Happen?!") and `duration`;

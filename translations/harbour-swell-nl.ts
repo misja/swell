@@ -76,7 +76,7 @@
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="42"/>
-        <location filename="../qml/pages/BrowsePage.qml" line="286"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="300"/>
         <source>Shuffle</source>
         <translation>Willekeurig</translation>
     </message>
@@ -102,38 +102,38 @@
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="69"/>
-        <location filename="../qml/pages/BrowsePage.qml" line="213"/>
-        <location filename="../qml/pages/BrowsePage.qml" line="358"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="221"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="372"/>
         <source>Favourites</source>
         <translation>Favorieten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="112"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="114"/>
         <source>Added to favourites</source>
         <translation>Toegevoegd aan favorieten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="112"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="114"/>
         <source>Removed from favourites</source>
         <translation>Verwijderd uit favorieten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="115"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="120"/>
         <source>Playing</source>
         <translation>Speelt af</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="117"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="122"/>
         <source>Added to the queue</source>
         <translation>Toegevoegd aan de wachtrij</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="144"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="149"/>
         <source>Browse</source>
         <translation>Bladeren</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/pages/BrowsePage.qml" line="201"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="209"/>
         <source>%n tracks</source>
         <translation>
             <numerusform>%n nummer</numerusform>
@@ -141,47 +141,52 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="278"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="292"/>
         <source>Search</source>
         <translation>Zoeken</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="291"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="305"/>
         <source>Play album</source>
         <translation>Album afspelen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="400"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="305"/>
+        <source>Play all</source>
+        <translation>Alles afspelen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/BrowsePage.qml" line="414"/>
         <source>Player offline</source>
         <translation>Speler offline</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="403"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="417"/>
         <source>The player could not show this</source>
         <translation>De speler kon dit niet tonen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="405"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="419"/>
         <source>No favourites yet</source>
         <translation>Nog geen favorieten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="406"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="420"/>
         <source>Nothing here</source>
         <translation>Hier staat niets</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="410"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="424"/>
         <source>Swell will try again when it is back</source>
         <translation>Swell probeert het opnieuw zodra hij terug is</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="414"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="428"/>
         <source>No usable answer from the player</source>
         <translation>Geen bruikbaar antwoord van de speler</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="417"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="431"/>
         <source>Long press an album, artist or track and choose Add to favourites</source>
         <translation>Houd een album, artiest of nummer ingedrukt en kies Aan favorieten toevoegen</translation>
     </message>

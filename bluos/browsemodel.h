@@ -48,6 +48,7 @@ class BrowseModel : public QAbstractListModel
     // For a library letter list: the key of the matching favourites list
     // (favourite albums for Albums, …), once the library is seen to offer it.
     Q_PROPERTY(QString favouritesKey READ favouritesKey NOTIFY favouritesKeyChanged)
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
     enum Roles {
@@ -98,6 +99,7 @@ public:
     void setExpandFirst(bool expand);
     QVariantList moreLinks() const { return m_moreLinks; }
     QString favouritesKey() const { return m_favouritesKey; }
+    int count() const { return rowCount(); }
 
     // The context-menu types Swell understands (section 7.1, plus the
     // observed add-shuffle); other actions are not offered.
@@ -114,6 +116,7 @@ signals:
     void loadingChanged();
     void lettersChanged();
     void favouritesKeyChanged();
+    void countChanged();
 
 private:
     struct Row {

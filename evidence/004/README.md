@@ -1,13 +1,13 @@
 # Evidence — 004 browse
 
-Date: 2026-11-06. Branch `004-browse`. Package harbour-swell-0.3.0-2.aarch64.rpm,
-sha256 142344b11bf18bd66f5841d2c2e4314f2bdced5271cd93c20ee06184b3a653d1.
+Date: 2026-11-06. Branch `004-browse`. Package harbour-swell-0.3.0-3.aarch64.rpm,
+sha256 9ca277ea2c8bb0a0d30d740573afdbc5c1ba3bb09757b42e527b6db5864af892.
 
 ## Automated (builder)
 
 - `unit-aarch64.log`: QtTest in the SailfishOS-5.1.0.11-aarch64 target under
   sb2/qemu. All suites pass: spike 5, lsdp 18, xml 30, client 26, model 26,
-  qml 15, queue 28, browse 25 (QtTest counts include init/cleanup).
+  qml 15, queue 28, browse 26 (QtTest counts include init/cleanup).
 - `sdk-build-aarch64.log`: `sfdk build`, exit 0.
 - `harbour-validator.log`: passed; the known warning "file is not stripped".
 - Translations: Dutch complete; English plural forms.
@@ -43,8 +43,26 @@ opens on its albums with Songs in the pulley; covers per track outside an
 album's own page. New tests: `anArtistOpensOnItsAlbums`,
 `aLetterListFindsItsFavourites`, `noFavouritesWhenTheLibraryHasNone`.
 
+Reviewer re-check (same reviewer, 2026-11-06): the earlier findings
+resolved; on the device-feedback changes, approve with changes, no blockers.
+Fixed in 0.3.0-3:
+- favourites on top only for Albums and Artists (a Songs list got them too;
+  new test `songListsGetNoFavourites`);
+- the cover grid kept clear of the letter index;
+- pressed feedback on covers;
+- the favourites header reloads after a change;
+- the star only when favourites exist;
+- "Play all" for track lists that are not an album;
+- the artist's name on the page opened from its pulley;
+- no endless retries while offline;
+- the observed keys recorded in the spec.
+Not changed:
+- no long-press menu on favourite covers (v1);
+- one fixed wait in a negative test.
+The reviewer read principles 1.1.0, because its local `origin/main` predated
+the 1.2.0 merge (13985f2); it applied the UI-check items as listed in its
+brief.
+
 ## Not yet done
 
-- Reviewer re-check of the review fixes and of the 0.3.0-2 changes
-  (including the Sailfish UI check, principles 1.2.0).
-- Device check of 0.3.0-2.
+- Device check of 0.3.0-3.
