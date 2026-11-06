@@ -75,7 +75,8 @@ void QueueModel::setActive(bool active)
     // while inactive stay valid until the status poll reports another id.
     m_active = active;
     emit activeChanged();
-    if (m_active && m_stale) {
+    // Also when the first read failed or was cut off while off screen.
+    if (m_active && (m_stale || !m_known)) {
         reload();
     }
 }

@@ -86,8 +86,15 @@ sha256 9da4a081b929dc681fc7d425359fb84283ceca0bd58f705e46a488ab281cfcae.
   reset and re-read it. Since the queue id changes on every modification,
   rows now stay while the id is unchanged; loading starts while the page is
   swiped in.
-- Automated: all suites pass, queue 27 (new
-  `reopeningAnUnchangedQueueKeepsTheRows`); build and validator succeed.
-  Package harbour-swell-0.2.0-5.aarch64.rpm, sha256
-  1bb5d59297b0cab63891a2117d946e95c43f3ef04005d4454f021f3bc717ae7c.
-- Separate review of the fix: pending. Device check: pending.
+- Automated: all suites pass, queue 28 (new
+  `reopeningAnUnchangedQueueKeepsTheRows` and
+  `firstReadFailedWhileOffScreenIsRetriedOnReopen`); build and validator
+  succeed. Package harbour-swell-0.2.0-6.aarch64.rpm, sha256
+  77c88157a36d4b19285c54f60dc973bce76f3378e421646d60d2a887d6d427fc.
+- Separate review of the fix: removing the rule is safe (the queue id
+  survives a client stop/start; an offline spell resets the status). One
+  defect, fixed: a first read that failed while off screen was never retried,
+  so reopening now also reloads while the length is unknown (mutation check:
+  the old rule fails the new test). Residual, accepted: after a resume or a
+  player switch, the old rows show for about one status round trip.
+- Device check: pending.
