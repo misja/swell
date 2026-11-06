@@ -68,6 +68,11 @@ Page {
                 text: qsTr("Players")
                 onClicked: pageStack.navigateBack()
             }
+            MenuItem {
+                text: qsTr("Browse")
+                enabled: _player !== null
+                onClicked: pageStack.push(Qt.resolvedUrl("BrowsePage.qml"), { root: true })
+            }
         }
 
         Column {

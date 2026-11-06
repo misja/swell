@@ -4,7 +4,7 @@ Config: Using QtTest library 5.6.3, Qt 5.6.3 (arm64-little_endian-lp64 shared (d
 PASS   : TstSpike::initTestCase()
 PASS   : TstSpike::tcpLoopbackHttp()
 PASS   : TstSpike::udpLoopback()
-QINFO  : TstSpike::timerPrecision() qWait(200) took 202 ms
+QINFO  : TstSpike::timerPrecision() qWait(200) took 207 ms
 PASS   : TstSpike::timerPrecision()
 PASS   : TstSpike::cleanupTestCase()
 Totals: 5 passed, 0 failed, 0 skipped, 0 blacklisted
@@ -139,10 +139,13 @@ PASS   : TstQml::appFileCompiles(qml/pages/NowPlayingPage.qml)
 PASS   : TstQml::appFileCompiles(qml/pages/AddPlayerDialog.qml)
 PASS   : TstQml::appFileCompiles(qml/pages/HomePage.qml)
 PASS   : TstQml::appFileCompiles(qml/pages/PlayersPage.qml)
+PASS   : TstQml::appFileCompiles(qml/pages/LetterIndex.qml)
 PASS   : TstQml::appFileCompiles(qml/pages/AboutPage.qml)
+PASS   : TstQml::appFileCompiles(qml/pages/SearchPage.qml)
 PASS   : TstQml::appFileCompiles(qml/pages/QueuePage.qml)
+PASS   : TstQml::appFileCompiles(qml/pages/BrowsePage.qml)
 PASS   : TstQml::cleanupTestCase()
-Totals: 12 passed, 0 failed, 0 skipped, 0 blacklisted
+Totals: 15 passed, 0 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of TstQml *********
 ********* Start testing of TstQueue *********
 Config: Using QtTest library 5.6.3, Qt 5.6.3 (arm64-little_endian-lp64 shared (dynamic) release build; by GCC 13.4.0 20250605 (Sailfish OS gcc 13.4.0-1))

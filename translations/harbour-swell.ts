@@ -68,6 +68,113 @@
     </message>
 </context>
 <context>
+    <name>BrowsePage</name>
+    <message>
+        <location filename="../qml/pages/BrowsePage.qml" line="34"/>
+        <source>Play now</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/BrowsePage.qml" line="36"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="195"/>
+        <source>Shuffle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/BrowsePage.qml" line="39"/>
+        <source>Add next</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/BrowsePage.qml" line="42"/>
+        <source>Add last</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/BrowsePage.qml" line="44"/>
+        <source>Add to favourites</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/BrowsePage.qml" line="46"/>
+        <source>Remove from favourites</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/BrowsePage.qml" line="63"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="267"/>
+        <source>Favourites</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/BrowsePage.qml" line="93"/>
+        <source>Added to favourites</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/BrowsePage.qml" line="93"/>
+        <source>Removed from favourites</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/BrowsePage.qml" line="96"/>
+        <source>Playing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/BrowsePage.qml" line="98"/>
+        <source>Added to the queue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/BrowsePage.qml" line="103"/>
+        <source>The player did not accept that.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/BrowsePage.qml" line="120"/>
+        <source>Browse</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/pages/BrowsePage.qml" line="177"/>
+        <source>%n tracks</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/BrowsePage.qml" line="187"/>
+        <source>Search</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/BrowsePage.qml" line="200"/>
+        <source>Play album</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/BrowsePage.qml" line="309"/>
+        <source>The player could not show this</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/BrowsePage.qml" line="311"/>
+        <source>No favourites yet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/BrowsePage.qml" line="312"/>
+        <source>Nothing here</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/BrowsePage.qml" line="319"/>
+        <source>Long press an album, artist or track and choose Add to favourites</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>CoverPage</name>
     <message>
         <location filename="../qml/cover/CoverPage.qml" line="32"/>
@@ -93,37 +200,42 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="81"/>
+        <location filename="../qml/pages/HomePage.qml" line="72"/>
+        <source>Browse</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="86"/>
         <source>No player chosen. Pull down to pick one.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="90"/>
+        <location filename="../qml/pages/HomePage.qml" line="95"/>
         <source>Not a BluOS player</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="92"/>
+        <location filename="../qml/pages/HomePage.qml" line="97"/>
         <source>Not reachable. Pull down to pick another player.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="87"/>
+        <location filename="../qml/pages/HomePage.qml" line="92"/>
         <source>Connecting…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="96"/>
+        <location filename="../qml/pages/HomePage.qml" line="101"/>
         <source>Presets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="161"/>
+        <location filename="../qml/pages/HomePage.qml" line="166"/>
         <source>No presets on this player. Presets are created in the official app.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="165"/>
+        <location filename="../qml/pages/HomePage.qml" line="170"/>
         <source>Inputs</source>
         <translation type="unfinished"></translation>
     </message>
@@ -198,60 +310,78 @@
 <context>
     <name>QueuePage</name>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="56"/>
+        <location filename="../qml/pages/QueuePage.qml" line="58"/>
         <source>The player did not accept that.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="58"/>
+        <location filename="../qml/pages/QueuePage.qml" line="60"/>
         <source>The queue has changed. Nothing was removed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="72"/>
+        <location filename="../qml/pages/QueuePage.qml" line="74"/>
         <source>Queue</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/pages/QueuePage.qml" line="81"/>
+        <location filename="../qml/pages/QueuePage.qml" line="83"/>
         <source>%n tracks</source>
         <translation type="unfinished">
             <numerusform></numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="92"/>
+        <location filename="../qml/pages/QueuePage.qml" line="94"/>
         <source>Now playing %1. Tap a track to play the queue again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="106"/>
+        <location filename="../qml/pages/QueuePage.qml" line="108"/>
         <source>Clear queue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="107"/>
+        <location filename="../qml/pages/QueuePage.qml" line="109"/>
         <source>Clearing queue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="123"/>
+        <location filename="../qml/pages/QueuePage.qml" line="125"/>
         <source>Removing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="198"/>
+        <location filename="../qml/pages/QueuePage.qml" line="200"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="207"/>
+        <location filename="../qml/pages/QueuePage.qml" line="209"/>
         <source>Queue is empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="208"/>
+        <location filename="../qml/pages/QueuePage.qml" line="210"/>
         <source>Play a preset or an input from Home</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SearchPage</name>
+    <message>
+        <location filename="../qml/pages/SearchPage.qml" line="33"/>
+        <source>Search</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SearchPage.qml" line="34"/>
+        <source>Everywhere</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SearchPage.qml" line="40"/>
+        <source>Artist, album, track or station</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

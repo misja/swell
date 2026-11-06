@@ -1,0 +1,91 @@
+
+NOTICE: Generating changelog entries with '/home/ubuntu/swell-001/rpm/harbour-swell.changes.run'…
+NOTICE: No tags describe the HEAD, will not fix package version.
+Building target platforms: aarch64-meego-linux-gnu
+Building for target aarch64-meego-linux-gnu
+Executing(%build): /bin/sh -e /var/tmp/rpm-tmp.1t3Ed6
++ umask 022
++ cd /home/ubuntu/swell-001
++ LANG=C
++ export LANG
++ unset DISPLAY
++ CFLAGS='-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security -march=armv8-a'
++ export CFLAGS
++ CXXFLAGS='-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security -march=armv8-a'
++ export CXXFLAGS
++ FFLAGS='-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security -march=armv8-a -I/usr/lib64/gfortran/modules'
++ export FFLAGS
++ LD_AS_NEEDED=1
++ export LD_AS_NEEDED
++ export QT_SELECT=5
++ QT_SELECT=5
++ qmake -qt=5 -makefile 'QMAKE_CFLAGS_RELEASE=-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security -march=armv8-a' 'QMAKE_CFLAGS_DEBUG=-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security -march=armv8-a' 'QMAKE_CXXFLAGS_RELEASE=-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security -march=armv8-a' 'QMAKE_CXXFLAGS_DEBUG=-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security -march=armv8-a' QMAKE_STRIP=: PREFIX=/usr LIBDIR=/usr/lib64
++ /usr/bin/make -O -j32 V=1 VERBOSE=1
+make: Nothing to be done for 'first'.
++ RPM_EC=0
+++ jobs -p
++ exit 0
+Executing(%install): /bin/sh -e /var/tmp/rpm-tmp.VXtxy3
++ umask 022
++ cd /home/ubuntu/swell-001
++ flock /home/mersdk/.mb2.lock.lock flock /home/mersdk/.mb2.lock ln -f /home/mersdk/.mb2.lock.NzG /home/mersdk/.mb2.lock
++ '[' /home/deploy/installroot '!=' / ']'
++ rm -rf /home/deploy/installroot
+++ dirname /home/deploy/installroot
++ mkdir -p /home/deploy
++ mkdir /home/deploy/installroot
++ LANG=C
++ export LANG
++ unset DISPLAY
++ export QT_SELECT=5
++ QT_SELECT=5
++ make install INSTALL_ROOT=/home/deploy/installroot INSTALL_LIBDIR=/home/deploy/installroot//usr/lib64
+install -m 644 -p /home/ubuntu/swell-001/LICENSE /home/deploy/installroot/usr/share/harbour-swell/
+lupdate -noobsolete /home/ubuntu/swell-001/src /home/ubuntu/swell-001/qml -ts /home/ubuntu/swell-001/translations/harbour-swell.ts /home/ubuntu/swell-001/translations/harbour-swell-nl.ts /home/ubuntu/swell-001/translations/harbour-swell-en.ts && mkdir -p translations && [ "/home/ubuntu/swell-001" != "/home/ubuntu/swell-001" -a 1 -eq 1 ] && cp -af /home/ubuntu/swell-001/translations/harbour-swell-nl.ts /home/ubuntu/swell-001/translations/harbour-swell-en.ts /home/ubuntu/swell-001/translations || : ; [ 1 -eq 1 ] && lrelease -nounfinished /home/ubuntu/swell-001/translations/harbour-swell-nl.ts /home/ubuntu/swell-001/translations/harbour-swell-en.ts || :
+Scanning directory '/home/ubuntu/swell-001/src'...
+Scanning directory '/home/ubuntu/swell-001/qml'...
+Updating 'translations/harbour-swell.ts'...
+    Found 70 source text(s) (0 new and 70 already existing)
+Updating 'translations/harbour-swell-nl.ts'...
+    Found 70 source text(s) (0 new and 70 already existing)
+Updating 'translations/harbour-swell-en.ts'...
+    Found 70 source text(s) (0 new and 70 already existing)
+Updating '/home/ubuntu/swell-001/translations/harbour-swell-nl.qm'...
+    Generated 70 translation(s) (70 finished and 0 unfinished)
+Updating '/home/ubuntu/swell-001/translations/harbour-swell-en.qm'...
+    Generated 1 translation(s) (1 finished and 0 unfinished)
+    Ignored 68 untranslated source text(s)
+install -m 644 -p /home/ubuntu/swell-001/translations/harbour-swell-nl.qm /home/deploy/installroot/usr/share/harbour-swell/translations/
+install -m 644 -p /home/ubuntu/swell-001/translations/harbour-swell-en.qm /home/deploy/installroot/usr/share/harbour-swell/translations/
+cp -f -R /home/ubuntu/swell-001/qml /home/deploy/installroot/usr/share/harbour-swell/
+install -m 755 -p harbour-swell /home/deploy/installroot/usr/bin/harbour-swell
+: /home/deploy/installroot/usr/bin/harbour-swell
+install -m 644 -p /home/ubuntu/swell-001/harbour-swell.desktop /home/deploy/installroot/usr/share/applications/
+install -m 644 -p /home/ubuntu/swell-001/icons/86x86/harbour-swell.png /home/deploy/installroot/usr/share/icons/hicolor/86x86/apps/
+install -m 644 -p /home/ubuntu/swell-001/icons/108x108/harbour-swell.png /home/deploy/installroot/usr/share/icons/hicolor/108x108/apps/
+install -m 644 -p /home/ubuntu/swell-001/icons/128x128/harbour-swell.png /home/deploy/installroot/usr/share/icons/hicolor/128x128/apps/
+install -m 644 -p /home/ubuntu/swell-001/icons/172x172/harbour-swell.png /home/deploy/installroot/usr/share/icons/hicolor/172x172/apps/
++ desktop-file-install --delete-original --dir /home/deploy/installroot/usr/share/applications /home/deploy/installroot/usr/share/applications/harbour-swell.desktop
++ /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/lib/rpm/check-buildroot
++ /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/lib/rpm/meego/brp-compress
++ /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/lib/rpm/meego/brp-strip /usr/bin/strip
++ /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/lib/rpm/meego/brp-strip-static-archive /usr/bin/strip
++ /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/lib/rpm/meego/brp-strip-comment-note /usr/bin/strip /usr/bin/objdump
++ /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/lib/rpm/meego/brp-python-bytecompile /usr/bin/python3
++ /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/lib/rpm/meego/brp-python-hardlink
++ /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/lib/rpm/meego/find-docs.sh /home/deploy/installroot
++ /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/lib/rpm/meego/brp-java-repack-jars
++ /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/lib/rpm/brp-remove-la-files
+Processing files: harbour-swell-0.3.0-1.aarch64
+Provides: application() application(harbour-swell.desktop) harbour-swell = 0.3.0-1 harbour-swell(aarch-64) = 0.3.0-1
+Requires(rpmlib): rpmlib(CompressedFileNames) <= 3.0.4-1 rpmlib(FileDigests) <= 4.6.0-1 rpmlib(PayloadFilesHavePrefix) <= 4.0-1
+Requires: ld-linux-aarch64.so.1()(64bit) ld-linux-aarch64.so.1(GLIBC_2.17)(64bit) libQt5Core.so.5()(64bit) libQt5Core.so.5(Qt_5)(64bit) libQt5Gui.so.5()(64bit) libQt5Gui.so.5(Qt_5)(64bit) libQt5Network.so.5()(64bit) libQt5Network.so.5(Qt_5)(64bit) libQt5Qml.so.5()(64bit) libQt5Qml.so.5(Qt_5)(64bit) libQt5Quick.so.5()(64bit) libQt5Quick.so.5(Qt_5)(64bit) libc.so.6()(64bit) libc.so.6(GLIBC_2.17)(64bit) libc.so.6(GLIBC_2.34)(64bit) libgcc_s.so.1()(64bit) libgcc_s.so.1(GCC_3.0)(64bit) libsailfishapp.so.1()(64bit) libstdc++.so.6()(64bit) libstdc++.so.6(CXXABI_1.3)(64bit) libstdc++.so.6(CXXABI_1.3.9)(64bit) libstdc++.so.6(GLIBCXX_3.4)(64bit) libstdc++.so.6(GLIBCXX_3.4.14)(64bit)
+Checking for unpackaged file(s): /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/lib/rpm/check-files /home/deploy/installroot
+Wrote: /home/ubuntu/swell-001/RPMS/harbour-swell-0.3.0-1.aarch64.rpm
+Executing(%clean): /bin/sh -e /var/tmp/rpm-tmp.T1Ge3b
++ umask 022
++ cd /home/ubuntu/swell-001
++ /bin/rm -rf /home/deploy/installroot
++ RPM_EC=0
+++ jobs -p
++ exit 0

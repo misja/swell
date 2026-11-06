@@ -7,7 +7,7 @@ Linked issue and plan: https://github.com/misja/swell/issues/7; plan.md in this 
 - [x] `parseBrowse` with tests (menu, sections, albums, tracks, search menu, inline context menu, nextKey, error, malformed).
 - [x] Client: key/q encoding, browse reads without the interval, hardened `sendAction` round-trip rule, additive actions through `fetch`; tests.
 - [x] `BrowseModel` (segments, bounded loading, paging within a letter, fallbacks, root filter, Favourites detection); fixture tests.
-- [ ] Pages: Browse (generic), LetterIndex, album header, search; Home pulley; Dutch translation.
-- [ ] Build, validator, evidence/004.
+- [x] Pages: Browse (generic), LetterIndex, album header, search; Home pulley; Dutch translation.
+- [x] Build, validator, evidence/004.
 - [ ] Device check with Misja (library scrolling and letter jumps, actions, favourites, search, radio, another player language).
 - [ ] Separate result review, then a PR.
