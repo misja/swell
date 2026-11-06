@@ -39,21 +39,24 @@ The required result review (AC6) is still due after the UI.
 Remaining blockers, options and recommendation: none. Open discussion:
 player settings (006).
 
-Progress: all MVP pages are built:
-- Players, Add player, Home (presets, inputs) and About;
-- Now Playing attached to Home, with a landscape layout;
-- the docked mini-player and the cover.
-The tests pass and the RPM is validated (evidence/001). Nothing is checked on
-a device yet.
+Progress: all MVP pages are built and checked on a device (Xperia 10 II,
+Sailfish OS 5.2.0.20, with a real player). LSDP works under Sailjail and the
+controls work; see evidence/001/README.md "Device check". The device is
+registered with the SDK as "Xperia 10 II - Dual SIM (ARM 64bit)".
+
+Deploy: in /home/ubuntu/swell-001, `sfdk -c device="Xperia 10 II - Dual SIM (ARM
+64bit)" deploy --manual`, then on the device
+`DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/dbus/user_bus_socket
+sdk-deploy-rpm ~/RPMS/<rpm>`, and confirm on the phone. Plain `deploy --sdk`
+fails there (no session bus over SSH).
 
 Next action:
-1. Device testing via `sfdk deploy --sdk`. Misja chose to register the device
-   with the SDK (option 2); find how that is done without the IDE GUI, or guide
-   Misja through the IDE.
-2. Device checks (LSDP over Wi-Fi under Sailjail, gestures, landscape, real
-   player) with Misja.
-3. The separate result review (AC6).
-4. App icon/logo (Misja asked; the template placeholders must be replaced).
+1. Small UI polish from the device check: vertical balance of Now Playing in
+   portrait; watch the connection count over time.
+2. The separate result review (AC6), then a PR for Misja.
+3. App icon/logo, in a later session (Misja).
+4. Release-target ID: the device runs 5.2.0.20, the registry says 5.2.0.18;
+   to be settled with Misja.
 
 The old UI drafts are in git stash ("ui-draft-*") as starting material only.
 

@@ -22,3 +22,27 @@ so no package was installed (approval granted by Misja 2026-11-06).
 | 2026-11-06 | AC4 spike: QQmlComponent on the minimal platform (ApplicationWindow + Nemo.Configuration + Swell types; negative control) | 4/4 passed; Silica warns only about pixel ratio/DPI (no display). Added to make check; all suites pass | qml-spike-aarch64.log, unit-aarch64.log |
 | 2026-11-06 | UI part 1 (Players, Add player, Home with presets/inputs, About, persistence, start state): all suites pass (qml 10/10 compiles every app QML file); sfdk build exit 0; Harbour validator succeeded, 1 warning (not stripped). RPM sha256 35044141c62f2a7819cb61145918fa2b970e58ff320336ed726864e2e6d4e825 | unit-aarch64.log, sdk-build-aarch64.log, harbour-validator.log |
 | 2026-11-06 | UI part 2 (Now Playing attached to Home with landscape layout, docked mini-player, cover with 2 actions): all suites pass (qml 11/11); sfdk build exit 0; Harbour validator succeeded, 1 warning (not stripped). RPM sha256 7393c181904a7948fe4fc8c92241ec21e2a7bb3910a0a53abd1316720ac7c57b. Limitation: the compile test does not catch runtime ReferenceErrors (one, isLandscape on the window, found by reading and fixed) | unit-aarch64.log, sdk-build-aarch64.log, harbour-validator.log |
+
+## Device check, 2026-11-06 (manual, with Misja)
+
+Xperia 10 II (aarch64), Sailfish OS 5.2.0.20, Wi-Fi, a real BluOS player
+("Woonkamer", 192.168.1.72). RPM sha256 7393c181… installed through
+`sfdk deploy --manual` + `sdk-deploy-rpm` (confirmed on the device).
+
+- LSDP discovery works under Sailjail with only the `Internet` permission: the
+  app bound UDP 0.0.0.0:11430 and found the player without a manual address.
+- Players, Home (6 presets, 9 inputs), Now Playing (portrait and landscape),
+  the docked mini-player: rendered as designed (screenshots reviewed in the
+  session; not committed because they show third-party station logos).
+- Controls work (Misja): presets, inputs, play/pause, volume. Prev/next are
+  disabled for a radio stream, as the API requires (`streamUrl`).
+- Observed: preset artwork appears after a short delay; 8 TCP connections to
+  the player while running (Qt keep-alive pool plus the QML image loader;
+  not yet checked for growth over time).
+- Found and fixed: Home showed 5 instead of 6 preset tiles per row in
+  landscape (spacing counted for 4 columns).
+- `sfdk deploy --sdk` fails on this device: `sdk-deploy-rpm` gets no D-Bus
+  session bus over SSH ("Not connected to D-Bus server"). Workaround: run it
+  with `DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/dbus/user_bus_socket`.
+- Release-target note: the device runs 5.2.0.20; the workspace registry names
+  5.2.0.18.

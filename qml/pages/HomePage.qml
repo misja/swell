@@ -10,7 +10,9 @@ Page {
     property bool openNowPlaying: false
 
     property QtObject player: players.current
-    readonly property int tileSize: (width - 2 * Theme.horizontalPageMargin - 3 * Theme.paddingMedium) / (isLandscape ? 6 : 4)
+    readonly property int columns: isLandscape ? 6 : 4
+    readonly property int tileSize: Math.floor((width - 2 * Theme.horizontalPageMargin
+                                                - (columns - 1) * Theme.paddingMedium) / columns)
 
     allowedOrientations: Orientation.All
 
