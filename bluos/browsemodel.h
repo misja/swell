@@ -41,6 +41,13 @@ class BrowseModel : public QAbstractListModel
     Q_PROPERTY(bool sectioned READ sectioned NOTIFY readyChanged)
     // For a letter index: [{ "text": "A", "row": 17 }, ...].
     Q_PROPERTY(QVariantList letters READ letters NOTIFY lettersChanged)
+    // Open a menu's first link straight away (an artist: its albums); the
+    // other links of that menu are in moreLinks: [{ "text", "browseKey" }].
+    Q_PROPERTY(bool expandFirst READ expandFirst WRITE setExpandFirst NOTIFY keyChanged)
+    Q_PROPERTY(QVariantList moreLinks READ moreLinks NOTIFY readyChanged)
+    // For a library letter list: the key of the matching favourites list
+    // (favourite albums for Albums, …), once the library is seen to offer it.
+    Q_PROPERTY(QString favouritesKey READ favouritesKey NOTIFY favouritesKeyChanged)
 
 public:
     enum Roles {
@@ -87,6 +94,10 @@ public:
     QString playUrl() const { return m_reply.playUrl; }
     bool sectioned() const { return m_sectioned; }
     QVariantList letters() const;
+    bool expandFirst() const { return m_expandFirst; }
+    void setExpandFirst(bool expand);
+    QVariantList moreLinks() const { return m_moreLinks; }
+    QString favouritesKey() const { return m_favouritesKey; }
 
     // The context-menu types Swell understands (section 7.1, plus the
     // observed add-shuffle); other actions are not offered.
@@ -102,6 +113,7 @@ signals:
     void readyChanged();
     void loadingChanged();
     void lettersChanged();
+    void favouritesKeyChanged();
 
 private:
     struct Row {
@@ -127,6 +139,8 @@ private:
     void askAgain();
     void retryLater(int segment);
     void findFavourites();
+    void findListFavourites(const QString &kind);
+    void readFirst(const QString &key);
     int segmentOf(int row, int *offset) const;
     int firstRow(int segment) const;
     QVariant actionsOf(const BrowseItem &item) const;
@@ -142,6 +156,10 @@ private:
     bool m_ready = false;
     bool m_favourites = false;
     QString m_favouritesName;
+    bool m_expandFirst = false;
+    bool m_expanded = false;
+    QVariantList m_moreLinks;
+    QString m_favouritesKey;
     QString m_error;
     bool m_playerError = false;
     int m_generation = 0;

@@ -2,27 +2,34 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 
-// A column of letters on the side of a letter list; tap or drag to jump, as
-// in the People app (whose SymbolScrollBar is not public). Letters that do
-// not fit, as in landscape, are thinned out evenly.
+// The index on the side of a letter list, as in the People app (whose
+// SymbolScrollBar is not public): spread over the full height, with a star
+// above the letters when the list has favourites on top. Tap or drag to jump.
+// Letters that do not fit, as in landscape, are thinned out evenly.
 Item {
     id: root
 
     // [{ "text": "A", "row": 0 }, ...] from BrowseModel.letters
     property var letters: []
+    property bool favourites
     signal jump(int row)
+    signal top()
 
-    readonly property int _boxSize: Theme.iconSizeSmall
-    readonly property int _fits: Math.max(1, Math.floor(height / _boxSize))
-    readonly property int _step: Math.max(1, Math.ceil(letters.length / _fits))
+    readonly property int _minBox: Theme.fontSizeExtraSmall + Theme.paddingSmall
+    readonly property int _slots: Math.max(1, Math.floor(height / _minBox) - (favourites ? 1 : 0))
+    readonly property int _step: Math.max(1, Math.ceil(letters.length / _slots))
     readonly property var _shown: {
         var list = []
+        if (favourites) {
+            list.push({ "text": "", "row": -1 })
+        }
         for (var i = 0; i < letters.length; i += _step) {
             list.push(letters[i])
         }
         return list
     }
-    property string _current
+    readonly property real _box: _shown.length > 0 ? height / _shown.length : height
+    property int _current: -1
 
     width: Theme.itemSizeExtraSmall
 
@@ -30,27 +37,38 @@ Item {
         if (_shown.length === 0) {
             return
         }
-        var i = Math.max(0, Math.min(_shown.length - 1, Math.floor(y / (column.height / _shown.length))))
-        if (_shown[i].text !== _current) {
-            _current = _shown[i].text
+        var i = Math.max(0, Math.min(_shown.length - 1, Math.floor(y / _box)))
+        if (i === _current) {
+            return
+        }
+        _current = i
+        if (_shown[i].row < 0) {
+            root.top()
+        } else {
             root.jump(_shown[i].row)
         }
     }
 
-    Column {
-        id: column
-        anchors.verticalCenter: parent.verticalCenter
-        width: parent.width
+    Repeater {
+        model: root._shown
+        Item {
+            y: index * root._box
+            width: root.width
+            height: root._box
 
-        Repeater {
-            model: root._shown
+            Icon {
+                visible: modelData.row < 0
+                anchors.centerIn: parent
+                width: Theme.iconSizeExtraSmall
+                height: width
+                source: "image://theme/icon-s-favorite"
+                color: mouse.pressed && index === root._current ? Theme.highlightColor : Theme.secondaryHighlightColor
+            }
             Label {
-                width: column.width
-                height: root._boxSize
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
+                visible: modelData.row >= 0
+                anchors.centerIn: parent
                 font.pixelSize: Theme.fontSizeExtraSmall
-                color: mouse.pressed && modelData.text === root._current ? Theme.highlightColor : Theme.secondaryColor
+                color: mouse.pressed && index === root._current ? Theme.highlightColor : Theme.secondaryColor
                 text: modelData.text
             }
         }
@@ -58,10 +76,10 @@ Item {
 
     MouseArea {
         id: mouse
-        anchors.fill: column
+        anchors.fill: parent
         preventStealing: true
         onPressed: root._pick(mouse.y)
         onPositionChanged: root._pick(mouse.y)
-        onReleased: root._current = ""
+        onReleased: root._current = -1
     }
 }

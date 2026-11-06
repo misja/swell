@@ -39,6 +39,9 @@ private slots:
     void aRepeatedNextKeyEndsTheList();
     void playPathsGoThroughTheGateOrAreRefused();
     void searchEverywhereListsSources();
+    void anArtistOpensOnItsAlbums();
+    void aLetterListFindsItsFavourites();
+    void noFavouritesWhenTheLibraryHasNone();
 
 private:
     void startClient();
@@ -121,6 +124,18 @@ void TstBrowse::init()
             return albums(key.right(1), 0, 1);
         if (key == QLatin1String("Loop"))
             return albums(QStringLiteral("O"), 0, 20, "Loop");
+        if (key == QLatin1String("Artist:X"))
+            return "<browse serviceName=\"Library\" type=\"menu\">"
+                   "<item browseKey=\"Lib:Albums?artist=X\" text=\"Albums\" type=\"link\"/>"
+                   "<item browseKey=\"Lib:Songs?artist=X\" text=\"Songs\" type=\"link\"/></browse>";
+        if (key == QLatin1String("Lib:Albums?artist=X"))
+            return albums(QStringLiteral("X"), 0, 2);
+        if (key == QLatin1String("LocalMusic:MG/LocalMusic-Favourites"))
+            return "<browse type=\"menu\">"
+                   "<item browseKey=\"LocalMusic:Artist/%2Flibrary%2Fv1%2FArtists%3Fcategory=FAVOURITES&amp;service=LocalMusic\" text=\"Artists\" type=\"link\"/>"
+                   "<item browseKey=\"LocalMusic:Album/%2Flibrary%2Fv1%2FAlbums%3Fcategory=FAVOURITES&amp;service=LocalMusic\" text=\"Albums\" type=\"link\"/></browse>";
+        if (key == QLatin1String("LocalMusic:bySection:Album/%2Flibrary%2Fv1%2FAlbums%3Fservice=LocalMusic"))
+            return "<browse type=\"sections\">" + section("A", "3") + "</browse>";
         if (key == QLatin1String("Broken"))
             return "<error><message>Service unavailable</message></error>";
         return "<browse type=\"menu\"/>";
@@ -465,6 +480,49 @@ void TstBrowse::searchEverywhereListsSources()
              QByteArray("/Browse?q=bodega&withContextMenuItems=1"));
     QCOMPARE(m->rowCount(), 1);
     QCOMPARE(m->data(m->index(0), BrowseModel::BrowseKeyRole).toString(), QStringLiteral("Lib:Search/x"));
+}
+
+void TstBrowse::anArtistOpensOnItsAlbums()
+{
+    startClient();
+    auto *m = new BrowseModel(this);
+    m->setClient(m_client);
+    m->setKey(QStringLiteral("Artist:X"));
+    m->setExpandFirst(true);
+    m->load();
+    QTRY_VERIFY(m->ready());
+    QTRY_COMPARE(m->rowCount(), 2);
+    QCOMPARE(text(m, 0), QStringLiteral("X album 0"));
+    QCOMPARE(m->listType(), QStringLiteral("albums"));
+    QCOMPARE(m->moreLinks().size(), 1);
+    QCOMPARE(m->moreLinks().first().toMap().value(QStringLiteral("browseKey")).toString(),
+             QStringLiteral("Lib:Songs?artist=X"));
+    delete m;
+}
+
+void TstBrowse::aLetterListFindsItsFavourites()
+{
+    startClient();
+    QScopedPointer<BrowseModel> m(open(QStringLiteral("LocalMusic:bySection:Album/%2Flibrary%2Fv1%2FAlbums%3Fservice=LocalMusic")));
+    QTRY_VERIFY(m->ready());
+    QVERIFY(m->sectioned());
+    QTRY_COMPARE(m->favouritesKey(),
+                 QStringLiteral("LocalMusic:Album/%2Flibrary%2Fv1%2FAlbums%3Fcategory=FAVOURITES&service=LocalMusic"));
+    // Only after the Library menu offered Favourites.
+    const QStringList keys = browseKeys();
+    QVERIFY(keys.indexOf(QStringLiteral("LocalMusic:")) < keys.indexOf(QStringLiteral("LocalMusic:MG/LocalMusic-Favourites")));
+}
+
+void TstBrowse::noFavouritesWhenTheLibraryHasNone()
+{
+    m_libraryFavourites = false;
+    startClient();
+    QScopedPointer<BrowseModel> m(open(QStringLiteral("LocalMusic:bySection:Album/%2Flibrary%2Fv1%2FAlbums%3Fservice=LocalMusic")));
+    QTRY_VERIFY(m->ready());
+    QTRY_VERIFY(browseKeys().contains(QStringLiteral("LocalMusic:")));
+    QTest::qWait(300);
+    QCOMPARE(m->favouritesKey(), QString());
+    QVERIFY(!browseKeys().contains(QStringLiteral("LocalMusic:MG/LocalMusic-Favourites")));
 }
 
 QTEST_GUILESS_MAIN(TstBrowse)

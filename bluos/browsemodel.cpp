@@ -201,10 +201,25 @@ QVariantList BrowseModel::letters() const
     return list;
 }
 
+void BrowseModel::setExpandFirst(bool expand)
+{
+    if (m_expandFirst == expand)
+        return;
+    m_expandFirst = expand;
+    emit keyChanged();
+}
+
 void BrowseModel::load()
 {
     if (!m_client)
         return;
+    m_expanded = false;
+    m_moreLinks.clear();
+    readFirst(m_key);
+}
+
+void BrowseModel::readFirst(const QString &key)
+{
     ++m_generation;
     m_inFlight = -2;  // the first read, not a segment
     m_wanted = -1;
@@ -212,7 +227,7 @@ void BrowseModel::load()
     emit loadingChanged();
     const int generation = m_generation;
     QPointer<BrowseModel> self(this);
-    m_client->fetchBrowse(m_key, m_query, [self, generation](const Browse &reply) {
+    m_client->fetchBrowse(key, m_expanded ? QString() : m_query, [self, generation](const Browse &reply) {
         if (!self || generation != self->m_generation)
             return;  // the page went away, or it was read again
         self->m_inFlight = -1;
@@ -224,6 +239,23 @@ void BrowseModel::load()
 
 void BrowseModel::onFirst(const Browse &reply)
 {
+    if (m_expandFirst && !m_expanded && reply.ok && reply.type == QLatin1String("menu")
+            && !reply.items.isEmpty() && reply.items.first().type == QLatin1String("link")
+            && !reply.items.first().browseKey.isEmpty()) {
+        // An artist: show its first link (albums) at once, offer the rest.
+        m_expanded = true;
+        for (int i = 1; i < reply.items.size(); ++i) {
+            const BrowseItem &item = reply.items.at(i);
+            if (item.type != QLatin1String("link") || item.browseKey.isEmpty())
+                continue;
+            QVariantMap link;
+            link.insert(QStringLiteral("text"), item.text);
+            link.insert(QStringLiteral("browseKey"), item.browseKey);
+            m_moreLinks.append(link);
+        }
+        readFirst(reply.items.first().browseKey);
+        return;
+    }
     m_reply = reply;
     m_reply.items.clear();
     m_error = reply.ok ? QString() : reply.error;
@@ -270,6 +302,45 @@ void BrowseModel::onFirst(const Browse &reply)
     emit lettersChanged();
     if (m_root && reply.ok)
         findFavourites();
+    const QString bySection = QStringLiteral("LocalMusic:bySection:");
+    if (m_sectioned && m_favouritesKey.isEmpty() && m_key.startsWith(bySection)) {
+        const int slash = m_key.indexOf(QLatin1Char('/'), bySection.size());
+        if (slash > bySection.size())
+            findListFavourites(m_key.mid(bySection.size(), slash - bySection.size()));
+    }
+}
+
+void BrowseModel::findListFavourites(const QString &kind)
+{
+    // Observed library structure (not documented): the Library menu offers
+    // Favourites, whose links are "LocalMusic:<Kind>/…category=FAVOURITES…".
+    // Each step is only followed when the player offers it.
+    if (!m_client)
+        return;
+    const int generation = m_generation;
+    QPointer<BrowseModel> self(this);
+    m_client->fetchBrowse(QStringLiteral("LocalMusic:"), QString(), [self, generation, kind](const Browse &menu) {
+        if (!self || generation != self->m_generation || !menu.ok || !self->m_client)
+            return;
+        bool offered = false;
+        for (const BrowseItem &item : menu.items)
+            offered = offered || item.browseKey == QLatin1String(FavouritesKey);
+        if (!offered)
+            return;
+        self->m_client->fetchBrowse(QString::fromLatin1(FavouritesKey), QString(),
+                                    [self, generation, kind](const Browse &favourites) {
+            if (!self || generation != self->m_generation || !favourites.ok)
+                return;
+            const QString prefix = QStringLiteral("LocalMusic:") + kind + QLatin1Char('/');
+            for (const BrowseItem &item : favourites.items) {
+                if (item.browseKey.startsWith(prefix) && item.browseKey.contains(QLatin1String("category=FAVOURITES"))) {
+                    self->m_favouritesKey = item.browseKey;
+                    emit self->favouritesKeyChanged();
+                    return;
+                }
+            }
+        });
+    });
 }
 
 void BrowseModel::setRows(const QList<BrowseItem> &items)

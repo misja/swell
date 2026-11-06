@@ -1,13 +1,13 @@
 # Evidence — 004 browse
 
-Date: 2026-11-06. Branch `004-browse`. Package harbour-swell-0.3.0-1.aarch64.rpm,
-sha256 f11f74b4f6e43617b56184eb2e0cfb975131ee3764d218644ee6d09fca2d84fe.
+Date: 2026-11-06. Branch `004-browse`. Package harbour-swell-0.3.0-2.aarch64.rpm,
+sha256 142344b11bf18bd66f5841d2c2e4314f2bdced5271cd93c20ee06184b3a653d1.
 
 ## Automated (builder)
 
 - `unit-aarch64.log`: QtTest in the SailfishOS-5.1.0.11-aarch64 target under
   sb2/qemu. All suites pass: spike 5, lsdp 18, xml 30, client 26, model 26,
-  qml 15, queue 28, browse 16 (QtTest counts include init/cleanup).
+  qml 15, queue 28, browse 25 (QtTest counts include init/cleanup).
 - `sdk-build-aarch64.log`: `sfdk build`, exit 0.
 - `harbour-validator.log`: passed; the known warning "file is not stripped".
 - Translations: Dutch complete; English plural forms.
@@ -36,7 +36,15 @@ sha256 f11f74b4f6e43617b56184eb2e0cfb975131ee3764d218644ee6d09fca2d84fe.
 - Tracks list: album art per track wished.
 - More screenshots in ~/Downloads (recent), not yet reviewed.
 
+Agreed on the canvas (B3, B4, B8, B9) and built into 0.3.0-2: a full-height
+letter index with a star; favourites on top of Albums (cover grid) and Artists
+(rows); no "recently played" (Misja keeps to the published API); an artist
+opens on its albums with Songs in the pulley; covers per track outside an
+album's own page. New tests: `anArtistOpensOnItsAlbums`,
+`aLetterListFindsItsFavourites`, `noFavouritesWhenTheLibraryHasNone`.
+
 ## Not yet done
 
-- Process the device feedback above (a UI change: agree on the canvas first).
-- Build 0.3.0-2 with the review fixes; re-check by the reviewer; device check.
+- Reviewer re-check of the review fixes and of the 0.3.0-2 changes
+  (including the Sailfish UI check, principles 1.2.0).
+- Device check of 0.3.0-2.

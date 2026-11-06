@@ -4,7 +4,7 @@ Config: Using QtTest library 5.6.3, Qt 5.6.3 (arm64-little_endian-lp64 shared (d
 PASS   : TstSpike::initTestCase()
 PASS   : TstSpike::tcpLoopbackHttp()
 PASS   : TstSpike::udpLoopback()
-QINFO  : TstSpike::timerPrecision() qWait(200) took 206 ms
+QINFO  : TstSpike::timerPrecision() qWait(200) took 202 ms
 PASS   : TstSpike::timerPrecision()
 PASS   : TstSpike::cleanupTestCase()
 Totals: 5 passed, 0 failed, 0 skipped, 0 blacklisted
@@ -202,6 +202,9 @@ PASS   : TstBrowse::aFailedLetterIsAskedForAgain()
 PASS   : TstBrowse::aRepeatedNextKeyEndsTheList()
 PASS   : TstBrowse::playPathsGoThroughTheGateOrAreRefused()
 PASS   : TstBrowse::searchEverywhereListsSources()
+PASS   : TstBrowse::anArtistOpensOnItsAlbums()
+PASS   : TstBrowse::aLetterListFindsItsFavourites()
+PASS   : TstBrowse::noFavouritesWhenTheLibraryHasNone()
 PASS   : TstBrowse::cleanupTestCase()
-Totals: 22 passed, 0 failed, 0 skipped, 0 blacklisted
+Totals: 25 passed, 0 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of TstBrowse *********

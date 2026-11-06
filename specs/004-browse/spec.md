@@ -42,7 +42,22 @@ which Misja finds unclear.
 8. The album page shows the cover beside the title. Tapping a track plays the
    album from that track (`autoplayURL`). The API calls the choice between
    `playURL` and `autoplayURL` a user preference; Misja chose this behaviour.
-9. Request pacing: the one-second rule stays where the API sets it, on status
+9. Device feedback on 0.3.0-1 (Misja, 2026-11-06; canvas B3, B4, B8, B9):
+    - **Letter index:** it runs over the full height, as in the People app, with
+      a star above A that jumps to the favourites at the top of the list.
+    - **Favourites on top:** favourite albums show as a cover grid at the top of
+      Albums; favourite artists as rows at the top of Artists. They come from
+      the Library favourites (`category=FAVOURITES`), only when the Library
+      menu offers them.
+    - **No "recently played":** the documented API has none, and Misja keeps to
+      the published API. The undocumented `/ui/` screens are not used.
+    - **Artist page:** an artist opens straight on its albums (the first link of
+      the artist's menu). The other links (Songs) are in the pulley. Tapping an
+      album opens it, as everywhere; Play now is in the long-press menu.
+    - **Covers per track:** song lists outside an album (an artist's songs,
+      Library songs, search results) show each track's cover. An album's own
+      page keeps track numbers and the cover in its header.
+10. Request pacing: the one-second rule stays where the API sets it, on status
    queries with long polling (§2: "must not make two consecutive requests for
    the same resource less than one second apart"). Browse reads are not
    interval-limited; each page has at most one request in flight. Commands

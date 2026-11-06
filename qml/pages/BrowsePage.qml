@@ -18,11 +18,16 @@ Page {
     property var parentActions: []
     // The searchKey of the nearest page above that has one.
     property string inheritedSearchKey
+    // Opened from an artist row: show its albums at once (canvas B8).
+    property bool expandFirst
+    // Opened from an album row: its tracks get the album header (B5).
+    property bool fromAlbum
 
     readonly property QtObject _player: players.current
-    readonly property bool _tracks: browseModel.listType === "tracks"
-    readonly property bool _images: browseModel.listType !== "menu" && browseModel.listType !== "tracks"
-                                   && browseModel.listType !== "sections" && !root
+    readonly property bool _tracks: browseModel.listType === "tracks" && fromAlbum
+    // Covers in every list except menus and an album's own tracks (B9).
+    readonly property bool _images: !root && browseModel.listType !== "menu" && !_tracks
+    readonly property bool _favouriteAlbums: browseModel.favouritesKey.indexOf("LocalMusic:Album/") === 0
     readonly property bool _offline: _player !== null && !_player.online && (!browseModel.ready || browseModel.error !== "")
     readonly property string _searchKey: browseModel.searchKey !== "" ? browseModel.searchKey : inheritedSearchKey
 
@@ -65,7 +70,9 @@ Page {
             headerImage: row.image,
             headerSubtitle: row.text2,
             parentActions: row.actions,
-            inheritedSearchKey: page._searchKey
+            inheritedSearchKey: page._searchKey,
+            expandFirst: row.type === "artist",
+            fromAlbum: row.type === "album"
         })
     }
 
@@ -84,7 +91,16 @@ Page {
         key: page.key
         query: page.query
         root: page.root
+        expandFirst: page.expandFirst
         Component.onCompleted: load()
+    }
+
+    // The favourites of a library letter list, shown on top of it (B3/B4).
+    BrowseModel {
+        id: favouritesModel
+        client: page._player
+        key: browseModel.favouritesKey
+        onKeyChanged: if (key !== "") load()
     }
 
     // Only the page in front reacts: a favourite change must not reload (and
@@ -119,9 +135,8 @@ Page {
         model: browseModel
         quickScroll: !browseModel.sectioned
 
-        header: Item {
+        header: Column {
             width: list.width
-            height: page._tracks ? albumHeader.height : pageHeader.height
 
             PageHeader {
                 id: pageHeader
@@ -187,10 +202,77 @@ Page {
                     }
                 }
             }
+
+            // Favourites on top of a library letter list, as in People:
+            // a cover grid for albums, rows otherwise.
+            Column {
+                width: parent.width
+                visible: browseModel.favouritesKey !== "" && favouritesModel.ready && favouriteRows.count + favouriteCovers.count > 0
+
+                SectionHeader {
+                    text: qsTr("Favourites")
+                }
+
+                Grid {
+                    id: coverGrid
+                    readonly property int cell: Math.floor(width / columns)
+                    width: parent.width
+                    columns: page.isLandscape ? 6 : 3
+                    visible: page._favouriteAlbums
+
+                    Repeater {
+                        id: favouriteCovers
+                        model: page._favouriteAlbums ? favouritesModel : null
+                        BackgroundItem {
+                            width: coverGrid.cell
+                            height: coverGrid.cell
+                            onClicked: page._open(model)
+
+                            Image {
+                                anchors.fill: parent
+                                fillMode: Image.PreserveAspectCrop
+                                asynchronous: true
+                                sourceSize.width: width
+                                sourceSize.height: height
+                                source: model.image
+                            }
+                        }
+                    }
+                }
+
+                Repeater {
+                    id: favouriteRows
+                    model: page._favouriteAlbums ? null : favouritesModel
+                    ListItem {
+                        contentHeight: Theme.itemSizeSmall
+                        onClicked: page._open(model)
+                        Label {
+                            x: Theme.horizontalPageMargin
+                            width: parent.width - Theme.horizontalPageMargin - Theme.itemSizeExtraSmall
+                            anchors.verticalCenter: parent.verticalCenter
+                            truncationMode: TruncationMode.Fade
+                            color: highlighted ? Theme.highlightColor : Theme.primaryColor
+                            text: model.text
+                        }
+                    }
+                }
+            }
         }
 
         PullDownMenu {
-            visible: page._searchKey !== "" || page.root || (page._tracks && browseModel.playUrl !== "")
+            visible: page._searchKey !== "" || page.root || browseModel.moreLinks.length > 0
+                     || (page._tracks && browseModel.playUrl !== "")
+
+            // Other views of an artist (its songs), B8.
+            Repeater {
+                model: browseModel.moreLinks
+                MenuItem {
+                    text: modelData.text
+                    onClicked: page._open({ browseKey: modelData.browseKey, text: modelData.text,
+                                            text2: browseModel.serviceName, image: "", actions: [],
+                                            type: "link", favourites: false })
+                }
+            }
 
             MenuItem {
                 text: qsTr("Search")
@@ -248,7 +330,7 @@ Page {
 
             Image {
                 id: art
-                visible: page._images
+                visible: page._images && model.image.toString() !== ""
                 x: Theme.horizontalPageMargin
                 anchors.verticalCenter: parent.verticalCenter
                 width: visible ? Theme.itemSizeMedium - 2 * Theme.paddingSmall : 0
@@ -355,6 +437,8 @@ Page {
             bottomMargin: Theme.paddingLarge
         }
         letters: browseModel.letters
+        favourites: browseModel.favouritesKey !== ""
         onJump: list.positionViewAtIndex(row, ListView.Beginning)
+        onTop: list.positionViewAtBeginning()
     }
 }
