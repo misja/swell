@@ -32,6 +32,8 @@ class BrowseModel : public QAbstractListModel
     Q_PROPERTY(bool ready READ ready NOTIFY readyChanged)
     Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
     Q_PROPERTY(QString error READ error NOTIFY readyChanged)
+    // True when error is the player's own message (an <error> reply).
+    Q_PROPERTY(bool playerError READ playerError NOTIFY readyChanged)
     Q_PROPERTY(QString listType READ listType NOTIFY readyChanged)
     Q_PROPERTY(QString serviceName READ serviceName NOTIFY readyChanged)
     Q_PROPERTY(QString searchKey READ searchKey NOTIFY readyChanged)
@@ -78,6 +80,7 @@ public:
     bool ready() const { return m_ready; }
     bool loading() const { return m_inFlight != -1; }
     QString error() const { return m_error; }
+    bool playerError() const { return m_playerError; }
     QString listType() const { return m_reply.type; }
     QString serviceName() const { return m_reply.serviceName; }
     QString searchKey() const { return m_reply.searchKey; }
@@ -120,7 +123,9 @@ private:
     void setRows(const QList<BrowseItem> &items);
     void want(int segment) const;
     void request(int segment);
-    void onPage(int generation, int segment, const Browse &reply);
+    void onPage(int generation, int segment, const QString &sentKey, const Browse &reply);
+    void askAgain();
+    void retryLater(int segment);
     void findFavourites();
     int segmentOf(int row, int *offset) const;
     int firstRow(int segment) const;
@@ -138,6 +143,7 @@ private:
     bool m_favourites = false;
     QString m_favouritesName;
     QString m_error;
+    bool m_playerError = false;
     int m_generation = 0;
     mutable int m_inFlight = -1;   // segment being read, or -1
     mutable int m_wanted = -1;     // the latest other wish

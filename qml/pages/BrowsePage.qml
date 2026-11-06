@@ -23,6 +23,7 @@ Page {
     readonly property bool _tracks: browseModel.listType === "tracks"
     readonly property bool _images: browseModel.listType !== "menu" && browseModel.listType !== "tracks"
                                    && browseModel.listType !== "sections" && !root
+    readonly property bool _offline: _player !== null && !_player.online && (!browseModel.ready || browseModel.error !== "")
     readonly property string _searchKey: browseModel.searchKey !== "" ? browseModel.searchKey : inheritedSearchKey
 
     allowedOrientations: Orientation.All
@@ -86,8 +87,10 @@ Page {
         Component.onCompleted: load()
     }
 
+    // Only the page in front reacts: a favourite change must not reload (and
+    // reset) the pages below it, and Home already reports failures.
     Connections {
-        target: page._player
+        target: page.status === PageStatus.Active ? page._player : null
         onActionDone: {
             if (type.indexOf("favourite") === 0) {
                 app.notify(type === "favourite-add" ? qsTr("Added to favourites") : qsTr("Removed from favourites"))
@@ -98,9 +101,15 @@ Page {
                 app.notify(qsTr("Added to the queue"))
             }
         }
-        onCommandFailed: {
-            console.warn("Command", path, "failed:", error)
-            app.notify(qsTr("The player did not accept that."))
+    }
+
+    // Read again when the player is back, if the first read did not succeed.
+    Connections {
+        target: page._player
+        onAvailabilityChanged: {
+            if (page._player.online && (browseModel.error !== "" || !browseModel.ready)) {
+                browseModel.load()
+            }
         }
     }
 
@@ -303,8 +312,11 @@ Page {
         }
 
         ViewPlaceholder {
-            enabled: browseModel.ready && list.count === 0
+            enabled: (browseModel.ready && list.count === 0) || page._offline
             text: {
+                if (page._offline) {
+                    return qsTr("Player offline")
+                }
                 if (browseModel.error !== "") {
                     return qsTr("The player could not show this")
                 }
@@ -312,8 +324,12 @@ Page {
                                                                          : qsTr("Nothing here")
             }
             hintText: {
+                if (page._offline) {
+                    return qsTr("Swell will try again when it is back")
+                }
                 if (browseModel.error !== "") {
-                    return browseModel.error
+                    // The player's own words, or Swell's (translated).
+                    return browseModel.playerError ? browseModel.error : qsTr("No usable answer from the player")
                 }
                 return page.key === "LocalMusic:MG/LocalMusic-Favourites"
                         ? qsTr("Long press an album, artist or track and choose Add to favourites") : ""
@@ -323,7 +339,7 @@ Page {
         BusyIndicator {
             anchors.centerIn: parent
             size: BusySize.Large
-            running: !browseModel.ready
+            running: !browseModel.ready && !page._offline
         }
 
         VerticalScrollDecorator {}

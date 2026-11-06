@@ -133,6 +133,7 @@ QVariant BrowseModel::data(const QModelIndex &index, int role) const
             case BrowseKeyRole: return QString::fromLatin1(FavouritesKey);
             case LoadedRole: return true;
             case FavouritesRole: return true;
+            case ImageRole: return QUrl();
             default: return QVariant();
             }
         }
@@ -226,6 +227,7 @@ void BrowseModel::onFirst(const Browse &reply)
     m_reply = reply;
     m_reply.items.clear();
     m_error = reply.ok ? QString() : reply.error;
+    m_playerError = reply.playerError;
     m_sectioned = false;
     beginResetModel();
     m_segments.clear();
@@ -344,46 +346,50 @@ void BrowseModel::request(int segment)
     const QString key = s.started ? s.nextKey : s.key;
     const int generation = m_generation;
     QPointer<BrowseModel> self(this);
-    m_client->fetchBrowse(key, QString(), [self, generation, segment](const Browse &reply) {
+    m_client->fetchBrowse(key, QString(), [self, generation, segment, key](const Browse &reply) {
         if (self)
-            self->onPage(generation, segment, reply);
+            self->onPage(generation, segment, key, reply);
     });
 }
 
-void BrowseModel::onPage(int generation, int segment, const Browse &reply)
+void BrowseModel::onPage(int generation, int segment, const QString &sentKey, const Browse &reply)
 {
     if (generation != m_generation)
         return;
     m_inFlight = -1;
     if (!reply.ok) {
-        m_failed[segment].start();
+        retryLater(segment);
     } else {
         m_failed.remove(segment);
         Segment &s = m_segments[segment];
         s.started = true;
-        s.nextKey = reply.nextKey;
-        s.done = reply.nextKey.isEmpty();
+        // A reply that points at itself again would only repeat its rows.
+        s.nextKey = reply.nextKey == sentKey ? QString() : reply.nextKey;
+        s.done = s.nextKey.isEmpty();
         const int first = firstRow(segment);
         const int start = s.loaded;
-        int filled = 0;
+        QVector<Row> extra;
         for (const BrowseItem &item : reply.items) {
             Row r;
             r.loaded = true;
             r.item = item;
             r.image = m_client ? m_client->resolveImage(item.image) : QUrl();
-            if (s.loaded < s.rows.size()) {
+            if (s.loaded < s.rows.size())
                 s.rows[s.loaded] = r;
-                ++filled;
-            } else {
-                // More than announced: trust the reply.
-                beginInsertRows(QModelIndex(), first + s.loaded, first + s.loaded);
-                s.rows.append(r);
-                endInsertRows();
-            }
+            else
+                extra.append(r);  // more than announced: trust the reply
             ++s.loaded;
         }
+        const int filled = reply.items.size() - extra.size();
         if (filled > 0)
             emit dataChanged(index(first + start), index(first + start + filled - 1));
+        if (!extra.isEmpty()) {
+            const int at = first + s.rows.size();
+            beginInsertRows(QModelIndex(), at, at + extra.size() - 1);
+            s.rows += extra;
+            endInsertRows();
+            emit lettersChanged();
+        }
         if (s.done && s.loaded < s.rows.size()) {
             // Fewer than announced: drop the rest of this letter.
             beginRemoveRows(QModelIndex(), first + s.loaded, first + s.rows.size() - 1);
@@ -391,7 +397,7 @@ void BrowseModel::onPage(int generation, int segment, const Browse &reply)
             endRemoveRows();
             emit lettersChanged();
         } else if (!s.done && reply.items.isEmpty()) {
-            m_failed[segment].start();  // a page without rows: do not loop
+            retryLater(segment);  // a page without rows: do not loop
         }
     }
     emit loadingChanged();
@@ -399,7 +405,29 @@ void BrowseModel::onPage(int generation, int segment, const Browse &reply)
         const int next = m_wanted;
         m_wanted = -1;
         want(next);
+    } else {
+        askAgain();
     }
+}
+
+void BrowseModel::askAgain()
+{
+    // Only one wish is kept, so other rows on screen may still be unloaded.
+    // Their delegates re-read on dataChanged and ask for their letter in turn;
+    // rows without a view are not touched.
+    if (m_inFlight == -1 && rowCount() > 0)
+        emit dataChanged(index(0), index(rowCount() - 1), { LoadedRole });
+}
+
+void BrowseModel::retryLater(int segment)
+{
+    m_failed[segment].start();
+    const int generation = m_generation;
+    QPointer<BrowseModel> self(this);
+    QTimer::singleShot(RetryAfterMs + 50, this, [self, generation]() {
+        if (self && generation == self->m_generation)
+            self->askAgain();
+    });
 }
 
 } // namespace BluOS

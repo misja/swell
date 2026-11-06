@@ -33,6 +33,12 @@ private slots:
     void modelGoneMidRequest();
     void additiveActionsAreNeverMerged();
     void playerPathsAreSentAsGivenOrRefused();
+    void severalVisibleLettersAllLoad();
+    void lettersFollowInsertedRows();
+    void aFailedLetterIsAskedForAgain();
+    void aRepeatedNextKeyEndsTheList();
+    void playPathsGoThroughTheGateOrAreRefused();
+    void searchEverywhereListsSources();
 
 private:
     void startClient();
@@ -109,6 +115,12 @@ void TstBrowse::init()
             return albums(QStringLiteral("L"), 0, 30, "List?start=30");
         if (key == QLatin1String("List?start=30"))
             return albums(QStringLiteral("L"), 30, 45);
+        if (key == QLatin1String("Small"))
+            return "<browse type=\"sections\">" + section("X", "1") + section("Y", "1") + section("Z", "1") + "</browse>";
+        if (key == QLatin1String("Lib:S:X") || key == QLatin1String("Lib:S:Y") || key == QLatin1String("Lib:S:Z"))
+            return albums(key.right(1), 0, 1);
+        if (key == QLatin1String("Loop"))
+            return albums(QStringLiteral("O"), 0, 20, "Loop");
         if (key == QLatin1String("Broken"))
             return "<error><message>Service unavailable</message></error>";
         return "<browse type=\"menu\"/>";
@@ -354,6 +366,105 @@ void TstBrowse::playerPathsAreSentAsGivenOrRefused()
     m_client->runAction(exact, QStringLiteral("add-last"));
     QTRY_COMPARE(m_player->requests(QStringLiteral("/Add")).size(), 1);
     QCOMPARE(m_player->requests(QStringLiteral("/Add")).first().target, exact.toLatin1());
+}
+
+// Re-reads rows the way a view does on dataChanged: only the changed rows
+// that are "on screen".
+static void watch(BrowseModel *m, int first, int last)
+{
+    QObject::connect(m, &QAbstractItemModel::dataChanged, m,
+                     [m, first, last](const QModelIndex &from, const QModelIndex &to) {
+        for (int row = qMax(first, from.row()); row <= qMin(last, to.row()) && row < m->rowCount(); ++row)
+            m->data(m->index(row), BrowseModel::LoadedRole);
+    });
+}
+
+void TstBrowse::severalVisibleLettersAllLoad()
+{
+    startClient();
+    QScopedPointer<BrowseModel> m(open(QStringLiteral("Small")));
+    QTRY_VERIFY(m->ready());
+    watch(m.data(), 0, 2);
+    // X, Y and Z are on screen together; only one wish is kept.
+    text(m.data(), 0);
+    text(m.data(), 1);
+    text(m.data(), 2);
+    // Without touching the rows again (that is the view's job), all three
+    // letters are read.
+    QTRY_VERIFY(browseKeys().contains(QStringLiteral("Lib:S:Y")));
+    QTRY_VERIFY(!m->loading());
+    QVERIFY(browseKeys().contains(QStringLiteral("Lib:S:X")));
+    QVERIFY(browseKeys().contains(QStringLiteral("Lib:S:Z")));
+    QCOMPARE(text(m.data(), 1), QStringLiteral("Y album 0"));
+}
+
+void TstBrowse::lettersFollowInsertedRows()
+{
+    startClient();
+    QScopedPointer<BrowseModel> m(open(QStringLiteral("Index")));
+    QTRY_VERIFY(m->ready());
+    QSignalSpy changed(m.data(), &BrowseModel::lettersChanged);
+    text(m.data(), 63);   // C: announced 2, three arrive
+    QTRY_COMPARE(m->rowCount(), 70);
+    QVERIFY(changed.size() >= 1);
+    QCOMPARE(m->letters().at(3).toMap().value(QStringLiteral("row")).toInt(), 66);
+}
+
+void TstBrowse::aFailedLetterIsAskedForAgain()
+{
+    startClient();
+    QScopedPointer<BrowseModel> m(open(QStringLiteral("Small")));
+    QTRY_VERIFY(m->ready());
+    watch(m.data(), 0, 0);
+    m_player->failWith(QStringLiteral("/Browse"), 503);
+    text(m.data(), 0);
+    QTRY_VERIFY(!m->loading());
+    QCOMPARE(m->data(m->index(0), BrowseModel::LoadedRole).toBool(), false);
+    m_player->stopFailing(QStringLiteral("/Browse"));
+    // Nothing touches the row: the model asks the view again by itself.
+    QTRY_COMPARE_WITH_TIMEOUT(text(m.data(), 0), QStringLiteral("X album 0"), 8000);
+}
+
+void TstBrowse::aRepeatedNextKeyEndsTheList()
+{
+    startClient();
+    QScopedPointer<BrowseModel> m(open(QStringLiteral("Loop")));
+    QTRY_VERIFY(m->ready());
+    QCOMPARE(m->rowCount(), 20);
+    text(m.data(), 15);
+    QTRY_VERIFY(browseKeys().size() >= 2);
+    QTRY_VERIFY(!m->loading());
+    text(m.data(), 35);
+    text(m.data(), 15);
+    QTest::qWait(300);
+    QCOMPARE(browseKeys().size(), 2);   // the repeat was not followed again
+}
+
+void TstBrowse::playPathsGoThroughTheGateOrAreRefused()
+{
+    startClient();
+    m_player->serve(QStringLiteral("/Play"), "<state>play</state>");
+    QSignalSpy failed(m_client, &Client::commandFailed);
+    m_client->playPath(QStringLiteral("http://elsewhere/Play?url=x"));
+    QCOMPARE(failed.size(), 1);
+    // Two quick taps on different albums: the last one wins.
+    m_client->playPath(QStringLiteral("/Add?playnow=1&service=LocalMusic&album=A"));
+    m_client->playPath(QStringLiteral("/Add?playnow=1&service=LocalMusic&album=B"));
+    QTRY_VERIFY(m_player->requests(QStringLiteral("/Add")).size() >= 1);
+    QTest::qWait(400);
+    QCOMPARE(m_player->requests(QStringLiteral("/Add")).last().target,
+             QByteArray("/Add?playnow=1&service=LocalMusic&album=B"));
+}
+
+void TstBrowse::searchEverywhereListsSources()
+{
+    startClient();
+    QScopedPointer<BrowseModel> m(open(QString(), false, QStringLiteral("bodega")));
+    QTRY_VERIFY(m->ready());
+    QCOMPARE(m_player->requests(QStringLiteral("/Browse")).last().target,
+             QByteArray("/Browse?q=bodega&withContextMenuItems=1"));
+    QCOMPARE(m->rowCount(), 1);
+    QCOMPARE(m->data(m->index(0), BrowseModel::BrowseKeyRole).toString(), QStringLiteral("Lib:Search/x"));
 }
 
 QTEST_GUILESS_MAIN(TstBrowse)
