@@ -393,6 +393,11 @@ void TstQueue::foreignChangeAfterOwnDeleteReloads()
     QTRY_VERIFY_WITH_TIMEOUT(resets.size() > 0, 8000);
     QTRY_COMPARE_WITH_TIMEOUT(q->length(), 300, 8000);
     QTRY_COMPARE_WITH_TIMEOUT(title(0), QStringLiteral("Foreign"), 8000);
+    // One reload after the delete, not two (the first load was one too).
+    int firstWindowReads = 0;
+    for (const auto &r : m_player->requests(QStringLiteral("/Playlist")))
+        firstWindowReads += r.target == QByteArray("/Playlist?start=0&end=49") ? 1 : 0;
+    QCOMPARE(firstWindowReads, 2);
     // A remorse from before the foreign change is refused.
     m_client->removeQueueEntry(3, pid, second);
     QTRY_COMPARE_WITH_TIMEOUT(refused.size(), 1, 8000);

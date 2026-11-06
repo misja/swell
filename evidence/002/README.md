@@ -1,7 +1,7 @@
 # Evidence — 002 queue
 
-Date: 2026-11-06. Branch `002-queue`. Package harbour-swell-0.2.0-3.aarch64.rpm,
-sha256 efe4c53e29cc16201808f7347ad7bae23a93448f485bcd44b54e209ab7f325f0.
+Date: 2026-11-06. Branch `002-queue`. Package harbour-swell-0.2.0-4.aarch64.rpm,
+sha256 9da4a081b929dc681fc7d425359fb84283ceca0bd58f705e46a488ab281cfcae.
 
 ## Automated (builder)
 
@@ -56,9 +56,14 @@ sha256 efe4c53e29cc16201808f7347ad7bae23a93448f485bcd44b54e209ab7f325f0.
   a `song` from the queue id the rows have, re-applied after adoption; a
   status reply during the first read of a reload no longer restarts it
   (mutation check: without the rule, `noRepeatedReloadDuringTheFirstRead`
-  fails).
+  fails). Its check of those fixes found one more: a failed adoption
+  reloaded twice. Fixed in 0.2.0-4 with one shared change rule; the test
+  now counts one reload (mutation check: the old rule fails it). Reviewer
+  verdict: resolved after that fix. Residual, accepted: if the first reply
+  of a reload already has a newer id than the status poll, one more reload
+  follows until the poll catches up.
 
 ## Not yet done
 
-- Device check of 0.2.0-3: one remove keeps the list in place; two quick
+- Device check of 0.2.0-4: one remove keeps the list in place; two quick
   removes both go through.

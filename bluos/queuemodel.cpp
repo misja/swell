@@ -118,21 +118,16 @@ void QueueModel::removeEntry(int position)
 
 void QueueModel::onStatus(const QString &pid, int song, bool streaming)
 {
-    if (!pid.isEmpty() && !m_holdPid) {
-        // While a reload waits for its first reply, the id it started from
-        // is not a change.
-        const bool unknown = m_pid.isEmpty() ? pid != m_reloadPid : !knowsPid(pid);
-        if (unknown) {
-            m_current = song;
-            m_streaming = streaming;
-            if (m_active) {
-                reload();
-            } else {
-                m_stale = true;
-            }
-            emit currentChanged();
-            return;
+    if (!m_holdPid && isChange(pid)) {
+        m_current = song;
+        m_streaming = streaming;
+        if (m_active) {
+            reload();
+        } else {
+            m_stale = true;
         }
+        emit currentChanged();
+        return;
     }
     // song counts in the numbering of its queue id: only the current one fits
     // the rows (the others are ours, before or after the delete settles).
@@ -140,6 +135,13 @@ void QueueModel::onStatus(const QString &pid, int song, bool streaming)
         return;
     }
     setCurrent(song, streaming);
+}
+
+bool QueueModel::isChange(const QString &pid) const
+{
+    // While a reload waits for its first reply, the id it started from is
+    // not a change.
+    return !pid.isEmpty() && (m_pid.isEmpty() ? pid != m_reloadPid : !knowsPid(pid));
 }
 
 void QueueModel::setCurrent(int song, bool streaming)
@@ -214,8 +216,7 @@ void QueueModel::setHoldPid(bool hold)
         return;
     }
     // A change the status poll reported meanwhile, if it was not ours.
-    const QString now = m_client->status().pid;
-    if (!now.isEmpty() && !knowsPid(now)) {
+    if (isChange(m_client->status().pid)) {
         reload();
     } else {
         applyStatus();

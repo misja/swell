@@ -102,6 +102,7 @@ private:
     void request(int window);
     void onWindow(int generation, int window, const Playlist &playlist);
     bool windowLoaded(int window) const;
+    bool isChange(const QString &pid) const;
     void setCurrent(int song, bool streaming);
     void applyStatus();   // the client's latest song, if it is for our queue id
     void setLength(int length);
