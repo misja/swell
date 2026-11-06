@@ -64,8 +64,8 @@ public:
     bool streaming() const { return m_streaming; }
 
     Q_INVOKABLE QString identityAt(int position) const;
-    // The position of a loaded row with this identity, or -1.
-    int positionOf(const QString &identity) const;
+    // The player removed this entry: drop the row, keep the rest.
+    void removeEntry(int position);
 
     // From the client's status poll.
     void onStatus(const QString &pid, int song, bool streaming);

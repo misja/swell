@@ -7,11 +7,6 @@
 
 namespace BluOS {
 
-namespace {
-// A window that failed is asked for again only after this pause.
-const int RetryAfterMs = 3000;
-}
-
 QueueModel::QueueModel(Client *client)
     : QAbstractListModel(client)
     , m_client(client)
@@ -77,6 +72,10 @@ void QueueModel::setActive(bool active)
         return;
     }
     m_active = active;
+    if (!m_active) {
+        // Unseen changes may happen meanwhile; read it again next time.
+        m_stale = true;
+    }
     emit activeChanged();
     if (m_active && m_stale) {
         reload();
@@ -91,14 +90,25 @@ QString QueueModel::identityAt(int position) const
     return m_rows.at(position).entry.identity();
 }
 
-int QueueModel::positionOf(const QString &identity) const
+void QueueModel::removeEntry(int position)
 {
-    for (int i = 0; i < m_rows.size(); ++i) {
-        if (m_rows.at(i).loaded && m_rows.at(i).entry.identity() == identity) {
-            return i;
-        }
+    if (position < 0 || position >= m_rows.size()) {
+        return;
     }
-    return -1;
+    beginRemoveRows(QModelIndex(), position, position);
+    m_rows.remove(position);
+    endRemoveRows();
+    // A window read sent before the delete has old positions: ignore it.
+    ++m_generation;
+    m_inFlight = -1;
+    m_wanted = -1;
+    m_failed.clear();
+    emit loadingChanged();
+    if (m_current > position) {
+        --m_current;
+        emit currentChanged();
+    }
+    emit lengthChanged();
 }
 
 void QueueModel::onStatus(const QString &pid, int song, bool streaming)
@@ -192,19 +202,30 @@ void QueueModel::want(int window) const
     if (!m_active || window == m_inFlight || windowLoaded(window)) {
         return;
     }
-    if (m_failed.contains(window) && m_failed.value(window).elapsed() < RetryAfterMs) {
+    if (m_failed.contains(window)
+            && m_failed.value(window).elapsed() < m_client->timing().queueRetryMs) {
         return;
     }
     if (m_inFlight >= 0) {
         m_wanted = window;  // only the latest wish is kept
         return;
     }
-    const_cast<QueueModel *>(this)->request(window);
+    // Called from data() while the view builds delegates: send it later.
+    m_inFlight = window;
+    QueueModel *self = const_cast<QueueModel *>(this);
+    const int generation = m_generation;
+    QTimer::singleShot(0, self, [self, generation, window]() {
+        if (generation == self->m_generation && self->m_inFlight == window) {
+            self->request(window);
+        }
+    });
 }
 
 void QueueModel::request(int window)
 {
     if (!m_active) {
+        m_inFlight = -1;
+        emit loadingChanged();
         return;
     }
     m_inFlight = window;
@@ -226,7 +247,7 @@ void QueueModel::onWindow(int generation, int window, const Playlist &playlist)
         m_failed[window].start();
         if (!m_known) {
             // Nothing on screen can ask again: retry the first window itself.
-            QTimer::singleShot(RetryAfterMs, this, [this, generation, window]() {
+            QTimer::singleShot(m_client->timing().queueRetryMs, this, [this, generation, window]() {
                 if (generation == m_generation && m_active && !m_known && m_inFlight < 0) {
                     request(window);
                 }
@@ -261,6 +282,9 @@ void QueueModel::onWindow(int generation, int window, const Playlist &playlist)
         }
         if (first >= 0) {
             emit dataChanged(index(first), index(last));
+        }
+        if (!windowLoaded(window)) {
+            m_failed[window].start();  // rows missing from the reply: not again at once
         }
     }
     emit loadingChanged();

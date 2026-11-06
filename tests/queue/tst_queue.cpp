@@ -23,9 +23,15 @@ private slots:
     void lengthChangeResets();
     void inactiveLoadsNothingThenReloadsWhenStale();
     void failedReadIsRetried();
+    void lateReplyWithAnOldIdIsIgnored();
     void staleRemoveIsRefused();
+    void removalByAnotherControllerIsRefused();
     void twoRemovesRunOneAfterTheOther();
-    void removesAfterLeavingThePageAreNotGuessed();
+    void removesStillRunAfterLeavingThePage();
+    void duplicateTrackRemovesTheChosenRow();
+    void removingTheCurrentEntry();
+    void failedDeleteIsReportedAndDoesNotBlock();
+    void failedClearIsReported();
     void clearReplyResets();
     void playFromSendsId();
 
@@ -104,6 +110,7 @@ void TstQueue::startClient()
     t.deadlineGraceMs = 2000;
     t.commandTimeoutMs = 3000;
     t.queueReadTimeoutMs = 3000;
+    t.queueRetryMs = 500;
     t.minIntervalMs = 200;
     t.backoffInitialMs = 200;
     t.backoffMaxMs = 400;
@@ -188,8 +195,29 @@ void TstQueue::failedReadIsRetried()
     QVERIFY(!q->known());   // not shown as an empty queue
     m_player->stopFailing(QStringLiteral("/Playlist"));
     // The first window is retried by itself.
-    QTRY_COMPARE_WITH_TIMEOUT(q->length(), 300, 8000);
+    QTRY_COMPARE(q->length(), 300);
     QVERIFY(q->known());
+}
+
+void TstQueue::lateReplyWithAnOldIdIsIgnored()
+{
+    startClient();
+    QueueModel *q = m_client->queueModel();
+    q->setActive(true);
+    QTRY_COMPARE(q->length(), 300);
+    QTRY_VERIFY(!q->loading());
+    // The queue is replaced while a window read is under way; the reply
+    // already carries the new id, but the status poll has not told us yet.
+    m_player->delay(QStringLiteral("/Playlist"), 300);
+    q->data(q->index(120), QueueModel::TitleRole);
+    m_queue = QStringList({ QStringLiteral("New A") });
+    ++m_pid;
+    QTRY_VERIFY(q->loading());
+    QTRY_VERIFY(!q->loading());
+    QCOMPARE(q->length(), 300);
+    QCOMPARE(q->data(q->index(120), QueueModel::LoadedRole).toBool(), false);
+    setStatus(0);   // now the pid change resets the list
+    QTRY_COMPARE(q->length(), 1);
 }
 
 void TstQueue::staleRemoveIsRefused()
@@ -198,13 +226,27 @@ void TstQueue::staleRemoveIsRefused()
     QueueModel *q = m_client->queueModel();
     q->setActive(true);
     QTRY_COMPARE(title(3), QStringLiteral("Track 3"));
-    QSignalSpy failed(m_client, &Client::commandFailed);
-    const QString identity = q->identityAt(3);
-    m_client->removeQueueEntry(3, QStringLiteral("not-the-pid"), identity);
+    QSignalSpy refused(m_client, &Client::removeRefused);
+    m_client->removeQueueEntry(3, QStringLiteral("not-the-pid"), q->identityAt(3));
     m_client->removeQueueEntry(3, q->pid(), QStringLiteral("someone else|x"));
-    QCOMPARE(failed.size(), 2);
+    QTRY_COMPARE(refused.size(), 2);
     QTest::qWait(400);
     QCOMPARE(m_player->requests(QStringLiteral("/Delete")).size(), 0);
+}
+
+void TstQueue::removalByAnotherControllerIsRefused()
+{
+    startClient();
+    QueueModel *q = m_client->queueModel();
+    q->setActive(true);
+    QTRY_COMPARE(title(3), QStringLiteral("Track 3"));
+    // Another controller deletes row 1; the queue id does not change.
+    m_queue.removeAt(1);
+    QSignalSpy refused(m_client, &Client::removeRefused);
+    m_client->removeQueueEntry(3, q->pid(), q->identityAt(3));
+    QTRY_COMPARE(refused.size(), 1);
+    QCOMPARE(m_player->requests(QStringLiteral("/Delete")).size(), 0);
+    QCOMPARE(m_queue.at(3), QStringLiteral("Track 4"));
 }
 
 void TstQueue::twoRemovesRunOneAfterTheOther()
@@ -221,31 +263,94 @@ void TstQueue::twoRemovesRunOneAfterTheOther()
     const auto deletes = m_player->requests(QStringLiteral("/Delete"));
     QCOMPARE(deletes.at(0).target, QByteArray("/Delete?id=2"));
     QCOMPARE(deletes.at(1).target, QByteArray("/Delete?id=2"));
-    QVERIFY(!m_queue.contains(QStringLiteral("Track 2")));
-    QVERIFY(!m_queue.contains(QStringLiteral("Track 3")));
     QCOMPARE(m_queue.at(2), QStringLiteral("Track 4"));
+    // Only the removed rows go; the rest stay loaded, so the view keeps its place.
     QTRY_COMPARE(q->length(), 298);
+    QVERIFY(q->known());
+    QCOMPARE(q->data(q->index(1), QueueModel::LoadedRole).toBool(), true);
     QTRY_COMPARE(title(2), QStringLiteral("Track 4"));
 }
 
-void TstQueue::removesAfterLeavingThePageAreNotGuessed()
+void TstQueue::removesStillRunAfterLeavingThePage()
 {
     startClient();
     QueueModel *q = m_client->queueModel();
     q->setActive(true);
     QTRY_COMPARE(title(3), QStringLiteral("Track 3"));
     const QString pid = q->pid();
+    const QString first = q->identityAt(2);
     const QString second = q->identityAt(3);
     // The page is popped; both pending remorses fire on destruction.
     q->setActive(false);
-    QSignalSpy failed(m_client, &Client::commandFailed);
-    m_client->removeQueueEntry(2, pid, q->identityAt(2));
+    m_client->removeQueueEntry(2, pid, first);
     m_client->removeQueueEntry(3, pid, second);
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Delete")).size(), 2);
+    QVERIFY(!m_queue.contains(QStringLiteral("Track 2")));
+    QVERIFY(!m_queue.contains(QStringLiteral("Track 3")));
+    QCOMPARE(m_queue.at(2), QStringLiteral("Track 4"));
+}
+
+void TstQueue::duplicateTrackRemovesTheChosenRow()
+{
+    m_queue[5] = QStringLiteral("Track 0");   // the same track queued twice
+    startClient();
+    QueueModel *q = m_client->queueModel();
+    q->setActive(true);
+    QTRY_COMPARE(title(5), QStringLiteral("Track 0"));
+    QCOMPARE(q->identityAt(5), q->identityAt(0));
+    m_client->removeQueueEntry(5, q->pid(), q->identityAt(5));
     QTRY_COMPARE(m_player->requests(QStringLiteral("/Delete")).size(), 1);
+    QCOMPARE(m_player->requests(QStringLiteral("/Delete")).first().target, QByteArray("/Delete?id=5"));
+    QCOMPARE(m_queue.at(0), QStringLiteral("Track 0"));
+    QCOMPARE(m_queue.at(5), QStringLiteral("Track 6"));
+}
+
+void TstQueue::removingTheCurrentEntry()
+{
+    setStatus(2);
+    startClient();
+    QueueModel *q = m_client->queueModel();
+    QTRY_COMPARE(q->currentIndex(), 2);
+    q->setActive(true);
+    QTRY_COMPARE(title(2), QStringLiteral("Track 2"));
+    m_client->removeQueueEntry(2, q->pid(), q->identityAt(2));
+    QTRY_COMPARE(q->length(), 299);
+    QCOMPARE(m_player->requests(QStringLiteral("/Delete")).first().target, QByteArray("/Delete?id=2"));
+    // The player moves on to the next track, now at position 2.
+    QCOMPARE(q->currentIndex(), 2);
+    QCOMPARE(title(2), QStringLiteral("Track 3"));
+}
+
+void TstQueue::failedDeleteIsReportedAndDoesNotBlock()
+{
+    startClient();
+    QueueModel *q = m_client->queueModel();
+    q->setActive(true);
+    QTRY_COMPARE(title(3), QStringLiteral("Track 3"));
+    QSignalSpy failed(m_client, &Client::commandFailed);
+    m_player->failWith(QStringLiteral("/Delete"), 500);
+    m_client->removeQueueEntry(2, q->pid(), q->identityAt(2));
     QTRY_COMPARE(failed.size(), 1);
-    QTest::qWait(400);
-    QCOMPARE(m_player->requests(QStringLiteral("/Delete")).size(), 1);
-    QCOMPARE(m_queue.at(2), QStringLiteral("Track 3"));   // not removed by a guess
+    QCOMPARE(failed.first().at(0).toString(), QStringLiteral("/Delete"));
+    QCOMPARE(q->length(), 300);   // nothing removed locally
+    m_player->stopFailing(QStringLiteral("/Delete"));
+    m_client->removeQueueEntry(3, q->pid(), q->identityAt(3));
+    QTRY_COMPARE(q->length(), 299);
+    QCOMPARE(m_queue.at(3), QStringLiteral("Track 4"));
+}
+
+void TstQueue::failedClearIsReported()
+{
+    startClient();
+    QueueModel *q = m_client->queueModel();
+    q->setActive(true);
+    QTRY_COMPARE(q->length(), 300);
+    QSignalSpy failed(m_client, &Client::commandFailed);
+    m_player->failWith(QStringLiteral("/Clear"), 500);
+    m_client->clearQueue();
+    QTRY_COMPARE(failed.size(), 1);
+    QCOMPARE(failed.first().at(0).toString(), QStringLiteral("/Clear"));
+    QCOMPARE(q->length(), 300);
 }
 
 void TstQueue::clearReplyResets()

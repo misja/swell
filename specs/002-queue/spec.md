@@ -60,17 +60,21 @@ repeat.
   - A failed read leaves the rows as placeholders. They are retried when shown
     again, and no error is reported.
 - **Refresh:** a `pid` change in `/Status` (a new or cleared queue) resets the
-  list. `/Clear` replies with the new empty queue. After a remove, Swell
-  reloads itself, because the queue id does not change on a delete (azzurro
-  observation).
+  list, and so does reopening the page. `/Clear` replies with the new empty
+  queue. After Swell's own remove, only that row is dropped, so the view keeps
+  its place.
 - **Current entry:** `/Status` `song` is the current position, and `pid` the
   queue identity. With `streamUrl` present the queue is not the source (§2.1).
-- **Removing safely:** positions shift after a delete. A remove therefore names
-  the queue (`pid`) and the row's identity, and the client sends it only if
-  both still match. Only one remove runs at a time; the list reloads after it,
-  then the next can start. A Silica row remorse also fires when its row
-  disappears (RemorseItem.qml:189-191 in the target), so this check is what
-  prevents deleting the wrong track.
+- **Removing safely:** positions shift after a delete, and the queue id does
+  not change on one (azzurro observation; §5.1 does not say). A remove
+  therefore names the position, the queue (`pid`) and the row's identity.
+  Just before `/Delete`, Swell reads that one position back and sends the
+  delete only if the queue and the entry still match. Otherwise it says that
+  the queue has changed and removes nothing. Removes run one at a time; a
+  waiting remove moves up by one for each earlier successful remove above it.
+  A Silica row remorse also fires when its row disappears or the page is left
+  (RemorseItem.qml in the target), so this check is what prevents deleting
+  the wrong track, including the same track queued twice.
 - **Commands, under the existing per-path gate and the one-second rule:**
   - play from an entry: `/Play?id=<position>`. §4.1 documents `id` together
     with `seek`, and `seek` is only valid when `/Status` has `totlen`. azzurro
@@ -99,10 +103,11 @@ repeat.
    - a reset on a `pid` change and on a `length` change;
    - a late reply with an old `id` is ignored;
    - a failed read is retried;
-   - a remove with a stale `pid` or row identity is refused, with no request
-     sent;
-   - two removes in quick succession run one after the other, each with a
-     reload;
+   - a remove with a stale `pid` or row identity is refused, with no delete
+     sent, also after another controller changed the queue;
+   - two removes in quick succession run one after the other, also after
+     leaving the page;
+   - the same track queued twice: the chosen row is removed;
    - removing the current entry;
    - the `/Clear` reply resets the list;
    - `/Play?id=` is sent;

@@ -8,6 +8,7 @@ Page {
 
     readonly property QtObject _player: players.current
     readonly property QtObject _queue: _player ? _player.queue : null
+    property QtObject _previousQueue: null
 
     allowedOrientations: Orientation.All
 
@@ -19,6 +20,15 @@ Page {
         var s = secs % 60
         return m + ":" + (s < 10 ? "0" : "") + s
     }
+
+    // The Binding leaves the old player's queue active: switch it off.
+    on_QueueChanged: {
+        if (_previousQueue) {
+            _previousQueue.active = false
+        }
+        _previousQueue = _queue
+    }
+    Component.onCompleted: _previousQueue = _queue
 
     function _positionAtCurrent() {
         if (_queue && _queue.currentIndex >= 0 && _queue.currentIndex < list.count) {
@@ -45,6 +55,7 @@ Page {
             console.warn("Command", path, "failed:", error)
             app.notify(qsTr("The player did not accept that."))
         }
+        onRemoveRefused: app.notify(qsTr("The queue has changed. Nothing was removed."))
     }
 
     RemorsePopup { id: clearRemorse }

@@ -65,6 +65,7 @@ public:
         int deadlineGraceMs = 15000; // added to the poll timeout before aborting
         int commandTimeoutMs = 10000;
         int queueReadTimeoutMs = 30000;  // the player answers after serving covers
+        int queueRetryMs = 3000;         // pause before a failed window is read again
         int minIntervalMs = 1000;    // API 2: same resource at most once per second
         int backoffInitialMs = 1000;
         int backoffMaxMs = 30000;
@@ -134,9 +135,9 @@ public slots:
     void playInput(const QString &encodedUrl);
     void refreshInputs();
     void playQueueEntry(int position);
-    // Removes the entry at position, but only if the queue is still pid and the
-    // row there is still identity; removals run one at a time with a reload
-    // in between, because positions shift (section 5.2).
+    // Removes the entry at position, but only if the player confirms that the
+    // queue is still pid and the entry there is still identity. Removals run
+    // one at a time; later ones move up as earlier ones succeed (section 5.2).
     void removeQueueEntry(int position, const QString &pid, const QString &identity);
     void clearQueue();
 
@@ -149,6 +150,8 @@ signals:
     void inputsChanged();
     // A command request failed; the poll keeps running.
     void commandFailed(const QString &path, const QString &error);
+    // A removal was not sent because the queue no longer matched.
+    void removeRefused();
 
 private:
     struct Gate {
@@ -209,7 +212,12 @@ private:
     bool m_presetsLoading = false;
     bool m_inputsLoading = false;
     QueueModel *m_queue;
-    QStringList m_removals;   // identities waiting to be removed
+    struct Removal {
+        int position;
+        QString pid;
+        QString identity;
+    };
+    QList<Removal> m_removals;
     bool m_removing = false;
     bool m_presetsFetched = false;
     bool m_inputsFetched = false;

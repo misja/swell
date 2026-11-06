@@ -30,10 +30,6 @@ Client::Client(QNetworkAccessManager *nam, const QString &host, int port, QObjec
     , m_port(port > 0 ? port : 11000)
     , m_queue(new QueueModel(this))
 {
-    connect(m_queue, &QueueModel::reloaded, this, [this]() {
-        m_removing = false;
-        processRemovals();
-    });
     // The one-second rule is a "must" (API 2); coarse timers may fire up to 5%
     // early, so every rate-limiting timer is precise and rechecks before sending.
     m_pollTimer.setSingleShot(true);
@@ -294,11 +290,11 @@ void Client::playQueueEntry(int position)
 
 void Client::removeQueueEntry(int position, const QString &pid, const QString &identity)
 {
-    if (identity.isEmpty() || pid != m_queue->pid() || m_queue->identityAt(position) != identity) {
-        emit commandFailed(QStringLiteral("/Delete"), QStringLiteral("the queue changed"));
+    if (position < 0 || pid.isEmpty() || identity.isEmpty()) {
+        emit removeRefused();
         return;
     }
-    m_removals.append(identity);
+    m_removals.append({ position, pid, identity });
     processRemovals();
 }
 
@@ -307,34 +303,40 @@ void Client::processRemovals()
     if (m_removing || m_removals.isEmpty()) {
         return;
     }
-    const QString identity = m_removals.takeFirst();
-    const int position = m_queue->positionOf(identity);
-    if (position < 0) {
-        emit commandFailed(QStringLiteral("/Delete"), QStringLiteral("the queue changed"));
-        processRemovals();
-        return;
-    }
     m_removing = true;
-    QUrlQuery query;
-    query.addQueryItem(QStringLiteral("id"), QString::number(position));
-    // Not through the merging gate: removals are not idempotent.
-    fetch(QStringLiteral("/Delete"), encoded(query), [this](const QByteArray &body) {
-        const QString error = body.isEmpty() ? QStringLiteral("no answer") : errorIn(body);
-        if (!error.isEmpty()) {
-            emit commandFailed(QStringLiteral("/Delete"), error);
-        }
-        // Positions have shifted (or may have): read the queue again; the next
-        // removal waits for that (QueueModel::reloaded).
-        m_queue->reload();
-        if (!m_queue->active()) {
-            // No reload while off screen, so the remaining positions are
-            // unknown: refuse the rest rather than guess.
+    const Removal removal = m_removals.first();
+    // Positions shift on every delete, and another controller may have changed
+    // the queue: ask the player what is at that position right now.
+    fetchQueueWindow(removal.position, removal.position, [this, removal](const Playlist &now) {
+        const bool same = now.ok && now.id == removal.pid && now.songs.size() == 1
+                && now.songs.first().position == removal.position
+                && now.songs.first().identity() == removal.identity;
+        if (!same) {
+            m_removals.removeFirst();
             m_removing = false;
-            if (!m_removals.isEmpty()) {
-                m_removals.clear();
-                emit commandFailed(QStringLiteral("/Delete"), QStringLiteral("the queue changed"));
-            }
+            emit removeRefused();
+            processRemovals();
+            return;
         }
+        QUrlQuery query;
+        query.addQueryItem(QStringLiteral("id"), QString::number(removal.position));
+        // Not through the merging gate: removals are not idempotent.
+        fetch(QStringLiteral("/Delete"), encoded(query), [this, removal](const QByteArray &body) {
+            const QString error = body.isEmpty() ? QStringLiteral("no answer") : errorIn(body);
+            m_removals.removeFirst();
+            if (error.isEmpty()) {
+                m_queue->removeEntry(removal.position);
+                for (Removal &later : m_removals) {
+                    if (later.position > removal.position) {
+                        --later.position;
+                    }
+                }
+            } else {
+                emit commandFailed(QStringLiteral("/Delete"), error);
+            }
+            m_removing = false;
+            processRemovals();
+        });
     });
 }
 
