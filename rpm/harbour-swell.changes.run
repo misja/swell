@@ -1,0 +1,3 @@
+#!/bin/bash
+# Generate the RPM changelog from Git commits and tags (SDK template).
+sfdk-changelog

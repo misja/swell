@@ -1,27 +1,31 @@
 # Feature specification — 001 core controller
 
-Status: revised after separate scope review (2026-11-06); maintainer decisions
-of 2026-11-06 recorded. Next: plan.md with design review. Not approved for
-implementation.
+Status: implemented 2026-11-06. Scope, design and result reviews (separate
+agents) passed; result review findings resolved and re-checked. Awaiting
+maintainer review.
 
 ## Owner and linked issue
 
 - Accountable owner: root (primary assistant session).
 - Decision owner: Misja Hoebe (@misja).
-- Scope reviewer: separate agent `scope_review`, 2026-11-06, verdict "approve
-  with changes"; all findings addressed below (see STATUS.md).
+- Scope reviewers: separate agents `scope_review` (first scope) and
+  `scope_review_2` (MVP revision), both 2026-11-06, verdict "approve with
+  changes". Their findings are addressed below (see STATUS.md).
 - Result reviewer: a separate agent reviews the resulting changes before
   maintainer review.
-- Linked issue: none yet. A remote repository/issue needs explicit approval;
-  until then STATUS.md in this repository carries the handoff.
+- Linked issue: https://github.com/misja/swell/issues/1 (private repository).
+- UI design reference: the design canvas linked from issue #1. Its notes record
+  the maintainer's UI decisions of 2026-11-06.
 
 ## Problem and intended users
 
 Owners of BluOS players (Bluesound, NAD, PSB) who use Sailfish OS have no native
 controller; searches of OpenRepos, Harbour and GitHub on 2026-11-06 found none.
 The official app is Android-only and needs AppSupport. A native Silica app
-should cover the everyday loop: find the players on the local network, see what
-is playing, and control playback and volume.
+should cover the everyday loop: find the players on the local network, pick
+something quick to play (a preset or an input), see what is playing, and control
+playback and volume. This first version is a complete remote control, not yet a
+music browser.
 
 ## Scope and exclusions
 
@@ -29,22 +33,70 @@ Silica/QML UI plus a thin Qt 5.6 C++ layer, using only facilities present in
 the target. Rust and azzurro's `bluos` crate are not used: the SDK ships
 Rust 1.75, while azzurro requires 1.98 and edition 2024.
 
-This first increment includes:
+This first increment (the MVP) includes:
 
 1. Player discovery via LSDP (UDP 11430 broadcast), plus manual entry of
    `host[:port]`. Only player classes 0x0001, 0x0003, 0x0006 and 0x0008 are
    listed (API v1.7 appendix, class ID assignments).
-2. Player list with name and model; the last selection is remembered.
-3. Now Playing: title/artist/album, cover art, transport state, play/pause,
-   next/previous, volume and mute. It is updated through the `/Status` long poll
-   (etag + timeout), not a polling loop.
-4. Cover page: current track and play/pause and next cover actions.
+2. **Players page**: every found and manual player with its now-playing line or
+   state. Tapping one makes it the current player. Manual players can be
+   removed. The current player is remembered and is used again at the next
+   start.
+3. **Home page** of the current player. The app starts here when a current
+   player is remembered; otherwise it starts on Players. If the current player
+   is offline, Home shows that state with a hint to pick another player. Home
+   shows:
+   - the player's presets (API §6: `/Presets`; play with `/Preset?id=`),
+     fetched on first contact and refetched when `prid` in `/Status` changes;
+     each player keeps its own, so a player switch shows its presets at once. A player without presets shows a placeholder
+     (presets are created in the official app). A preset is played by its
+     `id`, because ids are not sequential;
+   - its inputs (API §11.1: `/RadioBrowse?service=Capture`; play with
+     `/Play?url=`, passing the already percent-encoded `URL` attribute without
+     re-encoding). Only local hardware inputs (items with `inputType`) are
+     shown. Hub inputs and cloud entries, such as Spotify, which belongs to an
+     account, are left out. Known limitation: inactive inputs may be missing
+     from this list (API §11.2), and §11.2 is not used.
+   Pulley: Players, About.
+4. **Now Playing** as the page attached to Home (swipe left). Previous/next
+   follow the source: the queue uses `/Skip`/`/Back`; a stream uses the skip/back
+   actions it offers (API §4.8); otherwise the buttons are hidden. The cover
+   then shows play/pause only. It shows cover
+   art, the `title1`–`title3` lines, progress (display only, no seeking),
+   play/pause, next/previous, volume and mute. The volume control is hidden
+   when the player reports a fixed volume (`volume=-1`). It is updated through the `/Status` long poll (etag +
+   timeout), not a polling loop.
+5. A **docked mini-player** on Home and Players (artwork, title, play/pause).
+   Tapping it opens Now Playing. It is a plain Silica `DockedPanel`.
+   `Sailfish.Media`'s `MediaPlayerControlsPanel` was examined and not reused:
+   it always shows a seek slider, has no artwork/title slot and opens only
+   while playing.
+6. **Cover**: current track, with play/pause and next cover actions.
+7. **Landscape** on every page, using Silica's orientation handling. Pages
+   default to portrait, so each page sets `allowedOrientations`. Now
+   Playing shows the artwork beside the controls; lists stay lists.
+8. **About** page with the privacy statement.
 
-Later features (each needs its own scope): 002 presets and the play queue;
-003 MPRIS lock-screen controls (needs the `Audio` permission). Not planned:
-browse/search, grouping, settings, alarms, firmware upgrade, playlists, queue
-editing, custom radio, mDNS, music-service sign-in. Harbour submission,
-OBS/Chum publication and device installation need separate approval.
+Agreed structure for later features (design canvas, issue #1). Each needs its
+own spec:
+- 002: the Queue page, attached to Now Playing.
+- 003: MPRIS lock-screen controls (needs the `Audio` permission).
+- 004: a generic Browse page for the player's `/Browse` hierarchy, from Home:
+  library, services, playlists, radio and search. Whether Home's sections then
+  come from the top-level `/Browse` is decided in 004. 001 keeps play actions
+  generic ("send this play path"), so the source of the inputs can change
+  later.
+- 005: grouping, as its own page opened from Now Playing.
+- 006: player settings and alarms (to be discussed).
+- Later: zapping through presets from the cover/Now Playing on plain radio
+  (`/Preset?id=±1`; set aside 2026-11-06 as too much UI for its value),
+  My Stations (custom radio URLs stored on the phone), a "Track details"
+  pulley item on Now Playing, hardware volume keys (Harbour/Sailjail
+  feasibility unverified) and a firmware notice.
+
+Out of scope altogether: anything behind a BluOS account, such as linking
+music services. Harbour submission, OBS/Chum publication and device
+installation need separate approval.
 
 ## Required behavior
 
@@ -66,14 +118,37 @@ OBS/Chum publication and device installation need separate approval.
 - Unknown XML elements and attributes are ignored. Malformed or truncated input
   never crashes the app.
 - No accounts, credentials, telemetry or analytics. Local state is limited to
-  manual hosts and the last selection. The About page shows a short privacy
+  manual hosts and the current player. The About page shows a short privacy
   statement saying so, as the API Use Policy requires.
-- Lenbrook marks: no BluOS name or logo in the app name or icon. Descriptions
-  use only the policy's accepted form "Swell (works with BluOS)" and do not
-  suggest endorsement.
+- Lenbrook marks (Misja, 2026-11-06): no BluOS name or logo in the app name or
+  icon. BluOS appears only descriptively ("Sailfish OS controller for BluOS
+  players"). About and the package description carry the notice "Not
+  affiliated with, endorsed by or supported by Lenbrook Industries. BluOS is a
+  trademark of Lenbrook Industries Limited." The policy's "(works with BluOS)"
+  suffix is dropped as redundant.
 - Sailjail permission: `Internet` only.
-- UI strings are translatable using the Sailfish convention; the mechanism is
-  chosen in the plan.
+- Presets and inputs show what the player reports. Their images go through the
+  same artwork resolution as the cover art: player-relative images get
+  `followRedirects=1`, and absolute URLs on other hosts are used as given. A
+  failed play is reported in the UI, and the long poll then shows the actual
+  state.
+- Pulley menus stay short, so they also fit in landscape (Sailfish design
+  guideline, navigation: "below five" options,
+  https://sailfishos.org/design/navigation, checked 2026-11-06).
+- Background polling: only the current player keeps its long poll while the
+  app is in the background, because the cover shows it. Other players are
+  polled only while the Players page is visible. A non-current player shows
+  its last known state; when the Players page appears, every player is
+  refreshed.
+- A failed preset or input play is an HTTP or network error, or an `<error>`
+  body. Success is a `<loaded>` or `<state>` response (API §6.2, §11.1).
+- Languages (Misja, 2026-11-06): English is the source language and the
+  fallback. Every UI string goes through `qsTr()`, with no text in C++ that
+  reaches the UI untranslated. Translations live in
+  `translations/harbour-swell-<lang>.ts` and are kept complete when strings
+  change. Dutch is maintained from the first release. A new language is one
+  `TRANSLATIONS` entry plus its `.ts` file. How outside translators contribute
+  (e.g. a translation platform) is a later decision.
 
 ## Acceptance criteria and completion condition
 
@@ -84,7 +159,10 @@ OBS/Chum publication and device installation need separate approval.
      the app's own echoed `Q` packet, duplicate announcements, an address
      change for the same node id, Delete messages, announcements split across
      messages and the class filter;
-   - `/Status` and `/SyncStatus`, including unknown elements and malformed XML.
+   - `/Status` and `/SyncStatus`, including unknown elements and malformed XML;
+   - `/Presets` and the `/RadioBrowse?service=Capture` input list, including
+     unknown elements, items without `inputType`, nested Hub categories and
+     malformed XML.
 3. A minimal fixture server in the test suite (Python stdlib `http.server` or
    Qt `QTcpServer`, decided in the plan) passes these integration checks:
    - it serves synthetic XML and holds the long poll until the etag changes or
@@ -96,17 +174,26 @@ OBS/Chum publication and device installation need separate approval.
    - an etag-unchanged timeout causes no UI change;
    - when the server is stopped and restarted, the player goes offline and
      recovers;
-   - a manual host that is not a BluOS player is reported clearly.
-4. The RPM passes `sdk-harbour-rpmvalidator` 1.110 (present in the target), or
+   - a manual host that is not a BluOS player is reported clearly;
+   - presets and inputs are fetched, and playing one sends `/Preset?id=` or
+     `/Play?url=` with the input URL not encoded twice;
+   - a `prid` change in `/Status` refetches `/Presets`.
+4. Every QML file compiles, with syntax, imports and types resolved, in the
+   build target. This is checked by a QtTest engine test on the `minimal`
+   platform, which creates a `QQmlComponent` per file without instantiating
+   windows. The target has no `qmllint` and no offscreen platform, so runtime
+   binding warnings and rendering are recorded as not checked.
+5. The RPM passes `sdk-harbour-rpmvalidator` 1.110 (present in the target), or
    deviations are listed with reasons. This is a compliance check, not a
    submission.
-5. A separate agent reviews the result against this spec before maintainer
+6. A separate agent reviews the result against this spec before maintainer
    review.
 
 Real-device checks are not part of completion unless the maintainer approves a
 device installation; otherwise they are recorded as not performed. These are
 LSDP broadcast over Wi-Fi under Sailjail, suspend/resume and network change,
-and silence during a firmware upgrade.
+silence during a firmware upgrade, and the look and gestures of the pages in
+portrait and landscape.
 
 ## Affected targets and compatibility
 
@@ -150,6 +237,7 @@ Protocol sources:
   - §2 `/Status` and `/SyncStatus` with long polling;
   - §3 volume and mute;
   - §4 play, pause, skip and back;
+  - §6 presets and §11.1 input selection;
   - image attributes with `followRedirects=1`;
   - the Appendix's LSDP packet format, timing and class IDs.
   The document must not be reproduced, so it is not committed. Synthetic
@@ -174,13 +262,21 @@ Decisions (Misja, 2026-11-06):
   sailfishos-5.2.0.18-aarch64.
 - License: MIT (SPDX `MIT`; no copyleft, so linking Silica raises no license
   conflict).
-- Test endpoint: azzurro's Rust fake-player may be used locally if it stays
-  limited and isolated. A concrete isolation proposal goes in the plan and
-  needs explicit approval before any toolchain installation.
+- Test endpoint: an in-process C++ fixture in the test suite. The optional
+  azzurro demo-player check was removed by Misja on 2026-11-06.
 
 - API Use Policy "compete" clause: Misja's judgement is that Swell fills a
   gap, a native Sailfish OS controller, and does not compete with Lenbrook's
   service. azzurro faces the same clause.
 - An LXC container for the fake-player and other test work is approved.
 
-Still open: remote location (GitHub/Codeberg) and issue tracker.
+- Remote: private GitHub repository misja/swell; issue #1 is on the Sailfish
+  project board.
+- UI (2026-11-06): start on Home of the last chosen player; source and quality
+  are not shown on Now Playing (a details view later); grouping goes on its own
+  page from Now Playing; landscape is supported everywhere; My Stations is
+  stored locally; hardware volume keys are wanted, subject to feasibility.
+- MVP scope (2026-11-06): presets and inputs on Home are in 001; the rest
+  follows the agreed structure.
+
+Still open: player settings (006), to be discussed.
