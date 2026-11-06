@@ -48,5 +48,13 @@ validator (1 open warning: binary not stripped); evidence/001/README.md.
 Misja 2026-11-06: qt5-qttest-devel may be added to the SDK (it was already in
 the build snapshot; nothing installed); Sailjail OrganizationName io.github.misja.
 Spike passed on aarch64/qemu (evidence/001/spike-aarch64.log).
-Remaining blockers, options and recommendation: none.
-Next action: LSDP parser/discovery and XML parsers with unit tests.
+Progress 2026-11-06: bluos/ library done with tests passing on aarch64
+(evidence/001). UI work was paused at Misja's request to agree the interface
+first. Design canvas and decisions are linked in issue #1. MVP scope agreed:
+Players, Home (presets + inputs), Now Playing attached to Home, docked
+mini-player, cover, landscape. spec.md has been revised accordingly. The UI
+draft is stashed ("ui-draft-before-mvp-scope"), not committed.
+Remaining blockers, options and recommendation: a separate scope review of the
+revised spec is needed before UI implementation.
+Next action: run the scope review, resolve the findings, update plan/tasks, then
+build presets/inputs in bluos/ and the UI.
