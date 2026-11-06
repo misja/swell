@@ -7,6 +7,7 @@
 
 #include <QByteArray>
 #include <QString>
+#include <QList>
 #include <QStringList>
 
 namespace bluos {
@@ -27,6 +28,7 @@ struct Status {
     QString twolineTitle2;
     QString image;          // may be relative and may redirect (/Artwork)
     QString syncStat;       // matches /SyncStatus syncStat; changes when it changes
+    QString prid;           // preset list id; changes when the presets change (section 6.1)
     int secs = -1;          // position at the time of the response
     int totlen = -1;
     int volume = -1;        // 0..100, -1 = fixed volume
@@ -75,7 +77,42 @@ struct Volume {
     bool mute = false;
 };
 
+// /Presets (section 6.1). Ids are not sequential; play a preset by its id.
+struct Preset {
+    int id = 0;
+    QString name;
+    QString image;          // may be relative and may redirect, or an absolute URL
+};
+
+struct Presets {
+    bool ok = false;
+    QString error;
+
+    QString prid;
+    QList<Preset> items;
+};
+
+// /RadioBrowse?service=Capture (section 11.1). Only local hardware inputs,
+// i.e. top-level items with an inputType; cloud entries and Hub categories
+// are skipped.
+struct Input {
+    QString id;
+    QString text;
+    QString inputType;      // e.g. spdif, analog, arc, bluetooth
+    QString image;
+    QString url;            // as given: already percent-encoded, play with /Play?url=
+};
+
+struct Inputs {
+    bool ok = false;
+    QString error;
+
+    QList<Input> items;
+};
+
 Status parseStatus(const QByteArray &xml);
+Presets parsePresets(const QByteArray &xml);
+Inputs parseCaptureInputs(const QByteArray &xml);
 SyncStatus parseSyncStatus(const QByteArray &xml);
 Volume parseVolume(const QByteArray &xml);
 

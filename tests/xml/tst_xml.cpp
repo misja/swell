@@ -22,6 +22,11 @@ private slots:
     void syncStatusSecondary();
     void syncStatusWrongRoot();
     void volume();
+    void statusPrid();
+    void presets();
+    void presetsEmptyAndMalformed();
+    void captureInputs();
+    void captureInputsMalformed();
 };
 
 void TstXml::status()
@@ -142,6 +147,67 @@ void TstXml::volume()
     QCOMPARE(v.db, -43.1);
     QVERIFY(!v.mute);
     QCOMPARE(v.etag, QStringLiteral("v1"));
+}
+
+void TstXml::statusPrid()
+{
+    const Status s = parseStatus("<status etag=\"e5\"><prid>4</prid></status>");
+    QVERIFY(s.ok);
+    QCOMPARE(s.prid, QStringLiteral("4"));
+}
+
+void TstXml::presets()
+{
+    const Presets p = parsePresets(
+        "<presets prid=\"3\">"
+        "<preset id=\"7\" name=\"North Sea FM\" url=\"Radio:/1/north\" image=\"https://img.example/n.jpg\"/>"
+        "<preset id=\"2\" name=\"Morning Mix\" url=\"/Load?service=X&amp;id=1\" image=\"/Artwork?service=X&amp;id=1\"/>"
+        "<preset name=\"No id\"/><future/></presets>");
+    QVERIFY2(p.ok, qPrintable(p.error));
+    QCOMPARE(p.prid, QStringLiteral("3"));
+    QCOMPARE(p.items.size(), 2);
+    QCOMPARE(p.items.at(0).id, 7);
+    QCOMPARE(p.items.at(0).name, QStringLiteral("North Sea FM"));
+    QCOMPARE(p.items.at(1).id, 2);
+    QCOMPARE(p.items.at(1).image, QStringLiteral("/Artwork?service=X&id=1"));
+}
+
+void TstXml::presetsEmptyAndMalformed()
+{
+    const Presets empty = parsePresets("<presets prid=\"1\"/>");
+    QVERIFY(empty.ok);
+    QVERIFY(empty.items.isEmpty());
+    QVERIFY(!parsePresets("<presets><preset id=\"1\"").ok);
+    QVERIFY(!parsePresets("<status/>").ok);
+}
+
+void TstXml::captureInputs()
+{
+    const Inputs in = parseCaptureInputs(
+        "<radiotime service=\"Capture\">"
+        "<item playerName=\"Den\" text=\"Bluetooth\" inputType=\"bluetooth\" id=\"input2\""
+        " URL=\"Capture%3Abluez%3Abluetooth\" image=\"/images/BluetoothIcon.png\" type=\"audio\"/>"
+        "<item playerName=\"Den\" text=\"Optical Input\" inputType=\"spdif\" id=\"input1\""
+        " URL=\"Capture%3Ahw%3Aimxspdif%2C0%2F1%2F25%2F2%3Fid%3Dinput1\" image=\"/images/o.png\" type=\"audio\"/>"
+        "<item playerName=\"Den\" text=\"Cloud Thing\" id=\"Cloud\" URL=\"Cloud%3Aplay\""
+        " serviceType=\"CloudService\" type=\"audio\"/>"
+        "<category text=\"Hub\"><remoteitem text=\"Analog\" inputType=\"analog\" URL=\"Hub%3A%2F%2Fx\"/></category>"
+        "</radiotime>");
+    QVERIFY2(in.ok, qPrintable(in.error));
+    QCOMPARE(in.items.size(), 2);
+    QCOMPARE(in.items.at(0).text, QStringLiteral("Bluetooth"));
+    QCOMPARE(in.items.at(0).inputType, QStringLiteral("bluetooth"));
+    QCOMPARE(in.items.at(1).url, QStringLiteral("Capture%3Ahw%3Aimxspdif%2C0%2F1%2F25%2F2%3Fid%3Dinput1"));
+}
+
+void TstXml::captureInputsMalformed()
+{
+    QVERIFY(!parseCaptureInputs("").ok);
+    QVERIFY(!parseCaptureInputs("<radiotime><item").ok);
+    QVERIFY(!parseCaptureInputs("<presets/>").ok);
+    const Inputs none = parseCaptureInputs("<radiotime service=\"Capture\"/>");
+    QVERIFY(none.ok);
+    QVERIFY(none.items.isEmpty());
 }
 
 QTEST_GUILESS_MAIN(TstXml)

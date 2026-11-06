@@ -71,6 +71,7 @@ Status parseStatus(const QByteArray &xml)
         else if (n == QLatin1String("twoline_title2")) s.twolineTitle2 = reader.readElementText();
         else if (n == QLatin1String("image")) s.image = reader.readElementText();
         else if (n == QLatin1String("syncStat")) s.syncStat = reader.readElementText();
+        else if (n == QLatin1String("prid")) s.prid = reader.readElementText();
         else if (n == QLatin1String("secs")) s.secs = toInt(reader.readElementText(), -1);
         else if (n == QLatin1String("totlen")) s.totlen = toInt(reader.readElementText(), -1);
         else if (n == QLatin1String("volume")) s.volume = toInt(reader.readElementText(), -1);
@@ -123,6 +124,56 @@ SyncStatus parseSyncStatus(const QByteArray &xml)
     }
     s.ok = finish(reader, &s.error);
     return s;
+}
+
+Presets parsePresets(const QByteArray &xml)
+{
+    Presets p;
+    QXmlStreamReader reader(xml);
+    if (!enterRoot(reader, "presets", &p.error))
+        return p;
+    p.prid = reader.attributes().value(QLatin1String("prid")).toString();
+    while (reader.readNextStartElement()) {
+        if (reader.name() == QLatin1String("preset")) {
+            const QXmlStreamAttributes a = reader.attributes();
+            bool ok = false;
+            Preset preset;
+            preset.id = a.value(QLatin1String("id")).toString().toInt(&ok);
+            preset.name = a.value(QLatin1String("name")).toString();
+            preset.image = a.value(QLatin1String("image")).toString();
+            if (ok)
+                p.items.append(preset);
+        }
+        reader.skipCurrentElement();
+    }
+    p.ok = finish(reader, &p.error);
+    return p;
+}
+
+Inputs parseCaptureInputs(const QByteArray &xml)
+{
+    Inputs inputs;
+    QXmlStreamReader reader(xml);
+    if (!enterRoot(reader, "radiotime", &inputs.error))
+        return inputs;
+    while (reader.readNextStartElement()) {
+        // Hub inputs come as <remoteitem> inside <category> and are skipped
+        // with it; so is any item without an inputType (cloud services).
+        if (reader.name() == QLatin1String("item")) {
+            const QXmlStreamAttributes a = reader.attributes();
+            Input input;
+            input.inputType = a.value(QLatin1String("inputType")).toString();
+            input.id = a.value(QLatin1String("id")).toString();
+            input.text = a.value(QLatin1String("text")).toString();
+            input.image = a.value(QLatin1String("image")).toString();
+            input.url = a.value(QLatin1String("URL")).toString();
+            if (!input.inputType.isEmpty() && !input.url.isEmpty())
+                inputs.items.append(input);
+        }
+        reader.skipCurrentElement();
+    }
+    inputs.ok = finish(reader, &inputs.error);
+    return inputs;
 }
 
 Volume parseVolume(const QByteArray &xml)
