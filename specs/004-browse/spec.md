@@ -1,7 +1,8 @@
 # Feature specification — 004 browse
 
-Status: draft 2026-11-06. UI agreed with Misja on the design canvas; for the
-combined scope/design review. Not approved for implementation yet.
+Status: revised 2026-11-06 after the combined scope/design review (review_004,
+approve with changes; findings applied here and in plan.md). Implementation
+may start.
 
 ## Owner and linked issue
 
@@ -112,13 +113,22 @@ that are not seen through `/Browse`.
 ## Required behavior
 
 - **Keys and paths are sent as received.**
-  - `browseKey`, `nextKey` and `searchKey` are sent byte for byte as the `key`
-    query value, percent-encoded once.
-  - `playURL` and `actionURL` are player paths. They are sent as they are, and
-    only when they start with `/`; a scheme or host is refused. This follows
-    the input rule from 001.
-- **Requests** go through the per-path gate and the one-second rule. Browse
-  reads get the longer read deadline, because covers can delay replies.
+  - `browseKey`, `nextKey`, `searchKey` and the search text `q` are encoded
+    once, with every reserved character encoded (`QUrl::toPercentEncoding`).
+  - `playURL`, `autoplayURL` and `actionURL` are player paths. They are sent
+    as they are, only when they start with `/`, and only if they survive Qt's
+    URL handling unchanged. The host is always the player's own.
+- **Requests:**
+  - Playing (`playURL`, `autoplayURL`) goes through the per-path gate, where
+    the last tap wins.
+  - Reads and additive actions (add, add all, favourite) are never merged.
+    They keep only the one-second interval, so two quick "Add last" taps for
+    different albums both reach the player.
+  - Browse reads get the longer read deadline, because covers can delay
+    replies.
+- **Loading** never reads a whole library. A letter list knows its length from
+  the per-letter counts, and loads the letter in view, page by page where the
+  player pages it (`nextKey`).
 - **Errors:** an `<error>` reply is shown with its message, translated where it
   is Swell's own text.
 - **Parsing:** unknown elements and types are ignored, and malformed documents
@@ -132,7 +142,14 @@ that are not seen through `/Browse`.
    context menu, `nextKey`, `searchKey`, an `<error>` reply, and malformed
    input.
 2. **Fixture tests:**
-   - keys sent byte for byte;
+   - keys and search text with `:/?&=+#`, `%20` and non-ASCII, encoded once;
+   - two quick additive actions both reach the player;
+   - letter lists: the length comes from the counts, the letter in view loads
+     first, earlier wishes are dropped, paging continues within a letter, a
+     count mismatch is adjusted, and an unparsable count falls back to letter
+     rows;
+   - Favourites is shown only when the Library menu has its key;
+   - empty and offline states;
    - paging through `nextKey`;
    - search, top-level and per service;
    - context actions sent verbatim;
@@ -154,12 +171,22 @@ that are not seen through `/Browse`.
   a column of letters on the side that jumps with `positionViewAtIndex`. It
   follows the look of `SymbolScrollBar` (Theme sizes, highlight colour).
 
+## Library size (read-only, NAD C 379, 2026-11-06)
+
+- **Albums:** 1278 in 27 letters; the largest letter (T, 178 albums) comes
+  whole in one reply, 257 KB with context menus, in 0.09 s.
+- **Artists:** 688; the largest letter (S, 75 artists) is 59 KB.
+- **Songs:** 15724; a letter is paged at 50 per reply with a `nextKey` (T: 1912
+  songs).
+- **The letter index** (the counts) is 4.6 KB, in 0.01 s.
+- Misja's device check watches scrolling and letter jumps in Albums and Songs.
+
 ## Open questions
 
-- The Favourites key: the Library menu names it
-  `LocalMusic:MG/LocalMusic-Favourites`. Can Swell rely on that key, or should
-  it find the item in the Library menu? (Assumption: the key does not depend
-  on the language; to be checked.)
+- The Favourites key: Swell shows Favourites only when the Library menu has an
+  item with `browseKey` `LocalMusic:MG/LocalMusic-Favourites`. Misja's device
+  check includes another player language, to confirm that the key does not
+  depend on the language.
 - Whether other services return favourites through `/Browse` (TuneIn when
   signed in; Radio "My stations"). Not seen yet.
 - How long lists are paged in practice (all 73 albums of a section came in one
