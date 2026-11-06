@@ -4,8 +4,10 @@
 QT += network
 INCLUDEPATH += $$PWD
 HEADERS += \
+    $$PWD/client.h \
     $$PWD/lsdp.h \
     $$PWD/xml.h
 SOURCES += \
+    $$PWD/client.cpp \
     $$PWD/lsdp.cpp \
     $$PWD/xml.cpp
