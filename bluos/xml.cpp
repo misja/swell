@@ -196,6 +196,97 @@ Playlist parsePlaylist(const QByteArray &xml)
     return p;
 }
 
+namespace {
+
+BrowseItem readBrowseItem(QXmlStreamReader &reader, const QString &category)
+{
+    BrowseItem item;
+    const QXmlStreamAttributes a = reader.attributes();
+    item.type = a.value(QLatin1String("type")).toString();
+    item.text = a.value(QLatin1String("text")).toString();
+    item.text2 = a.value(QLatin1String("text2")).toString();
+    item.image = a.value(QLatin1String("image")).toString();
+    item.browseKey = a.value(QLatin1String("browseKey")).toString();
+    item.playUrl = a.value(QLatin1String("playURL")).toString();
+    item.autoplayUrl = a.value(QLatin1String("autoplayURL")).toString();
+    item.contextMenuKey = a.value(QLatin1String("contextMenuKey")).toString();
+    item.inputType = a.value(QLatin1String("inputType")).toString();
+    item.duration = toInt(a.value(QLatin1String("duration")).toString(), -1);
+    item.category = category;
+    while (reader.readNextStartElement()) {
+        if (reader.name() == QLatin1String("contextMenu")) {
+            while (reader.readNextStartElement()) {
+                if (reader.name() == QLatin1String("item")) {
+                    const QXmlStreamAttributes m = reader.attributes();
+                    BrowseAction action;
+                    action.type = m.value(QLatin1String("type")).toString();
+                    action.text = m.value(QLatin1String("text")).toString();
+                    action.actionUrl = m.value(QLatin1String("actionURL")).toString();
+                    if (!action.type.isEmpty() && !action.actionUrl.isEmpty())
+                        item.actions.append(action);
+                }
+                reader.skipCurrentElement();
+            }
+        } else {
+            reader.skipCurrentElement();
+        }
+    }
+    return item;
+}
+
+} // namespace
+
+Browse parseBrowse(const QByteArray &xml)
+{
+    Browse b;
+    QXmlStreamReader reader(xml);
+    if (!reader.readNextStartElement()) {
+        b.error = reader.hasError() ? reader.errorString() : QStringLiteral("empty document");
+        return b;
+    }
+    if (reader.name() == QLatin1String("error")) {
+        QString message;
+        while (reader.readNextStartElement()) {
+            if (reader.name() == QLatin1String("message"))
+                message = reader.readElementText();
+            else
+                reader.skipCurrentElement();
+        }
+        b.playerError = true;
+        b.error = message.isEmpty() ? QStringLiteral("error") : message;
+        return b;
+    }
+    if (reader.name() != QLatin1String("browse")) {
+        b.error = QStringLiteral("unexpected root element <%1>").arg(reader.name().toString());
+        return b;
+    }
+    const QXmlStreamAttributes a = reader.attributes();
+    b.type = a.value(QLatin1String("type")).toString();
+    b.serviceName = a.value(QLatin1String("serviceName")).toString();
+    b.serviceIcon = a.value(QLatin1String("serviceIcon")).toString();
+    b.searchKey = a.value(QLatin1String("searchKey")).toString();
+    b.nextKey = a.value(QLatin1String("nextKey")).toString();
+    b.parentKey = a.value(QLatin1String("parentKey")).toString();
+    b.playUrl = a.value(QLatin1String("playURL")).toString();
+    while (reader.readNextStartElement()) {
+        if (reader.name() == QLatin1String("item")) {
+            b.items.append(readBrowseItem(reader, QString()));
+        } else if (reader.name() == QLatin1String("category")) {
+            const QString title = reader.attributes().value(QLatin1String("text")).toString();
+            while (reader.readNextStartElement()) {
+                if (reader.name() == QLatin1String("item"))
+                    b.items.append(readBrowseItem(reader, title));
+                else
+                    reader.skipCurrentElement();
+            }
+        } else {
+            reader.skipCurrentElement();
+        }
+    }
+    b.ok = finish(reader, &b.error);
+    return b;
+}
+
 Presets parsePresets(const QByteArray &xml)
 {
     Presets p;

@@ -131,7 +131,46 @@ struct Playlist {
     QList<QueueEntry> songs;
 };
 
+// /Browse (section 7.1, search 7.2). All values are attributes. Keys and
+// URLs are kept exactly as received (after XML unescaping).
+struct BrowseAction {
+    QString type;           // e.g. add-now, addAll-last, favourite-add
+    QString text;
+    QString actionUrl;
+};
+
+struct BrowseItem {
+    QString type;           // link, audio, album, artist, track, section, …
+    QString text;
+    QString text2;
+    QString image;          // may be relative
+    QString browseKey;
+    QString playUrl;
+    QString autoplayUrl;
+    QString contextMenuKey;
+    QString inputType;
+    int duration = -1;      // seconds, tracks only
+    QString category;       // title of the enclosing <category>, if any
+    QList<BrowseAction> actions;  // inline context menu
+};
+
+struct Browse {
+    bool ok = false;
+    QString error;          // parse error, or the player's <error> message
+    bool playerError = false;
+
+    QString type;           // menu, sections, albums, tracks, …
+    QString serviceName;
+    QString serviceIcon;
+    QString searchKey;
+    QString nextKey;
+    QString parentKey;
+    QString playUrl;        // the whole list (e.g. an album)
+    QList<BrowseItem> items;
+};
+
 Status parseStatus(const QByteArray &xml);
+Browse parseBrowse(const QByteArray &xml);
 Playlist parsePlaylist(const QByteArray &xml);
 Presets parsePresets(const QByteArray &xml);
 Inputs parseCaptureInputs(const QByteArray &xml);

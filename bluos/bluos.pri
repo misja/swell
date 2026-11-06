@@ -9,6 +9,7 @@ HEADERS += \
     $$PWD/lsdp.h \
     $$PWD/playermodel.h \
     $$PWD/queuemodel.h \
+    $$PWD/browsemodel.h \
     $$PWD/xml.h
 SOURCES += \
     $$PWD/client.cpp \
@@ -16,4 +17,5 @@ SOURCES += \
     $$PWD/lsdp.cpp \
     $$PWD/playermodel.cpp \
     $$PWD/queuemodel.cpp \
+    $$PWD/browsemodel.cpp \
     $$PWD/xml.cpp

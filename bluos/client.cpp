@@ -131,18 +131,78 @@ void Client::back()
 void Client::sendAction(const QString &actionUrl)
 {
     // A path with its query, from the player itself; only player-relative paths are used.
-    if (!actionUrl.startsWith(QLatin1Char('/')) || actionUrl.startsWith(QLatin1String("//"))) {
+    QString path;
+    QString query;
+    if (!splitPlayerPath(actionUrl, &path, &query)) {
         emit commandFailed(actionUrl, QStringLiteral("unsupported action URL"));
         return;
     }
-    const int q = actionUrl.indexOf(QLatin1Char('?'));
-    const QString path = q < 0 ? actionUrl : actionUrl.left(q);
-    const QString query = q < 0 ? QString() : actionUrl.mid(q + 1);
-    if (!url(path, query).isValid()) {
-        emit commandFailed(path, QStringLiteral("invalid action URL"));
+    send(path, query);
+}
+
+bool Client::splitPlayerPath(const QString &playerPath, QString *path, QString *query) const
+{
+    if (!playerPath.startsWith(QLatin1Char('/')) || playerPath.startsWith(QLatin1String("//"))
+            || playerPath.contains(QLatin1Char('#'))) {
+        return false;
+    }
+    const int q = playerPath.indexOf(QLatin1Char('?'));
+    *path = q < 0 ? playerPath : playerPath.left(q);
+    *query = q < 0 ? QString() : playerPath.mid(q + 1);
+    const QUrl check = url(*path, *query);
+    // Sent byte for byte: anything Qt would rewrite is refused, not guessed.
+    return check.isValid() && check.path(QUrl::FullyEncoded) == *path
+            && check.query(QUrl::FullyEncoded) == *query;
+}
+
+void Client::playPath(const QString &playerPath)
+{
+    QString path;
+    QString query;
+    if (!splitPlayerPath(playerPath, &path, &query)) {
+        emit commandFailed(playerPath, QStringLiteral("unsupported play URL"));
         return;
     }
     send(path, query);
+}
+
+void Client::runAction(const QString &playerPath, const QString &type)
+{
+    QString path;
+    QString query;
+    if (!splitPlayerPath(playerPath, &path, &query)) {
+        emit commandFailed(playerPath, QStringLiteral("unsupported action URL"));
+        return;
+    }
+    // Not through the merging gate: two adds are two adds.
+    fetch(path, query, [this, path, type](const QByteArray &body) {
+        const QString error = body.isEmpty() ? QStringLiteral("no answer") : errorIn(body);
+        if (error.isEmpty()) {
+            emit actionDone(type);
+        } else {
+            emit commandFailed(path, error);
+        }
+    });
+}
+
+void Client::fetchBrowse(const QString &key, const QString &q,
+                         const std::function<void(const Browse &)> &handler)
+{
+    // Encoded once with every reserved character, as in the section 7.1
+    // examples (Tidal%3A, %2FAlbums%3F...); QUrlQuery would leave some alone.
+    QStringList items;
+    if (!key.isEmpty())
+        items << QStringLiteral("key=") + QString::fromLatin1(QUrl::toPercentEncoding(key));
+    if (!q.isEmpty())
+        items << QStringLiteral("q=") + QString::fromLatin1(QUrl::toPercentEncoding(q));
+    items << QStringLiteral("withContextMenuItems=1");
+    fetch(QStringLiteral("/Browse"), items.join(QLatin1Char('&')), [handler](const QByteArray &body) {
+        Browse b = parseBrowse(body);
+        if (body.isEmpty()) {
+            b.error = QStringLiteral("no answer");
+        }
+        handler(b);
+    }, m_timing.readTimeoutMs, false);
 }
 
 void Client::setVolume(int level)
@@ -248,16 +308,16 @@ void Client::fetchPresets()
 }
 
 void Client::fetch(const QString &path, const QString &encodedQuery,
-                   const std::function<void(const QByteArray &)> &handler, int deadlineMs)
+                   const std::function<void(const QByteArray &)> &handler, int deadlineMs, bool paced)
 {
     if (!m_running) {
         handler(QByteArray());
         return;
     }
-    const int wait = msUntilAllowed(path);
+    const int wait = paced ? msUntilAllowed(path) : 0;
     if (wait > 0) {
-        QTimer::singleShot(wait, Qt::PreciseTimer, this, [this, path, encodedQuery, handler, deadlineMs]() {
-            fetch(path, encodedQuery, handler, deadlineMs);
+        QTimer::singleShot(wait, Qt::PreciseTimer, this, [this, path, encodedQuery, handler, deadlineMs, paced]() {
+            fetch(path, encodedQuery, handler, deadlineMs, paced);
         });
         return;
     }
@@ -275,7 +335,7 @@ void Client::fetchQueueWindow(int start, int end, const std::function<void(const
     query.addQueryItem(QStringLiteral("end"), QString::number(end));
     fetch(QStringLiteral("/Playlist"), encoded(query), [handler](const QByteArray &body) {
         handler(parsePlaylist(body));
-    }, m_timing.queueReadTimeoutMs);
+    }, m_timing.readTimeoutMs);
 }
 
 void Client::playQueueEntry(int position)
