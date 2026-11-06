@@ -1,7 +1,7 @@
 # Evidence — 004 browse
 
-Date: 2026-11-06. Branch `004-browse`. Package harbour-swell-0.3.0-4.aarch64.rpm,
-sha256 e769a4954852a4f6329fcc1cabb58319c3186665d6ca4ed2248e20e2a6220cc7.
+Date: 2026-11-06. Branch `004-browse`. Package harbour-swell-0.3.0-5.aarch64.rpm,
+sha256 9e7ac52fd981da93cb9d970c11cfd52597373e892d37ccf54e0efef3a1f2a849.
 
 ## Automated (builder)
 
@@ -70,6 +70,9 @@ Misja's feedback on 0.3.0-2 (screenshot 2026-11-06 23:39), fixed in 0.3.0-4:
   letter of the part in view lit, as in People (`BrowseModel::sectionAt`, which
   does not read the row).
 
+- The header per letter is removed in 0.3.0-5 (Misja: confusing and
+  cluttered). The index alone shows where the list is (spec decision 7).
+
 ## Not yet done
 
-- Device check of 0.3.0-4.
+- Device check of 0.3.0-5.

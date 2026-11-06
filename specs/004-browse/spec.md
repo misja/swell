@@ -37,8 +37,9 @@ which Misja finds unclear.
 6. UI (canvas): Browse sits nearest the content in Home's pulley (About,
    Players, Browse). Rows have no chevrons, and category rows such as search
    results have no icons.
-7. Letter lists work like the People app: one list with a header per letter
-   and a letter index on the side.
+7. Letter lists work like the People app: one list with a letter index on the
+   side. There is no header per letter (Misja, 2026-11-06: it clutters the
+   list); the index lights the letter of the part in view.
 8. The album page shows the cover beside the title. Tapping a track plays the
    album from that track (`autoplayURL`). The API calls the choice between
    `playURL` and `autoplayURL` a user preference; Misja chose this behaviour.

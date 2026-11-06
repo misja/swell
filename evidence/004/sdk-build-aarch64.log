@@ -3,7 +3,7 @@ NOTICE: Generating changelog entries with '/home/ubuntu/swell-001/rpm/harbour-sw
 NOTICE: No tags describe the HEAD, will not fix package version.
 Building target platforms: aarch64-meego-linux-gnu
 Building for target aarch64-meego-linux-gnu
-Executing(%build): /bin/sh -e /var/tmp/rpm-tmp.4GxPwI
+Executing(%build): /bin/sh -e /var/tmp/rpm-tmp.PbM8xz
 + umask 022
 + cd /home/ubuntu/swell-001
 + LANG=C
@@ -21,18 +21,14 @@ Executing(%build): /bin/sh -e /var/tmp/rpm-tmp.4GxPwI
 + QT_SELECT=5
 + qmake -qt=5 -makefile 'QMAKE_CFLAGS_RELEASE=-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security -march=armv8-a' 'QMAKE_CFLAGS_DEBUG=-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security -march=armv8-a' 'QMAKE_CXXFLAGS_RELEASE=-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security -march=armv8-a' 'QMAKE_CXXFLAGS_DEBUG=-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security -march=armv8-a' QMAKE_STRIP=: PREFIX=/usr LIBDIR=/usr/lib64
 + /usr/bin/make -O -j32 V=1 VERBOSE=1
-/home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/lib64/qt5/bin/moc -DAPP_VERSION=\"0.3.0\" -DQT_NO_DEBUG -DQT_QUICK_LIB -DQT_GUI_LIB -DQT_QML_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB -I/usr/share/qt5/mkspecs/linux-g++ -I/home/ubuntu/swell-001 -I/home/ubuntu/swell-001/bluos -I/home/ubuntu/swell-001/src -I/usr/include/sailfishapp -I/usr/include/mdeclarativecache5 -I/usr/include/qt5 -I/usr/include/qt5/QtQuick -I/usr/include/qt5/QtGui -I/usr/include/qt5/QtQml -I/usr/include/qt5/QtNetwork -I/usr/include/qt5/QtCore -I/opt/cross/aarch64-meego-linux-gnu/include/c++/13.4.0 -I/opt/cross/aarch64-meego-linux-gnu/include/c++/13.4.0/aarch64-meego-linux-gnu -I/opt/cross/aarch64-meego-linux-gnu/include/c++/13.4.0/backward -I/opt/cross/lib/gcc/aarch64-meego-linux-gnu/13.4.0/include -I/usr/local/include -I/opt/cross/lib/gcc/aarch64-meego-linux-gnu/13.4.0/include-fixed -I/opt/cross/aarch64-meego-linux-gnu/include -I/usr/include bluos/browsemodel.h -o moc_browsemodel.cpp
-g++ -c -pipe -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security -march=armv8-a -fPIC -fvisibility=hidden -fvisibility-inlines-hidden -Wall -W -D_REENTRANT -fPIC -DAPP_VERSION=\"0.3.0\" -DQT_NO_DEBUG -DQT_QUICK_LIB -DQT_GUI_LIB -DQT_QML_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB -I. -Ibluos -Isrc -isystem /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/include/sailfishapp -isystem /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/include/mdeclarativecache5 -isystem /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/include/qt5 -isystem /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/include/qt5/QtQuick -isystem /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/include/qt5/QtGui -isystem /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/include/qt5/QtQml -isystem /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/include/qt5/QtNetwork -isystem /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/include/qt5/QtCore -I. -I/usr/share/qt5/mkspecs/linux-g++ -o moc_browsemodel.o moc_browsemodel.cpp
-g++ -c -pipe -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security -march=armv8-a -fPIC -fvisibility=hidden -fvisibility-inlines-hidden -Wall -W -D_REENTRANT -fPIC -DAPP_VERSION=\"0.3.0\" -DQT_NO_DEBUG -DQT_QUICK_LIB -DQT_GUI_LIB -DQT_QML_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB -I. -Ibluos -Isrc -isystem /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/include/sailfishapp -isystem /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/include/mdeclarativecache5 -isystem /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/include/qt5 -isystem /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/include/qt5/QtQuick -isystem /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/include/qt5/QtGui -isystem /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/include/qt5/QtQml -isystem /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/include/qt5/QtNetwork -isystem /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/include/qt5/QtCore -I. -I/usr/share/qt5/mkspecs/linux-g++ -o registration.o src/registration.cpp
-g++ -c -pipe -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security -march=armv8-a -fPIC -fvisibility=hidden -fvisibility-inlines-hidden -Wall -W -D_REENTRANT -fPIC -DAPP_VERSION=\"0.3.0\" -DQT_NO_DEBUG -DQT_QUICK_LIB -DQT_GUI_LIB -DQT_QML_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB -I. -Ibluos -Isrc -isystem /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/include/sailfishapp -isystem /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/include/mdeclarativecache5 -isystem /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/include/qt5 -isystem /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/include/qt5/QtQuick -isystem /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/include/qt5/QtGui -isystem /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/include/qt5/QtQml -isystem /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/include/qt5/QtNetwork -isystem /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/include/qt5/QtCore -I. -I/usr/share/qt5/mkspecs/linux-g++ -o browsemodel.o bluos/browsemodel.cpp
-g++ -Wl,-O1 -Wl,-rpath,/usr/share/harbour-swell/lib -o harbour-swell client.o discovery.o lsdp.o playermodel.o queuemodel.o browsemodel.o xml.o harbour-swell.o registration.o moc_client.o moc_discovery.o moc_playermodel.o moc_queuemodel.o moc_browsemodel.o   -lsailfishapp -pie -rdynamic -lmdeclarativecache5 -lQt5Quick -lQt5Gui -lQt5Qml -lQt5Network -lQt5Core -lGLESv2 -lpthread 
+make: Nothing to be done for 'first'.
 + RPM_EC=0
 ++ jobs -p
 + exit 0
-Executing(%install): /bin/sh -e /var/tmp/rpm-tmp.kPCdRV
+Executing(%install): /bin/sh -e /var/tmp/rpm-tmp.DlAehR
 + umask 022
 + cd /home/ubuntu/swell-001
-+ flock /home/mersdk/.mb2.lock.lock flock /home/mersdk/.mb2.lock ln -f /home/mersdk/.mb2.lock.hZT /home/mersdk/.mb2.lock
++ flock /home/mersdk/.mb2.lock.lock flock /home/mersdk/.mb2.lock ln -f /home/mersdk/.mb2.lock.tPX /home/mersdk/.mb2.lock
 + '[' /home/deploy/installroot '!=' / ']'
 + rm -rf /home/deploy/installroot
 ++ dirname /home/deploy/installroot
@@ -80,13 +76,13 @@ install -m 644 -p /home/ubuntu/swell-001/icons/172x172/harbour-swell.png /home/d
 + /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/lib/rpm/meego/find-docs.sh /home/deploy/installroot
 + /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/lib/rpm/meego/brp-java-repack-jars
 + /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/lib/rpm/brp-remove-la-files
-Processing files: harbour-swell-0.3.0-4.aarch64
-Provides: application() application(harbour-swell.desktop) harbour-swell = 0.3.0-4 harbour-swell(aarch-64) = 0.3.0-4
+Processing files: harbour-swell-0.3.0-5.aarch64
+Provides: application() application(harbour-swell.desktop) harbour-swell = 0.3.0-5 harbour-swell(aarch-64) = 0.3.0-5
 Requires(rpmlib): rpmlib(CompressedFileNames) <= 3.0.4-1 rpmlib(FileDigests) <= 4.6.0-1 rpmlib(PayloadFilesHavePrefix) <= 4.0-1
 Requires: ld-linux-aarch64.so.1()(64bit) ld-linux-aarch64.so.1(GLIBC_2.17)(64bit) libQt5Core.so.5()(64bit) libQt5Core.so.5(Qt_5)(64bit) libQt5Gui.so.5()(64bit) libQt5Gui.so.5(Qt_5)(64bit) libQt5Network.so.5()(64bit) libQt5Network.so.5(Qt_5)(64bit) libQt5Qml.so.5()(64bit) libQt5Qml.so.5(Qt_5)(64bit) libQt5Quick.so.5()(64bit) libQt5Quick.so.5(Qt_5)(64bit) libc.so.6()(64bit) libc.so.6(GLIBC_2.17)(64bit) libc.so.6(GLIBC_2.34)(64bit) libgcc_s.so.1()(64bit) libgcc_s.so.1(GCC_3.0)(64bit) libsailfishapp.so.1()(64bit) libstdc++.so.6()(64bit) libstdc++.so.6(CXXABI_1.3)(64bit) libstdc++.so.6(CXXABI_1.3.9)(64bit) libstdc++.so.6(GLIBCXX_3.4)(64bit) libstdc++.so.6(GLIBCXX_3.4.14)(64bit)
 Checking for unpackaged file(s): /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/lib/rpm/check-files /home/deploy/installroot
-Wrote: /home/ubuntu/swell-001/RPMS/harbour-swell-0.3.0-4.aarch64.rpm
-Executing(%clean): /bin/sh -e /var/tmp/rpm-tmp.nL6gLI
+Wrote: /home/ubuntu/swell-001/RPMS/harbour-swell-0.3.0-5.aarch64.rpm
+Executing(%clean): /bin/sh -e /var/tmp/rpm-tmp.js3Ksj
 + umask 022
 + cd /home/ubuntu/swell-001
 + /bin/rm -rf /home/deploy/installroot

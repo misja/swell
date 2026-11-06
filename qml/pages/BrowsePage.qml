@@ -308,10 +308,8 @@ Page {
             }
         }
 
-        section.property: browseModel.sectioned ? "section" : ""
-        section.delegate: SectionHeader {
-            text: section
-        }
+        // No header per letter (Misja: it clutters the list); the letter
+        // index shows where the list is.
 
         delegate: ListItem {
             id: item
