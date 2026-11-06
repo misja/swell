@@ -17,6 +17,5 @@ Use this file for bounded implementation steps, not a second status board.
 - [ ] Docked mini-player, cover and About; `allowedOrientations` on every page.
 - [ ] AC4 engine test over all QML files.
 - [ ] Build the RPM and run `sdk-harbour-rpmvalidator` (AC5); record deviations.
-- [ ] Optional, non-gating: Layer B against demo-player (swell-test container on br0; focused isolation review first).
 - [ ] Complete the separate result review against the spec (AC6).
 - [ ] Prepare a change for maintainer review with evidence in `evidence/001/`.

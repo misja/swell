@@ -250,9 +250,8 @@ Decisions (Misja, 2026-11-06):
   sailfishos-5.2.0.18-aarch64.
 - License: MIT (SPDX `MIT`; no copyleft, so linking Silica raises no license
   conflict).
-- Test endpoint: azzurro's Rust fake-player may be used locally if it stays
-  limited and isolated. A concrete isolation proposal goes in the plan and
-  needs explicit approval before any toolchain installation.
+- Test endpoint: an in-process C++ fixture in the test suite. The optional
+  azzurro demo-player check was removed by Misja on 2026-11-06.
 
 - API Use Policy "compete" clause: Misja's judgement is that Swell fills a
   gap, a native Sailfish OS controller, and does not compete with Lenbrook's
