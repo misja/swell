@@ -120,9 +120,12 @@ installation need separate approval.
 - No accounts, credentials, telemetry or analytics. Local state is limited to
   manual hosts and the current player. The About page shows a short privacy
   statement saying so, as the API Use Policy requires.
-- Lenbrook marks: no BluOS name or logo in the app name or icon. Descriptions
-  use only the policy's accepted form "Swell (works with BluOS)" and do not
-  suggest endorsement.
+- Lenbrook marks (Misja, 2026-11-06): no BluOS name or logo in the app name or
+  icon. BluOS appears only descriptively ("Sailfish OS controller for BluOS
+  players"). About and the package description carry the notice "Not
+  affiliated with, endorsed by or supported by Lenbrook Industries. BluOS is a
+  trademark of Lenbrook Industries Limited." The policy's "(works with BluOS)"
+  suffix is dropped as redundant.
 - Sailjail permission: `Internet` only.
 - Presets and inputs show what the player reports. Their images go through the
   same artwork resolution as the cover art: player-relative images get

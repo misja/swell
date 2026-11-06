@@ -20,7 +20,7 @@ Page {
             Label {
                 width: parent.width
                 wrapMode: Text.Wrap
-                text: qsTr("Swell %1 (works with BluOS)").arg(appVersion)
+                text: qsTr("Swell %1").arg(appVersion)
             }
 
             Label {
@@ -28,7 +28,7 @@ Page {
                 wrapMode: Text.Wrap
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.secondaryHighlightColor
-                text: qsTr("An independent controller for BluOS players on your local network. It is not made, endorsed or supported by Lenbrook.")
+                text: qsTr("A Sailfish OS controller for BluOS players on your local network.")
             }
 
             SectionHeader { text: qsTr("Privacy") }
@@ -47,6 +47,14 @@ Page {
                 wrapMode: Text.Wrap
                 font.pixelSize: Theme.fontSizeSmall
                 text: qsTr("MIT License. Source: %1").arg("https://github.com/misja/swell")
+            }
+
+            Label {
+                width: parent.width
+                wrapMode: Text.Wrap
+                font.pixelSize: Theme.fontSizeExtraSmall
+                color: Theme.secondaryColor
+                text: qsTr("Not affiliated with, endorsed by or supported by Lenbrook Industries. BluOS is a trademark of Lenbrook Industries Limited.")
             }
         }
 

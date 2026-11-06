@@ -2,7 +2,7 @@ Name:       harbour-swell
 
 Summary:    Controller for BluOS players
 Version:    0.1.0
-Release:    6
+Release:    7
 License:    MIT
 URL:        https://github.com/misja/swell
 Source0:    %{name}-%{version}.tar.bz2
@@ -15,8 +15,9 @@ BuildRequires:  pkgconfig(Qt5Network)
 BuildRequires:  desktop-file-utils
 
 %description
-Swell (works with BluOS) finds BluOS players on the local network and
-controls playback and volume.
+Swell finds BluOS players on the local network and controls playback and
+volume. Not affiliated with, endorsed by or supported by Lenbrook
+Industries. BluOS is a trademark of Lenbrook Industries Limited.
 
 
 %prep

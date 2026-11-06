@@ -10,12 +10,12 @@
     </message>
     <message>
         <location filename="../qml/pages/AboutPage.qml" line="23"/>
-        <source>Swell %1 (works with BluOS)</source>
+        <source>Swell %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/AboutPage.qml" line="31"/>
-        <source>An independent controller for BluOS players on your local network. It is not made, endorsed or supported by Lenbrook.</source>
+        <source>A Sailfish OS controller for BluOS players on your local network.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -36,6 +36,11 @@
     <message>
         <location filename="../qml/pages/AboutPage.qml" line="49"/>
         <source>MIT License. Source: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AboutPage.qml" line="57"/>
+        <source>Not affiliated with, endorsed by or supported by Lenbrook Industries. BluOS is a trademark of Lenbrook Industries Limited.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

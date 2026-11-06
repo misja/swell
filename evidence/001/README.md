@@ -1,6 +1,6 @@
 # Evidence — 001 core controller
 
-## Current result (HEAD, release 0.1.0-6)
+## Current result (HEAD, release 0.1.0-7)
 
 These logs are committed for this commit:
 - `sdk-build-aarch64.log`: `sfdk build`, exit 0.
@@ -9,7 +9,7 @@ These logs are committed for this commit:
 - `unit-aarch64.log`: all suites pass: spike 5, lsdp 18, xml 19, client 26,
   model 26, qml 11.
 
-RPM sha256 96637bd2ce9469759007d125f58acf4dfa8621b001d362dd866670594b923bdc.
+RPM sha256 4412ff4eecc21561cab9875974cbe784d6388bd95202772fce223c2eded0caf0.
 Dutch translation: 0 unfinished.
 
 The table below is the history. Entries for builds 0.1.0-2…5 record results
@@ -88,3 +88,9 @@ Xperia 10 II (aarch64), Sailfish OS 5.2.0.20, Wi-Fi, a real BluOS player
   default coarse timers may fire up to 5% early. Fixed with precise timers,
   plus a recheck before every `/Status` poll and gated command. The rate tests
   passed 3/3 reruns, and the full suite passes (see the current logs).
+- 0.1.0-7: the wording of the marks changed (Misja).
+  - The "(works with BluOS)" suffix is dropped.
+  - About says "A Sailfish OS controller for BluOS players…", plus the
+    trademark notice.
+  - The GitHub description is now "Sailfish OS controller for BluOS players".
+  - All suites pass, the validator succeeded, and Dutch is complete.

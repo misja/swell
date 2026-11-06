@@ -17,7 +17,7 @@ Changed artifacts and evidence paths:
 - src/registration.* is the shared QML type registration.
 - tests/ holds spike, lsdp, xml, client, model and qml.
 - evidence/001/README.md has the dated results. The latest run on aarch64:
-  current results for HEAD are at the top of the README (release 0.1.0-6).
+  current results for HEAD are at the top of the README (release 0.1.0-7).
 
 Decisions and authorization scope:
 - Misja (2026-11-06):
