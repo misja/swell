@@ -1,7 +1,7 @@
 # Evidence — 004 browse
 
-Date: 2026-11-06. Branch `004-browse`. Package harbour-swell-0.3.0-5.aarch64.rpm,
-sha256 9e7ac52fd981da93cb9d970c11cfd52597373e892d37ccf54e0efef3a1f2a849.
+Date: 2026-11-06. Branch `004-browse`. Package harbour-swell-0.3.0-6.aarch64.rpm,
+sha256 87d3d5a997b18d627618daabd5c9886d6bbdf9d7c296b2b84e51e3eaf6095f3b.
 
 ## Automated (builder)
 
@@ -73,6 +73,13 @@ Misja's feedback on 0.3.0-2 (screenshot 2026-11-06 23:39), fixed in 0.3.0-4:
 - The header per letter is removed in 0.3.0-5 (Misja: confusing and
   cluttered). The index alone shows where the list is (spec decision 7).
 
+- TuneIn's menu images (sent by the player per item) showed at cover size
+  on 0.3.0-5 (screenshot 2026-11-07 00:01). In 0.3.0-6 link rows get an
+  icon-sized image on a normal row; covers stay for albums, tracks, stations.
+- TuneIn has its own Favourites link (seen in that menu). Not wired into
+  Swell's Favourites entry (v1: Library only).
+
 ## Not yet done
 
-- Device check of 0.3.0-5.
+- Misja walks through 0.3.0-5/-6 at leisure; more feedback to follow
+  (2026-11-07). 0.3.0-6 is built but not installed.

@@ -4,22 +4,17 @@ Updated: 2026-11-06 (feature 002, queue). Decision owner: Misja Hoebe (@misja).
 
 Current owner / next owner / decision owner: root / root (next session) / Misja.
 
-Objective and acceptance criteria: feature 004 (browse, issue #7) is in
-progress on branch 004-browse: specs/004-browse/{spec,plan,tasks}.md. Scope and
-UI agreed (canvas page "Browse (004)"), scope/design review applied, built and
-installed as 0.3.0-1. The result review's findings are fixed on the branch
-(evidence/004/README.md); next: Misja's device feedback (letter index full
-height, artist page shows albums directly, art per track; more screenshots in
-~/Downloads), agree those UI changes on the canvas, build 0.3.0-2, reviewer
-re-check, device check, PR. Idea from Misja (2026-11-06), People-app style: a star above A in the
-letter index jumps to favourites at the top, and a clock to recently played
-(albums, artists). The documented API v1.7 has no "recently played" (only the
-undocumented /ui screens do), so that part needs Swell's own local history or
-a separate decision. Discuss on the canvas with the other 004 feedback.
-Pacing decision (Misja): browse reads are not
-limited by the one-second rule. Issue #8 (typed bluos/ interfaces) follows 004.
-002 (queue) is done and merged (PR #5, fix PR #6; issue #4 closed). 001 is done
-(PR #2).
+Objective and acceptance criteria: feature 004 (browse, issue #7) on branch
+004-browse: specs/004-browse/{spec,plan,tasks}.md. UI agreed on the canvas
+(B1–B9), scope/design and result reviews done and their findings fixed (also
+the re-check of the device-feedback changes). Device: 0.3.0-5 installed;
+0.3.0-6 (TuneIn menu icons at icon size) built, not installed. Misja is
+walking through it at leisure; further feedback follows (2026-11-07). Then:
+final device check, PR. Decisions: browse reads unpaced; no recently played
+and no extra state in Swell (published API only); no header per letter.
+Issue #8 (typed bluos/ interfaces) follows 004. Workspace principles 1.2.0
+(Sailfish UI check in reviews) merged (sailfish-workspace#19, 13985f2).
+002 (queue) done (PR #5, #6); 001 done (PR #2).
 - Spec 001: specs/001-core-controller/spec.md, criteria AC1–AC6.
 - Shared conventions PR https://github.com/misja/sailfish-workspace/pull/18
   (principles 1.1.0).
@@ -34,7 +29,7 @@ Artifacts and evidence:
   0.1.0-7: all suites pass, validator succeeded, 1 accepted warning) and the
   history. evidence/002/README.md holds the 002 results (0.2.0-4), reviews
   and device checks.
-- Device: the Xperia 10 II (Sailfish OS 5.2.0.20) runs 0.3.0-1, against a NAD
+- Device: the Xperia 10 II (Sailfish OS 5.2.0.20) runs 0.3.0-5, against a NAD
   C 379.
 - Device facts (2026-11-06): `/Play?id=` alone plays from a queue entry; the
   queue id changes on every modification, including a delete (as API

@@ -317,7 +317,11 @@ Page {
             readonly property var _actions: model.actions
 
             // Unloaded and loaded rows have the same height, so jumps land.
-            contentHeight: page._images ? Theme.itemSizeMedium : Theme.itemSizeSmall
+            // A link to a further page (TuneIn's "Sport", …) gets an icon-sized
+            // image on a normal row; albums, tracks and stations a cover.
+            // Letter lists hold one kind of row, so their heights stay equal.
+            readonly property bool _cover: page._images && model.type !== "link"
+            contentHeight: _cover ? Theme.itemSizeMedium : Theme.itemSizeSmall
             enabled: model.loaded
             menu: model.actions.length > 0 ? contextMenu : null
 
@@ -345,7 +349,7 @@ Page {
                 visible: page._images && model.image.toString() !== ""
                 x: Theme.horizontalPageMargin
                 anchors.verticalCenter: parent.verticalCenter
-                width: visible ? Theme.itemSizeMedium - 2 * Theme.paddingSmall : 0
+                width: !visible ? 0 : (item._cover ? Theme.itemSizeMedium - 2 * Theme.paddingSmall : Theme.iconSizeMedium)
                 height: width
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
