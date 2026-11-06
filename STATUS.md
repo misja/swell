@@ -4,7 +4,8 @@ Updated: 2026-11-06 (end of the 001 session). Decision owner: Misja Hoebe (@misj
 
 Current owner / next owner / decision owner: root / root (next session) / Misja.
 
-Objective and acceptance criteria: feature 001 (MVP) is done.
+Objective and acceptance criteria: feature 001 (MVP) is done and merged
+(PR #2 → main 69bd6b1; issue #1 closed).
 - Spec: specs/001-core-controller/spec.md, criteria AC1–AC6.
 - PR https://github.com/misja/swell/pull/2 (branch 001-core-controller,
   closes issue #1) awaits Misja's review and merge.
@@ -46,12 +47,9 @@ Reviews (separate assistant agents; not a human audit):
   changes, resolved;
 - result_review (AC6): resolved and re-checked, "ready for maintainer review".
 
-Next session: app icon/logo.
-- Start with the Sailfish app icon guidelines: shape, grid, and the sizes 86,
-  108, 128 and 172.
-- Design a few "swell"/wave concepts on the design canvas, without BluOS marks.
-- Misja picks one; replace icons/*/harbour-swell.png.
-- Rebuild, validate and check on the device.
+App icon: parked by Misja on 2026-11-06 (issue #3, on the board as Todo).
+Three rounds of wave concepts were tried and the wave motif was rejected as a
+whole. Learnings and options are in issue #3. The template placeholder stays.
 
 Open items:
 - Release-target ID: the device runs 5.2.0.20, the registry names 5.2.0.18.
@@ -60,8 +58,6 @@ Open items:
 - Connections to the player: 8 seen at once (expected from Qt pools). Watch
   over time.
 - Feature 006 (player settings) is to be discussed with Misja.
-- After PR #18 merges, remove the worktree
-  ~/code/sailfish/.worktrees/workspace-app-conventions.
 - Accepted: the validator warning "binary not stripped".
 
 Build and test: copy the tree to /home/ubuntu/swell-001 in the sailfish-sdk
