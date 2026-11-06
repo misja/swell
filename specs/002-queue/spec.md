@@ -1,7 +1,7 @@
 # Feature specification — 002 queue
 
-Status: draft 2026-11-06, for a combined scope/design review (see plan.md).
-Not approved for implementation.
+Status: revised 2026-11-06 after the combined scope/design review (review_002,
+approve with changes; all findings applied). Implementation may start.
 
 ## Owner and linked issue
 
@@ -26,14 +26,17 @@ Agreed with Misja on 2026-11-06:
 2. Rows show artwork, title, "artist · album" and the duration when the player
    gives one. The duration may be dropped after the device check (Misja: "see
    how it works").
-3. The playing entry is marked, and the list scrolls to it when the page opens.
+3. The playing entry is marked, and the list scrolls to it when the page opens,
+   even in a long queue. While an input or stream plays, the marker is dimmed,
+   because `song` then means where playback resumes.
 4. **Play from an entry** by tapping it.
 5. **Remove an entry**: long press gives Remove, which runs a remorse in the
    row before the request.
 6. **Clear the queue**: one pulley item "Clear queue", with a remorse popup
    before the request.
 7. **States**:
-   - an empty queue shows a placeholder with a hint to Home;
+   - an empty queue shows a placeholder with a hint to Home, and the pulley has
+     no Clear;
    - while an input or stream plays, a line says so, and tapping an entry
      plays the queue again;
    - an offline player shows the player's availability.
@@ -44,19 +47,39 @@ repeat.
 
 ## Required behavior
 
-- **Reading the queue:** `/Playlist?start=&end=` in windows, never the whole
-  queue in one request (API v1.7 §5.1). Further windows load as the user
-  scrolls. `length` is the whole queue; `id` equals `/Status` `pid`.
-- **Refresh:** reload when `pid` changes in `/Status` (a new or cleared queue),
-  and after Swell's own remove or clear, because the queue id does not change
-  on a delete (azzurro observation).
-- **Current entry:** `/Status` `song` is the current position. With `streamUrl`
-  present, the queue is not the source (§2.1).
+- **Reading the queue:** `/Playlist?start=&end=` in windows of 50, never the
+  whole queue in one request (API v1.7 §5.1). `length` is the whole queue, and
+  `id` equals `/Status` `pid`.
+  - The list has the full length from the start. Rows not yet loaded are
+    placeholders, and the window the list shows is loaded. The window around
+    the current entry loads first.
+  - A window reply with a different `id` is ignored. A different `length`
+    resets the list.
+  - Reads get a longer deadline, because the player answers only after it has
+    served cover art (azzurro observation).
+  - A failed read leaves the rows as placeholders. They are retried when shown
+    again, and no error is reported.
+- **Refresh:** a `pid` change in `/Status` (a new or cleared queue) resets the
+  list. `/Clear` replies with the new empty queue. After a remove, Swell
+  reloads itself, because the queue id does not change on a delete (azzurro
+  observation).
+- **Current entry:** `/Status` `song` is the current position, and `pid` the
+  queue identity. With `streamUrl` present the queue is not the source (§2.1).
+- **Removing safely:** positions shift after a delete. A remove therefore names
+  the queue (`pid`) and the row's identity, and the client sends it only if
+  both still match. Only one remove runs at a time; the list reloads after it,
+  then the next can start. A Silica row remorse also fires when its row
+  disappears (RemorseItem.qml:189-191 in the target), so this check is what
+  prevents deleting the wrong track.
 - **Commands, under the existing per-path gate and the one-second rule:**
-  - play from an entry: `/Play?id=<position>`. This is the §4.1 `id`
-    parameter, observed alone by azzurro; the device check confirms it.
-  - remove: `/Delete?id=<position>` (§5.2);
-  - clear: `/Clear` (§5.4).
+  - play from an entry: `/Play?id=<position>`. §4.1 documents `id` together
+    with `seek`, and `seek` is only valid when `/Status` has `totlen`. azzurro
+    transcribed `id` alone from the official controller but never ran it. The
+    device check tries `/Play?id=` and `/Play?seek=0&id=` while the queue plays
+    and while an input plays, and the spec records the result.
+  - remove: `/Delete?id=<position>` (§5.2). Removes are never merged by the
+    gate; they run one at a time;
+  - clear: `/Clear` (§5.4). Its reply resets the list.
 
   A failure is reported through the existing translated message.
 - Unknown elements are ignored and malformed documents never crash.
@@ -70,10 +93,22 @@ repeat.
 
 1. **Parser tests:** `/Playlist` windows, the status-only form (`length=1`),
    songs with and without `time`/`image`, unknown elements, malformed and
-   empty documents.
-2. **Fixture tests:** windowed reads with `start`/`end`; reload on a `pid`
-   change; reload after remove and after clear; `/Play?id=`, `/Delete?id=` and
-   `/Clear` sent as expected; a failure is reported.
+   empty documents; `Status.pid` and `Status.song`.
+2. **Fixture tests:**
+   - windowed reads that load the current window first;
+   - a reset on a `pid` change and on a `length` change;
+   - a late reply with an old `id` is ignored;
+   - a failed read is retried;
+   - a remove with a stale `pid` or row identity is refused, with no request
+     sent;
+   - two removes in quick succession run one after the other, each with a
+     reload;
+   - removing the current entry;
+   - the `/Clear` reply resets the list;
+   - `/Play?id=` is sent;
+   - a command failure is reported;
+   - nothing loads while the model is inactive, and a stale model reloads on
+     activation.
 3. **QML compile test** covers the new page.
 4. **RPM:** builds and passes the Harbour validator; the Dutch translation is
    complete.
