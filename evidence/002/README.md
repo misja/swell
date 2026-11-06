@@ -72,7 +72,7 @@ sha256 9da4a081b929dc681fc7d425359fb84283ceca0bd58f705e46a488ab281cfcae.
   track plays the queue again.
 - Player state afterwards (read-only `/Playlist`, `/Status`): 14 -> 11
   tracks, queue id 6 -> 9 (one step per delete), playback undisturbed.
-  Misja confirms the remaining tracks are the intended ones: pending.
+  Misja confirmed the remaining tracks are the intended ones.
 
 ## Not yet done
 
