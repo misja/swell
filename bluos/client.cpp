@@ -307,10 +307,12 @@ void Client::processRemovals()
     const Removal removal = m_removals.first();
     const int generation = m_queue->generation();
     // Positions shift on every delete, and another controller may have changed
-    // the queue: ask the player what is at that position right now.
+    // the queue: ask the player what is at that position right now. The queue
+    // must be the one the user saw, or that one changed only by Swell's own
+    // deletes (the id changes on every modification, API section 5.1).
     fetchQueueWindow(removal.position, removal.position, [this, removal, generation](const Playlist &now) {
-        const bool same = now.ok && now.id == removal.pid && now.songs.size() == 1
-                && now.songs.first().position == removal.position
+        const bool same = now.ok && m_queue->knowsPid(removal.pid) && now.id == m_queue->pid()
+                && now.songs.size() == 1 && now.songs.first().position == removal.position
                 && now.songs.first().identity() == removal.identity;
         if (!same) {
             m_removals.removeFirst();
@@ -321,27 +323,61 @@ void Client::processRemovals()
         }
         QUrlQuery query;
         query.addQueryItem(QStringLiteral("id"), QString::number(removal.position));
+        m_queue->setHoldPid(true);
         // Not through the merging gate: removals are not idempotent.
         fetch(QStringLiteral("/Delete"), encoded(query), [this, removal, generation](const QByteArray &body) {
             const QString error = body.isEmpty() ? QStringLiteral("no answer") : errorIn(body);
             m_removals.removeFirst();
-            if (error.isEmpty()) {
-                // If the list was read again meanwhile, it already shows this.
-                if (m_queue->generation() == generation) {
-                    m_queue->removeEntry(removal.position);
-                }
-                for (Removal &later : m_removals) {
-                    if (later.position > removal.position) {
-                        --later.position;
-                    }
-                }
-            } else {
+            if (!error.isEmpty()) {
                 emit commandFailed(QStringLiteral("/Delete"), error);
+                finishRemoval();
+                return;
             }
-            m_removing = false;
-            processRemovals();
+            if (m_queue->generation() != generation) {
+                m_queue->reload();  // read again meanwhile; it may or may not show this
+                finishRemoval();
+                return;
+            }
+            m_queue->removeEntry(removal.position);
+            for (Removal &later : m_removals) {
+                if (later.position > removal.position) {
+                    --later.position;
+                }
+            }
+            adoptQueueId(removal.position);
         });
     });
+}
+
+void Client::adoptQueueId(int position)
+{
+    // /Delete answers only <deleted>; read the new id. Take it only if the
+    // player's queue is exactly ours minus the deleted row.
+    const int length = m_queue->length();
+    const int at = qMax(0, qMin(position, length - 1));
+    const int generation = m_queue->generation();
+    fetchQueueWindow(at, at, [this, at, length, generation](const Playlist &now) {
+        bool matches = now.ok && !now.id.isEmpty() && now.length == length
+                && m_queue->generation() == generation;
+        if (matches && length > 0) {
+            const QString identity = m_queue->identityAt(at);
+            matches = now.songs.size() == 1 && now.songs.first().position == at
+                    && !identity.isEmpty() && now.songs.first().identity() == identity;
+        }
+        if (matches) {
+            m_queue->adopt(now.id);
+        } else {
+            m_queue->reload();
+        }
+        finishRemoval();
+    });
+}
+
+void Client::finishRemoval()
+{
+    m_queue->setHoldPid(false);
+    m_removing = false;
+    processRemovals();
 }
 
 void Client::clearQueue()

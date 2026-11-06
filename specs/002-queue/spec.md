@@ -59,28 +59,35 @@ repeat.
     served cover art (azzurro observation).
   - A failed read leaves the rows as placeholders. They are retried when shown
     again, and no error is reported.
-- **Refresh:** a `pid` change in `/Status` (a new or cleared queue) resets the
-  list, and so does reopening the page. `/Clear` replies with the new empty
-  queue. After Swell's own remove, only that row is dropped, so the view keeps
-  its place.
+- **Refresh:** a `pid` change in `/Status` that Swell did not cause (a new,
+  changed or cleared queue) resets the list, and so does reopening the page.
+  `/Clear` replies with the new empty queue.
 - **Current entry:** `/Status` `song` is the current position, and `pid` the
   queue identity. With `streamUrl` present the queue is not the source (§2.1).
-- **Removing safely:** positions shift after a delete, and the queue id does
-  not change on one (azzurro observation; §5.1 does not say). A remove
-  therefore names the position, the queue (`pid`) and the row's identity.
-  Just before `/Delete`, Swell reads that one position back and sends the
-  delete only if the queue and the entry still match. Otherwise it says that
-  the queue has changed and removes nothing. Removes run one at a time; a
-  waiting remove moves up by one for each earlier successful remove above it.
-  A Silica row remorse also fires when its row disappears or the page is left
-  (RemorseItem.qml in the target), so this check is what prevents deleting
-  the wrong track, including the same track queued twice.
+- **Removing safely:** the queue id changes on every modification, including
+  a delete (§2.1, §5.1; observed on the NAD C 379 on 2026-11-06, where
+  azzurro's note said otherwise). Positions shift after a delete. A remove
+  therefore names the position, the queue (`pid`) the user saw and the row's
+  identity (`songid` or `fn`, plus title).
+  - Just before `/Delete`, Swell reads that one position back. It sends the
+    delete only if the player's id is the current one, the user's id is that
+    one or an id it had before Swell's own deletes, and the entry still
+    matches. Otherwise it says the queue has changed and removes nothing.
+  - After its own delete Swell drops only that row and reads the new id back
+    (`/Delete` answers only `<deleted>`). It takes the new id only if the
+    length and the entry at that position match its list; otherwise it reads
+    the list again. A pid change from the status poll meanwhile is not treated
+    as a new queue.
+  - Removes run one at a time; a waiting remove moves up by one for each
+    earlier successful remove above it. A row remorse sends the row's current
+    index, or the recorded position once the row is gone.
+  - A Silica row remorse also fires when its row disappears or the page is
+    left (RemorseItem.qml in the target), so these checks are what prevent
+    deleting the wrong track, including the same track queued twice.
 - **Commands, under the existing per-path gate and the one-second rule:**
   - play from an entry: `/Play?id=<position>`. §4.1 documents `id` together
-    with `seek`, and `seek` is only valid when `/Status` has `totlen`. azzurro
-    transcribed `id` alone from the official controller but never ran it. The
-    device check tries `/Play?id=` and `/Play?seek=0&id=` while the queue plays
-    and while an input plays, and the spec records the result.
+    with `seek`; `id` alone works on the NAD C 379 (device check 2026-11-06),
+    so `seek=0&id=` is not needed.
   - remove: `/Delete?id=<position>` (§5.2). Removes are never merged by the
     gate; they run one at a time;
   - clear: `/Clear` (§5.4). Its reply resets the list.
@@ -123,12 +130,14 @@ repeat.
 
 ## Evidence and assumptions
 
-- Open until the device check: whether `/Delete` changes the queue id. If it
-  does, a second remove queued before the first finished is refused (safe;
-  the user repeats it).
+- Device check 2026-11-06 (NAD C 379, a LocalMusic album, 14 tracks): rows,
+  play from an entry, the input line and clear work. A delete changed the
+  queue id from 3 to 4, which the 0.2.0-1 build answered with a full reload;
+  the adoption step above replaces that. LocalMusic entries have `fn` but no
+  `songid`.
+- Still to check on the device: two quick removes; the plural with a locale
+  that has no Swell translation.
 
 - API v1.7 §5 and §4.1 were read on 2026-11-06.
-- The player currently has an empty queue (`length` 0). Rows with real data
-  are checked on the device once a queue is filled from the official app.
 - Assumption: `time` and `image` are present on most services (azzurro
   observation). Rows work without them.

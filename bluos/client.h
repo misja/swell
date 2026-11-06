@@ -173,6 +173,8 @@ private:
     void fetch(const QString &path, const QString &encodedQuery,
                const std::function<void(const QByteArray &)> &handler, int deadlineMs = -1);
     void processRemovals();
+    void adoptQueueId(int position);
+    void finishRemoval();
     static QString errorIn(const QByteArray &body);
     void fetchPresets();
 

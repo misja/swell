@@ -118,7 +118,7 @@ void QueueModel::removeEntry(int position)
 
 void QueueModel::onStatus(const QString &pid, int song, bool streaming)
 {
-    if (!pid.isEmpty() && pid != m_pid) {
+    if (!pid.isEmpty() && !knowsPid(pid) && !m_holdPid) {
         if (m_active) {
             m_current = song;
             m_streaming = streaming;
@@ -149,8 +149,10 @@ void QueueModel::reload()
         return;
     }
     m_stale = false;
+    m_lineage.clear();
     ++m_generation;  // replies of earlier requests are ignored
-    m_pid = m_client->status().pid;
+    // Taken from the first reply: the status poll may not have caught up.
+    m_pid.clear();
     m_failed.clear();
     m_wanted = -1;
     m_inFlight = -1;
@@ -165,6 +167,7 @@ void QueueModel::resetTo(const QString &pid, int length)
 {
     ++m_generation;
     m_pid = pid;
+    m_lineage.clear();
     m_failed.clear();
     m_wanted = -1;
     m_inFlight = -1;
@@ -177,6 +180,29 @@ void QueueModel::resetTo(const QString &pid, int length)
         m_awaitingFirst = false;
         emit reloaded();
     }
+}
+
+void QueueModel::setHoldPid(bool hold)
+{
+    m_holdPid = hold;
+    if (hold) {
+        return;
+    }
+    // A change the status poll reported meanwhile, if it was not ours.
+    const QString now = m_client->status().pid;
+    if (!now.isEmpty() && !knowsPid(now)) {
+        reload();
+    }
+}
+
+void QueueModel::adopt(const QString &pid)
+{
+    if (pid.isEmpty() || pid == m_pid) {
+        return;
+    }
+    m_lineage.append(m_pid);
+    m_pid = pid;
+    emit lengthChanged();
 }
 
 void QueueModel::setLength(int length)

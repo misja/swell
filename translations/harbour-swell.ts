@@ -235,22 +235,22 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="121"/>
+        <location filename="../qml/pages/QueuePage.qml" line="123"/>
         <source>Removing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="195"/>
+        <location filename="../qml/pages/QueuePage.qml" line="198"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="204"/>
+        <location filename="../qml/pages/QueuePage.qml" line="207"/>
         <source>Queue is empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="205"/>
+        <location filename="../qml/pages/QueuePage.qml" line="208"/>
         <source>Play a preset or an input from Home</source>
         <translation type="unfinished"></translation>
     </message>

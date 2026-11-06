@@ -9,6 +9,7 @@
 #include <QAbstractListModel>
 #include <QElapsedTimer>
 #include <QHash>
+#include <QStringList>
 #include <QUrl>
 #include <QVector>
 
@@ -68,6 +69,12 @@ public:
     int generation() const { return m_generation; }
     // The player removed this entry: drop the row, keep the rest.
     void removeEntry(int position);
+    // While Swell's own delete settles, a pid change is not a new queue.
+    void setHoldPid(bool hold);
+    // Swell's own delete gave the queue this id; the rows already match.
+    void adopt(const QString &pid);
+    // The current id, or one this queue had before Swell's own deletes.
+    bool knowsPid(const QString &pid) const { return pid == m_pid || m_lineage.contains(pid); }
 
     // From the client's status poll.
     void onStatus(const QString &pid, int song, bool streaming);
@@ -100,6 +107,8 @@ private:
     Client *m_client;
     QVector<Row> m_rows;
     QString m_pid;
+    QStringList m_lineage;   // earlier ids, changed only by Swell's own deletes
+    bool m_holdPid = false;
     int m_current = -1;
     bool m_streaming = false;
     bool m_active = false;

@@ -29,6 +29,11 @@ private slots:
     void twoRemovesRunOneAfterTheOther();
     void removesStillRunAfterLeavingThePage();
     void secondRemoveUsesTheShiftedRow();
+    void ownDeletesDoNotResetTheList();
+    void ownDeletesWithAnUnchangedId();
+    void statusBeforeTheDeleteReply();
+    void foreignChangeAfterOwnDeleteReloads();
+    void removeAfterClearIsRefused();
     void duplicateTrackRemovesTheChosenRow();
     void removingTheCurrentEntry();
     void failedDeleteIsReportedAndDoesNotBlock();
@@ -47,6 +52,7 @@ private:
     QStringList m_queue;   // the player's queue: titles by position
     int m_pid = 7;
     int m_etag = 0;
+    bool m_bumpOnDelete = true;
 };
 
 void TstQueue::init()
@@ -58,6 +64,7 @@ void TstQueue::init()
     for (int i = 0; i < 300; ++i)
         m_queue << QStringLiteral("Track %1").arg(i);
     m_pid = 7;
+    m_bumpOnDelete = true;
     m_player->serve(QStringLiteral("/SyncStatus"), "<SyncStatus etag=\"s\" syncStat=\"s\" name=\"Den\" volume=\"20\"/>");
     m_player->handle(QStringLiteral("/Playlist"), [this](const QUrlQuery &q) {
         const int start = q.queryItemValue(QStringLiteral("start")).toInt();
@@ -75,6 +82,8 @@ void TstQueue::init()
         const int id = q.queryItemValue(QStringLiteral("id")).toInt();
         if (id >= 0 && id < m_queue.size())
             m_queue.removeAt(id);
+        if (m_bumpOnDelete)
+            ++m_pid;   // the queue id changes on every modification (section 5.1)
         return "<deleted>" + QByteArray::number(id) + "</deleted>";
     });
     m_player->handle(QStringLiteral("/Clear"), [this](const QUrlQuery &) {
@@ -241,8 +250,9 @@ void TstQueue::removalByAnotherControllerIsRefused()
     QueueModel *q = m_client->queueModel();
     q->setActive(true);
     QTRY_COMPARE(title(3), QStringLiteral("Track 3"));
-    // Another controller deletes row 1; the queue id does not change.
+    // Another controller deletes row 1.
     m_queue.removeAt(1);
+    ++m_pid;
     QSignalSpy refused(m_client, &Client::removeRefused);
     m_client->removeQueueEntry(3, q->pid(), q->identityAt(3));
     QTRY_COMPARE(refused.size(), 1);
@@ -292,6 +302,120 @@ void TstQueue::secondRemoveUsesTheShiftedRow()
     QCOMPARE(m_queue.at(2), QStringLiteral("Track 4"));
 }
 
+void TstQueue::ownDeletesDoNotResetTheList()
+{
+    startClient();
+    QueueModel *q = m_client->queueModel();
+    q->setActive(true);
+    QTRY_COMPARE(title(3), QStringLiteral("Track 3"));
+    const QString pid = q->pid();
+    QSignalSpy resets(q, &QAbstractItemModel::modelReset);
+    QSignalSpy refused(m_client, &Client::removeRefused);
+    // Both remorses captured the id the user saw.
+    m_client->removeQueueEntry(2, pid, q->identityAt(2));
+    m_client->removeQueueEntry(3, pid, q->identityAt(3));
+    QTRY_COMPARE(q->length(), 298);
+    QTRY_COMPARE(q->pid(), QString::number(m_pid));
+    setStatus(0);   // the poll reports the new id
+    QTest::qWait(600);
+    QCOMPARE(resets.size(), 0);
+    QCOMPARE(refused.size(), 0);
+    QCOMPARE(m_player->requests(QStringLiteral("/Delete")).size(), 2);
+    QCOMPARE(m_queue.at(2), QStringLiteral("Track 4"));
+    // A remorse that fires later with the id from before is still accepted.
+    m_client->removeQueueEntry(2, pid, q->identityAt(2));
+    QTRY_COMPARE(q->length(), 297);
+    QCOMPARE(refused.size(), 0);
+    QCOMPARE(resets.size(), 0);
+}
+
+void TstQueue::ownDeletesWithAnUnchangedId()
+{
+    m_bumpOnDelete = false;
+    startClient();
+    QueueModel *q = m_client->queueModel();
+    q->setActive(true);
+    QTRY_COMPARE(title(3), QStringLiteral("Track 3"));
+    QSignalSpy resets(q, &QAbstractItemModel::modelReset);
+    m_client->removeQueueEntry(2, q->pid(), q->identityAt(2));
+    m_client->removeQueueEntry(3, q->pid(), q->identityAt(3));
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Delete")).size(), 2);
+    QTRY_COMPARE(q->length(), 298);
+    QCOMPARE(resets.size(), 0);
+}
+
+void TstQueue::statusBeforeTheDeleteReply()
+{
+    startClient();
+    QueueModel *q = m_client->queueModel();
+    q->setActive(true);
+    QTRY_COMPARE(title(3), QStringLiteral("Track 3"));
+    QSignalSpy resets(q, &QAbstractItemModel::modelReset);
+    m_player->delay(QStringLiteral("/Delete"), 500);
+    m_client->removeQueueEntry(2, q->pid(), q->identityAt(2));
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Delete")).size(), 1);
+    // The poll reports the new id before the delete is answered.
+    m_player->setStatus("<status etag=\"x\"><state>play</state><pid>" + QByteArray::number(m_pid + 1)
+                        + "</pid><song>0</song></status>");
+    QTRY_COMPARE(q->length(), 299);
+    QTRY_COMPARE(q->pid(), QString::number(m_pid));
+    QTest::qWait(600);
+    QCOMPARE(resets.size(), 0);
+}
+
+void TstQueue::foreignChangeAfterOwnDeleteReloads()
+{
+    startClient();
+    QueueModel *q = m_client->queueModel();
+    q->setActive(true);
+    QTRY_COMPARE(title(3), QStringLiteral("Track 3"));
+    const QString pid = q->pid();
+    const QString second = q->identityAt(3);
+    QSignalSpy resets(q, &QAbstractItemModel::modelReset);
+    QSignalSpy refused(m_client, &Client::removeRefused);
+    // Another controller adds a track right after our delete is answered,
+    // before the id is read back.
+    m_player->delay(QStringLiteral("/Playlist"), 600);
+    m_player->handle(QStringLiteral("/Delete"), [this](const QUrlQuery &query) {
+        m_queue.removeAt(query.queryItemValue(QStringLiteral("id")).toInt());
+        ++m_pid;
+        QTimer::singleShot(100, this, [this]() {
+            m_queue.prepend(QStringLiteral("Foreign"));
+            ++m_pid;
+            setStatus(0);
+        });
+        return QByteArray("<deleted>2</deleted>");
+    });
+    m_client->removeQueueEntry(2, pid, q->identityAt(2));
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Delete")).size(), 1);
+    QTRY_VERIFY_WITH_TIMEOUT(resets.size() > 0, 8000);
+    QTRY_COMPARE_WITH_TIMEOUT(q->length(), 300, 8000);
+    QTRY_COMPARE_WITH_TIMEOUT(title(0), QStringLiteral("Foreign"), 8000);
+    // A remorse from before the foreign change is refused.
+    m_client->removeQueueEntry(3, pid, second);
+    QTRY_COMPARE_WITH_TIMEOUT(refused.size(), 1, 8000);
+    QCOMPARE(m_player->requests(QStringLiteral("/Delete")).size(), 1);
+}
+
+void TstQueue::removeAfterClearIsRefused()
+{
+    startClient();
+    QueueModel *q = m_client->queueModel();
+    q->setActive(true);
+    QTRY_COMPARE(title(3), QStringLiteral("Track 3"));
+    const QString pid = q->pid();
+    const QString identity = q->identityAt(3);
+    m_client->removeQueueEntry(2, pid, q->identityAt(2));
+    QTRY_COMPARE(q->length(), 299);
+    m_client->clearQueue();
+    QTRY_COMPARE(q->length(), 0);
+    m_queue = QStringList({ QStringLiteral("A"), QStringLiteral("B"), QStringLiteral("C") });
+    QSignalSpy refused(m_client, &Client::removeRefused);
+    m_client->removeQueueEntry(2, pid, identity);
+    QTRY_COMPARE(refused.size(), 1);
+    QCOMPARE(m_player->requests(QStringLiteral("/Delete")).size(), 1);
+}
+
 void TstQueue::removesStillRunAfterLeavingThePage()
 {
     startClient();
@@ -314,6 +438,7 @@ void TstQueue::removesStillRunAfterLeavingThePage()
 void TstQueue::duplicateTrackRemovesTheChosenRow()
 {
     m_queue[5] = QStringLiteral("Track 0");   // the same track queued twice
+    m_queue[4] = QStringLiteral("Track 0");   // and next to it
     startClient();
     QueueModel *q = m_client->queueModel();
     q->setActive(true);
@@ -323,6 +448,7 @@ void TstQueue::duplicateTrackRemovesTheChosenRow()
     QTRY_COMPARE(m_player->requests(QStringLiteral("/Delete")).size(), 1);
     QCOMPARE(m_player->requests(QStringLiteral("/Delete")).first().target, QByteArray("/Delete?id=5"));
     QCOMPARE(m_queue.at(0), QStringLiteral("Track 0"));
+    QCOMPARE(m_queue.at(4), QStringLiteral("Track 0"));
     QCOMPARE(m_queue.at(5), QStringLiteral("Track 6"));
 }
 

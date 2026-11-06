@@ -1,13 +1,13 @@
 # Evidence — 002 queue
 
-Date: 2026-11-06. Branch `002-queue`. Package harbour-swell-0.2.0-1.aarch64.rpm,
-sha256 a83004d69e1a27cb1e61b81d884d138349e69fdfed1335e79f93436520c93e32.
+Date: 2026-11-06. Branch `002-queue`. Package harbour-swell-0.2.0-2.aarch64.rpm,
+sha256 3a3d8d13ecab78cea0067d7228d321ab1053657ed441bd74d7275a2ac12e87ed.
 
 ## Automated (builder)
 
 - `unit-aarch64.log`: QtTest in the SailfishOS-5.1.0.11-aarch64 target under
   sb2/qemu. All suites pass: spike 5, lsdp 18, xml 23, client 26, model 26,
-  qml 12, queue 19 (QtTest counts include init/cleanup).
+  qml 12, queue 24 (QtTest counts include init/cleanup).
 - `sdk-build-aarch64.log`: `sfdk build`, exit 0.
 - `harbour-validator.log`: `sfdk check -s harbour`, passed; the known warning
   "file is not stripped" remains.
@@ -38,6 +38,21 @@ sha256 a83004d69e1a27cb1e61b81d884d138349e69fdfed1335e79f93436520c93e32.
 - Not verified, for the device check: whether `libsailfishapp` falls back to
   the English plural catalog for locales without a translation.
 
+- Mutation check: taking the read-back id without checking length and entry
+  makes `foreignChangeAfterOwnDeleteReloads` fail. The queue suite passed 3
+  runs in a row.
+
+## Device check (Misja, Xperia 10 II, NAD C 379), 0.2.0-1, 2026-11-06
+
+- Rows, play from an entry (`/Play?id=`), the input line and clear work.
+- A delete changed the queue id 3 -> 4 (read from `/Playlist` and `/Status`
+  during the delete), as API §2.1/§5.1 say. 0.2.0-1 then read the whole list
+  again. Fixed in 0.2.0-2 after a separate design review: the new id is read
+  back and adopted when length and entry match. `reload()` now takes the id
+  from the first reply, because the status poll may lag (found by a new test).
+
 ## Not yet done
 
-- Device check by Misja (spec AC5), including which `/Play` form works.
+- Device check of 0.2.0-2: one remove keeps the list in place; two quick
+  removes both go through.
+- Separate review of the 0.2.0-2 changes.
