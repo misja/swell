@@ -10,4 +10,4 @@ Linked issue and plan: https://github.com/misja/swell/issues/4; plan.md in this 
 - [x] Build, validator, evidence/002.
 - [x] Device check with Misja, including the play-from form.
 - [x] Separate result review (and design review of the id adoption), findings resolved.
-- [ ] PR for maintainer review.
+- [x] PR for maintainer review: https://github.com/misja/swell/pull/5.

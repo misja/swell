@@ -6,7 +6,7 @@ Current owner / next owner / decision owner: root / root (next session) / Misja.
 
 Objective and acceptance criteria: feature 002 (queue, issue #4) is built on
 branch 002-queue: specs/002-queue/spec.md, AC1–AC6. Reviews and the device
-check are done; the PR for maintainer review is next. Feature 001 (MVP) is
+check are done; PR https://github.com/misja/swell/pull/5 awaits Misja's review. Feature 001 (MVP) is
 done and merged (PR #2 → main 69bd6b1; issue #1 closed).
 - Spec 001: specs/001-core-controller/spec.md, criteria AC1–AC6.
 - Shared conventions PR https://github.com/misja/sailfish-workspace/pull/18
