@@ -11,7 +11,7 @@ Use this file for bounded implementation steps, not a second status board.
 - [x] `PlayerModel` with discovery merge, manual hosts and tests.
 - [x] MVP parsers: `Status.prid`, `parsePresets`, `parseCaptureInputs` with tests (40c5af5).
 - [x] MVP client/model: encoded-query gate, presets/inputs cache, `playPreset`/`playInput`, `refreshInputs`, `<error>` bodies via `commandFailed`; `PlayerModel` `currentId`/`current`/`pollAll`, remembered player with `nodeId`; byte-exact fake-player request log; tests (AC3).
-- [ ] AC4 spike: QML engine test on `minimal`: an `ApplicationWindow` root with `Nemo.Configuration`, a negative control, one shared type-registration function.
+- [x] AC4 spike: QML engine test on `minimal`: an `ApplicationWindow` root with `Nemo.Configuration`, a negative control, one shared type-registration function.
 - [ ] Players page, add-player dialog and Home (presets and inputs), with Nemo.Configuration persistence and the start-state rule.
 - [ ] Now Playing as an attached page, with landscape layout.
 - [ ] Docked mini-player, cover and About; `allowedOrientations` on every page.
