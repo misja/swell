@@ -1,91 +1,78 @@
 # Session handoff
 
-Updated: 2026-11-06. Decision owner: Misja Hoebe (@misja).
+Updated: 2026-11-06 (end of the 001 session). Decision owner: Misja Hoebe (@misja).
 
-Current owner / next owner / decision owner: root / root / Misja.
+Current owner / next owner / decision owner: root / root (next session) / Misja.
 
-Objective and acceptance criteria: specs/001-core-controller/spec.md, the MVP.
-It covers Players (with add-by-address), Home with presets and inputs, Now
-Playing attached to Home, a docked mini-player, the cover, landscape and About.
-Criteria AC1–AC6. Issue: https://github.com/misja/swell/issues/1 (private repo
-misja/swell, branch 001-core-controller). UI design canvas and decisions are
-linked in the issue.
+Objective and acceptance criteria: feature 001 (MVP) is done.
+- Spec: specs/001-core-controller/spec.md, criteria AC1–AC6.
+- PR https://github.com/misja/swell/pull/2 (branch 001-core-controller,
+  closes issue #1) awaits Misja's review and merge.
+- Shared conventions PR https://github.com/misja/sailfish-workspace/pull/18
+  (principles 1.1.0).
+- The UI design canvas and decisions are linked in issue #1.
 
-Changed artifacts and evidence paths:
-- bluos/ is the protocol library: LSDP, XML parsers, Client, Discovery and
-  PlayerModel.
-- src/registration.* is the shared QML type registration.
+Artifacts and evidence:
+- bluos/ is the protocol library (namespaces BluOS, Lsdp).
+- src/ holds the app stub and QML type registration; qml/ the pages.
 - tests/ holds spike, lsdp, xml, client, model and qml.
-- evidence/001/README.md has the dated results. The latest run on aarch64:
-  current results for HEAD are at the top of the README (release 0.1.0-7).
+- translations/ holds English (source) and Dutch (complete).
+- evidence/001/README.md holds the current results for HEAD (release
+  0.1.0-7: all suites pass, validator succeeded, 1 accepted warning) and the
+  history.
+- Device: the Xperia 10 II (Sailfish OS 5.2.0.20) runs 0.1.0-7, against a NAD
+  C 379.
 
-Decisions and authorization scope:
-- Misja (2026-11-06):
-  - name Swell; MIT;
-  - build target 5.1.0.11-aarch64 mapped to release target 5.2.0.18-aarch64;
-  - Sailjail OrganizationName io.github.misja, permission Internet only;
-  - planning 001–006 as in the spec;
-  - add-by-address stays in the MVP; MPRIS is feature 003;
-  - Layer B (the azzurro demo-player) is removed.
-- Approved: the private GitHub repo and qt5-qttest-devel in the SDK (it was
-  already present).
-- Not approved: device installation, publication, Harbour or Chum.
+Decisions and authorization scope (Misja, 2026-11-06):
+- Name and licence: name Swell; MIT.
+- Targets: build target 5.1.0.11-aarch64 mapped to release target
+  5.2.0.18-aarch64.
+- Sandbox: Sailjail OrganizationName io.github.misja, permission Internet only.
+- Planning: 001–006 as in the spec. Add-by-address is in the MVP; MPRIS is
+  003; preset zapping is "later".
+- Branding: BluOS is mentioned descriptively only, with a trademark notice;
+  no "(works with BluOS)".
+- Languages: English is the source; Dutch is maintained; `qsTr` through
+  `sailfishapp_i18n`.
+- Approved:
+  - the private GitHub repo;
+  - pushes and PRs for swell and for sailfish-workspace#18;
+  - device installs through the SDK-registered device, which Misja confirms on
+    the phone.
+- Not approved: publication (Harbour, Chum, OBS).
 
-Reviews (separate agents, 2026-11-06), all "approve with changes" and resolved:
-scope_review, design_review, scope_review_2 (MVP), design_review_2 (MVP plan).
-The required result review (AC6) is still due after the UI.
+Reviews (separate assistant agents; not a human audit):
+- scope_review, design_review, scope_review_2, design_review_2: approve with
+  changes, resolved;
+- result_review (AC6): resolved and re-checked, "ready for maintainer review".
 
-Remaining blockers, options and recommendation: none. Open discussion:
-player settings (006).
+Next session: app icon/logo.
+- Start with the Sailfish app icon guidelines: shape, grid, and the sizes 86,
+  108, 128 and 172.
+- Design a few "swell"/wave concepts on the design canvas, without BluOS marks.
+- Misja picks one; replace icons/*/harbour-swell.png.
+- Rebuild, validate and check on the device.
 
-Progress: all MVP pages are built and checked on a device (Xperia 10 II,
-Sailfish OS 5.2.0.20, with a real player). LSDP works under Sailjail and the
-controls work; see evidence/001/README.md "Device check". The device is
-registered with the SDK as "Xperia 10 II - Dual SIM (ARM 64bit)".
+Open items:
+- Release-target ID: the device runs 5.2.0.20, the registry names 5.2.0.18.
+- `sfdk deploy --sdk` fails on the device (no D-Bus session bus over SSH). Use
+  the deploy steps below.
+- Connections to the player: 8 seen at once (expected from Qt pools). Watch
+  over time.
+- Feature 006 (player settings) is to be discussed with Misja.
+- After PR #18 merges, remove the worktree
+  ~/code/sailfish/.worktrees/workspace-app-conventions.
+- Accepted: the validator warning "binary not stripped".
 
-Deploy: in /home/ubuntu/swell-001, `sfdk -c device="Xperia 10 II - Dual SIM (ARM
-64bit)" deploy --manual`, then on the device
-`DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/dbus/user_bus_socket
-sdk-deploy-rpm ~/RPMS/<rpm>`, and confirm on the phone. Plain `deploy --sdk`
-fails there (no session bus over SSH).
+Build and test: copy the tree to /home/ubuntu/swell-001 in the sailfish-sdk
+container, then as ubuntu:
+`sfdk -c target=SailfishOS-5.1.0.11-aarch64 build-shell sh -c "cd build/tests && qmake ../../tests/tests.pro && make && make check"`.
+Build the app with `sfdk ... -c no-pull-build-requires build` and validate it
+with `sfdk ... check -s harbour RPMS/*.rpm`. Bump `Release:` in
+rpm/harbour-swell.spec for each device install.
 
-Device iterations 0.1.0-2…4 (confirmed by Misja):
-- the only player found is picked on first start;
-- inputs follow the player's Hide source setting;
-- Home is attached to Players;
-- presets that select an input show that input's icon;
-- cover titles wrap;
-- previous/next follow the source (queue, stream actions, otherwise hidden).
-
-Result review (AC6, separate agent result_review, 2026-11-06): ready after
-fixes. All were resolved in this round:
-- the missing `isValidAddress`;
-- the current player on removal and on LSDP Delete;
-- bounded refetch;
-- the per-path+parameter collapse;
-- translated errors;
-- 404-only NotAPlayer;
-- current logs;
-- stale artifacts.
-Several NITs were also addressed: client parenting, replies owned by the
-client, http(s)-only images, the discovery error log, and the removal of
-unused parseVolume/canSeek/Discovery::stop.
-Also done in this round:
-- Sailfish coding conventions and the Silica pitfalls, including the
-  CamelCase namespaces;
-- workspace PR misja/sailfish-workspace#18 for the shared conventions.
-
-Next action:
-1. Maintainer review of the PR (result review re-check: ready for maintainer review).
-2. Install 0.1.0-6 on the device for a quick look (needs confirmation on the
-   phone).
-3. App icon/logo, in a later session (Misja).
-4. Release-target ID: the device runs 5.2.0.20, the registry says 5.2.0.18.
-
-The old UI drafts are in git stash ("ui-draft-*") as starting material only.
-
-How to build and test: copy the tree to /home/ubuntu/swell-001 in the
-sailfish-sdk container, then
-`sudo -iu ubuntu sfdk -c target=SailfishOS-5.1.0.11-aarch64 build-shell sh -c "cd build/tests && qmake ../../tests/tests.pro && make && make check"`.
-The app is built with `sfdk ... -c no-pull-build-requires build` and
-validated with `sfdk ... check -s harbour RPMS/*.rpm`.
+Deploy: `sfdk -c target=… -c device="Xperia 10 II - Dual SIM (ARM 64bit)"
+deploy --manual`, then over SSH with the SDK key
+(~/SailfishOS/vmshare/ssh/private_keys/sdk) to defaultuser@192.168.1.44:
+`DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/dbus/user_bus_socket sdk-deploy-rpm ~/RPMS/<rpm>`.
+Misja confirms the install on the phone.
