@@ -1,13 +1,13 @@
 # Evidence — 002 queue
 
-Date: 2026-11-06. Branch `002-queue`. Package harbour-swell-0.2.0-2.aarch64.rpm,
-sha256 3a3d8d13ecab78cea0067d7228d321ab1053657ed441bd74d7275a2ac12e87ed.
+Date: 2026-11-06. Branch `002-queue`. Package harbour-swell-0.2.0-3.aarch64.rpm,
+sha256 efe4c53e29cc16201808f7347ad7bae23a93448f485bcd44b54e209ab7f325f0.
 
 ## Automated (builder)
 
 - `unit-aarch64.log`: QtTest in the SailfishOS-5.1.0.11-aarch64 target under
   sb2/qemu. All suites pass: spike 5, lsdp 18, xml 23, client 26, model 26,
-  qml 12, queue 24 (QtTest counts include init/cleanup).
+  qml 12, queue 26 (QtTest counts include init/cleanup).
 - `sdk-build-aarch64.log`: `sfdk build`, exit 0.
 - `harbour-validator.log`: `sfdk check -s harbour`, passed; the known warning
   "file is not stripped" remains.
@@ -51,8 +51,14 @@ sha256 3a3d8d13ecab78cea0067d7228d321ab1053657ed441bd74d7275a2ac12e87ed.
   back and adopted when length and entry match. `reload()` now takes the id
   from the first reply, because the status poll may lag (found by a new test).
 
+- Review of the implemented adoption (same reviewer as the design): changes
+  needed, both fixed in 0.2.0-3 with tests: the current marker now uses only
+  a `song` from the queue id the rows have, re-applied after adoption; a
+  status reply during the first read of a reload no longer restarts it
+  (mutation check: without the rule, `noRepeatedReloadDuringTheFirstRead`
+  fails).
+
 ## Not yet done
 
-- Device check of 0.2.0-2: one remove keeps the list in place; two quick
+- Device check of 0.2.0-3: one remove keeps the list in place; two quick
   removes both go through.
-- Separate review of the 0.2.0-2 changes.

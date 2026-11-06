@@ -34,6 +34,8 @@ private slots:
     void statusBeforeTheDeleteReply();
     void foreignChangeAfterOwnDeleteReloads();
     void removeAfterClearIsRefused();
+    void currentMarkerAcrossOwnDelete();
+    void noRepeatedReloadDuringTheFirstRead();
     void duplicateTrackRemovesTheChosenRow();
     void removingTheCurrentEntry();
     void failedDeleteIsReportedAndDoesNotBlock();
@@ -414,6 +416,41 @@ void TstQueue::removeAfterClearIsRefused()
     m_client->removeQueueEntry(2, pid, identity);
     QTRY_COMPARE(refused.size(), 1);
     QCOMPARE(m_player->requests(QStringLiteral("/Delete")).size(), 1);
+}
+
+void TstQueue::currentMarkerAcrossOwnDelete()
+{
+    setStatus(5);
+    startClient();
+    QueueModel *q = m_client->queueModel();
+    QTRY_COMPARE(q->currentIndex(), 5);
+    q->setActive(true);
+    QTRY_COMPARE(title(5), QStringLiteral("Track 5"));
+    m_player->delay(QStringLiteral("/Delete"), 500);
+    m_client->removeQueueEntry(2, q->pid(), q->identityAt(2));
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Delete")).size(), 1);
+    // The poll reports the new id, and the playing track at its new place,
+    // before the delete is answered.
+    m_player->setStatus("<status etag=\"y\"><state>play</state><pid>" + QByteArray::number(m_pid + 1)
+                        + "</pid><song>4</song></status>");
+    QTRY_COMPARE(q->length(), 299);
+    QTRY_COMPARE(q->pid(), QString::number(m_pid));
+    QCOMPARE(q->currentIndex(), 4);
+    QCOMPARE(title(4), QStringLiteral("Track 5"));
+    QTest::qWait(400);
+    QCOMPARE(q->currentIndex(), 4);
+}
+
+void TstQueue::noRepeatedReloadDuringTheFirstRead()
+{
+    startClient();
+    QueueModel *q = m_client->queueModel();
+    m_player->delay(QStringLiteral("/Playlist"), 800);
+    q->setActive(true);
+    QTRY_VERIFY(q->loading());
+    setStatus(0);   // another etag (e.g. volume), the same queue id
+    QTRY_COMPARE_WITH_TIMEOUT(q->length(), 300, 5000);
+    QCOMPARE(m_player->requests(QStringLiteral("/Playlist")).size(), 1);
 }
 
 void TstQueue::removesStillRunAfterLeavingThePage()

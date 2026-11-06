@@ -118,16 +118,32 @@ void QueueModel::removeEntry(int position)
 
 void QueueModel::onStatus(const QString &pid, int song, bool streaming)
 {
-    if (!pid.isEmpty() && !knowsPid(pid) && !m_holdPid) {
-        if (m_active) {
+    if (!pid.isEmpty() && !m_holdPid) {
+        // While a reload waits for its first reply, the id it started from
+        // is not a change.
+        const bool unknown = m_pid.isEmpty() ? pid != m_reloadPid : !knowsPid(pid);
+        if (unknown) {
             m_current = song;
             m_streaming = streaming;
-            reload();
+            if (m_active) {
+                reload();
+            } else {
+                m_stale = true;
+            }
             emit currentChanged();
             return;
         }
-        m_stale = true;
     }
+    // song counts in the numbering of its queue id: only the current one fits
+    // the rows (the others are ours, before or after the delete settles).
+    if (!pid.isEmpty() && pid != (m_pid.isEmpty() ? m_reloadPid : m_pid)) {
+        return;
+    }
+    setCurrent(song, streaming);
+}
+
+void QueueModel::setCurrent(int song, bool streaming)
+{
     if (song == m_current && streaming == m_streaming) {
         return;
     }
@@ -142,6 +158,14 @@ void QueueModel::onStatus(const QString &pid, int song, bool streaming)
     emit currentChanged();
 }
 
+void QueueModel::applyStatus()
+{
+    const Status &status = m_client->status();
+    if (!status.pid.isEmpty() && status.pid == m_pid) {
+        setCurrent(status.song, status.hasStreamUrl);
+    }
+}
+
 void QueueModel::reload()
 {
     if (!m_active) {
@@ -153,6 +177,7 @@ void QueueModel::reload()
     ++m_generation;  // replies of earlier requests are ignored
     // Taken from the first reply: the status poll may not have caught up.
     m_pid.clear();
+    m_reloadPid = m_client->status().pid;
     m_failed.clear();
     m_wanted = -1;
     m_inFlight = -1;
@@ -192,6 +217,8 @@ void QueueModel::setHoldPid(bool hold)
     const QString now = m_client->status().pid;
     if (!now.isEmpty() && !knowsPid(now)) {
         reload();
+    } else {
+        applyStatus();
     }
 }
 
@@ -203,6 +230,7 @@ void QueueModel::adopt(const QString &pid)
     m_lineage.append(m_pid);
     m_pid = pid;
     emit lengthChanged();
+    applyStatus();
 }
 
 void QueueModel::setLength(int length)

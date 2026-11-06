@@ -102,11 +102,14 @@ private:
     void request(int window);
     void onWindow(int generation, int window, const Playlist &playlist);
     bool windowLoaded(int window) const;
+    void setCurrent(int song, bool streaming);
+    void applyStatus();   // the client's latest song, if it is for our queue id
     void setLength(int length);
 
     Client *m_client;
     QVector<Row> m_rows;
     QString m_pid;
+    QString m_reloadPid;     // the status id when the running reload started
     QStringList m_lineage;   // earlier ids, changed only by Swell's own deletes
     bool m_holdPid = false;
     int m_current = -1;
