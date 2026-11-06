@@ -5,7 +5,7 @@
 
 #include "lsdp.h"
 
-using namespace bluos;
+using namespace BluOS;
 
 namespace {
 
@@ -49,7 +49,7 @@ const QByteArray Ip11("\xC0\x00\x02\x0B", 4);   // 192.0.2.11
 
 QByteArray playerRecord()
 {
-    return record(lsdp::ClassPlayer, { { "name", "Test Room" }, { "port", "11000" }, { "model", "T1" } });
+    return record(Lsdp::ClassPlayer, { { "name", "Test Room" }, { "port", "11000" }, { "model", "T1" } });
 }
 
 } // namespace
@@ -76,15 +76,15 @@ private slots:
 
 void TstLsdp::announceWithTxt()
 {
-    const lsdp::Packet p = lsdp::parse(header() + announce(NodeA, Ip10, { playerRecord() }));
+    const Lsdp::Packet p = Lsdp::parse(header() + announce(NodeA, Ip10, { playerRecord() }));
     QVERIFY(p.valid);
     QVERIFY(!p.truncated);
     QCOMPARE(p.announces.size(), 1);
-    const lsdp::Announce &a = p.announces.first();
+    const Lsdp::Announce &a = p.announces.first();
     QCOMPARE(a.nodeId, NodeA);
     QCOMPARE(a.address, QHostAddress(QStringLiteral("192.0.2.10")));
     QCOMPARE(a.records.size(), 1);
-    QCOMPARE(a.records.first().classId, lsdp::ClassPlayer);
+    QCOMPARE(a.records.first().classId, Lsdp::ClassPlayer);
     QCOMPARE(a.records.first().txt.value(QStringLiteral("name")), QStringLiteral("Test Room"));
     QCOMPARE(a.records.first().txt.value(QStringLiteral("port")), QStringLiteral("11000"));
 }
@@ -92,31 +92,31 @@ void TstLsdp::announceWithTxt()
 void TstLsdp::playerClasses()
 {
     for (quint16 c : { quint16(0x0001), quint16(0x0003), quint16(0x0006), quint16(0x0008) })
-        QVERIFY2(lsdp::isPlayerClass(c), qPrintable(QString::number(c, 16)));
+        QVERIFY2(Lsdp::isPlayerClass(c), qPrintable(QString::number(c, 16)));
     for (quint16 c : { quint16(0x0002), quint16(0x0004), quint16(0x0005), quint16(0x0007), quint16(0xFFFF) })
-        QVERIFY2(!lsdp::isPlayerClass(c), qPrintable(QString::number(c, 16)));
+        QVERIFY2(!Lsdp::isPlayerClass(c), qPrintable(QString::number(c, 16)));
 
     // A node that only advertises a non-player class still parses; filtering is the caller's.
-    const lsdp::Packet p = lsdp::parse(header() + announce(NodeA, Ip10, { record(0x0004, {}) }));
+    const Lsdp::Packet p = Lsdp::parse(header() + announce(NodeA, Ip10, { record(0x0004, {}) }));
     QCOMPARE(p.announces.size(), 1);
-    QVERIFY(!lsdp::isPlayerClass(p.announces.first().records.first().classId));
+    QVERIFY(!Lsdp::isPlayerClass(p.announces.first().records.first().classId));
 }
 
 void TstLsdp::multipleAnnouncesInOnePacket()
 {
     // A multi-zone player splits its nodes over several announce messages (API Appendix, note 2).
-    const lsdp::Packet p = lsdp::parse(header() + announce(NodeA, Ip10, { playerRecord() })
-                                       + announce(NodeB, Ip11, { record(lsdp::ClassPlayerSecondary, {}) }));
+    const Lsdp::Packet p = Lsdp::parse(header() + announce(NodeA, Ip10, { playerRecord() })
+                                       + announce(NodeB, Ip11, { record(Lsdp::ClassPlayerSecondary, {}) }));
     QCOMPARE(p.announces.size(), 2);
     QCOMPARE(p.announces.at(0).nodeId, NodeA);
     QCOMPARE(p.announces.at(1).nodeId, NodeB);
-    QCOMPARE(p.announces.at(1).records.first().classId, lsdp::ClassPlayerSecondary);
+    QCOMPARE(p.announces.at(1).records.first().classId, Lsdp::ClassPlayerSecondary);
 }
 
 void TstLsdp::addressChangeKeepsNodeId()
 {
-    const lsdp::Packet first = lsdp::parse(header() + announce(NodeA, Ip10, { playerRecord() }));
-    const lsdp::Packet second = lsdp::parse(header() + announce(NodeA, Ip11, { playerRecord() }));
+    const Lsdp::Packet first = Lsdp::parse(header() + announce(NodeA, Ip10, { playerRecord() }));
+    const Lsdp::Packet second = Lsdp::parse(header() + announce(NodeA, Ip11, { playerRecord() }));
     QCOMPARE(first.announces.first().nodeId, second.announces.first().nodeId);
     QVERIFY(first.announces.first().address != second.announces.first().address);
 }
@@ -125,15 +125,15 @@ void TstLsdp::deleteMessage()
 {
     QByteArray body("D");
     body.append(lengthPrefixed(NodeA)).append(char(1)).append('\x00').append('\x01');
-    const lsdp::Packet p = lsdp::parse(header() + withLength(body));
+    const Lsdp::Packet p = Lsdp::parse(header() + withLength(body));
     QCOMPARE(p.deletes.size(), 1);
     QCOMPARE(p.deletes.first().nodeId, NodeA);
-    QCOMPARE(p.deletes.first().classes, QVector<quint16>({ lsdp::ClassPlayer }));
+    QCOMPARE(p.deletes.first().classes, QVector<quint16>({ Lsdp::ClassPlayer }));
 }
 
 void TstLsdp::ownQueryIsRecognised()
 {
-    const lsdp::Packet p = lsdp::parse(lsdp::buildQuery({ lsdp::AllClasses }));
+    const Lsdp::Packet p = Lsdp::parse(Lsdp::buildQuery({ Lsdp::AllClasses }));
     QVERIFY(p.valid);
     QCOMPARE(p.queries, 1);
     QVERIFY(p.announces.isEmpty());
@@ -143,13 +143,13 @@ void TstLsdp::ownQueryIsRecognised()
 void TstLsdp::queryLayout()
 {
     // Header, then one 'Q' message with one class: FFFF (all classes).
-    QCOMPARE(lsdp::buildQuery({ lsdp::AllClasses }),
+    QCOMPARE(Lsdp::buildQuery({ Lsdp::AllClasses }),
              QByteArray("\x06LSDP\x01\x05Q\x01\xFF\xFF", 11));
 }
 
 void TstLsdp::unknownTypeIsSkipped()
 {
-    const lsdp::Packet p = lsdp::parse(header() + withLength(QByteArray("Zfuture", 7))
+    const Lsdp::Packet p = Lsdp::parse(header() + withLength(QByteArray("Zfuture", 7))
                                        + announce(NodeA, Ip10, { playerRecord() }));
     QCOMPARE(p.skipped, 1);
     QCOMPARE(p.announces.size(), 1);
@@ -159,7 +159,7 @@ void TstLsdp::truncatedMessage()
 {
     QByteArray packet = header() + announce(NodeA, Ip10, { playerRecord() });
     packet.chop(3);
-    const lsdp::Packet p = lsdp::parse(packet);
+    const Lsdp::Packet p = Lsdp::parse(packet);
     QVERIFY(p.valid);
     QVERIFY(p.truncated);
     QVERIFY(p.announces.isEmpty());
@@ -171,7 +171,7 @@ void TstLsdp::fieldOverrunsMessage()
     // claims more bytes than the message holds.
     QByteArray body("A");
     body.append(char(40)).append(NodeA);
-    const lsdp::Packet p = lsdp::parse(header() + withLength(body) + announce(NodeB, Ip11, { playerRecord() }));
+    const Lsdp::Packet p = Lsdp::parse(header() + withLength(body) + announce(NodeB, Ip11, { playerRecord() }));
     QCOMPARE(p.skipped, 1);
     QCOMPARE(p.announces.size(), 1);
     QCOMPARE(p.announces.first().nodeId, NodeB);
@@ -190,14 +190,14 @@ void TstLsdp::rejectsBadHeader_data()
 void TstLsdp::rejectsBadHeader()
 {
     QFETCH(QByteArray, packet);
-    const lsdp::Packet p = lsdp::parse(packet);
+    const Lsdp::Packet p = Lsdp::parse(packet);
     QVERIFY(!p.valid);
     QVERIFY(p.announces.isEmpty());
 }
 
 void TstLsdp::nodeIdFormatting()
 {
-    QCOMPARE(lsdp::nodeIdToString(NodeA), QStringLiteral("02:00:00:00:00:0A"));
+    QCOMPARE(Lsdp::nodeIdToString(NodeA), QStringLiteral("02:00:00:00:00:0A"));
 }
 
 QTEST_GUILESS_MAIN(TstLsdp)

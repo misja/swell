@@ -3,8 +3,8 @@
 
 #include <QStringList>
 
-namespace bluos {
-namespace lsdp {
+namespace BluOS {
+namespace Lsdp {
 
 namespace {
 
@@ -171,5 +171,5 @@ QString nodeIdToString(const QByteArray &nodeId)
     return parts.join(QLatin1Char(':'));
 }
 
-} // namespace lsdp
-} // namespace bluos
+} // namespace Lsdp
+} // namespace BluOS

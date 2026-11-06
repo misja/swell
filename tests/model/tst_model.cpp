@@ -6,7 +6,7 @@
 
 #include "playermodel.h"
 
-using namespace bluos;
+using namespace BluOS;
 
 namespace {
 
@@ -67,6 +67,9 @@ private slots:
     void pollingPolicy();
     void restoredPlayerAppearsAtOnce();
     void currentFollowsAddressChange();
+    void isValidAddressMatchesParse();
+    void removingCurrentClearsIt();
+    void deletionKeepsCurrent();
 };
 
 void TstModel::parseAddress_data()
@@ -246,6 +249,36 @@ void TstModel::currentFollowsAddressChange()
     QVERIFY(qobject_cast<Client *>(model.current())->running());
     QCOMPARE(current.size(), 1);
     QCOMPARE(model.currentNodeId(), QStringLiteral("02:00:00:00:00:0A"));
+}
+
+void TstModel::isValidAddressMatchesParse()
+{
+    PlayerModel model;
+    QVERIFY(model.isValidAddress(QStringLiteral("192.0.2.10:11010")));
+    QVERIFY(!model.isValidAddress(QStringLiteral("not an/address")));
+    QVERIFY(!model.isValidAddress(QString()));
+}
+
+void TstModel::removingCurrentClearsIt()
+{
+    PlayerModel model;
+    QVERIFY(model.addManual(QStringLiteral("127.0.0.10:1")));
+    model.setCurrentId(QStringLiteral("127.0.0.10:1"));
+    QSignalSpy current(&model, &PlayerModel::currentChanged);
+    model.removeManual(QStringLiteral("127.0.0.10:1"));
+    QCOMPARE(model.currentId(), QString());
+    QCOMPARE(model.current(), static_cast<QObject *>(nullptr));
+    QCOMPARE(current.size(), 1);
+}
+
+void TstModel::deletionKeepsCurrent()
+{
+    PlayerModel model;
+    model.discovery()->handleDatagram(announce('\x0A', 10, 0x0001, "1", "Den"));
+    model.setCurrentId(QStringLiteral("127.0.0.10:1"));
+    model.discovery()->handleDatagram(deletion('\x0A'));
+    QCOMPARE(model.rowCount(), 1);
+    QVERIFY(model.current());
 }
 
 QTEST_GUILESS_MAIN(TstModel)

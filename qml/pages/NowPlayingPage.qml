@@ -6,18 +6,17 @@ Page {
     id: page
     objectName: "nowPlaying"
 
-    property QtObject player: players.current
-    // Artwork edge: the short side of the page, less margins; beside the
-    // controls in landscape.
-    readonly property real artSize: isLandscape
-                                    ? height - 2 * Theme.paddingLarge
-                                    : width - 2 * Theme.horizontalPageMargin
+    readonly property QtObject _player: players.current
+    // Artwork edge: the short side of the page, flush with the page edges
+    // (Silica pitfalls); beside the controls in landscape.
+    readonly property real _artSize: isLandscape ? height : width
 
     allowedOrientations: Orientation.All
 
-    function formatTime(secs) {
-        if (secs < 0)
+    function _formatTime(secs) {
+        if (secs < 0) {
             return ""
+        }
         var m = Math.floor(secs / 60)
         var s = secs % 60
         return m + ":" + (s < 10 ? "0" : "") + s
@@ -30,23 +29,21 @@ Page {
         Flow {
             id: layout
             width: parent.width
-            y: page.isLandscape ? Theme.paddingLarge : 0
             spacing: Theme.paddingLarge
 
             Column {
                 id: artColumn
-                width: page.isLandscape ? page.artSize + Theme.horizontalPageMargin : page.width
+                width: page.isLandscape ? page._artSize : page.width
 
                 PageHeader {
                     visible: !page.isLandscape
-                    title: player ? (player.name !== "" ? player.name : player.host) : ""
-                    description: player && !player.online ? qsTr("Not reachable") : ""
+                    title: _player ? (_player.name !== "" ? _player.name : _player.host) : ""
+                    description: _player && !_player.online ? qsTr("Not reachable") : ""
                 }
 
                 Item {
-                    x: Theme.horizontalPageMargin
-                    width: page.artSize
-                    height: page.artSize
+                    width: page._artSize
+                    height: page._artSize
 
                     Image {
                         id: artwork
@@ -55,7 +52,7 @@ Page {
                         asynchronous: true
                         sourceSize.width: width
                         sourceSize.height: height
-                        source: player ? player.artworkUrl : ""
+                        source: _player ? _player.artworkUrl : ""
                     }
                     Icon {
                         anchors.centerIn: parent
@@ -66,15 +63,14 @@ Page {
             }
 
             Column {
-                width: page.isLandscape ? page.width - page.artSize - 2 * Theme.horizontalPageMargin - layout.spacing
-                                        : page.width
+                width: page.isLandscape ? page.width - page._artSize - layout.spacing : page.width
                 spacing: Theme.paddingMedium
 
                 PageHeader {
                     id: sideHeader
                     visible: page.isLandscape
-                    title: player ? (player.name !== "" ? player.name : player.host) : ""
-                    description: player && !player.online ? qsTr("Not reachable") : ""
+                    title: _player ? (_player.name !== "" ? _player.name : _player.host) : ""
+                    description: _player && !_player.online ? qsTr("Not reachable") : ""
                 }
 
                 // Centres the controls in the space left beside (landscape) or
@@ -82,8 +78,7 @@ Page {
                 Item {
                     width: parent.width
                     height: Math.max(0, Math.floor((page.height
-                                                    - (page.isLandscape ? sideHeader.height + 2 * Theme.paddingLarge
-                                                                        : artColumn.height)
+                                                    - (page.isLandscape ? sideHeader.height : artColumn.height)
                                                     - controls.height) / 2) - Theme.paddingMedium)
                 }
 
@@ -103,13 +98,13 @@ Page {
                         truncationMode: TruncationMode.Fade
                         font.pixelSize: Theme.fontSizeLarge
                         color: Theme.highlightColor
-                        text: player ? player.title1 : ""
+                        text: _player ? _player.title1 : ""
                     }
                     Label {
                         width: parent.width
                         horizontalAlignment: Text.AlignHCenter
                         truncationMode: TruncationMode.Fade
-                        text: player ? player.title2 : ""
+                        text: _player ? _player.title2 : ""
                     }
                     Label {
                         width: parent.width
@@ -117,7 +112,7 @@ Page {
                         truncationMode: TruncationMode.Fade
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.secondaryColor
-                        text: player ? player.title3 : ""
+                        text: _player ? _player.title3 : ""
                     }
                 }
 
@@ -125,15 +120,15 @@ Page {
                 Column {
                     x: Theme.horizontalPageMargin
                     width: parent.width - 2 * Theme.horizontalPageMargin
-                    visible: player && player.duration > 0
+                    visible: _player && _player.duration > 0
 
                     ProgressBar {
                         width: parent.width
                         leftMargin: 0
                         rightMargin: 0
                         minimumValue: 0
-                        maximumValue: player && player.duration > 0 ? player.duration : 1
-                        value: player && player.position > 0 ? player.position : 0
+                        maximumValue: _player && _player.duration > 0 ? _player.duration : 1
+                        value: _player && _player.position > 0 ? _player.position : 0
                     }
                     Item {
                         width: parent.width
@@ -142,13 +137,13 @@ Page {
                             id: elapsed
                             font.pixelSize: Theme.fontSizeExtraSmall
                             color: Theme.secondaryColor
-                            text: player ? page.formatTime(player.position) : ""
+                            text: _player ? page._formatTime(_player.position) : ""
                         }
                         Label {
                             anchors.right: parent.right
                             font.pixelSize: Theme.fontSizeExtraSmall
                             color: Theme.secondaryColor
-                            text: player ? page.formatTime(player.duration) : ""
+                            text: _player ? page._formatTime(_player.duration) : ""
                         }
                     }
                 }
@@ -162,37 +157,37 @@ Page {
                     IconButton {
                         anchors.verticalCenter: parent.verticalCenter
                         icon.source: "image://theme/icon-m-previous"
-                        visible: player && player.canBack
-                        enabled: player && player.online
-                        onClicked: player.back()
+                        visible: _player && _player.canBack
+                        enabled: _player && _player.online
+                        onClicked: _player.back()
                     }
                     IconButton {
                         anchors.verticalCenter: parent.verticalCenter
-                        icon.source: player && player.playing ? "image://theme/icon-l-pause" : "image://theme/icon-l-play"
-                        enabled: player && player.online
-                        onClicked: player.playing ? player.pause() : player.play()
+                        icon.source: _player && _player.playing ? "image://theme/icon-l-pause" : "image://theme/icon-l-play"
+                        enabled: _player && _player.online
+                        onClicked: _player.playing ? _player.pause() : _player.play()
                     }
                     IconButton {
                         anchors.verticalCenter: parent.verticalCenter
                         icon.source: "image://theme/icon-m-next"
-                        visible: player && player.canSkip
-                        enabled: player && player.online
-                        onClicked: player.skip()
+                        visible: _player && _player.canSkip
+                        enabled: _player && _player.online
+                        onClicked: _player.skip()
                     }
                 }
 
                 Row {
                     x: Theme.paddingMedium
                     width: parent.width - Theme.paddingMedium
-                    // Hidden when the player reports a fixed volume (volume=-1).
-                    visible: player && !player.fixedVolume
+                    // Hidden when the _player reports a fixed volume (volume=-1).
+                    visible: _player && !_player.fixedVolume
 
                     IconButton {
                         id: mute
                         anchors.verticalCenter: parent.verticalCenter
-                        icon.source: player && player.muted ? "image://theme/icon-m-speaker-mute" : "image://theme/icon-m-speaker"
-                        enabled: player && player.online
-                        onClicked: player.setMuted(!player.muted)
+                        icon.source: _player && _player.muted ? "image://theme/icon-m-speaker-mute" : "image://theme/icon-m-speaker"
+                        enabled: _player && _player.online
+                        onClicked: _player.setMuted(!_player.muted)
                     }
 
                     Slider {
@@ -202,18 +197,22 @@ Page {
                         minimumValue: 0
                         maximumValue: 100
                         stepSize: 1
-                        enabled: player && player.online
+                        enabled: _player && _player.online
                         label: qsTr("Volume")
                         valueText: Math.round(value)
 
-                        // Follow the player, except while the user drags.
+                        // Follow the _player, except while the user drags.
                         Binding {
                             target: volume
                             property: "value"
-                            value: player && player.volume >= 0 ? player.volume : 0
+                            value: _player && _player.volume >= 0 ? _player.volume : 0
                             when: !volume.down
                         }
-                        onValueChanged: if (down && player) player.setVolume(Math.round(value))
+                        onValueChanged: {
+                            if (down && _player) {
+                                _player.setVolume(Math.round(value))
+                            }
+                        }
                     }
                 }
                 }

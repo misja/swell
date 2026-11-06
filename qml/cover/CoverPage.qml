@@ -3,14 +3,14 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 
 CoverBackground {
-    readonly property QtObject player: players.current
+    readonly property QtObject _player: players.current
 
     Image {
         anchors.fill: parent
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
         opacity: 0.35
-        source: player ? player.artworkUrl : ""
+        source: _player ? _player.artworkUrl : ""
     }
 
     Column {
@@ -29,7 +29,7 @@ CoverBackground {
             maximumLineCount: 2
             elide: Text.ElideRight
             color: Theme.highlightColor
-            text: player && player.title1 !== "" ? player.title1 : qsTr("Swell")
+            text: _player && _player.title1 !== "" ? _player.title1 : qsTr("Swell")
         }
         Label {
             width: parent.width
@@ -38,7 +38,7 @@ CoverBackground {
             maximumLineCount: 2
             elide: Text.ElideRight
             font.pixelSize: Theme.fontSizeSmall
-            text: player ? player.title2 : ""
+            text: _player ? _player.title2 : ""
         }
         Label {
             width: parent.width
@@ -46,31 +46,31 @@ CoverBackground {
             elide: Text.ElideRight
             font.pixelSize: Theme.fontSizeExtraSmall
             color: Theme.secondaryColor
-            text: player ? player.name : ""
+            text: _player ? _player.name : ""
         }
     }
 
     // Play/pause, plus next song when the source can skip (the queue, or a
     // stream that offers it); plain radio gets play/pause only.
     CoverActionList {
-        enabled: player !== null && player.online && player.canSkip
+        enabled: _player !== null && _player.online && _player.canSkip
 
         CoverAction {
-            iconSource: player && player.playing ? "image://theme/icon-cover-pause" : "image://theme/icon-cover-play"
-            onTriggered: player.playing ? player.pause() : player.play()
+            iconSource: _player && _player.playing ? "image://theme/icon-cover-pause" : "image://theme/icon-cover-play"
+            onTriggered: _player.playing ? _player.pause() : _player.play()
         }
         CoverAction {
             iconSource: "image://theme/icon-cover-next-song"
-            onTriggered: player.skip()
+            onTriggered: _player.skip()
         }
     }
 
     CoverActionList {
-        enabled: player !== null && player.online && !player.canSkip
+        enabled: _player !== null && _player.online && !_player.canSkip
 
         CoverAction {
-            iconSource: player && player.playing ? "image://theme/icon-cover-pause" : "image://theme/icon-cover-play"
-            onTriggered: player.playing ? player.pause() : player.play()
+            iconSource: _player && _player.playing ? "image://theme/icon-cover-pause" : "image://theme/icon-cover-play"
+            onTriggered: _player.playing ? _player.pause() : _player.play()
         }
     }
 }

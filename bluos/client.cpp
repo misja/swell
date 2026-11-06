@@ -7,7 +7,7 @@
 #include <QVariantMap>
 #include <QXmlStreamReader>
 
-namespace bluos {
+namespace BluOS {
 
 namespace {
 
@@ -69,6 +69,8 @@ QUrl Client::resolveImage(const QString &image) const
         return QUrl();
     const QUrl base = url(QStringLiteral("/"));
     QUrl resolved = base.resolved(QUrl(image));
+    if (resolved.scheme() != QLatin1String("http") && resolved.scheme() != QLatin1String("https"))
+        return QUrl();
     if (resolved.host() == base.host() && resolved.port() == base.port()) {
         QUrlQuery query(resolved);
         if (!query.hasQueryItem(QStringLiteral("followRedirects")))
@@ -211,12 +213,12 @@ void Client::fetchPresets()
     if (!m_running || m_presetsLoading)
         return;
     m_presetsLoading = true;
-    fetch(QStringLiteral("/Presets"), QString(), [this](const QByteArray &body) {
+    const QString requestedFor = m_status.prid;
+    fetch(QStringLiteral("/Presets"), QString(), [this, requestedFor](const QByteArray &body) {
         m_presetsLoading = false;
         const Presets presets = parsePresets(body);
         if (!presets.ok)
             return;
-        m_presetsPrid = presets.prid;
         m_presetsFetched = true;
         QVariantList list;
         for (const Preset &p : presets.items) {
@@ -232,8 +234,11 @@ void Client::fetchPresets()
             m_presets = list;
             emit presetsChanged();
         }
-        // The list may have changed again while this was in flight.
-        if (m_status.ok && !m_status.prid.isEmpty() && m_status.prid != m_presetsPrid)
+        // Remember the status prid this answer belongs to, so a /Presets prid
+        // that never matches cannot cause endless refetching.
+        m_presetsPrid = requestedFor.isEmpty() ? presets.prid : requestedFor;
+        // The status may have moved on while this was in flight.
+        if (m_status.ok && m_status.prid != requestedFor)
             fetchPresets();
     });
 }
@@ -241,6 +246,10 @@ void Client::fetchPresets()
 void Client::fetch(const QString &path, const QString &encodedQuery,
                    const std::function<void(const QByteArray &)> &handler)
 {
+    if (!m_running) {
+        handler(QByteArray());
+        return;
+    }
     const int wait = msUntilAllowed(path);
     if (wait > 0) {
         QTimer::singleShot(wait, this, [this, path, encodedQuery, handler]() {
@@ -272,42 +281,46 @@ QUrl Client::url(const QString &path, const QString &encodedQuery) const
     return u;
 }
 
-int Client::msUntilAllowed(const QString &path)
+int Client::msUntilAllowed(const QString &path) const
 {
-    const Gate &gate = m_gates[path];
-    if (!gate.lastSent.isValid())
+    const QElapsedTimer sent = m_lastSent.value(path);
+    if (!sent.isValid())
         return 0;
-    const qint64 wait = m_timing.minIntervalMs - gate.lastSent.elapsed();
+    const qint64 wait = m_timing.minIntervalMs - sent.elapsed();
     return wait > 0 ? int(wait) : 0;
 }
 
-// Commands go through a per-path gate: at most one request per path per
-// minimum interval. While a command waits, a newer one for the same path
-// replaces it, so a burst of volume changes ends at the last value.
+// Commands go through a gate. The rate limit is per path (API 2: one request
+// per resource per second). Collapsing is per path and parameter, so a burst of
+// volume changes ends at the last level, but a mute in between is not lost.
 void Client::send(const QString &path, const QString &encodedQuery)
 {
-    Gate &gate = m_gates[path];
+    const QString name = encodedQuery.section(QLatin1Char('='), 0, 0);
+    const QString key = path + QLatin1Char('?') + name;
+    Gate &gate = m_gates[key];
+    gate.path = path;
     gate.pending = encodedQuery;
     gate.hasPending = true;
-    const int wait = msUntilAllowed(path);
-    if (wait == 0) {
-        dispatch(path);
-        return;
-    }
-    if (!gate.timer) {
-        gate.timer = new QTimer(this);
-        gate.timer->setSingleShot(true);
-        connect(gate.timer, &QTimer::timeout, this, [this, path]() { dispatch(path); });
-    }
-    if (!gate.timer->isActive())
-        gate.timer->start(wait);
+    dispatch(key);
 }
 
-void Client::dispatch(const QString &path)
+void Client::dispatch(const QString &key)
 {
-    Gate &gate = m_gates[path];
+    Gate &gate = m_gates[key];
     if (!gate.hasPending)
         return;
+    const int wait = msUntilAllowed(gate.path);
+    if (wait > 0) {
+        if (!gate.timer) {
+            gate.timer = new QTimer(this);
+            gate.timer->setSingleShot(true);
+            connect(gate.timer, &QTimer::timeout, this, [this, key]() { dispatch(key); });
+        }
+        if (!gate.timer->isActive())
+            gate.timer->start(wait);
+        return;
+    }
+    const QString path = gate.path;
     const QString query = gate.pending;
     gate.hasPending = false;
     QNetworkReply *reply = get(path, query, m_timing.commandTimeoutMs);
@@ -316,10 +329,12 @@ void Client::dispatch(const QString &path)
 
 QNetworkReply *Client::get(const QString &path, const QString &encodedQuery, int deadlineMs)
 {
-    m_gates[path].lastSent.start();
+    m_lastSent[path].start();
     QNetworkRequest request(url(path, encodedQuery));
     request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
     QNetworkReply *reply = m_nam->get(request);
+    // Owned by this client, so replacing or deleting it aborts what is in flight.
+    reply->setParent(this);
     // Qt 5.6 has no transfer timeout; abort() at the deadline instead.
     QTimer *deadline = new QTimer(reply);
     deadline->setSingleShot(true);
@@ -362,8 +377,10 @@ void Client::onStatusReply(QNetworkReply *reply)
         return;
 
     if (reply->error() != QNetworkReply::NoError) {
+        // A 404 means no control API here; other HTTP errors (a player busy
+        // upgrading, a proxy) and network errors are transient.
         const int http = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-        failed(http ? NotAPlayer : Offline);
+        failed(http == 404 ? NotAPlayer : Offline);
         return;
     }
     const Status status = parseStatus(reply->readAll());
@@ -406,6 +423,7 @@ void Client::fetchSyncStatus()
         return;
     }
     QNetworkReply *reply = get(QStringLiteral("/SyncStatus"), QString(), m_timing.commandTimeoutMs);
+    m_syncRequestedFor = m_status.syncStat;
     m_syncReply = reply;
     connect(reply, &QNetworkReply::finished, this, [this, reply]() { onSyncStatusReply(reply); });
 }
@@ -422,8 +440,9 @@ void Client::onSyncStatusReply(QNetworkReply *reply)
         return;
     m_sync = sync;
     emit syncStatusChanged();
-    // The status may have moved on while this was in flight.
-    if (m_status.ok && !m_status.syncStat.isEmpty() && m_status.syncStat != m_sync.syncStat)
+    // The status may have moved on while this was in flight; compare with what
+    // was asked for, not with the answer, which need not echo it.
+    if (m_status.ok && m_status.syncStat != m_syncRequestedFor)
         fetchSyncStatus();
 }
 
@@ -446,10 +465,6 @@ void Client::onCommandReply(QNetworkReply *reply, const QString &path)
             emit commandFailed(path, message.isEmpty() ? QStringLiteral("error") : message);
         }
     }
-    // A queued newer value for this path is sent once the gate allows it.
-    Gate &gate = m_gates[path];
-    if (gate.hasPending && !(gate.timer && gate.timer->isActive()))
-        send(path, gate.pending);
 }
 
 void Client::succeeded()
@@ -481,4 +496,4 @@ void Client::setAvailability(Availability availability)
     emit availabilityChanged();
 }
 
-} // namespace bluos
+} // namespace BluOS

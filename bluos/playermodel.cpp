@@ -4,7 +4,7 @@
 #include <QHostAddress>
 #include <QUrl>
 
-namespace bluos {
+namespace BluOS {
 
 PlayerModel::PlayerModel(QObject *parent)
     : QAbstractListModel(parent)
@@ -12,6 +12,9 @@ PlayerModel::PlayerModel(QObject *parent)
     connect(&m_discovery, &Discovery::found, this, &PlayerModel::onFound);
     connect(&m_discovery, &Discovery::lost, this, &PlayerModel::onLost);
     connect(&m_discovery, &Discovery::searchingChanged, this, &PlayerModel::searchingChanged);
+    connect(&m_discovery, &Discovery::error, this, [](const QString &message) {
+        qWarning("LSDP discovery unavailable: %s", qPrintable(message));
+    });
 }
 
 PlayerModel::~PlayerModel()
@@ -50,8 +53,6 @@ QVariant PlayerModel::data(const QModelIndex &index, int role) const
         return c->playing();
     case NowPlayingRole:
         return c->status().twolineTitle1.isEmpty() ? c->title1() : c->status().twolineTitle1;
-    case ClientRole:
-        return QVariant::fromValue<QObject *>(e.client);
     }
     return QVariant();
 }
@@ -67,7 +68,6 @@ QHash<int, QByteArray> PlayerModel::roleNames() const
         { ManualRole, "manual" },
         { PlayingRole, "playing" },
         { NowPlayingRole, "nowPlaying" },
-        { ClientRole, "client" },
     };
 }
 
@@ -92,6 +92,13 @@ bool PlayerModel::parseAddress(const QString &address, QString *host, int *port)
     *host = url.host();
     *port = url.port(11000);
     return *port > 0 && *port < 65536;
+}
+
+bool PlayerModel::isValidAddress(const QString &address) const
+{
+    QString host;
+    int port = 0;
+    return parseAddress(address, &host, &port);
 }
 
 bool PlayerModel::addManual(const QString &address)
@@ -256,6 +263,9 @@ void PlayerModel::onLost(const QString &nodeId)
     for (int i = m_entries.size() - 1; i >= 0; --i) {
         if (m_entries.at(i).nodeId != nodeId)
             continue;
+        // The current player stays; its own poll shows whether it is gone.
+        if (m_entries.at(i).client->id() == m_currentId)
+            continue;
         if (m_entries.at(i).manual)
             m_entries[i].nodeId.clear();
         else
@@ -265,7 +275,7 @@ void PlayerModel::onLost(const QString &nodeId)
 
 Client *PlayerModel::createClient(const QString &host, int port)
 {
-    Client *c = new Client(&m_nam, host, port);
+    Client *c = new Client(&m_nam, host, port, this);
     c->setTiming(m_timing);
     connect(c, &Client::availabilityChanged, this, &PlayerModel::clientChanged);
     connect(c, &Client::statusChanged, this, &PlayerModel::clientChanged);
@@ -290,8 +300,10 @@ void PlayerModel::removeAt(int row)
     m_entries.remove(row);
     endRemoveRows();
     c->deleteLater();
-    if (wasCurrent)
+    if (wasCurrent) {
+        m_currentId.clear();
         emit currentChanged();
+    }
     emit countChanged();
 }
 
@@ -306,4 +318,4 @@ void PlayerModel::clientChanged()
     }
 }
 
-} // namespace bluos
+} // namespace BluOS

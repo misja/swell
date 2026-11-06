@@ -22,7 +22,7 @@
 class QNetworkAccessManager;
 class QNetworkReply;
 
-namespace bluos {
+namespace BluOS {
 
 class Client : public QObject
 {
@@ -138,7 +138,7 @@ signals:
 
 private:
     struct Gate {
-        QElapsedTimer lastSent;
+        QString path;
         QTimer *timer = nullptr;
         QString pending;   // the query, already percent-encoded
         bool hasPending = false;
@@ -148,7 +148,7 @@ private:
     QUrl url(const QString &path, const QString &encodedQuery = QString()) const;
     void send(const QString &path, const QString &encodedQuery);
     void dispatch(const QString &path);
-    int msUntilAllowed(const QString &path);
+    int msUntilAllowed(const QString &path) const;
     QNetworkReply *get(const QString &path, const QString &encodedQuery, int deadlineMs);
     // Sends a player-given action URL ("/Action?service=…&skip=…") as given.
     void sendAction(const QString &actionUrl);
@@ -184,7 +184,9 @@ private:
     QTimer m_pollTimer;
     QTimer m_positionTimer;
     int m_backoffMs = 0;
-    QHash<QString, Gate> m_gates;
+    QHash<QString, Gate> m_gates;       // keyed by path and parameter name
+    QHash<QString, QElapsedTimer> m_lastSent;  // keyed by path
+    QString m_syncRequestedFor;
     QVariantList m_presets;
     QVariantList m_inputs;
     QString m_presetsPrid;
@@ -194,6 +196,6 @@ private:
     bool m_inputsFetched = false;
 };
 
-} // namespace bluos
+} // namespace BluOS
 
 #endif

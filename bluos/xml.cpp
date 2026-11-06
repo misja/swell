@@ -3,7 +3,7 @@
 
 #include <QXmlStreamReader>
 
-namespace bluos {
+namespace BluOS {
 
 namespace {
 
@@ -91,7 +91,6 @@ Status parseStatus(const QByteArray &xml)
         else if (n == QLatin1String("totlen")) s.totlen = toInt(reader.readElementText(), -1);
         else if (n == QLatin1String("volume")) s.volume = toInt(reader.readElementText(), -1);
         else if (n == QLatin1String("mute")) s.mute = toBool(reader.readElementText());
-        else if (n == QLatin1String("canSeek")) s.canSeek = toBool(reader.readElementText());
         else reader.skipCurrentElement();
     }
     s.ok = finish(reader, &s.error);
@@ -206,19 +205,5 @@ Inputs parseCaptureInputs(const QByteArray &xml)
     return inputs;
 }
 
-Volume parseVolume(const QByteArray &xml)
-{
-    Volume v;
-    QXmlStreamReader reader(xml);
-    if (!enterRoot(reader, "volume", &v.error))
-        return v;
-    const QXmlStreamAttributes a = reader.attributes();
-    v.etag = a.value(QLatin1String("etag")).toString();
-    v.mute = toBool(a.value(QLatin1String("mute")).toString());
-    v.db = a.value(QLatin1String("db")).toString().toDouble();
-    v.level = toInt(reader.readElementText(QXmlStreamReader::SkipChildElements), -1);
-    v.ok = finish(reader, &v.error);
-    return v;
-}
 
-} // namespace bluos
+} // namespace BluOS

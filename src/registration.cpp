@@ -6,14 +6,14 @@
 #include "client.h"
 #include "playermodel.h"
 
-namespace swell {
+namespace Swell {
 
 void registerTypes()
 {
-    qmlRegisterUncreatableType<bluos::Client>("Swell", 1, 0, "Player",
+    qmlRegisterUncreatableType<BluOS::Client>("Swell", 1, 0, "Player",
                                               QStringLiteral("Players come from the player model"));
-    qmlRegisterUncreatableType<bluos::PlayerModel>("Swell", 1, 0, "PlayerModel",
+    qmlRegisterUncreatableType<BluOS::PlayerModel>("Swell", 1, 0, "PlayerModel",
                                                    QStringLiteral("The app provides the player model"));
 }
 
-} // namespace swell
+} // namespace Swell

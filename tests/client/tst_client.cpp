@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// bluos::Client against the in-process FakePlayer: long polling, the
+// BluOS::Client against the in-process FakePlayer: long polling, the
 // one-second rule, commands, /SyncStatus refresh, availability and artwork.
 #include <QtTest>
 #include <QNetworkAccessManager>
@@ -8,7 +8,7 @@
 #include "client.h"
 #include "fakeplayer.h"
 
-using namespace bluos;
+using namespace BluOS;
 
 namespace {
 
@@ -71,6 +71,9 @@ private slots:
     void errorBodyIsACommandFailure();
     void inputsFetched();
     void skipFollowsTheSource();
+    void muteIsNotLostInAVolumeBurst();
+    void presetsRefetchIsBounded();
+    void serverErrorIsOfflineNot404();
 
 private:
     void startClient(const Client::Timing &timing = fast());
@@ -419,6 +422,52 @@ void TstClient::skipFollowsTheSource()
     m_client->skip();
     QTRY_COMPARE(m_player->requests(QStringLiteral("/Skip")).size(), 1);
     QCOMPARE(m_player->requests(QStringLiteral("/Back")).size(), 0);
+}
+
+void TstClient::muteIsNotLostInAVolumeBurst()
+{
+    startClient();
+    QTRY_COMPARE(m_client->volume(), 30);
+    m_client->setVolume(10);
+    m_client->setMuted(true);
+    m_client->setVolume(20);
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Volume")).size(), 3);
+    const auto sent = m_player->requests(QStringLiteral("/Volume"));
+    QStringList queries;
+    for (const auto &r : sent)
+        queries << QString::fromLatin1(r.target.mid(r.target.indexOf('?') + 1));
+    QCOMPARE(queries.first(), QStringLiteral("level=10"));
+    QVERIFY(queries.contains(QStringLiteral("mute=1")));
+    QVERIFY(queries.contains(QStringLiteral("level=20")));
+    // Still one request per resource per interval.
+    for (int i = 1; i < sent.size(); ++i)
+        QVERIFY(sent.at(i).atMs - sent.at(i - 1).atMs >= fast().minIntervalMs - 10);
+}
+
+void TstClient::presetsRefetchIsBounded()
+{
+    // /Presets reports a prid that never matches the status: no endless refetching.
+    m_player->setStatus("<status etag=\"p1\"><state>stop</state><prid>7</prid></status>");
+    m_player->serve(QStringLiteral("/Presets"), "<presets prid=\"999\"><preset id=\"1\" name=\"A\"/></presets>");
+    startClient();
+    QTRY_COMPARE(m_client->presets().size(), 1);
+    QTest::qWait(fast().minIntervalMs * 5);
+    QCOMPARE(m_player->requests(QStringLiteral("/Presets")).size(), 1);
+}
+
+void TstClient::serverErrorIsOfflineNot404()
+{
+    // A 5xx (e.g. during a firmware upgrade) is transient: Offline.
+    m_player->failWith(QStringLiteral("/Status"), 503);
+    startClient();
+    QTRY_COMPARE(m_client->availability(), Client::Offline);
+    delete m_client;
+    m_client = nullptr;
+
+    // A 404 means there is no control API here: not a player.
+    m_player->failWith(QStringLiteral("/Status"), 404);
+    startClient();
+    QTRY_COMPARE(m_client->availability(), Client::NotAPlayer);
 }
 
 QTEST_GUILESS_MAIN(TstClient)

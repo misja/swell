@@ -4,7 +4,7 @@
 #include <QNetworkInterface>
 #include <QtGlobal>
 
-namespace bluos {
+namespace BluOS {
 
 namespace {
 
@@ -23,7 +23,7 @@ int jitter()
 Discovery::Discovery(QObject *parent)
     : QObject(parent)
 {
-    qRegisterMetaType<bluos::Discovery::Found>();
+    qRegisterMetaType<BluOS::Discovery::Found>();
     m_burst.setSingleShot(true);
     connect(&m_burst, &QTimer::timeout, this, &Discovery::sendQuery);
     connect(&m_socket, &QUdpSocket::readyRead, this, &Discovery::readPending);
@@ -34,7 +34,7 @@ void Discovery::search()
     if (!listening()) {
         // Players answer by broadcast to the LSDP port, so listen there; other
         // LSDP users on this device may share it.
-        if (!m_socket.bind(QHostAddress(QHostAddress::AnyIPv4), lsdp::Port,
+        if (!m_socket.bind(QHostAddress(QHostAddress::AnyIPv4), Lsdp::Port,
                            QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint)) {
             emit error(m_socket.errorString());
             return;
@@ -47,18 +47,10 @@ void Discovery::search()
         emit searchingChanged();
 }
 
-void Discovery::stop()
-{
-    const bool wasSearching = searching();
-    m_burst.stop();
-    m_socket.close();
-    if (wasSearching)
-        emit searchingChanged();
-}
 
 void Discovery::sendQuery()
 {
-    const QByteArray query = lsdp::buildQuery({ lsdp::AllClasses });
+    const QByteArray query = Lsdp::buildQuery({ Lsdp::AllClasses });
     for (const QNetworkInterface &iface : QNetworkInterface::allInterfaces()) {
         const auto flags = iface.flags();
         if (!(flags & QNetworkInterface::IsUp) || !(flags & QNetworkInterface::IsRunning)
@@ -66,7 +58,7 @@ void Discovery::sendQuery()
             continue;
         for (const QNetworkAddressEntry &entry : iface.addressEntries()) {
             if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol && !entry.broadcast().isNull())
-                m_socket.writeDatagram(query, entry.broadcast(), lsdp::Port);
+                m_socket.writeDatagram(query, entry.broadcast(), Lsdp::Port);
         }
     }
     ++m_sent;
@@ -88,15 +80,15 @@ void Discovery::readPending()
 
 void Discovery::handleDatagram(const QByteArray &datagram)
 {
-    const lsdp::Packet packet = lsdp::parse(datagram);
+    const Lsdp::Packet packet = Lsdp::parse(datagram);
     if (!packet.valid)
         return;
-    for (const lsdp::Announce &announce : packet.announces) {
-        for (const lsdp::Record &record : announce.records) {
-            if (!lsdp::isPlayerClass(record.classId))
+    for (const Lsdp::Announce &announce : packet.announces) {
+        for (const Lsdp::Record &record : announce.records) {
+            if (!Lsdp::isPlayerClass(record.classId))
                 continue;
             Found player;
-            player.nodeId = lsdp::nodeIdToString(announce.nodeId);
+            player.nodeId = Lsdp::nodeIdToString(announce.nodeId);
             player.address = announce.address;
             bool ok = false;
             const int port = record.txt.value(QStringLiteral("port")).toInt(&ok);
@@ -109,14 +101,14 @@ void Discovery::handleDatagram(const QByteArray &datagram)
             emit found(player);
         }
     }
-    for (const lsdp::Delete &del : packet.deletes) {
+    for (const Lsdp::Delete &del : packet.deletes) {
         for (quint16 classId : del.classes) {
-            if (lsdp::isPlayerClass(classId)) {
-                emit lost(lsdp::nodeIdToString(del.nodeId));
+            if (Lsdp::isPlayerClass(classId)) {
+                emit lost(Lsdp::nodeIdToString(del.nodeId));
                 break;
             }
         }
     }
 }
 
-} // namespace bluos
+} // namespace BluOS

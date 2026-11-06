@@ -11,7 +11,7 @@
 
 #include "lsdp.h"
 
-namespace bluos {
+namespace BluOS {
 
 class Discovery : public QObject
 {
@@ -39,10 +39,9 @@ public:
 public slots:
     // Binds the LSDP port (shared) if needed and sends the query burst.
     void search();
-    void stop();
 
 signals:
-    void found(const bluos::Discovery::Found &player);
+    void found(const BluOS::Discovery::Found &player);
     void lost(const QString &nodeId);   // every player of that node
     void searchingChanged();
     void error(const QString &message);
@@ -56,8 +55,8 @@ private:
     int m_sent = 0;
 };
 
-} // namespace bluos
+} // namespace BluOS
 
-Q_DECLARE_METATYPE(bluos::Discovery::Found)
+Q_DECLARE_METATYPE(BluOS::Discovery::Found)
 
 #endif

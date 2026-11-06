@@ -6,7 +6,7 @@
 
 #include "xml.h"
 
-using namespace bluos;
+using namespace BluOS;
 
 class TstXml : public QObject
 {
@@ -21,7 +21,6 @@ private slots:
     void syncStatusPrimary();
     void syncStatusSecondary();
     void syncStatusWrongRoot();
-    void volume();
     void statusPrid();
     void statusStreamActions();
     void presets();
@@ -53,7 +52,6 @@ void TstXml::status()
     QCOMPARE(s.totlen, 180);
     QCOMPARE(s.volume, 23);
     QVERIFY(!s.mute);
-    QVERIFY(s.canSeek);
     QVERIFY(!s.hasStreamUrl);
     QCOMPARE(s.syncStat, QStringLiteral("s7"));
 }
@@ -140,15 +138,6 @@ void TstXml::syncStatusWrongRoot()
     QVERIFY(s.error.contains(QStringLiteral("status")));
 }
 
-void TstXml::volume()
-{
-    const Volume v = parseVolume("<volume db=\"-43.1\" mute=\"0\" offsetDb=\"0\" etag=\"v1\">11</volume>");
-    QVERIFY2(v.ok, qPrintable(v.error));
-    QCOMPARE(v.level, 11);
-    QCOMPARE(v.db, -43.1);
-    QVERIFY(!v.mute);
-    QCOMPARE(v.etag, QStringLiteral("v1"));
-}
 
 void TstXml::statusStreamActions()
 {

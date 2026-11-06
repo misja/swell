@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Parsers for the control API documents (BluOS Custom Integration API v1.7,
-// sections 2 and 3). Unknown elements and attributes are ignored, as the API
+// sections 2, 4.8, 6.1 and 11.1). Unknown elements and attributes are ignored, as the API
 // requires; malformed input yields ok == false and an error message.
 #ifndef BLUOS_XML_H
 #define BLUOS_XML_H
@@ -10,7 +10,7 @@
 #include <QList>
 #include <QStringList>
 
-namespace bluos {
+namespace BluOS {
 
 // /Status (section 2.1).
 struct Status {
@@ -38,7 +38,6 @@ struct Status {
     // the stream does not offer it. Relevant only with hasStreamUrl.
     QString skipActionUrl;
     QString backActionUrl;
-    bool canSeek = false;
 
     bool isPlaying() const { return state == QLatin1String("play") || state == QLatin1String("stream"); }
 };
@@ -68,17 +67,6 @@ struct SyncStatus {
     QStringList slaves;
 
     bool isSecondary() const { return !masterHost.isEmpty(); }
-};
-
-// /Volume (section 3).
-struct Volume {
-    bool ok = false;
-    QString error;
-
-    QString etag;
-    int level = -1;
-    double db = 0.0;
-    bool mute = false;
 };
 
 // /Presets (section 6.1). Ids are not sequential; play a preset by its id.
@@ -121,8 +109,7 @@ Status parseStatus(const QByteArray &xml);
 Presets parsePresets(const QByteArray &xml);
 Inputs parseCaptureInputs(const QByteArray &xml);
 SyncStatus parseSyncStatus(const QByteArray &xml);
-Volume parseVolume(const QByteArray &xml);
 
-} // namespace bluos
+} // namespace BluOS
 
 #endif

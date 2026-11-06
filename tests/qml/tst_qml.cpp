@@ -26,7 +26,7 @@ private:
 
 void TstQml::initTestCase()
 {
-    swell::registerTypes();
+    Swell::registerTypes();
     m_engine = new QQmlEngine(this);
 }
 

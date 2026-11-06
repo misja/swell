@@ -10,8 +10,8 @@
 #include <QString>
 #include <QVector>
 
-namespace bluos {
-namespace lsdp {
+namespace BluOS {
+namespace Lsdp {
 
 const quint16 Port = 11430;
 const quint16 AllClasses = 0xFFFF;
@@ -56,7 +56,7 @@ QByteArray buildQuery(const QVector<quint16> &classes);
 // "90:56:82:9F:02:78" style rendering of a node id, for display and logs.
 QString nodeIdToString(const QByteArray &nodeId);
 
-} // namespace lsdp
-} // namespace bluos
+} // namespace Lsdp
+} // namespace BluOS
 
 #endif

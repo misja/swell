@@ -42,10 +42,8 @@ ApplicationWindow {
         }
         onManualHostsChanged: manualHosts.value = players.manualHosts
         onCurrentChanged: {
-            if (players.currentId !== "") {
-                currentId.value = players.currentId
-                currentNodeId.value = players.currentNodeId
-            }
+            currentId.value = players.currentId
+            currentNodeId.value = players.currentNodeId
         }
     }
 
@@ -64,15 +62,17 @@ ApplicationWindow {
         } else if (page.objectName === "players") {
             page.openCurrent(false)
             var home = pageStack.nextPage(page)
-            if (home)
+            if (home) {
                 home.openNowPlaying = true
+            }
         }
     }
 
     Component.onCompleted: {
         var hosts = manualHosts.value
-        for (var i = 0; i < hosts.length; ++i)
+        for (var i = 0; i < hosts.length; ++i) {
             players.addManual(hosts[i])
+        }
         if (currentId.value !== "") {
             players.restoreCurrent(currentId.value, currentNodeId.value)
             startOnHome.start()
@@ -85,8 +85,8 @@ ApplicationWindow {
     DockedPanel {
         id: miniPlayer
 
-        readonly property QtObject player: players.current
-        readonly property string pageName: pageStack.currentPage ? pageStack.currentPage.objectName : ""
+        readonly property QtObject _player: players.current
+        readonly property string _pageName: pageStack.currentPage ? pageStack.currentPage.objectName : ""
 
         width: parent.width
         height: pageStack.currentPage && pageStack.currentPage.isLandscape ? Theme.itemSizeMedium : Theme.itemSizeLarge
@@ -96,12 +96,13 @@ ApplicationWindow {
         Binding {
             target: miniPlayer
             property: "open"
-            value: miniPlayer.player !== null && miniPlayer.player.online
-                   && (miniPlayer.pageName === "home" || miniPlayer.pageName === "players")
+            value: miniPlayer._player !== null && miniPlayer._player.online
+                   && (miniPlayer._pageName === "home" || miniPlayer._pageName === "players")
                    && !pageStack.busy
         }
 
         BackgroundItem {
+            id: miniItem
             anchors.fill: parent
             onClicked: app.openNowPlaying()
 
@@ -115,7 +116,7 @@ ApplicationWindow {
                 asynchronous: true
                 sourceSize.width: width
                 sourceSize.height: height
-                source: miniPlayer.player ? miniPlayer.player.artworkUrl : ""
+                source: miniPlayer._player ? miniPlayer._player.artworkUrl : ""
             }
 
             Column {
@@ -129,14 +130,15 @@ ApplicationWindow {
                 Label {
                     width: parent.width
                     truncationMode: TruncationMode.Fade
-                    text: miniPlayer.player ? miniPlayer.player.title1 : ""
+                    color: miniItem.highlighted ? Theme.highlightColor : Theme.primaryColor
+                    text: miniPlayer._player ? miniPlayer._player.title1 : ""
                 }
                 Label {
                     width: parent.width
                     truncationMode: TruncationMode.Fade
                     font.pixelSize: Theme.fontSizeExtraSmall
-                    color: Theme.secondaryColor
-                    text: miniPlayer.player ? miniPlayer.player.title2 : ""
+                    color: miniItem.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
+                    text: miniPlayer._player ? miniPlayer._player.title2 : ""
                 }
             }
 
@@ -147,9 +149,9 @@ ApplicationWindow {
                     rightMargin: Theme.paddingMedium
                     verticalCenter: parent.verticalCenter
                 }
-                icon.source: miniPlayer.player && miniPlayer.player.playing
+                icon.source: miniPlayer._player && miniPlayer._player.playing
                              ? "image://theme/icon-m-pause" : "image://theme/icon-m-play"
-                onClicked: miniPlayer.player.playing ? miniPlayer.player.pause() : miniPlayer.player.play()
+                onClicked: miniPlayer._player.playing ? miniPlayer._player.pause() : miniPlayer._player.play()
             }
         }
     }
@@ -159,8 +161,11 @@ ApplicationWindow {
     Timer {
         id: startOnHome
         interval: 0
-        onTriggered: if (pageStack.currentPage && pageStack.currentPage.objectName === "players")
-                         pageStack.currentPage.openCurrent(true)
+        onTriggered: {
+            if (pageStack.currentPage && pageStack.currentPage.objectName === "players") {
+                pageStack.currentPage.openCurrent(true)
+            }
+        }
     }
 
     Label {

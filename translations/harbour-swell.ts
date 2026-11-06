@@ -73,47 +73,52 @@
 <context>
     <name>HomePage</name>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="47"/>
-        <source>The player did not accept that: %1</source>
+        <location filename="../qml/pages/HomePage.qml" line="54"/>
+        <source>The player did not accept that.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="56"/>
+        <location filename="../qml/pages/HomePage.qml" line="64"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="60"/>
+        <location filename="../qml/pages/HomePage.qml" line="68"/>
         <source>Players</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="75"/>
-        <source>Connecting…</source>
+        <location filename="../qml/pages/HomePage.qml" line="81"/>
+        <source>No player chosen. Pull down to pick one.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="77"/>
+        <location filename="../qml/pages/HomePage.qml" line="90"/>
         <source>Not a BluOS player</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="78"/>
+        <location filename="../qml/pages/HomePage.qml" line="92"/>
         <source>Not reachable. Pull down to pick another player.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="82"/>
+        <location filename="../qml/pages/HomePage.qml" line="87"/>
+        <source>Connecting…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="96"/>
         <source>Presets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="146"/>
+        <location filename="../qml/pages/HomePage.qml" line="161"/>
         <source>No presets on this player. Presets are created in the official app.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="150"/>
+        <location filename="../qml/pages/HomePage.qml" line="165"/>
         <source>Inputs</source>
         <translation type="unfinished"></translation>
     </message>
@@ -121,13 +126,13 @@
 <context>
     <name>NowPlayingPage</name>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="43"/>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="77"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="41"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="73"/>
         <source>Not reachable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="206"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="201"/>
         <source>Volume</source>
         <translation type="unfinished"></translation>
     </message>
@@ -135,52 +140,52 @@
 <context>
     <name>PlayersPage</name>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="34"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="37"/>
         <source>Connecting…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="35"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="38"/>
         <source>Not reachable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="36"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="39"/>
         <source>Not a BluOS player</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="46"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="49"/>
         <source>Players</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="51"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="54"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="55"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="58"/>
         <source>Add player…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="59"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="62"/>
         <source>Search again</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="104"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="107"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="113"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="116"/>
         <source>No players found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="114"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="117"/>
         <source>Pull down to search again or to add a player by address</source>
         <translation type="unfinished"></translation>
     </message>

@@ -1,9 +1,8 @@
 # Feature specification — 001 core controller
 
-Status: scope revised 2026-11-06 for the agreed MVP and navigation structure
-(Home, presets, inputs, landscape). This revision needs a separate scope
-review before UI implementation. The protocol library parts reviewed earlier
-are unaffected.
+Status: implemented 2026-11-06. Scope and design reviews passed. The result
+review (AC6) findings are resolved and await a focused re-check, then
+maintainer review.
 
 ## Owner and linked issue
 

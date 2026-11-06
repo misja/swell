@@ -6,36 +6,41 @@ Page {
     id: page
     objectName: "home"
 
-    // Set when opened from the mini-player on Players: go straight on to Now Playing.
-    property bool openNowPlaying: false
+    // Set when opened from the mini-_player on Players: go straight on to Now Playing.
+    property bool openNowPlaying
 
-    property QtObject player: players.current
-    readonly property int columns: isLandscape ? 6 : 4
-    readonly property int tileSize: Math.floor((width - 2 * Theme.horizontalPageMargin
-                                                - (columns - 1) * Theme.paddingMedium) / columns)
+    readonly property QtObject _player: players.current
+    readonly property int _columns: isLandscape ? 6 : 4
+    readonly property int _tileSize: Math.floor((width - 2 * Theme.horizontalPageMargin
+                                                - (_columns - 1) * Theme.paddingMedium) / _columns)
 
     allowedOrientations: Orientation.All
 
     // The icon the user chose for an input in the official app; presets that
     // select an input carry only a generic one.
-    function inputImage(inputId) {
-        if (!player || inputId === "")
+    function _inputImage(inputId) {
+        if (!_player || inputId === "") {
             return ""
-        for (var i = 0; i < player.inputs.length; ++i) {
-            if (player.inputs[i].id === inputId)
-                return player.inputs[i].image
+        }
+        for (var i = 0; i < _player.inputs.length; ++i) {
+            if (_player.inputs[i].id === inputId) {
+                return _player.inputs[i].image
+            }
         }
         return ""
     }
 
     onStatusChanged: {
-        if (status !== PageStatus.Active)
+        if (status !== PageStatus.Active) {
             return
+        }
         // Now Playing is the page attached to Home (swipe left).
-        if (pageStack.nextPage(page) === null)
+        if (pageStack.nextPage(page) === null) {
             pageStack.pushAttached(Qt.resolvedUrl("NowPlayingPage.qml"))
-        if (player)
-            player.refreshInputs()
+        }
+        if (_player) {
+            _player.refreshInputs()
+        }
         if (openNowPlaying) {
             openNowPlaying = false
             pageStack.navigateForward()
@@ -43,8 +48,11 @@ Page {
     }
 
     Connections {
-        target: player
-        onCommandFailed: app.notify(qsTr("The player did not accept that: %1").arg(error))
+        target: _player
+        onCommandFailed: {
+            console.warn("Command", path, "failed:", error)
+            app.notify(qsTr("The player did not accept that."))
+        }
     }
 
     SilicaFlickable {
@@ -67,14 +75,20 @@ Page {
             width: parent.width
 
             PageHeader {
-                title: player ? (player.name !== "" ? player.name : player.host) : ""
+                title: _player ? (_player.name !== "" ? _player.name : _player.host) : ""
                 description: {
-                    if (!player || player.online)
+                    if (!_player) {
+                        return qsTr("No player chosen. Pull down to pick one.")
+                    }
+                    if (_player.online) {
                         return ""
-                    if (player.availability === 0)
+                    }
+                    if (_player.availability === 0) {
                         return qsTr("Connecting…")
-                    if (player.availability === 3)
+                    }
+                    if (_player.availability === 3) {
                         return qsTr("Not a BluOS player")
+                    }
                     return qsTr("Not reachable. Pull down to pick another player.")
                 }
             }
@@ -85,51 +99,52 @@ Page {
                 x: Theme.horizontalPageMargin
                 width: parent.width - 2 * Theme.horizontalPageMargin
                 spacing: Theme.paddingMedium
-                visible: player && player.presets.length > 0
+                visible: _player && _player.presets.length > 0
 
                 Repeater {
-                    model: player ? player.presets : []
+                    model: _player ? _player.presets : []
 
                     BackgroundItem {
                         id: tile
-                        readonly property bool isInput: modelData.inputId !== ""
-                        width: page.tileSize
-                        height: page.tileSize + nameLabel.height + Theme.paddingSmall
-                        enabled: player.online
-                        onClicked: player.playPreset(modelData.id)
+                        readonly property bool _isInput: modelData.inputId !== ""
+                        width: page._tileSize
+                        height: page._tileSize + nameLabel.height + Theme.paddingSmall
+                        enabled: _player.online
+                        onClicked: _player.playPreset(modelData.id)
 
                         // Inputs are line icons: give them a tile like the station logos.
                         Rectangle {
-                            width: page.tileSize
-                            height: page.tileSize
-                            visible: tile.isInput
+                            width: page._tileSize
+                            height: page._tileSize
+                            visible: tile._isInput
                             color: Theme.rgba(Theme.highlightBackgroundColor, Theme.highlightBackgroundOpacity)
                         }
                         Image {
                             id: art
-                            x: tile.isInput ? (page.tileSize - width) / 2 : 0
-                            y: tile.isInput ? (page.tileSize - height) / 2 : 0
-                            width: tile.isInput ? page.tileSize * 0.55 : page.tileSize
+                            x: tile._isInput ? (page._tileSize - width) / 2 : 0
+                            y: tile._isInput ? (page._tileSize - height) / 2 : 0
+                            width: tile._isInput ? page._tileSize * 0.55 : page._tileSize
                             height: width
-                            fillMode: tile.isInput ? Image.PreserveAspectFit : Image.PreserveAspectCrop
+                            fillMode: tile._isInput ? Image.PreserveAspectFit : Image.PreserveAspectCrop
                             asynchronous: true
                             sourceSize.width: width
                             sourceSize.height: height
-                            source: page.inputImage(modelData.inputId) || modelData.image
+                            source: page._inputImage(modelData.inputId) || modelData.image
                         }
                         Icon {
-                            x: (page.tileSize - width) / 2
-                            y: (page.tileSize - height) / 2
+                            x: (page._tileSize - width) / 2
+                            y: (page._tileSize - height) / 2
                             visible: art.status !== Image.Ready
                             source: "image://theme/icon-m-media-radio"
                         }
                         Label {
                             id: nameLabel
-                            y: page.tileSize
+                            y: page._tileSize
                             anchors.topMargin: Theme.paddingSmall
                             width: parent.width
                             font.pixelSize: Theme.fontSizeExtraSmall
                             truncationMode: TruncationMode.Fade
+                            color: tile.highlighted ? Theme.highlightColor : Theme.primaryColor
                             text: modelData.name
                         }
                     }
@@ -139,7 +154,7 @@ Page {
             Label {
                 x: Theme.horizontalPageMargin
                 width: parent.width - 2 * Theme.horizontalPageMargin
-                visible: player && player.online && player.presets.length === 0
+                visible: _player && _player.online && _player.presets.length === 0
                 wrapMode: Text.Wrap
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.secondaryHighlightColor
@@ -153,12 +168,13 @@ Page {
 
             Repeater {
                 id: inputs
-                model: player ? player.inputs : []
+                model: _player ? _player.inputs : []
 
                 ListItem {
-                    contentHeight: Theme.itemSizeExtraSmall
-                    enabled: player.online
-                    onClicked: player.playInput(modelData.url)
+                    id: inputItem
+                    contentHeight: Theme.itemSizeSmall
+                    enabled: _player.online
+                    onClicked: _player.playInput(modelData.url)
 
                     Image {
                         id: inputIcon
@@ -180,6 +196,7 @@ Page {
                             verticalCenter: parent.verticalCenter
                         }
                         truncationMode: TruncationMode.Fade
+                        color: inputItem.highlighted ? Theme.highlightColor : Theme.primaryColor
                         text: modelData.text
                     }
                 }

@@ -72,6 +72,8 @@ public:
     }
 
     void redirect(const QString &path, const QUrl &to) { m_redirects.insert(path, to); }
+    // Answers this path with an HTTP error status instead of its document.
+    void failWith(const QString &path, int status) { m_failures.insert(path, status); }
 
     QList<Request> requests() const { return m_requests; }
     QList<Request> requests(const QString &path) const
@@ -146,7 +148,10 @@ private:
     {
         QByteArray head;
         QByteArray body;
-        if (m_redirects.contains(path)) {
+        if (m_failures.contains(path)) {
+            body = "error";
+            head = "HTTP/1.1 " + QByteArray::number(m_failures.value(path)) + " Error\r\nContent-Type: text/plain\r\n";
+        } else if (m_redirects.contains(path)) {
             head = "HTTP/1.1 302 Found\r\nLocation: " + m_redirects.value(path).toEncoded() + "\r\n";
         } else if (m_routes.contains(path)) {
             body = m_routes.value(path);
@@ -166,6 +171,7 @@ private:
     QHash<QString, QByteArray> m_routes;
     QHash<QString, QByteArray> m_types;
     QHash<QString, QUrl> m_redirects;
+    QHash<QString, int> m_failures;
     QHash<QTcpSocket *, QByteArray> m_buffers;
     QList<Held> m_held;
     QList<Request> m_requests;

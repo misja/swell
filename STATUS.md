@@ -17,8 +17,7 @@ Changed artifacts and evidence paths:
 - src/registration.* is the shared QML type registration.
 - tests/ holds spike, lsdp, xml, client, model and qml.
 - evidence/001/README.md has the dated results. The latest run on aarch64:
-  all suites pass (5/18/19/22/23/4). The RPM passed the Harbour validator 1.110
-  at scaffold time.
+  current results for HEAD are at the top of the README (release 0.1.0-6).
 
 Decisions and authorization scope:
 - Misja (2026-11-06):
@@ -58,13 +57,30 @@ Device iterations 0.1.0-2…4 (confirmed by Misja):
 - cover titles wrap;
 - previous/next follow the source (queue, stream actions, otherwise hidden).
 
+Result review (AC6, separate agent result_review, 2026-11-06): ready after
+fixes. All were resolved in this round:
+- the missing `isValidAddress`;
+- the current player on removal and on LSDP Delete;
+- bounded refetch;
+- the per-path+parameter collapse;
+- translated errors;
+- 404-only NotAPlayer;
+- current logs;
+- stale artifacts.
+Several NITs were also addressed: client parenting, replies owned by the
+client, http(s)-only images, the discovery error log, and the removal of
+unused parseVolume/canSeek/Discovery::stop.
+Also done in this round:
+- Sailfish coding conventions and the Silica pitfalls, including the
+  CamelCase namespaces;
+- workspace PR misja/sailfish-workspace#18 for the shared conventions.
+
 Next action:
-1. The separate result review (AC6), then a PR for Misja.
-2. Small polish: vertical balance of Now Playing in portrait; watch the
-   connection count over time.
+1. A focused re-check of the fixes by the result reviewer, then a PR for Misja.
+2. Install 0.1.0-6 on the device for a quick look (needs confirmation on the
+   phone).
 3. App icon/logo, in a later session (Misja).
-4. Release-target ID: the device runs 5.2.0.20, the registry says 5.2.0.18;
-   to be settled with Misja.
+4. Release-target ID: the device runs 5.2.0.20, the registry says 5.2.0.18.
 
 The old UI drafts are in git stash ("ui-draft-*") as starting material only.
 

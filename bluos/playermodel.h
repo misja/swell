@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // The players known to the app: found by LSDP, or entered by address.
-// Each has a bluos::Client; all clients share one QNetworkAccessManager.
+// Each has a BluOS::Client; all clients share one QNetworkAccessManager.
 #ifndef BLUOS_PLAYERMODEL_H
 #define BLUOS_PLAYERMODEL_H
 
@@ -12,7 +12,7 @@
 #include "client.h"
 #include "discovery.h"
 
-namespace bluos {
+namespace BluOS {
 
 class PlayerModel : public QAbstractListModel
 {
@@ -36,8 +36,7 @@ public:
         AvailabilityRole,
         ManualRole,
         PlayingRole,
-        NowPlayingRole,
-        ClientRole
+        NowPlayingRole
     };
 
     explicit PlayerModel(QObject *parent = nullptr);
@@ -67,8 +66,9 @@ public:
     Q_INVOKABLE void removeManual(const QString &id);
     Q_INVOKABLE void search();
     Q_INVOKABLE int indexOf(const QString &id) const;
+    Q_INVOKABLE bool isValidAddress(const QString &address) const;
     Q_INVOKABLE QString idAt(int row) const;
-    Q_INVOKABLE QObject *client(const QString &id) const;
+    QObject *client(const QString &id) const;
 
     static bool parseAddress(const QString &address, QString *host, int *port);
 
@@ -103,6 +103,6 @@ private:
     bool m_pollAll = false;
 };
 
-} // namespace bluos
+} // namespace BluOS
 
 #endif

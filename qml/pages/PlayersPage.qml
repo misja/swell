@@ -10,16 +10,19 @@ Page {
 
     // Shows the current player's Home, one swipe to the left of this list.
     function openCurrent(immediate) {
-        if (!players.current)
+        if (!players.current) {
             return
-        if (pageStack.nextPage(page) === null)
+        }
+        if (pageStack.nextPage(page) === null) {
             pageStack.pushAttached(Qt.resolvedUrl("HomePage.qml"))
+        }
         pageStack.navigateForward(immediate ? PageStackAction.Immediate : PageStackAction.Animated)
     }
 
     onStatusChanged: {
-        if (status === PageStatus.Active && players.current && pageStack.nextPage(page) === null)
+        if (status === PageStatus.Active && players.current && pageStack.nextPage(page) === null) {
             pageStack.pushAttached(Qt.resolvedUrl("HomePage.qml"))
+        }
     }
 
     // Every player polls only while this list is on screen (spec: background polling).
@@ -29,7 +32,7 @@ Page {
         value: page.status === PageStatus.Active && Qt.application.active
     }
 
-    function availabilityText(availability) {
+    function _availabilityText(availability) {
         switch (availability) {
         case 0: return qsTr("Connecting…")
         case 2: return qsTr("Not reachable")
@@ -93,7 +96,7 @@ Page {
                     color: item.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
                     text: model.availability === 1
                           ? (model.nowPlaying !== "" ? model.nowPlaying : model.modelName)
-                          : page.availabilityText(model.availability)
+                          : page._availabilityText(model.availability)
                 }
             }
 

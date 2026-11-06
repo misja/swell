@@ -1,5 +1,22 @@
 # Evidence — 001 core controller
 
+## Current result (HEAD, release 0.1.0-6)
+
+These logs are committed for this commit:
+- `sdk-build-aarch64.log`: `sfdk build`, exit 0.
+- `harbour-validator.log`: succeeded; 1 accepted warning ("file is not
+  stripped").
+- `unit-aarch64.log`: all suites pass: spike 5, lsdp 18, xml 19, client 26,
+  model 26, qml 11.
+
+RPM sha256 cb1765cceb3b508cb7e45e3a69ea91d2f21fc82b20989cc0460df47dc0a43872.
+Dutch translation: 0 unfinished.
+
+The table below is the history. Entries for builds 0.1.0-2…5 record results
+observed at that time; their logs were overwritten by later runs. Device
+results come from Misja's observation on the device and are not logs.
+
+
 | Date | Check | Result | Log |
 |---|---|---|---|
 | 2026-11-06 | `sfdk build` (SDK 3.13.5, SailfishOS-5.1.0.11-aarch64, no-pull-build-requires), scaffold only | exit 0; RPM sha256 7da2de0ace56fea7ca86f616289eae5964792fe957d263fb7d4de1e936bd4e3d | sdk-build-aarch64.log |

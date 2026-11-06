@@ -3,7 +3,7 @@
 #ifndef SWELL_REGISTRATION_H
 #define SWELL_REGISTRATION_H
 
-namespace swell {
+namespace Swell {
 void registerTypes();
 }
 
