@@ -2,8 +2,9 @@
 
 Status: revised 2026-11-06 for the MVP scope revision (spec, scope_review_2).
 The protocol-library parts (rows up to the player model) were design-reviewed
-and are built. The rows marked "MVP" are new and need a separate design review
-before UI implementation (see Review).
+and are built. The rows marked "MVP" were design-reviewed (design_review_2,
+2026-11-06, approve with changes; findings applied below). UI work may start
+with the AC4 spike.
 
 ## Linked specification and accepted ADRs
 
@@ -38,19 +39,19 @@ C++/QML split. Each part records why it is in C++, as the spec requires:
 
 | Part | Where | Reason |
 |---|---|---|
-| LSDP discovery (`LsdpDiscovery`) | C++ | QML has no UDP socket. QUdpSocket on port 11430. Sends seven queries at 0, 1, 2, 3, 5, 7 and 10 s with up to 250 ms jitter (API v1.7 Appendix, timing) and keeps listening for announces. Handles Announce and Delete messages and skips unknown types. |
+| LSDP discovery (`bluos::Discovery`) | C++ | QML has no UDP socket. QUdpSocket on port 11430. Sends seven queries at 0, 1, 2, 3, 5, 7 and 10 s with up to 250 ms jitter (API v1.7 Appendix, timing) and keeps listening for announces. Handles Announce and Delete messages and skips unknown types. |
 | LSDP packet parser (`lsdp::parse`) | C++, pure function | Tested with QtTest on synthetic byte arrays. Cases: truncated packet, unknown type, own echoed `Q`, several messages, an announcement split across messages (API Appendix note 2), a Delete message, the class filter, and an address change for the same node id. The control port comes from TXT `port`, falling back to 11000. Name and model are taken from TXT when present; `/SyncStatus` is authoritative. |
-| Player client (`PlayerClient`, one per player) | C++ | Reason: the long-poll, one-second-rule and backoff state machine must be covered by QtTest (AC3). Timeouts use `QTimer` + `abort()`: Qt 5.6 has no transfer timeout in either QNetworkRequest or QML XHR, as checked in `libQt5Qml.so.5.6.3`. All clients share one QNetworkAccessManager owned by the player model. QML `Image` uses the engine's own NAM, which follows redirects itself. The one-second rule is keyed by request path (API §2: "must"). Bursts of commands to the same path, such as volume from a slider, collapse to the latest value. Offline state and backoff. Commands: play, pause, skip, back, volume and mute. |
-| Polling policy | C++ (`PlayerClient`) | `/Status` long poll with `timeout=100` (API §2.1 recommends 100 s and never less than 10 s; tests inject shorter values). `/SyncStatus` is fetched once when a player is added (name, model, id, group master) and again whenever `<syncStat>` in `/Status` changes. This player's volume and mute come from `/SyncStatus`, because a grouped secondary's `/Status` copies the primary's (API §2). |
+| Player client (`bluos::Client`, one per player) | C++ | Reason: the long-poll, one-second-rule and backoff state machine must be covered by QtTest (AC3). Timeouts use `QTimer` + `abort()`: Qt 5.6 has no transfer timeout in either QNetworkRequest or QML XHR, as checked in `libQt5Qml.so.5.6.3`. All clients share one QNetworkAccessManager owned by the player model. QML `Image` uses the engine's own NAM, which follows redirects itself. The one-second rule is keyed by request path (API §2: "must"). Bursts of commands to the same path, such as volume from a slider, collapse to the latest value. Offline state and backoff. Commands: play, pause, skip, back, volume and mute. |
+| Polling policy | C++ (`bluos::Client`) | `/Status` long poll with `timeout=100` (API §2.1 recommends 100 s and never less than 10 s; tests inject shorter values). `/SyncStatus` is fetched once when a player is added (name, model, id, group master) and again whenever `<syncStat>` in `/Status` changes. This player's volume and mute come from `/SyncStatus`, because a grouped secondary's `/Status` copies the primary's (API §2). |
 | XML parsing (`parseStatus`, `parseSyncStatus`, `parseVolume`) | C++, QXmlStreamReader, pure functions | Unknown elements are ignored and malformed input returns an error value. QtTest coverage without a network. |
 | Player model (`PlayerModel`) | C++ QAbstractListModel | Merges discovered and manual players by node id / `host:port`. |
 | MVP: `Status.prid` | C++ (`parseStatus`) | Needed to know when presets change (API §2.1, §6.1). |
-| MVP: preset and input parsers (`parsePresets`, `parseCaptureInputs`) | C++, QXmlStreamReader, pure functions | Same reason as the other parsers: QtTest coverage of unknown elements, missing `inputType`, nested Hub `<category>`/`remoteitem` (skipped) and malformed input (AC2). |
-| MVP: presets and inputs on `Client` | C++ | `presets` and `inputs` list properties for QML. Fetched on first contact and on `prid` change (presets); inputs on first contact and when Home is shown. `playPreset(id)` sends `/Preset?id=`; `playInput(url)` sends `/Play?url=` with the given encoded URL as-is (`QUrl::fromEncoded` on the full request URL, so nothing is encoded twice). Both go through the one-second gate. A `playFailed(message)` signal fires on a network/HTTP error or an `<error>` body. Covered by fixture tests (AC3). |
-| MVP: background polling | C++ (`Client::setActive`, `PlayerModel`) + QML | The current player always polls. Other players poll only while Players is visible and the app is active (`Qt.application.state`). Inactive clients stop their long poll, keep their last state, and refresh on activation. |
-| MVP: start state | QML | With a remembered current player, start on Home; otherwise start on Players. If the current player is not online, Home shows its availability with a hint. |
+| MVP: preset and input parsers (`parsePresets`, `parseCaptureInputs`) | C++, QXmlStreamReader, pure functions | Done (40c5af5). Same reason as the other parsers: QtTest coverage of unknown elements, missing `inputType`, nested Hub `<category>`/`remoteitem` (skipped) and malformed input (AC2). Hub inputs are a scope choice: §11.1 is the only way to select them, so later support stays possible. |
+| MVP: presets and inputs on `Client` | C++ | `presets` and `inputs` as `QVariantList` of `QVariantMap`, with image URLs already resolved. They are small and rarely change, so no list model. The client caches them per player: presets are fetched on first contact and on a `prid` change, so a player switch shows the cache at once; inputs come on first contact and via `refreshInputs()`, which Home calls when shown. `playPreset(id)` sends `/Preset?id=`. `playInput(url)` sends `/Play?url=` with the attribute byte for byte. Failures use the existing `commandFailed(path, error)`: `onCommandReply` also treats an `<error>` root body as a failure. No new signal. |
+| MVP: command query encoding | C++ (`bluos::Client`) | The gate stores the already-encoded query string, not a `QUrlQuery`, because `QUrlQuery` decodes `%3A`, `%2F` and `%2C`. Normal commands use `QUrlQuery::query(QUrl::FullyEncoded)`. Inputs use `"url=" + attribute`, set with `QUrl::setQuery(…, QUrl::StrictMode)`. An invalid result (a raw `#`, or `&` injection) is rejected and reported through `commandFailed`. Gate collapse stays keyed by path, so `/Play` from `playInput` and `play()` within one second means the latest wins. That matches the user's latest intent and is accepted. |
+| MVP: current player and polling policy | C++ (`PlayerModel`) + QML binding | `PlayerModel` gains `currentId` (read/write), `current` (`Client*`, NOTIFY) and `pollAll`. The model applies the policy in one place, including to clients created later: a client runs when `pollAll` is true or it is the current one; otherwise `stop()`. The existing `start()`/`stop()` suffice: `stop()` keeps the last status and `start()` resumes the long poll with the old etag. A stopped client keeps showing its last state, including "Online"; this is intended. QML binds `pollAll` to "Players page active and `applicationActive`". When the current player's client is replaced after an address change, `current` notifies, so QML never holds a deleted client. || MVP: start state | C++ (`PlayerModel`) + QML | The current player is persisted as `host:port` plus its LSDP `nodeId` (when known). At start the model creates that entry at once, so it shows Connecting instead of "not online" while discovery runs (up to ~10 s). An announcement with the same node id but a new address updates it (the existing address-change merge), so a DHCP change does not leave Home on a dead address. With a remembered player, start on Home; otherwise start on Players. If the current player is offline, Home shows its availability with a hint. |
 | MVP: pages | QML/Silica | Players (`SilicaListView`, pulley: About, Add player, Search again; context menu Remove on manual players); Add-player `Dialog`; Home (presets grid, inputs row; pulley: Players, About); Now Playing via `pageStack.pushAttached` from Home; About with the privacy statement. Every page sets `allowedOrientations: Orientation.All`, because Silica defaults pages to portrait (`ApplicationWindow.qml:107`). Now Playing uses `isLandscape` to put the artwork beside the controls. |
-| MVP: docked mini-player | QML, Silica `DockedPanel` | One panel in the `ApplicationWindow`, hidden on Now Playing. It shows artwork, title and play/pause; a tap opens Now Playing. `MediaPlayerControlsPanel` is not reused (seek slider always shown, no artwork/title slot, opens only while playing). Its look may borrow `MediaPlayerPanelBackground`. |
+| MVP: docked mini-player | QML, Silica `DockedPanel` | One panel declared in the `ApplicationWindow`. It reparents to `_rotatingItem`, so it follows the orientation (DockedPanel.qml:97-98). The window's `bottomMargin: panel.visibleSize` keeps page content clear in both orientations (ApplicationWindow.qml:315-316). Shown only on Home and Players, and only with a current player that is online. It is opened and closed through a `Binding`/`show()`/`hide()`, because dragging it sets `open = false` and would break a plain `open:` binding (DockedPanel.qml:258). It hides when the attached-page swipe starts. Landscape uses a compact height. It shows artwork, title and play/pause; a tap opens Now Playing. `MediaPlayerControlsPanel` is not reused (seek slider always shown, no artwork/title slot, opens only while playing). |
 | Cover page and cover actions | QML/Silica | `CoverActionList`: play/pause and next. |
 | Persistence (manual hosts, current player) | QML `Nemo.Configuration` (`ConfigurationValue`) | Existing allowed platform facility; no own storage code. |
 | Cover art | C++ helper `artworkUrl()` + QML `Image` | The helper resolves relative image paths against the player and adds `followRedirects=1` (API v1.7 image attributes). `Image` loads through the shared NAM, which also follows redirects as a fallback. |
@@ -122,15 +123,26 @@ SDK build engine for the aarch64 target (sb2/qemu; see the spike above):
   - the request log for transport, volume and mute, including a collapsed
     volume burst;
   - `/SyncStatus` refetch on a `<syncStat>` change;
-  - `/Artwork` redirect: an image fetched through the shared NAM follows a
+  - `/Artwork` redirect: an image fetched through a NAM with redirects enabled follows a
     redirect to a second fixture port, and `artworkUrl()` adds
     `followRedirects=1`;
-  - MVP: presets and inputs fetched; `/Preset?id=` and `/Play?url=` sent, the
-    input URL not encoded twice; a `prid` change refetches `/Presets`; an
-    `<error>` body raises `playFailed`; an inactive client stops polling and
-    refreshes on activation.
+  - MVP: presets and inputs fetched; `/Preset?id=` sent; for `/Play?url=` the
+    fake player logs the raw request target, and it must equal `/Play?url=`
+    plus the attribute byte for byte. One case uses the §11.1 shape with
+    `%3F`, `%3D`, `%2C`; another contains `%25`; an input URL with a raw `#`
+    is rejected. A `prid` change refetches `/Presets`. An `<error>` body raises
+    `commandFailed`. The model's `pollAll`/`currentId` start and stop the right
+    clients, including ones created later, and the remembered player appears
+    at once as Connecting.
 - QML engine test (AC4): every `.qml` file becomes a Ready `QQmlComponent` on
-  the `minimal` platform with the target's import path. The target has no
+  the `minimal` platform with the target's import path. Files are loaded by
+  `file://` URL from the source tree, so relative imports resolve. C++ types
+  are registered through one shared function used by `main` and the test.
+  A negative control (a deliberately wrong property) must give an Error
+  status. The spike's root is an `ApplicationWindow` importing
+  `Nemo.Configuration`. The Silica plugin links EGL/wayland/mlite, which the
+  target has. Whether it survives engine initialization under `minimal` is
+  open until the spike runs. The target has no
   `qmllint` and no offscreen platform (checked 2026-11-06), so runtime binding
   warnings and rendering are recorded as not checked.
 
@@ -204,3 +216,5 @@ RPM. No full rebuild of SDK components is needed.
   injectable timeouts.
 - Decided: private GitHub repository misja/swell, issue #1.
 - Risk: Silica may not load on the `minimal` platform (AC4 spike decides).
+- Known limitation: during the attached-page swipe the docked panel hides as
+  the swipe starts; any remaining overlap is recorded after a device check.

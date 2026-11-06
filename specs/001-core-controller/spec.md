@@ -48,8 +48,8 @@ This first increment (the MVP) includes:
    is offline, Home shows that state with a hint to pick another player. Home
    shows:
    - the player's presets (API §6: `/Presets`; play with `/Preset?id=`),
-     fetched on first contact and on every player switch, and refetched when
-     `prid` in `/Status` changes. A player without presets shows a placeholder
+     fetched on first contact and refetched when `prid` in `/Status` changes;
+     each player keeps its own, so a player switch shows its presets at once. A player without presets shows a placeholder
      (presets are created in the official app). A preset is played by its
      `id`, because ids are not sequential;
    - its inputs (API §11.1: `/RadioBrowse?service=Capture`; play with

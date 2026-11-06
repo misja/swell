@@ -62,8 +62,16 @@ applied to spec/plan/tasks: start state, background polling, display-only
 progress, inputs via §11.1 with the URL not re-encoded, preset edge cases, a
 plain DockedPanel, a reworded AC4, renumbered ACs, citation of the pulley
 guideline.
-Remaining blockers, options and recommendation: a separate design review of
-the revised plan (MVP rows, UI structure, AC4 test) is due before UI
-implementation.
-Next action: design review; meanwhile MVP library work (presets/inputs) stays
-within the reviewed library design.
+Design review of the revised plan (separate agent design_review_2, 2026-11-06):
+approve with changes, no blockers. root verified the DockedPanel/ApplicationWindow
+claims in the target. Findings applied:
+- current player and polling policy owned by PlayerModel (no setActive);
+- the remembered player is created at start, with its nodeId;
+- commandFailed instead of a new signal;
+- the gate stores encoded query strings, with byte-exact input URL tests;
+- DockedPanel open/close via Binding/show/hide;
+- the AC4 spike gets a negative control and shared type registration.
+Parsers and prid are done (40c5af5).
+Remaining blockers, options and recommendation: Misja to decide (a) keep
+add-by-address, (b) MPRIS in the MVP or as 003.
+Next action: client/model MVP work with tests, then the AC4 spike, then the UI.

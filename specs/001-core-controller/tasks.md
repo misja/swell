@@ -9,8 +9,9 @@ Use this file for bounded implementation steps, not a second status board.
 - [x] `parseStatus` / `parseSyncStatus` / `parseVolume` with unit tests on synthetic fixtures.
 - [x] `PlayerClient` (shared NAM, long poll, one-second rule, backoff, commands, /SyncStatus policy) and `artworkUrl()`, with in-process fixture tests (AC3).
 - [x] `PlayerModel` with discovery merge, manual hosts and tests.
-- [ ] MVP library: `Status.prid`, `parsePresets`, `parseCaptureInputs`, client presets/inputs, `playPreset`/`playInput`, `playFailed`, `setActive`; parser and fixture tests (AC2, AC3).
-- [ ] AC4 spike: a QML engine test on the `minimal` platform for one Silica page.
+- [x] MVP parsers: `Status.prid`, `parsePresets`, `parseCaptureInputs` with tests (40c5af5).
+- [ ] MVP client/model: encoded-query gate, presets/inputs cache, `playPreset`/`playInput`, `refreshInputs`, `<error>` bodies via `commandFailed`; `PlayerModel` `currentId`/`current`/`pollAll`, remembered player with `nodeId`; byte-exact fake-player request log; tests (AC3).
+- [ ] AC4 spike: QML engine test on `minimal`: an `ApplicationWindow` root with `Nemo.Configuration`, a negative control, one shared type-registration function.
 - [ ] Players page, add-player dialog and Home (presets and inputs), with Nemo.Configuration persistence and the start-state rule.
 - [ ] Now Playing as an attached page, with landscape layout.
 - [ ] Docked mini-player, cover and About; `allowedOrientations` on every page.
