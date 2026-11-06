@@ -11,7 +11,12 @@ installed as 0.3.0-1. The result review's findings are fixed on the branch
 (evidence/004/README.md); next: Misja's device feedback (letter index full
 height, artist page shows albums directly, art per track; more screenshots in
 ~/Downloads), agree those UI changes on the canvas, build 0.3.0-2, reviewer
-re-check, device check, PR. Pacing decision (Misja): browse reads are not
+re-check, device check, PR. Idea from Misja (2026-11-06), People-app style: a star above A in the
+letter index jumps to favourites at the top, and a clock to recently played
+(albums, artists). The documented API v1.7 has no "recently played" (only the
+undocumented /ui screens do), so that part needs Swell's own local history or
+a separate decision. Discuss on the canvas with the other 004 feedback.
+Pacing decision (Misja): browse reads are not
 limited by the one-second rule. Issue #8 (typed bluos/ interfaces) follows 004.
 002 (queue) is done and merged (PR #5, fix PR #6; issue #4 closed). 001 is done
 (PR #2).
