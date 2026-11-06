@@ -72,6 +72,7 @@ claims in the target. Findings applied:
 - DockedPanel open/close via Binding/show/hide;
 - the AC4 spike gets a negative control and shared type registration.
 Parsers and prid are done (40c5af5).
-Remaining blockers, options and recommendation: Misja to decide (a) keep
-add-by-address, (b) MPRIS in the MVP or as 003.
+Misja 2026-11-06: planning unchanged: add-by-address stays in the MVP (Players
+pulley only), MPRIS stays feature 003.
+Remaining blockers, options and recommendation: none.
 Next action: client/model MVP work with tests, then the AC4 spike, then the UI.
