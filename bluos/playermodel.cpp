@@ -151,6 +151,62 @@ QObject *PlayerModel::client(const QString &id) const
     return row < 0 ? nullptr : m_entries.at(row).client;
 }
 
+void PlayerModel::setCurrentId(const QString &id)
+{
+    if (m_currentId == id)
+        return;
+    m_currentId = id;
+    applyPolicy();
+    emit currentChanged();
+}
+
+QString PlayerModel::currentNodeId() const
+{
+    const int row = indexOf(m_currentId);
+    return row < 0 ? QString() : m_entries.at(row).nodeId;
+}
+
+QObject *PlayerModel::current() const
+{
+    return client(m_currentId);
+}
+
+void PlayerModel::setPollAll(bool pollAll)
+{
+    if (m_pollAll == pollAll)
+        return;
+    m_pollAll = pollAll;
+    applyPolicy();
+    emit pollAllChanged();
+}
+
+void PlayerModel::restoreCurrent(const QString &id, const QString &nodeId)
+{
+    QString host;
+    int port = 0;
+    if (!parseAddress(id, &host, &port))
+        return;
+    const QString normalized = QStringLiteral("%1:%2").arg(host).arg(port);
+    if (indexOf(normalized) < 0) {
+        Entry e;
+        e.nodeId = nodeId;
+        e.client = createClient(host, port);
+        insert(e);
+    }
+    setCurrentId(normalized);
+    applyPolicy();
+}
+
+void PlayerModel::applyPolicy()
+{
+    for (const Entry &e : m_entries) {
+        if (m_pollAll || e.client->id() == m_currentId)
+            e.client->start();
+        else
+            e.client->stop();
+    }
+}
+
 void PlayerModel::onFound(const Discovery::Found &player)
 {
     const QString host = player.address.toString();
@@ -160,8 +216,14 @@ void PlayerModel::onFound(const Discovery::Found &player)
         if (e.nodeId == player.nodeId && e.client->port() == player.port) {
             e.discoveredName = player.name;
             if (e.client->host() != host) {
+                const bool wasCurrent = e.client->id() == m_currentId;
                 e.client->deleteLater();
                 e.client = createClient(host, player.port);
+                if (wasCurrent)
+                    m_currentId = e.client->id();
+                applyPolicy();
+                if (wasCurrent)
+                    emit currentChanged();
             }
             emit dataChanged(index(i), index(i));
             return;
@@ -173,6 +235,8 @@ void PlayerModel::onFound(const Discovery::Found &player)
         m_entries[row].nodeId = player.nodeId;
         m_entries[row].discoveredName = player.name;
         emit dataChanged(index(row), index(row));
+        if (m_entries.at(row).client->id() == m_currentId)
+            emit currentChanged();  // the node id is now known for persistence
         return;
     }
     Entry e;
@@ -201,7 +265,6 @@ Client *PlayerModel::createClient(const QString &host, int port)
     connect(c, &Client::availabilityChanged, this, &PlayerModel::clientChanged);
     connect(c, &Client::statusChanged, this, &PlayerModel::clientChanged);
     connect(c, &Client::syncStatusChanged, this, &PlayerModel::clientChanged);
-    c->start();
     return c;
 }
 
@@ -210,6 +273,7 @@ void PlayerModel::insert(const Entry &entry)
     beginInsertRows(QModelIndex(), m_entries.size(), m_entries.size());
     m_entries.append(entry);
     endInsertRows();
+    applyPolicy();
     emit countChanged();
 }
 
@@ -217,9 +281,12 @@ void PlayerModel::removeAt(int row)
 {
     beginRemoveRows(QModelIndex(), row, row);
     Client *c = m_entries.at(row).client;
+    const bool wasCurrent = c->id() == m_currentId;
     m_entries.remove(row);
     endRemoveRows();
     c->deleteLater();
+    if (wasCurrent)
+        emit currentChanged();
     emit countChanged();
 }
 

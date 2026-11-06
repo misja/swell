@@ -64,6 +64,9 @@ private slots:
     void manualMergesWithAnnouncement();
     void manualSurvivesDeletion();
     void manualHostsList();
+    void pollingPolicy();
+    void restoredPlayerAppearsAtOnce();
+    void currentFollowsAddressChange();
 };
 
 void TstModel::parseAddress_data()
@@ -184,6 +187,63 @@ void TstModel::manualHostsList()
     QCOMPARE(model.manualHosts(),
              QStringList({ QStringLiteral("127.0.0.10:1"), QStringLiteral("127.0.0.11:11000") }));
     QCOMPARE(changed.size(), 2);
+}
+
+void TstModel::pollingPolicy()
+{
+    PlayerModel model;
+    model.discovery()->handleDatagram(announce('\x0A', 10, 0x0001, "1", "Den"));
+    model.discovery()->handleDatagram(announce('\x0B', 11, 0x0001, "1", "Hall"));
+    auto running = [&model](const QString &id) {
+        return qobject_cast<Client *>(model.client(id))->running();
+    };
+    QVERIFY(!running(QStringLiteral("127.0.0.10:1")));
+    QVERIFY(!running(QStringLiteral("127.0.0.11:1")));
+
+    model.setCurrentId(QStringLiteral("127.0.0.10:1"));
+    QVERIFY(running(QStringLiteral("127.0.0.10:1")));
+    QVERIFY(!running(QStringLiteral("127.0.0.11:1")));
+
+    model.setPollAll(true);
+    QVERIFY(running(QStringLiteral("127.0.0.11:1")));
+    // A player found while all are polled starts too.
+    model.discovery()->handleDatagram(announce('\x0C', 12, 0x0001, "1", "Attic"));
+    QVERIFY(running(QStringLiteral("127.0.0.12:1")));
+
+    model.setPollAll(false);
+    QVERIFY(running(QStringLiteral("127.0.0.10:1")));
+    QVERIFY(!running(QStringLiteral("127.0.0.11:1")));
+    QVERIFY(!running(QStringLiteral("127.0.0.12:1")));
+}
+
+void TstModel::restoredPlayerAppearsAtOnce()
+{
+    PlayerModel model;
+    QSignalSpy current(&model, &PlayerModel::currentChanged);
+    model.restoreCurrent(QStringLiteral("127.0.0.10:1"), QStringLiteral("02:00:00:00:00:0A"));
+    QCOMPARE(model.rowCount(), 1);
+    QCOMPARE(model.currentId(), QStringLiteral("127.0.0.10:1"));
+    QVERIFY(model.current());
+    QCOMPARE(qobject_cast<Client *>(model.current())->availability(), Client::Connecting);
+    QVERIFY(current.size() >= 1);
+    // Its announcement merges into the same row.
+    model.discovery()->handleDatagram(announce('\x0A', 10, 0x0001, "1", "Den"));
+    QCOMPARE(model.rowCount(), 1);
+}
+
+void TstModel::currentFollowsAddressChange()
+{
+    PlayerModel model;
+    model.restoreCurrent(QStringLiteral("127.0.0.10:1"), QStringLiteral("02:00:00:00:00:0A"));
+    QObject *before = model.current();
+    QSignalSpy current(&model, &PlayerModel::currentChanged);
+    model.discovery()->handleDatagram(announce('\x0A', 20, 0x0001, "1", "Den"));
+    QCOMPARE(model.rowCount(), 1);
+    QCOMPARE(model.currentId(), QStringLiteral("127.0.0.20:1"));
+    QVERIFY(model.current() != before);
+    QVERIFY(qobject_cast<Client *>(model.current())->running());
+    QCOMPARE(current.size(), 1);
+    QCOMPARE(model.currentNodeId(), QStringLiteral("02:00:00:00:00:0A"));
 }
 
 QTEST_GUILESS_MAIN(TstModel)

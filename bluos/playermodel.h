@@ -20,6 +20,12 @@ class PlayerModel : public QAbstractListModel
     Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
     Q_PROPERTY(bool searching READ searching NOTIFY searchingChanged)
     Q_PROPERTY(QStringList manualHosts READ manualHosts NOTIFY manualHostsChanged)
+    // The player shown on Home, Now Playing and the cover.
+    Q_PROPERTY(QString currentId READ currentId WRITE setCurrentId NOTIFY currentChanged)
+    Q_PROPERTY(QString currentNodeId READ currentNodeId NOTIFY currentChanged)
+    Q_PROPERTY(QObject *current READ current NOTIFY currentChanged)
+    // When false only the current player polls; set it while all players are on screen.
+    Q_PROPERTY(bool pollAll READ pollAll WRITE setPollAll NOTIFY pollAllChanged)
 
 public:
     enum Roles {
@@ -46,6 +52,16 @@ public:
     Discovery *discovery() { return &m_discovery; }
     void setClientTiming(const Client::Timing &timing) { m_timing = timing; }
 
+    QString currentId() const { return m_currentId; }
+    void setCurrentId(const QString &id);
+    QString currentNodeId() const;
+    QObject *current() const;
+    bool pollAll() const { return m_pollAll; }
+    void setPollAll(bool pollAll);
+    // Makes a remembered player current at once, before discovery answers. With
+    // its node id, a later announcement at a new address moves it there.
+    Q_INVOKABLE void restoreCurrent(const QString &id, const QString &nodeId);
+
     // "host" or "host:port"; false if it is not a usable address.
     Q_INVOKABLE bool addManual(const QString &address);
     Q_INVOKABLE void removeManual(const QString &id);
@@ -59,6 +75,8 @@ signals:
     void countChanged();
     void searchingChanged();
     void manualHostsChanged();
+    void currentChanged();
+    void pollAllChanged();
 
 private:
     struct Entry {
@@ -74,11 +92,14 @@ private:
     void insert(const Entry &entry);
     void removeAt(int row);
     void clientChanged();
+    void applyPolicy();
 
     QNetworkAccessManager m_nam;
     Discovery m_discovery;
     Client::Timing m_timing;
     QVector<Entry> m_entries;
+    QString m_currentId;
+    bool m_pollAll = false;
 };
 
 } // namespace bluos

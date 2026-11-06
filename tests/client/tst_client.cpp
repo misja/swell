@@ -63,6 +63,13 @@ private slots:
     void offlineThenRecovered();
     void notAPlayer();
     void artworkUrlAndRedirect();
+    void presetsFetchedAndRefetchedOnPrid();
+    void playPreset();
+    void playInputIsSentByteForByte_data();
+    void playInputIsSentByteForByte();
+    void playInputRejectsUnsafeUrl();
+    void errorBodyIsACommandFailure();
+    void inputsFetched();
 
 private:
     void startClient(const Client::Timing &timing = fast());
@@ -289,6 +296,97 @@ void TstClient::artworkUrlAndRedirect()
     QCOMPARE(reply->error(), QNetworkReply::NoError);
     QCOMPARE(reply->readAll(), QByteArray("PNGDATA"));
     reply->deleteLater();
+}
+
+void TstClient::presetsFetchedAndRefetchedOnPrid()
+{
+    m_player->setStatus("<status etag=\"e1\"><state>stop</state><prid>1</prid></status>");
+    m_player->serve(QStringLiteral("/Presets"),
+                    "<presets prid=\"1\"><preset id=\"5\" name=\"North Sea FM\" image=\"/Artwork?id=5\"/></presets>");
+    startClient();
+    QTRY_COMPARE(m_client->presets().size(), 1);
+    const QVariantMap first = m_client->presets().first().toMap();
+    QCOMPARE(first.value(QStringLiteral("id")).toInt(), 5);
+    QCOMPARE(QUrlQuery(first.value(QStringLiteral("image")).toUrl()).queryItemValue(QStringLiteral("followRedirects")),
+             QStringLiteral("1"));
+    const int before = m_player->requests(QStringLiteral("/Presets")).size();
+
+    m_player->serve(QStringLiteral("/Presets"),
+                    "<presets prid=\"2\"><preset id=\"5\" name=\"North Sea FM\"/><preset id=\"9\" name=\"Dinner\"/></presets>");
+    m_player->setStatus("<status etag=\"e2\"><state>stop</state><prid>2</prid></status>");
+    QTRY_COMPARE(m_client->presets().size(), 2);
+    QCOMPARE(m_player->requests(QStringLiteral("/Presets")).size(), before + 1);
+}
+
+void TstClient::playPreset()
+{
+    startClient();
+    QTRY_VERIFY(m_client->online());
+    m_client->playPreset(9);
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Preset")).size(), 1);
+    QCOMPARE(m_player->requests(QStringLiteral("/Preset")).first().target, QByteArray("/Preset?id=9"));
+}
+
+void TstClient::playInputIsSentByteForByte_data()
+{
+    QTest::addColumn<QString>("url");
+    // The shape of the API 11.1 example, and one with an encoded percent sign.
+    QTest::newRow("capture") << "Capture%3Ahw%3Aimxspdif%2C0%2F1%2F25%2F2%3Fid%3Dinput1";
+    QTest::newRow("percent") << "Capture%3Atest%2F100%25%2Fx";
+    QTest::newRow("bluetooth") << "Capture%3Abluez%3Abluetooth";
+}
+
+void TstClient::playInputIsSentByteForByte()
+{
+    QFETCH(QString, url);
+    startClient();
+    QTRY_VERIFY(m_client->online());
+    QSignalSpy failed(m_client, &Client::commandFailed);
+    m_client->playInput(url);
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Play")).size(), 1);
+    QCOMPARE(m_player->requests(QStringLiteral("/Play")).first().target, "/Play?url=" + url.toLatin1());
+    QCOMPARE(failed.size(), 0);
+}
+
+void TstClient::playInputRejectsUnsafeUrl()
+{
+    startClient();
+    QTRY_VERIFY(m_client->online());
+    QSignalSpy failed(m_client, &Client::commandFailed);
+    m_client->playInput(QStringLiteral("Capture%3Ax#frag"));
+    m_client->playInput(QStringLiteral("Capture%3Ax&level=100"));
+    m_client->playInput(QString());
+    QCOMPARE(failed.size(), 3);
+    QTest::qWait(300);
+    QCOMPARE(m_player->requests(QStringLiteral("/Play")).size(), 0);
+}
+
+void TstClient::errorBodyIsACommandFailure()
+{
+    m_player->serve(QStringLiteral("/Preset"),
+                    "<error><message>No such preset</message><detail>id 99</detail></error>");
+    startClient();
+    QTRY_VERIFY(m_client->online());
+    QSignalSpy failed(m_client, &Client::commandFailed);
+    m_client->playPreset(99);
+    QTRY_COMPARE(failed.size(), 1);
+    QCOMPARE(failed.first().at(0).toString(), QStringLiteral("/Preset"));
+    QCOMPARE(failed.first().at(1).toString(), QStringLiteral("No such preset"));
+}
+
+void TstClient::inputsFetched()
+{
+    m_player->serve(QStringLiteral("/RadioBrowse"),
+                    "<radiotime service=\"Capture\">"
+                    "<item text=\"Optical Input\" inputType=\"spdif\" id=\"input1\" URL=\"Capture%3Ahw%3A1\" image=\"/images/o.png\"/>"
+                    "<item text=\"Cloud\" id=\"c\" URL=\"Cloud%3Aplay\"/></radiotime>");
+    startClient();
+    QTRY_COMPARE(m_client->inputs().size(), 1);
+    const QVariantMap in = m_client->inputs().first().toMap();
+    QCOMPARE(in.value(QStringLiteral("text")).toString(), QStringLiteral("Optical Input"));
+    QCOMPARE(in.value(QStringLiteral("url")).toString(), QStringLiteral("Capture%3Ahw%3A1"));
+    QCOMPARE(m_player->requests(QStringLiteral("/RadioBrowse")).first().target,
+             QByteArray("/RadioBrowse?service=Capture"));
 }
 
 QTEST_GUILESS_MAIN(TstClient)

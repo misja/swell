@@ -26,6 +26,7 @@ public:
         QString path;
         QUrlQuery query;
         qint64 atMs;
+        QByteArray target;   // the request target exactly as sent
     };
 
     explicit FakePlayer(QObject *parent = nullptr) : QObject(parent)
@@ -115,10 +116,11 @@ private:
         m_buffers.remove(socket);
         if (requestLine.size() < 2)
             return;
-        const QUrl target(QString::fromUtf8(requestLine.at(1)));
+        const QByteArray raw = requestLine.at(1);
+        const QUrl target = QUrl::fromEncoded(raw);
         const QUrlQuery query(target);
         const QString path = target.path();
-        m_requests.append({ path, query, m_clock.elapsed() });
+        m_requests.append({ path, query, m_clock.elapsed(), raw });
 
         if (path == QLatin1String("/Status") && query.hasQueryItem(QStringLiteral("etag"))
                 && query.queryItemValue(QStringLiteral("etag")) == etagOf(m_routes.value(path))) {

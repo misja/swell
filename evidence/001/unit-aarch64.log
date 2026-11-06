@@ -4,7 +4,7 @@ Config: Using QtTest library 5.6.3, Qt 5.6.3 (arm64-little_endian-lp64 shared (d
 PASS   : TstSpike::initTestCase()
 PASS   : TstSpike::tcpLoopbackHttp()
 PASS   : TstSpike::udpLoopback()
-QINFO  : TstSpike::timerPrecision() qWait(200) took 207 ms
+QINFO  : TstSpike::timerPrecision() qWait(200) took 205 ms
 PASS   : TstSpike::timerPrecision()
 PASS   : TstSpike::cleanupTestCase()
 Totals: 5 passed, 0 failed, 0 skipped, 0 blacklisted
@@ -69,8 +69,16 @@ PASS   : TstClient::secondaryUsesItsOwnSyncVolume()
 PASS   : TstClient::offlineThenRecovered()
 PASS   : TstClient::notAPlayer()
 PASS   : TstClient::artworkUrlAndRedirect()
+PASS   : TstClient::presetsFetchedAndRefetchedOnPrid()
+PASS   : TstClient::playPreset()
+PASS   : TstClient::playInputIsSentByteForByte(capture)
+PASS   : TstClient::playInputIsSentByteForByte(percent)
+PASS   : TstClient::playInputIsSentByteForByte(bluetooth)
+PASS   : TstClient::playInputRejectsUnsafeUrl()
+PASS   : TstClient::errorBodyIsACommandFailure()
+PASS   : TstClient::inputsFetched()
 PASS   : TstClient::cleanupTestCase()
-Totals: 14 passed, 0 failed, 0 skipped, 0 blacklisted
+Totals: 22 passed, 0 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of TstClient *********
 ********* Start testing of TstModel *********
 Config: Using QtTest library 5.6.3, Qt 5.6.3 (arm64-little_endian-lp64 shared (dynamic) release build; by GCC 13.4.0 20250605 (Sailfish OS gcc 13.4.0-1))
@@ -93,6 +101,9 @@ PASS   : TstModel::deletionRemovesDiscovered()
 PASS   : TstModel::manualMergesWithAnnouncement()
 PASS   : TstModel::manualSurvivesDeletion()
 PASS   : TstModel::manualHostsList()
+PASS   : TstModel::pollingPolicy()
+PASS   : TstModel::restoredPlayerAppearsAtOnce()
+PASS   : TstModel::currentFollowsAddressChange()
 PASS   : TstModel::cleanupTestCase()
-Totals: 20 passed, 0 failed, 0 skipped, 0 blacklisted
+Totals: 23 passed, 0 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of TstModel *********

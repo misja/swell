@@ -6,6 +6,8 @@
 #ifndef BLUOS_CLIENT_H
 #define BLUOS_CLIENT_H
 
+#include <functional>
+
 #include <QElapsedTimer>
 #include <QHash>
 #include <QObject>
@@ -13,6 +15,7 @@
 #include <QTimer>
 #include <QUrl>
 #include <QUrlQuery>
+#include <QVariantList>
 
 #include "xml.h"
 
@@ -42,6 +45,8 @@ class Client : public QObject
     Q_PROPERTY(bool canSkip READ canSkip NOTIFY statusChanged)
     Q_PROPERTY(int duration READ duration NOTIFY statusChanged)
     Q_PROPERTY(int position READ position NOTIFY positionChanged)
+    Q_PROPERTY(QVariantList presets READ presets NOTIFY presetsChanged)
+    Q_PROPERTY(QVariantList inputs READ inputs NOTIFY inputsChanged)
 
 public:
     enum Availability {
@@ -72,6 +77,7 @@ public:
     int port() const { return m_port; }
     QString id() const;                    // "host:port"
 
+    bool running() const { return m_running; }
     Availability availability() const { return m_availability; }
     bool online() const { return m_availability == Online; }
     const Status &status() const { return m_status; }
@@ -91,6 +97,10 @@ public:
     bool canSkip() const { return m_status.ok && !m_status.hasStreamUrl; }
     int duration() const { return m_status.totlen; }
     int position() const;
+    // Each entry: id (int), name, image (resolved URL). Cached per player.
+    QVariantList presets() const { return m_presets; }
+    // Each entry: id, text, inputType, image (resolved URL), url (encoded, as given).
+    QVariantList inputs() const { return m_inputs; }
 
     // Resolves an image path from a player document against this player and
     // adds followRedirects=1 to player-served images (API v1.7, image attributes).
@@ -106,12 +116,19 @@ public slots:
     void back();
     void setVolume(int level);
     void setMuted(bool muted);
+    void playPreset(int id);
+    // Plays a capture input by the URL attribute from /RadioBrowse?service=Capture,
+    // sent byte for byte. A URL that would not form a valid query is refused.
+    void playInput(const QString &encodedUrl);
+    void refreshInputs();
 
 signals:
     void availabilityChanged();
     void statusChanged();
     void syncStatusChanged();
     void positionChanged();
+    void presetsChanged();
+    void inputsChanged();
     // A command request failed; the poll keeps running.
     void commandFailed(const QString &path, const QString &error);
 
@@ -119,15 +136,20 @@ private:
     struct Gate {
         QElapsedTimer lastSent;
         QTimer *timer = nullptr;
-        QUrlQuery pending;
+        QString pending;   // the query, already percent-encoded
         bool hasPending = false;
     };
 
-    QUrl url(const QString &path, const QUrlQuery &query = QUrlQuery()) const;
-    void send(const QString &path, const QUrlQuery &query);
+    static QString encoded(const QUrlQuery &query);
+    QUrl url(const QString &path, const QString &encodedQuery = QString()) const;
+    void send(const QString &path, const QString &encodedQuery);
     void dispatch(const QString &path);
     int msUntilAllowed(const QString &path);
-    QNetworkReply *get(const QString &path, const QUrlQuery &query, int deadlineMs);
+    QNetworkReply *get(const QString &path, const QString &encodedQuery, int deadlineMs);
+    // One GET under the per-path interval; the handler gets the body on success.
+    void fetch(const QString &path, const QString &encodedQuery,
+               const std::function<void(const QByteArray &)> &handler);
+    void fetchPresets();
 
     void pollStatus();
     void onStatusReply(QNetworkReply *reply);
@@ -157,6 +179,13 @@ private:
     QTimer m_positionTimer;
     int m_backoffMs = 0;
     QHash<QString, Gate> m_gates;
+    QVariantList m_presets;
+    QVariantList m_inputs;
+    QString m_presetsPrid;
+    bool m_presetsLoading = false;
+    bool m_inputsLoading = false;
+    bool m_presetsFetched = false;
+    bool m_inputsFetched = false;
 };
 
 } // namespace bluos

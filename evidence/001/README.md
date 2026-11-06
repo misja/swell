@@ -18,3 +18,4 @@ so no package was installed (approval granted by Misja 2026-11-06).
 | 2026-11-06 | + model tests (`tests/model`, injected LSDP packets), aarch64 | spike 5/5, lsdp 18/18, xml 14/14, client 14/14, model 20/20 passed; no compiler warnings | unit-aarch64.log |
 | 2026-11-06 | Mutation check: rate gate disabled in a build copy | `oneSecondRule` (gap 29 ms) and `volumeBurstCollapses` failed as expected; source restored (cmp identical) | — |
 | 2026-11-06 | + prid, preset and capture-input parsers | spike 5/5, lsdp 18/18, xml 19/19, client 14/14, model 20/20 passed | unit-aarch64.log |
+| 2026-11-06 | + MVP client/model: encoded-query gate, presets/inputs, playPreset/playInput (byte-exact incl. %25), error bodies, current player and polling policy | spike 5/5, lsdp 18/18, xml 19/19, client 22/22, model 23/23 passed | unit-aarch64.log |
