@@ -40,7 +40,13 @@ which Misja finds unclear.
 7. Letter lists work like the People app: one list with a header per letter
    and a letter index on the side.
 8. The album page shows the cover beside the title. Tapping a track plays the
-   album from that track.
+   album from that track (`autoplayURL`). The API calls the choice between
+   `playURL` and `autoplayURL` a user preference; Misja chose this behaviour.
+9. Request pacing: the one-second rule stays where the API sets it, on status
+   queries with long polling (§2: "must not make two consecutive requests for
+   the same resource less than one second apart"). Browse reads are not
+   interval-limited; each page has at most one request in flight. Commands
+   (volume, play, …) keep their current gate; changing that is outside 004.
 
 ## Facts (read-only requests to the NAD C 379, 2026-11-06)
 
@@ -100,9 +106,14 @@ which Misja finds unclear.
 4. **Long press** shows the item's context menu, limited to the documented
    types that Swell understands: play now, shuffle, add next, add last, and
    favourite or unfavourite. A notice confirms the action.
-5. **Search** through the pulley:
-   - on Browse, across everything (`/Browse?q=`);
-   - in a service, within it (`searchKey`).
+5. **Search** through the pulley, sent on Enter (not per keystroke):
+   - on Browse, across everything (`/Browse?q=` without a key). The player
+     answers with a menu of one link per source (`LocalMusic:Search/<text>`,
+     `Airable:Search/…`, `TuneIn:Search/…`). Tapping a source shows its
+     categories (Library: Artists, Albums, Songs, Composers). This replaces
+     the grouped single list of board B6;
+   - in a source, within it (its `searchKey`).
+   Results use the same Browse page.
 6. **States:** loading, empty (for example "No favourites in Library"), an
    error from the player, and the player offline.
 
@@ -126,6 +137,8 @@ that are not seen through `/Browse`.
     different albums both reach the player.
   - Browse reads get the longer read deadline, because covers can delay
     replies.
+- **Counts:** the leading integer of a letter's `text2`; without one the count
+  is unknown and the letters show as plain rows.
 - **Loading** never reads a whole library. A letter list knows its length from
   the per-letter counts, and loads the letter in view, page by page where the
   player pages it (`nextKey`).
