@@ -4,7 +4,7 @@ NOTICE: Testing with suites: harbour
 Validating for target SailfishOS-5.1.0.11-aarch64.default
 Using validation suites: harbour
 RPM Validation script v1.110
-Created temporary directory /tmp/RPM-CHECK-lLorBKDI
+Created temporary directory /tmp/RPM-CHECK-twach7gz
 Reading config scripts from /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/share/sdk-harbour-rpmvalidator
 Prepare for RPM validation of file /home/ubuntu/swell-001/RPMS/harbour-swell-0.1.0-1.aarch64.rpm
 ./usr/bin/harbour-swell
@@ -19,6 +19,7 @@ Prepare for RPM validation of file /home/ubuntu/swell-001/RPMS/harbour-swell-0.1
 ./usr/share/harbour-swell/qml/pages/AboutPage.qml
 ./usr/share/harbour-swell/qml/pages/AddPlayerDialog.qml
 ./usr/share/harbour-swell/qml/pages/HomePage.qml
+./usr/share/harbour-swell/qml/pages/NowPlayingPage.qml
 ./usr/share/harbour-swell/qml/pages/PlayersPage.qml
 ./usr/share/harbour-swell/translations
 ./usr/share/harbour-swell/translations/harbour-swell-nl.qm
@@ -26,7 +27,7 @@ Prepare for RPM validation of file /home/ubuntu/swell-001/RPMS/harbour-swell-0.1
 ./usr/share/icons/hicolor/128x128/apps/harbour-swell.png
 ./usr/share/icons/hicolor/172x172/apps/harbour-swell.png
 ./usr/share/icons/hicolor/86x86/apps/harbour-swell.png
-593 blocks
+621 blocks
 
 
 Package name

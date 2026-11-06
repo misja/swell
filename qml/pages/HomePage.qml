@@ -4,13 +4,29 @@ import Sailfish.Silica 1.0
 
 Page {
     id: page
+    objectName: "home"
+
+    // Set when opened from the mini-player on Players: go straight on to Now Playing.
+    property bool openNowPlaying: false
 
     property QtObject player: players.current
     readonly property int tileSize: (width - 2 * Theme.horizontalPageMargin - 3 * Theme.paddingMedium) / (isLandscape ? 6 : 4)
 
     allowedOrientations: Orientation.All
 
-    onStatusChanged: if (status === PageStatus.Active && player) player.refreshInputs()
+    onStatusChanged: {
+        if (status !== PageStatus.Active)
+            return
+        // Now Playing is the page attached to Home (swipe left).
+        if (pageStack.nextPage(page) === null)
+            pageStack.pushAttached(Qt.resolvedUrl("NowPlayingPage.qml"))
+        if (player)
+            player.refreshInputs()
+        if (openNowPlaying) {
+            openNowPlaying = false
+            pageStack.navigateForward()
+        }
+    }
 
     Connections {
         target: player

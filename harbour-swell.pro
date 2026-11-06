@@ -20,6 +20,7 @@ DISTFILES += qml/harbour-swell.qml \
     qml/pages/PlayersPage.qml \
     qml/pages/AddPlayerDialog.qml \
     qml/pages/HomePage.qml \
+    qml/pages/NowPlayingPage.qml \
     qml/pages/AboutPage.qml \
     rpm/harbour-swell.changes.run \
     rpm/harbour-swell.spec \

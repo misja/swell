@@ -39,15 +39,21 @@ The required result review (AC6) is still due after the UI.
 Remaining blockers, options and recommendation: none. Open discussion:
 player settings (006).
 
-Progress: UI part 1 is done. It covers Players, Add player, Home (presets,
-inputs), About, persistence and the start state. The QML compile test covers
-every app QML file. The RPM is validated (evidence/001). Not yet checked on a
-device (needs approval).
+Progress: all MVP pages are built:
+- Players, Add player, Home (presets, inputs) and About;
+- Now Playing attached to Home, with a landscape layout;
+- the docked mini-player and the cover.
+The tests pass and the RPM is validated (evidence/001). Nothing is checked on
+a device yet.
 
-Next action, in tasks.md order:
-1. Now Playing via pushAttached from Home, landscape layout.
-2. Docked panel (Binding/show/hide, hidden on Now Playing and dialogs), cover.
-3. RPM and validator; then the separate result review (AC6).
+Next action:
+1. Device testing via `sfdk deploy --sdk`. Misja chose to register the device
+   with the SDK (option 2); find how that is done without the IDE GUI, or guide
+   Misja through the IDE.
+2. Device checks (LSDP over Wi-Fi under Sailjail, gestures, landscape, real
+   player) with Misja.
+3. The separate result review (AC6).
+4. App icon/logo (Misja asked; the template placeholders must be replaced).
 
 The old UI drafts are in git stash ("ui-draft-*") as starting material only.
 
