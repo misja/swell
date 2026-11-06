@@ -6,6 +6,8 @@ Current owner / next owner / decision owner: root / root (next session) / Misja.
 
 Objective and acceptance criteria: feature 002 (queue) is done and merged
 (PR #5 → main b5c47f0; issue #4 closed); specs/002-queue/spec.md, AC1–AC6.
+Follow-up fix PR #6 (no flash when reopening the queue) merged; the device
+runs 0.2.0-6.
 Feature 001 (MVP) is done and merged (PR #2 → main 69bd6b1; issue #1 closed).
 Next: choose 003 (MPRIS) or 004 (browse) with Misja.
 - Spec 001: specs/001-core-controller/spec.md, criteria AC1–AC6.
@@ -22,7 +24,7 @@ Artifacts and evidence:
   0.1.0-7: all suites pass, validator succeeded, 1 accepted warning) and the
   history. evidence/002/README.md holds the 002 results (0.2.0-4), reviews
   and device checks.
-- Device: the Xperia 10 II (Sailfish OS 5.2.0.20) runs 0.2.0-4, against a NAD
+- Device: the Xperia 10 II (Sailfish OS 5.2.0.20) runs 0.2.0-6, against a NAD
   C 379.
 - Device facts (2026-11-06): `/Play?id=` alone plays from a queue entry; the
   queue id changes on every modification, including a delete (as API
@@ -42,7 +44,7 @@ Decisions and authorization scope (Misja, 2026-11-06):
 - Approved:
   - the private GitHub repo;
   - pushes and PRs for swell and for sailfish-workspace#18 (both merged 2026-11-06);
-  - the 002 PR (#5), merged on Misja's instruction 2026-11-06;
+  - the 002 PRs (#5, #6), merged on Misja's instruction 2026-11-06;
   - device installs through the SDK-registered device, which Misja confirms on
     the phone.
 - Not approved: publication (Harbour, Chum, OBS).
