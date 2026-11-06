@@ -71,11 +71,9 @@ void QueueModel::setActive(bool active)
     if (m_active == active) {
         return;
     }
+    // The queue id changes on every modification (section 5.1), so rows kept
+    // while inactive stay valid until the status poll reports another id.
     m_active = active;
-    if (!m_active) {
-        // Unseen changes may happen meanwhile; read it again next time.
-        m_stale = true;
-    }
     emit activeChanged();
     if (m_active && m_stale) {
         reload();

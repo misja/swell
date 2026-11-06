@@ -40,7 +40,9 @@ Page {
     Binding {
         target: page._queue
         property: "active"
-        value: page.status === PageStatus.Active && Qt.application.active
+        // Activating too: start loading while the page is swiped in.
+        value: (page.status === PageStatus.Activating || page.status === PageStatus.Active)
+               && Qt.application.active
         when: page._queue !== null
     }
 

@@ -78,3 +78,16 @@ sha256 9da4a081b929dc681fc7d425359fb84283ceca0bd58f705e46a488ab281cfcae.
 
 - The plural with a locale that has no Swell translation (not checked).
 - Maintainer review of the PR.
+
+## Fix after merge: the queue flashed on every open (0.2.0-5, 2026-11-06)
+
+- Misja's report: going from the player to the queue, the list visibly
+  refreshes. Cause: leaving the page marked the model stale, so each open
+  reset and re-read it. Since the queue id changes on every modification,
+  rows now stay while the id is unchanged; loading starts while the page is
+  swiped in.
+- Automated: all suites pass, queue 27 (new
+  `reopeningAnUnchangedQueueKeepsTheRows`); build and validator succeed.
+  Package harbour-swell-0.2.0-5.aarch64.rpm, sha256
+  1bb5d59297b0cab63891a2117d946e95c43f3ef04005d4454f021f3bc717ae7c.
+- Separate review of the fix: pending. Device check: pending.
