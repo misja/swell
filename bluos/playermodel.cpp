@@ -145,6 +145,11 @@ int PlayerModel::indexOf(const QString &id) const
     return -1;
 }
 
+QString PlayerModel::idAt(int row) const
+{
+    return row >= 0 && row < m_entries.size() ? m_entries.at(row).client->id() : QString();
+}
+
 QObject *PlayerModel::client(const QString &id) const
 {
     const int row = indexOf(id);

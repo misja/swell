@@ -67,6 +67,7 @@ public:
     Q_INVOKABLE void removeManual(const QString &id);
     Q_INVOKABLE void search();
     Q_INVOKABLE int indexOf(const QString &id) const;
+    Q_INVOKABLE QString idAt(int row) const;
     Q_INVOKABLE QObject *client(const QString &id) const;
 
     static bool parseAddress(const QString &address, QString *host, int *port);

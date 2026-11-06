@@ -108,6 +108,8 @@ void TstModel::announcedPlayerAppears()
     QCOMPARE(model.rowCount(), 1);
     QCOMPARE(idAt(model, 0), QStringLiteral("127.0.0.10:1"));
     QCOMPARE(model.data(model.index(0), PlayerModel::NameRole).toString(), QStringLiteral("Den"));
+    QCOMPARE(model.idAt(0), QStringLiteral("127.0.0.10:1"));
+    QCOMPARE(model.idAt(1), QString());
     QVERIFY(!model.data(model.index(0), PlayerModel::ManualRole).toBool());
 }
 

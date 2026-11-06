@@ -132,7 +132,7 @@ Page {
                 model: player ? player.inputs : []
 
                 ListItem {
-                    contentHeight: Theme.itemSizeSmall
+                    contentHeight: Theme.itemSizeExtraSmall
                     enabled: player.online
                     onClicked: player.playInput(modelData.url)
 
@@ -140,8 +140,8 @@ Page {
                         id: inputIcon
                         x: Theme.horizontalPageMargin
                         anchors.verticalCenter: parent.verticalCenter
-                        width: Theme.iconSizeMedium
-                        height: Theme.iconSizeMedium
+                        width: Theme.iconSizeSmallPlus
+                        height: Theme.iconSizeSmallPlus
                         fillMode: Image.PreserveAspectFit
                         sourceSize.width: width
                         sourceSize.height: height

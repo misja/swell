@@ -46,3 +46,11 @@ Xperia 10 II (aarch64), Sailfish OS 5.2.0.20, Wi-Fi, a real BluOS player
   with `DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/dbus/user_bus_socket`.
 - Release-target note: the device runs 5.2.0.20; the workspace registry names
   5.2.0.18.
+- Follow-up build 0.1.0-2 (sha256 2e2d6eff958b08c58ae8e18fee012b1fea9a89b968b49088b86b29e0232b9371):
+  - it picks the only player found on first start;
+  - smaller input icons;
+  - all suites pass, the validator succeeded, installed on the device.
+- Inputs: hiding a source in the official app ("Hide source", a player
+  setting) removes it from `/RadioBrowse?service=Capture`. Verified after
+  Misja changed it: 4 inputs remain. Swell follows the player; no local
+  hide list.

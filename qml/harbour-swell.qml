@@ -31,6 +31,15 @@ ApplicationWindow {
 
     Connections {
         target: players
+        // First start: when the search ends with exactly one player and none
+        // was chosen before, choose it and open its Home.
+        onSearchingChanged: {
+            if (!players.searching && players.currentId === "" && players.count === 1
+                    && pageStack.currentPage && pageStack.currentPage.objectName === "players") {
+                players.currentId = players.idAt(0)
+                pageStack.push(Qt.resolvedUrl("pages/HomePage.qml"))
+            }
+        }
         onManualHostsChanged: manualHosts.value = players.manualHosts
         onCurrentChanged: {
             if (players.currentId !== "") {
