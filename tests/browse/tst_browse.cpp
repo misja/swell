@@ -218,6 +218,7 @@ void TstBrowse::rootKeepsLinksAndOffersFavourites()
     QCOMPARE(m->data(m->index(0), BrowseModel::BrowseKeyRole).toString(),
              QStringLiteral("LocalMusic:MG/LocalMusic-Favourites"));
     QCOMPARE(m->data(m->index(0), BrowseModel::Text2Role).toString(), QStringLiteral("Library"));
+    QCOMPARE(m->data(m->index(0), BrowseModel::DurationRole).toInt(), -1);   // no NaN:NaN
     QCOMPARE(text(m.data(), 1), QStringLiteral("Playlists"));
     QCOMPARE(text(m.data(), 2), QStringLiteral("Library"));
     QCOMPARE(text(m.data(), 3), QStringLiteral("Radio"));
@@ -247,6 +248,9 @@ void TstBrowse::sectionsHaveTheirLengthAtOnce()
     QTest::qWait(200);
     QCOMPARE(browseKeys(), QStringList({ QStringLiteral("Index") }));   // nothing read until shown
     // A row of B is a placeholder with its letter; showing it reads B only.
+    QCOMPARE(m->sectionAt(64), QStringLiteral("C"));   // without reading C
+    QTest::qWait(100);
+    QVERIFY(!browseKeys().contains(QStringLiteral("Lib:S:C")));
     QCOMPARE(m->data(m->index(3), BrowseModel::SectionRole).toString(), QStringLiteral("B"));
     QCOMPARE(m->data(m->index(3), BrowseModel::LoadedRole).toBool(), false);
     QTRY_COMPARE(text(m.data(), 3), QStringLiteral("B album 0"));

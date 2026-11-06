@@ -95,6 +95,8 @@ public:
     QString playUrl() const { return m_reply.playUrl; }
     bool sectioned() const { return m_sectioned; }
     QVariantList letters() const;
+    // The letter of a row, without reading it (for the letter index).
+    Q_INVOKABLE QString sectionAt(int row) const;
     bool expandFirst() const { return m_expandFirst; }
     void setExpandFirst(bool expand);
     QVariantList moreLinks() const { return m_moreLinks; }

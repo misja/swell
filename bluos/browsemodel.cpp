@@ -137,6 +137,7 @@ QVariant BrowseModel::data(const QModelIndex &index, int role) const
             case LoadedRole: return true;
             case FavouritesRole: return true;
             case ImageRole: return QUrl();
+            case DurationRole: return -1;
             default: return QVariant();
             }
         }
@@ -186,6 +187,15 @@ QHash<int, QByteArray> BrowseModel::roleNames() const
         { LoadedRole, "loaded" },
         { FavouritesRole, "favourites" },
     };
+}
+
+QString BrowseModel::sectionAt(int row) const
+{
+    if (!m_sectioned || row < 0)
+        return QString();
+    int offset = 0;
+    const int segment = segmentOf(row - (m_favourites ? 1 : 0), &offset);
+    return segment < 0 ? QString() : m_segments.at(segment).title;
 }
 
 QVariantList BrowseModel::letters() const

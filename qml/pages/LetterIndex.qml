@@ -12,6 +12,8 @@ Item {
     // [{ "text": "A", "row": 0 }, ...] from BrowseModel.letters
     property var letters: []
     property bool favourites
+    // The letter of the part in view; highlighted.
+    property string current
     signal jump(int row)
     signal top()
 
@@ -68,7 +70,9 @@ Item {
                 visible: modelData.row >= 0
                 anchors.centerIn: parent
                 font.pixelSize: Theme.fontSizeExtraSmall
-                color: mouse.pressed && index === root._current ? Theme.highlightColor : Theme.secondaryColor
+                color: (mouse.pressed && index === root._current) || (!mouse.pressed && modelData.text === root.current)
+                       ? Theme.highlightColor : Theme.secondaryColor
+                font.bold: !mouse.pressed && modelData.text === root.current
                 text: modelData.text
             }
         }

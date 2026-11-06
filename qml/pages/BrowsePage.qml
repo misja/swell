@@ -55,7 +55,7 @@ Page {
     }
 
     function _formatTime(secs) {
-        if (secs < 0) {
+        if (!(secs >= 0)) {
             return ""
         }
         var m = Math.floor(secs / 60)
@@ -452,6 +452,12 @@ Page {
         }
         letters: browseModel.letters
         favourites: page._hasFavourites
+        // The letter of the part in view stays lit, as in People.
+        current: {
+            list.contentY   // re-evaluate while scrolling
+            var row = list.indexAt(0, list.contentY + Theme.itemSizeSmall)
+            return row < 0 ? "" : browseModel.sectionAt(row)
+        }
         onJump: list.positionViewAtIndex(row, ListView.Beginning)
         onTop: list.positionViewAtBeginning()
     }

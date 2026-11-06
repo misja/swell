@@ -1,7 +1,7 @@
 # Evidence — 004 browse
 
-Date: 2026-11-06. Branch `004-browse`. Package harbour-swell-0.3.0-3.aarch64.rpm,
-sha256 9ca277ea2c8bb0a0d30d740573afdbc5c1ba3bb09757b42e527b6db5864af892.
+Date: 2026-11-06. Branch `004-browse`. Package harbour-swell-0.3.0-4.aarch64.rpm,
+sha256 e769a4954852a4f6329fcc1cabb58319c3186665d6ca4ed2248e20e2a6220cc7.
 
 ## Automated (builder)
 
@@ -63,6 +63,13 @@ The reviewer read principles 1.1.0, because its local `origin/main` predated
 the 1.2.0 merge (13985f2); it applied the UI-check items as listed in its
 brief.
 
+Misja's feedback on 0.3.0-2 (screenshot 2026-11-06 23:39), fixed in 0.3.0-4:
+- The Favourites row on Browse showed "NaN:NaN" as a duration. Fixed: the
+  row now has no duration, and a missing duration formats as nothing.
+- The letter index lit a letter only while it was touched. It now keeps the
+  letter of the part in view lit, as in People (`BrowseModel::sectionAt`, which
+  does not read the row).
+
 ## Not yet done
 
-- Device check of 0.3.0-3.
+- Device check of 0.3.0-4.
