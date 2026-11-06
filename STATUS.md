@@ -10,7 +10,7 @@ specs/001-core-controller/{spec,plan,tasks}.md, bluos/, tests/, evidence/001/.
 Decisions and authorization scope: name Swell and location ~/code/sailfish/swell
 chosen by Misja 2026-11-06. Silica/QML + thin Qt 5.6 C++ (Rust 1.75 in SDK
 3.13.5 excludes azzurro's Rust code). Private GitHub repo misja/swell (approved);
-installation, device or publication.
+no installation, device or publication.
 Scope review 2026-11-06 (separate agent scope_review): approve with changes.
 All 12 findings applied to the spec: presets/queue/MPRIS split into 002/003;
 armv7hl dropped; C++/QML per-part justification moved to the plan; Harbour
