@@ -63,7 +63,18 @@ sha256 9da4a081b929dc681fc7d425359fb84283ceca0bd58f705e46a488ab281cfcae.
   of a reload already has a newer id than the status poll, one more reload
   follows until the poll catches up.
 
+## Device check (Misja), 0.2.0-4, 2026-11-06
+
+- One remove while scrolled: only that row goes, the list keeps its place.
+- Two quick removes (the second started during the first remorse): both go,
+  no "queue changed" notice.
+- Input playing: the line is shown, the marker is dimmed, and tapping a
+  track plays the queue again.
+- Player state afterwards (read-only `/Playlist`, `/Status`): 14 -> 11
+  tracks, queue id 6 -> 9 (one step per delete), playback undisturbed.
+  Misja confirms the remaining tracks are the intended ones: pending.
+
 ## Not yet done
 
-- Device check of 0.2.0-4: one remove keeps the list in place; two quick
-  removes both go through.
+- The plural with a locale that has no Swell translation (not checked).
+- Maintainer review of the PR.

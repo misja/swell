@@ -135,8 +135,9 @@ repeat.
   queue id from 3 to 4, which the 0.2.0-1 build answered with a full reload;
   the adoption step above replaces that. LocalMusic entries have `fn` but no
   `songid`.
-- Still to check on the device: two quick removes; the plural with a locale
-  that has no Swell translation.
+- Device check of 0.2.0-4 (2026-11-06): one remove keeps the list in place,
+  two quick removes both go through, the input line and dimmed marker work.
+- Not checked: the plural with a locale that has no Swell translation.
 
 - API v1.7 §5 and §4.1 were read on 2026-11-06.
 - Assumption: `time` and `image` are present on most services (azzurro
