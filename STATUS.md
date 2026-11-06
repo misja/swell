@@ -43,5 +43,11 @@ no sailfish-sdk NIC, no host change; demo-player without --announce. This
 isolation change needs a focused separate review before Layer B runs.
 GitHub: private repo misja/swell, issue #1 on the Sailfish board (In
 Progress), branch 001-core-controller.
-Remaining blockers, options and recommendation: none for Layer A.
-Next action: scaffold + qemu QtTest spike (Layer A), autonomous within scope.
+Progress 2026-11-06: scaffold builds for aarch64 and passes the Harbour
+validator (1 open warning: binary not stripped); evidence/001/README.md.
+Remaining blockers, options and recommendation: the QtTest spike needs
+qt5-qttest-devel (official Jolla repo) in the SDK build snapshot, which is a
+package installation and needs Misja's approval. Recommendation: allow it as a
+BuildRequires pulled into the sfdk build snapshot only (the original target
+stays untouched).
+Next action: after approval, run the aarch64 spike; then parsers + LSDP.

@@ -3,7 +3,7 @@
 Linked issue and plan: no issue yet (STATUS.md handoff); plan.md in this directory.
 Use this file for bounded implementation steps, not a second status board.
 
-- [ ] Scaffold from the SDK `sailfishos-qtquick2app` qmake template (harbour-swell); empty app builds for aarch64.
+- [x] Scaffold from the SDK `sailfishos-qtquick2app` qmake template (harbour-swell); empty app builds for aarch64.
 - [ ] Spike: loopback QTcpServer + QUdpSocket QtTest via `make check` in the aarch64 target; record the result (i486 fallback only as a recorded deviation).
 - [ ] `lsdp::parse` and `LsdpDiscovery` with unit tests (AC2 cases).
 - [ ] `parseStatus` / `parseSyncStatus` / `parseVolume` with unit tests on synthetic fixtures.
