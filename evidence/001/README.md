@@ -13,3 +13,4 @@ Build tree: `/home/ubuntu/swell-001` in the `sailfish-sdk` container.
 `qt5-qttest-devel` was already present in the build snapshot
 (`SailfishOS-5.1.0.11-aarch64.default`); `zypper in` reported "Nothing to do",
 so no package was installed (approval granted by Misja 2026-11-06).
+| 2026-11-06 | Unit tests `tests/` (spike, lsdp, xml) via `make check`, aarch64 | spike 5/5, lsdp 18/18, xml 14/14 passed | unit-aarch64.log |

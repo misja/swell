@@ -51,7 +51,14 @@ C++/QML split. Each part records why it is in C++, as the spec requires:
 
 No threads besides Qt's own network handling; everything runs on the event loop.
 
-Layout: `src/` (C++), `qml/`, `translations/`, `rpm/harbour-swell.spec`,
+Library (Misja, 2026-11-06: "a robust and current C/C++/QML lib"): the
+protocol layer is a UI-free module `bluos/` inside this repository, with its
+own `bluos.pri`, namespace `bluos` and tests. It depends only on Qt Core and
+Network and targets API v1.7. A separate repository follows only after reuse
+is demonstrated (workspace principle 9). Research 2026-11-06 found no
+reusable C/C++ BluOS library (issue #1 comment).
+
+Layout: `bluos/` (protocol library), `src/` (app C++), `qml/`, `translations/`, `rpm/harbour-swell.spec`,
 `harbour-swell.desktop` (`[X-Sailjail] Permissions=Internet`;
 OrganizationName must not be com.jolla or org.sailfishos), `icons/` with the
 template's `SAILFISHAPP_ICONS = 86x86 108x108 128x128 172x172`, `tests/`

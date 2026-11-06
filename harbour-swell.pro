@@ -6,6 +6,8 @@ TARGET = harbour-swell
 CONFIG += sailfishapp
 QT += network
 
+include(bluos/bluos.pri)
+
 SOURCES += src/harbour-swell.cpp
 
 DISTFILES += qml/harbour-swell.qml \

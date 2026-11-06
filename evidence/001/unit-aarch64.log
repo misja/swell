@@ -1,0 +1,51 @@
+
+********* Start testing of TstSpike *********
+Config: Using QtTest library 5.6.3, Qt 5.6.3 (arm64-little_endian-lp64 shared (dynamic) release build; by GCC 13.4.0 20250605 (Sailfish OS gcc 13.4.0-1))
+PASS   : TstSpike::initTestCase()
+PASS   : TstSpike::tcpLoopbackHttp()
+PASS   : TstSpike::udpLoopback()
+QINFO  : TstSpike::timerPrecision() qWait(200) took 207 ms
+PASS   : TstSpike::timerPrecision()
+PASS   : TstSpike::cleanupTestCase()
+Totals: 5 passed, 0 failed, 0 skipped, 0 blacklisted
+********* Finished testing of TstSpike *********
+********* Start testing of TstLsdp *********
+Config: Using QtTest library 5.6.3, Qt 5.6.3 (arm64-little_endian-lp64 shared (dynamic) release build; by GCC 13.4.0 20250605 (Sailfish OS gcc 13.4.0-1))
+PASS   : TstLsdp::initTestCase()
+PASS   : TstLsdp::announceWithTxt()
+PASS   : TstLsdp::playerClasses()
+PASS   : TstLsdp::multipleAnnouncesInOnePacket()
+PASS   : TstLsdp::addressChangeKeepsNodeId()
+PASS   : TstLsdp::deleteMessage()
+PASS   : TstLsdp::ownQueryIsRecognised()
+PASS   : TstLsdp::queryLayout()
+PASS   : TstLsdp::unknownTypeIsSkipped()
+PASS   : TstLsdp::truncatedMessage()
+PASS   : TstLsdp::fieldOverrunsMessage()
+PASS   : TstLsdp::rejectsBadHeader(empty)
+PASS   : TstLsdp::rejectsBadHeader(short)
+PASS   : TstLsdp::rejectsBadHeader(magic)
+PASS   : TstLsdp::rejectsBadHeader(version)
+PASS   : TstLsdp::rejectsBadHeader(header length)
+PASS   : TstLsdp::nodeIdFormatting()
+PASS   : TstLsdp::cleanupTestCase()
+Totals: 18 passed, 0 failed, 0 skipped, 0 blacklisted
+********* Finished testing of TstLsdp *********
+********* Start testing of TstXml *********
+Config: Using QtTest library 5.6.3, Qt 5.6.3 (arm64-little_endian-lp64 shared (dynamic) release build; by GCC 13.4.0 20250605 (Sailfish OS gcc 13.4.0-1))
+PASS   : TstXml::initTestCase()
+PASS   : TstXml::status()
+PASS   : TstXml::statusStreamAndFixedVolume()
+PASS   : TstXml::statusIgnoresUnknownElements()
+PASS   : TstXml::statusMalformed(empty)
+PASS   : TstXml::statusMalformed(html)
+PASS   : TstXml::statusMalformed(truncated)
+PASS   : TstXml::statusMalformed(mismatched)
+PASS   : TstXml::statusMalformed(garbage)
+PASS   : TstXml::syncStatusPrimary()
+PASS   : TstXml::syncStatusSecondary()
+PASS   : TstXml::syncStatusWrongRoot()
+PASS   : TstXml::volume()
+PASS   : TstXml::cleanupTestCase()
+Totals: 14 passed, 0 failed, 0 skipped, 0 blacklisted
+********* Finished testing of TstXml *********

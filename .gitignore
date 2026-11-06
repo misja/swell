@@ -11,4 +11,4 @@ Makefile
 /harbour-swell
 /tests/**/tst_*
 !/tests/**/tst_*.cpp
-!/tests/**/tst_*.pro
+!/tests/**/*.pro
