@@ -1,7 +1,7 @@
 # Feature specification — 001 core controller
 
-Status: implemented 2026-11-06. Scope and design reviews passed. The result
-review (AC6) findings are resolved and await a focused re-check, then
+Status: implemented 2026-11-06. Scope, design and result reviews (separate
+agents) passed; result review findings resolved and re-checked. Awaiting
 maintainer review.
 
 ## Owner and linked issue

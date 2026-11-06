@@ -17,5 +17,5 @@ Use this file for bounded implementation steps, not a second status board.
 - [x] Docked mini-player, cover and About; `allowedOrientations` on every page.
 - [x] AC4 engine test over all QML files.
 - [x] Build the RPM and run `sdk-harbour-rpmvalidator` (AC5); record deviations (one accepted warning: binary not stripped).
-- [ ] Complete the separate result review against the spec (AC6): done 2026-11-06, findings resolved; focused re-check pending.
+- [x] Complete the separate result review against the spec (AC6): done 2026-11-06; findings resolved and re-checked.
 - [ ] Prepare a change for maintainer review with evidence in `evidence/001/`.

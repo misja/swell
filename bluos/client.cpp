@@ -29,7 +29,10 @@ Client::Client(QNetworkAccessManager *nam, const QString &host, int port, QObjec
     , m_host(host)
     , m_port(port > 0 ? port : 11000)
 {
+    // The one-second rule is a "must" (API 2); coarse timers may fire up to 5%
+    // early, so every rate-limiting timer is precise and rechecks before sending.
     m_pollTimer.setSingleShot(true);
+    m_pollTimer.setTimerType(Qt::PreciseTimer);
     connect(&m_pollTimer, &QTimer::timeout, this, &Client::pollStatus);
     m_positionTimer.setInterval(1000);
     connect(&m_positionTimer, &QTimer::timeout, this, &Client::positionChanged);
@@ -252,7 +255,7 @@ void Client::fetch(const QString &path, const QString &encodedQuery,
     }
     const int wait = msUntilAllowed(path);
     if (wait > 0) {
-        QTimer::singleShot(wait, this, [this, path, encodedQuery, handler]() {
+        QTimer::singleShot(wait, Qt::PreciseTimer, this, [this, path, encodedQuery, handler]() {
             fetch(path, encodedQuery, handler);
         });
         return;
@@ -314,6 +317,7 @@ void Client::dispatch(const QString &key)
         if (!gate.timer) {
             gate.timer = new QTimer(this);
             gate.timer->setSingleShot(true);
+            gate.timer->setTimerType(Qt::PreciseTimer);
             connect(gate.timer, &QTimer::timeout, this, [this, key]() { dispatch(key); });
         }
         if (!gate.timer->isActive())
@@ -355,6 +359,11 @@ void Client::pollStatus()
 {
     if (!m_running || m_statusReply)
         return;
+    const int wait = msUntilAllowed(QStringLiteral("/Status"));
+    if (wait > 0) {
+        m_pollTimer.start(wait);
+        return;
+    }
     QUrlQuery query;
     int deadline = m_timing.commandTimeoutMs;
     // Long-poll only once there is an etag to wait on.
@@ -419,7 +428,7 @@ void Client::fetchSyncStatus()
         return;
     const int wait = msUntilAllowed(QStringLiteral("/SyncStatus"));
     if (wait > 0) {
-        QTimer::singleShot(wait, this, &Client::fetchSyncStatus);
+        QTimer::singleShot(wait, Qt::PreciseTimer, this, &Client::fetchSyncStatus);
         return;
     }
     QNetworkReply *reply = get(QStringLiteral("/SyncStatus"), QString(), m_timing.commandTimeoutMs);

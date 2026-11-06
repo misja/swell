@@ -179,7 +179,7 @@ Page {
                 Row {
                     x: Theme.paddingMedium
                     width: parent.width - Theme.paddingMedium
-                    // Hidden when the _player reports a fixed volume (volume=-1).
+                    // Hidden when the player reports a fixed volume (volume=-1).
                     visible: _player && !_player.fixedVolume
 
                     IconButton {
@@ -201,7 +201,7 @@ Page {
                         label: qsTr("Volume")
                         valueText: Math.round(value)
 
-                        // Follow the _player, except while the user drags.
+                        // Follow the player, except while the user drags.
                         Binding {
                             target: volume
                             property: "value"

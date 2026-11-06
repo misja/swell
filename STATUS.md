@@ -76,7 +76,7 @@ Also done in this round:
 - workspace PR misja/sailfish-workspace#18 for the shared conventions.
 
 Next action:
-1. A focused re-check of the fixes by the result reviewer, then a PR for Misja.
+1. Maintainer review of the PR (result review re-check: ready for maintainer review).
 2. Install 0.1.0-6 on the device for a quick look (needs confirmation on the
    phone).
 3. App icon/logo, in a later session (Misja).

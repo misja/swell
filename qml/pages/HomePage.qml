@@ -6,7 +6,7 @@ Page {
     id: page
     objectName: "home"
 
-    // Set when opened from the mini-_player on Players: go straight on to Now Playing.
+    // Set when opened from the mini-player on Players: go straight on to Now Playing.
     property bool openNowPlaying
 
     readonly property QtObject _player: players.current

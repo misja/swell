@@ -9,7 +9,7 @@ These logs are committed for this commit:
 - `unit-aarch64.log`: all suites pass: spike 5, lsdp 18, xml 19, client 26,
   model 26, qml 11.
 
-RPM sha256 cb1765cceb3b508cb7e45e3a69ea91d2f21fc82b20989cc0460df47dc0a43872.
+RPM sha256 96637bd2ce9469759007d125f58acf4dfa8621b001d362dd866670594b923bdc.
 Dutch translation: 0 unfinished.
 
 The table below is the history. Entries for builds 0.1.0-2…5 record results
@@ -80,3 +80,11 @@ Xperia 10 II (aarch64), Sailfish OS 5.2.0.20, Wi-Fi, a real BluOS player
 - Build 0.1.0-4 (sha256 c2e351adbf94c84169dcc521b7910fb6e43397d1c72dad5ac2189886b587e8c4): previous/next follow the source (queue /Skip+/Back, stream actions per API 4.8, otherwise hidden; the cover shows play/pause only); all suites pass (xml 20, client 23); validator succeeded.
 - 0.1.0-4 on the device (Misja, 2026-11-06): on plain radio, Now Playing shows only play/pause and the cover play/pause only; confirmed working.
 - Build 0.1.0-5 (sha256 e8c3627c28f15b072eeb72440959cc23717a27d7b6cbc3955c102701ba86e645): Now Playing centres its controls in the remaining space (portrait and landscape); Dutch translation of all 33 strings; all suites pass; validator succeeded.
+- Result review re-check (2026-11-06): all findings resolved; verdict "ready
+  for maintainer review". Follow-ups done:
+  - a stale plan row and three comments fixed;
+  - `~PlayerModel` deletes all clients before the network manager.
+- Found during the final run: `oneSecondRule` failed once (970 ms gap). Qt's
+  default coarse timers may fire up to 5% early. Fixed with precise timers,
+  plus a recheck before every `/Status` poll and gated command. The rate tests
+  passed 3/3 reruns, and the full suite passes (see the current logs).

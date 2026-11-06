@@ -19,8 +19,9 @@ PlayerModel::PlayerModel(QObject *parent)
 
 PlayerModel::~PlayerModel()
 {
-    for (const Entry &e : m_entries)
-        delete e.client;
+    // Every client, including ones awaiting deleteLater after an address change
+    // or removal, goes before m_nam: their replies must not outlive it.
+    qDeleteAll(findChildren<Client *>(QString(), Qt::FindDirectChildrenOnly));
 }
 
 int PlayerModel::rowCount(const QModelIndex &parent) const
