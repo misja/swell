@@ -29,6 +29,8 @@ struct Status {
     QString image;          // may be relative and may redirect (/Artwork)
     QString syncStat;       // matches /SyncStatus syncStat; changes when it changes
     QString prid;           // preset list id; changes when the presets change (section 6.1)
+    QString pid;            // play queue id; changes when the queue is replaced (section 5.1)
+    int song = -1;          // current queue position; where playback resumes while streaming
     int secs = -1;          // position at the time of the response
     int totlen = -1;
     int volume = -1;        // 0..100, -1 = fixed volume
@@ -105,7 +107,32 @@ struct Inputs {
     QList<Input> items;
 };
 
+// /Playlist (section 5.1): either the status form (length/id only) or a
+// window of songs from ?start=&end=. A song's position is its queue index.
+struct QueueEntry {
+    int position = -1;
+    QString title;
+    QString artist;
+    QString album;
+    QString image;          // observed, not in 5.1; may be relative
+    int duration = -1;      // seconds, from <time>; observed, not in 5.1
+    QString songId;         // song attribute songid, when present
+    QString fn;
+    // Identifies the track independently of its position, for safe removal.
+    QString identity() const { return (songId.isEmpty() ? fn : songId) + QLatin1Char('|') + title; }
+};
+
+struct Playlist {
+    bool ok = false;
+    QString error;
+
+    int length = -1;        // the whole queue, not the window
+    QString id;             // equals /Status pid
+    QList<QueueEntry> songs;
+};
+
 Status parseStatus(const QByteArray &xml);
+Playlist parsePlaylist(const QByteArray &xml);
 Presets parsePresets(const QByteArray &xml);
 Inputs parseCaptureInputs(const QByteArray &xml);
 SyncStatus parseSyncStatus(const QByteArray &xml);

@@ -18,6 +18,7 @@
 #include <QVariantList>
 
 #include "xml.h"
+#include "queuemodel.h"
 
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -48,6 +49,7 @@ class Client : public QObject
     Q_PROPERTY(int position READ position NOTIFY positionChanged)
     Q_PROPERTY(QVariantList presets READ presets NOTIFY presetsChanged)
     Q_PROPERTY(QVariantList inputs READ inputs NOTIFY inputsChanged)
+    Q_PROPERTY(QObject *queue READ queue CONSTANT)
 
 public:
     enum Availability {
@@ -62,6 +64,7 @@ public:
         int pollTimeoutSecs = 100;   // API 2.1: recommended 100 s, never below 10 s
         int deadlineGraceMs = 15000; // added to the poll timeout before aborting
         int commandTimeoutMs = 10000;
+        int queueReadTimeoutMs = 30000;  // the player answers after serving covers
         int minIntervalMs = 1000;    // API 2: same resource at most once per second
         int backoffInitialMs = 1000;
         int backoffMaxMs = 30000;
@@ -105,6 +108,11 @@ public:
     QVariantList presets() const { return m_presets; }
     // Each entry: id, text, inputType, image (resolved URL), url (encoded, as given).
     QVariantList inputs() const { return m_inputs; }
+    QObject *queue() const { return m_queue; }
+    QueueModel *queueModel() const { return m_queue; }
+
+    // One /Playlist window (section 5.1); the handler gets ok == false on failure.
+    void fetchQueueWindow(int start, int end, const std::function<void(const Playlist &)> &handler);
 
     // Resolves an image path from a player document against this player and
     // adds followRedirects=1 to player-served images (API v1.7, image attributes).
@@ -125,6 +133,12 @@ public slots:
     // sent byte for byte. A URL that would not form a valid query is refused.
     void playInput(const QString &encodedUrl);
     void refreshInputs();
+    void playQueueEntry(int position);
+    // Removes the entry at position, but only if the queue is still pid and the
+    // row there is still identity; removals run one at a time with a reload
+    // in between, because positions shift (section 5.2).
+    void removeQueueEntry(int position, const QString &pid, const QString &identity);
+    void clearQueue();
 
 signals:
     void availabilityChanged();
@@ -154,7 +168,9 @@ private:
     void sendAction(const QString &actionUrl);
     // One GET under the per-path interval; the handler gets the body on success.
     void fetch(const QString &path, const QString &encodedQuery,
-               const std::function<void(const QByteArray &)> &handler);
+               const std::function<void(const QByteArray &)> &handler, int deadlineMs = -1);
+    void processRemovals();
+    static QString errorIn(const QByteArray &body);
     void fetchPresets();
 
     void pollStatus();
@@ -192,6 +208,9 @@ private:
     QString m_presetsPrid;
     bool m_presetsLoading = false;
     bool m_inputsLoading = false;
+    QueueModel *m_queue;
+    QStringList m_removals;   // identities waiting to be removed
+    bool m_removing = false;
     bool m_presetsFetched = false;
     bool m_inputsFetched = false;
 };

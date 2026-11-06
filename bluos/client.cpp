@@ -28,7 +28,12 @@ Client::Client(QNetworkAccessManager *nam, const QString &host, int port, QObjec
     , m_nam(nam)
     , m_host(host)
     , m_port(port > 0 ? port : 11000)
+    , m_queue(new QueueModel(this))
 {
+    connect(m_queue, &QueueModel::reloaded, this, [this]() {
+        m_removing = false;
+        processRemovals();
+    });
     // The one-second rule is a "must" (API 2); coarse timers may fire up to 5%
     // early, so every rate-limiting timer is precise and rechecks before sending.
     m_pollTimer.setSingleShot(true);
@@ -247,7 +252,7 @@ void Client::fetchPresets()
 }
 
 void Client::fetch(const QString &path, const QString &encodedQuery,
-                   const std::function<void(const QByteArray &)> &handler)
+                   const std::function<void(const QByteArray &)> &handler, int deadlineMs)
 {
     if (!m_running) {
         handler(QByteArray());
@@ -255,16 +260,106 @@ void Client::fetch(const QString &path, const QString &encodedQuery,
     }
     const int wait = msUntilAllowed(path);
     if (wait > 0) {
-        QTimer::singleShot(wait, Qt::PreciseTimer, this, [this, path, encodedQuery, handler]() {
-            fetch(path, encodedQuery, handler);
+        QTimer::singleShot(wait, Qt::PreciseTimer, this, [this, path, encodedQuery, handler, deadlineMs]() {
+            fetch(path, encodedQuery, handler, deadlineMs);
         });
         return;
     }
-    QNetworkReply *reply = get(path, encodedQuery, m_timing.commandTimeoutMs);
+    QNetworkReply *reply = get(path, encodedQuery, deadlineMs > 0 ? deadlineMs : m_timing.commandTimeoutMs);
     connect(reply, &QNetworkReply::finished, this, [reply, handler]() {
         reply->deleteLater();
         handler(reply->error() == QNetworkReply::NoError ? reply->readAll() : QByteArray());
     });
+}
+
+void Client::fetchQueueWindow(int start, int end, const std::function<void(const Playlist &)> &handler)
+{
+    QUrlQuery query;
+    query.addQueryItem(QStringLiteral("start"), QString::number(start));
+    query.addQueryItem(QStringLiteral("end"), QString::number(end));
+    fetch(QStringLiteral("/Playlist"), encoded(query), [handler](const QByteArray &body) {
+        handler(parsePlaylist(body));
+    }, m_timing.queueReadTimeoutMs);
+}
+
+void Client::playQueueEntry(int position)
+{
+    if (position < 0) {
+        return;
+    }
+    QUrlQuery query;
+    query.addQueryItem(QStringLiteral("id"), QString::number(position));
+    send(QStringLiteral("/Play"), encoded(query));
+}
+
+void Client::removeQueueEntry(int position, const QString &pid, const QString &identity)
+{
+    if (identity.isEmpty() || pid != m_queue->pid() || m_queue->identityAt(position) != identity) {
+        emit commandFailed(QStringLiteral("/Delete"), QStringLiteral("the queue changed"));
+        return;
+    }
+    m_removals.append(identity);
+    processRemovals();
+}
+
+void Client::processRemovals()
+{
+    if (m_removing || m_removals.isEmpty()) {
+        return;
+    }
+    const QString identity = m_removals.takeFirst();
+    const int position = m_queue->positionOf(identity);
+    if (position < 0) {
+        emit commandFailed(QStringLiteral("/Delete"), QStringLiteral("the queue changed"));
+        processRemovals();
+        return;
+    }
+    m_removing = true;
+    QUrlQuery query;
+    query.addQueryItem(QStringLiteral("id"), QString::number(position));
+    // Not through the merging gate: removals are not idempotent.
+    fetch(QStringLiteral("/Delete"), encoded(query), [this](const QByteArray &body) {
+        const QString error = body.isEmpty() ? QStringLiteral("no answer") : errorIn(body);
+        if (!error.isEmpty()) {
+            emit commandFailed(QStringLiteral("/Delete"), error);
+        }
+        // Positions have shifted (or may have): read the queue again; the next
+        // removal waits for that (QueueModel::reloaded).
+        m_queue->reload();
+        if (!m_queue->active()) {
+            m_removing = false;
+            processRemovals();
+        }
+    });
+}
+
+void Client::clearQueue()
+{
+    fetch(QStringLiteral("/Clear"), QString(), [this](const QByteArray &body) {
+        const Playlist cleared = parsePlaylist(body);
+        if (cleared.ok) {
+            m_queue->resetTo(cleared.id, cleared.length);
+        } else {
+            emit commandFailed(QStringLiteral("/Clear"), body.isEmpty() ? QStringLiteral("no answer") : errorIn(body));
+        }
+    });
+}
+
+QString Client::errorIn(const QByteArray &body)
+{
+    QXmlStreamReader xml(body);
+    if (!xml.readNextStartElement() || xml.name() != QLatin1String("error")) {
+        return QString();
+    }
+    QString message;
+    while (xml.readNextStartElement()) {
+        if (xml.name() == QLatin1String("message")) {
+            message = xml.readElementText();
+        } else {
+            xml.skipCurrentElement();
+        }
+    }
+    return message.isEmpty() ? QStringLiteral("error") : message;
 }
 
 QString Client::encoded(const QUrlQuery &query)
@@ -417,6 +512,7 @@ void Client::onStatusReply(QNetworkReply *reply)
         fetchSyncStatus();
     if (needPresets)
         fetchPresets();
+    m_queue->onStatus(m_status.pid, m_status.song, m_status.hasStreamUrl);
     if (!m_inputsFetched)
         refreshInputs();
     schedulePoll(0);
