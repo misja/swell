@@ -43,6 +43,7 @@ class Client : public QObject
     Q_PROPERTY(QString title3 READ title3 NOTIFY statusChanged)
     Q_PROPERTY(QUrl artworkUrl READ artworkUrl NOTIFY statusChanged)
     Q_PROPERTY(bool canSkip READ canSkip NOTIFY statusChanged)
+    Q_PROPERTY(bool canBack READ canBack NOTIFY statusChanged)
     Q_PROPERTY(int duration READ duration NOTIFY statusChanged)
     Q_PROPERTY(int position READ position NOTIFY positionChanged)
     Q_PROPERTY(QVariantList presets READ presets NOTIFY presetsChanged)
@@ -94,7 +95,9 @@ public:
     QString title2() const { return m_status.title2; }
     QString title3() const { return m_status.title3; }
     QUrl artworkUrl() const { return resolveImage(m_status.image); }
-    bool canSkip() const { return m_status.ok && !m_status.hasStreamUrl; }
+    // The queue can always skip; a stream only when it offers the action (4.8).
+    bool canSkip() const { return m_status.ok && (!m_status.hasStreamUrl || !m_status.skipActionUrl.isEmpty()); }
+    bool canBack() const { return m_status.ok && (!m_status.hasStreamUrl || !m_status.backActionUrl.isEmpty()); }
     int duration() const { return m_status.totlen; }
     int position() const;
     // Each entry: id (int), name, image (resolved URL), inputId (the capture
@@ -147,6 +150,8 @@ private:
     void dispatch(const QString &path);
     int msUntilAllowed(const QString &path);
     QNetworkReply *get(const QString &path, const QString &encodedQuery, int deadlineMs);
+    // Sends a player-given action URL ("/Action?service=…&skip=…") as given.
+    void sendAction(const QString &actionUrl);
     // One GET under the per-path interval; the handler gets the body on success.
     void fetch(const QString &path, const QString &encodedQuery,
                const std::function<void(const QByteArray &)> &handler);

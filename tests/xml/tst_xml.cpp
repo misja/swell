@@ -23,6 +23,7 @@ private slots:
     void syncStatusWrongRoot();
     void volume();
     void statusPrid();
+    void statusStreamActions();
     void presets();
     void presetsEmptyAndMalformed();
     void captureInputs();
@@ -147,6 +148,21 @@ void TstXml::volume()
     QCOMPARE(v.db, -43.1);
     QVERIFY(!v.mute);
     QCOMPARE(v.etag, QStringLiteral("v1"));
+}
+
+void TstXml::statusStreamActions()
+{
+    const Status s = parseStatus(
+        "<status etag=\"e6\"><streamUrl>Svc:station</streamUrl><actions>"
+        "<action name=\"back\"/>"
+        "<action name=\"skip\" url=\"/Action?service=Svc&amp;skip=42\"/>"
+        "<action name=\"love\" url=\"/Action?service=Svc&amp;love=42\" text=\"Love\"/>"
+        "</actions><title1>After</title1></status>");
+    QVERIFY2(s.ok, qPrintable(s.error));
+    QVERIFY(s.hasStreamUrl);
+    QCOMPARE(s.skipActionUrl, QStringLiteral("/Action?service=Svc&skip=42"));
+    QVERIFY(s.backActionUrl.isEmpty());
+    QCOMPARE(s.title1, QStringLiteral("After"));
 }
 
 void TstXml::statusPrid()

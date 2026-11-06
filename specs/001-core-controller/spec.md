@@ -59,7 +59,10 @@ This first increment (the MVP) includes:
      account, are left out. Known limitation: inactive inputs may be missing
      from this list (API §11.2), and §11.2 is not used.
    Pulley: Players, About.
-4. **Now Playing** as the page attached to Home (swipe left). It shows cover
+4. **Now Playing** as the page attached to Home (swipe left). Previous/next
+   follow the source: the queue uses `/Skip`/`/Back`; a stream uses the skip/back
+   actions it offers (API §4.8); otherwise the buttons are hidden. The cover
+   then shows play/pause only. It shows cover
    art, the `title1`–`title3` lines, progress (display only, no seeking),
    play/pause, next/previous, volume and mute. The volume control is hidden
    when the player reports a fixed volume (`volume=-1`). It is updated through the `/Status` long poll (etag +
@@ -86,7 +89,9 @@ own spec:
   later.
 - 005: grouping, as its own page opened from Now Playing.
 - 006: player settings and alarms (to be discussed).
-- Later: My Stations (custom radio URLs stored on the phone), a "Track details"
+- Later: zapping through presets from the cover/Now Playing on plain radio
+  (`/Preset?id=±1`; set aside 2026-11-06 as too much UI for its value),
+  My Stations (custom radio URLs stored on the phone), a "Track details"
   pulley item on Now Playing, hardware volume keys (Harbour/Sailjail
   feasibility unverified) and a firmware notice.
 

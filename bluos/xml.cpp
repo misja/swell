@@ -63,6 +63,21 @@ Status parseStatus(const QByteArray &xml)
             reader.skipCurrentElement();
             continue;
         }
+        if (n == QLatin1String("actions")) {
+            while (reader.readNextStartElement()) {
+                if (reader.name() == QLatin1String("action")) {
+                    const QXmlStreamAttributes a = reader.attributes();
+                    const QString name = a.value(QLatin1String("name")).toString();
+                    const QString url = a.value(QLatin1String("url")).toString();
+                    if (name == QLatin1String("skip"))
+                        s.skipActionUrl = url;
+                    else if (name == QLatin1String("back"))
+                        s.backActionUrl = url;
+                }
+                reader.skipCurrentElement();
+            }
+            continue;
+        }
         if (n == QLatin1String("state")) s.state = reader.readElementText();
         else if (n == QLatin1String("title1")) s.title1 = reader.readElementText();
         else if (n == QLatin1String("title2")) s.title2 = reader.readElementText();

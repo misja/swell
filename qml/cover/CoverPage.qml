@@ -50,9 +50,10 @@ CoverBackground {
         }
     }
 
-    // Two cover actions, the platform maximum: play/pause and next.
+    // Play/pause, plus next song when the source can skip (the queue, or a
+    // stream that offers it); plain radio gets play/pause only.
     CoverActionList {
-        enabled: player !== null && player.online
+        enabled: player !== null && player.online && player.canSkip
 
         CoverAction {
             iconSource: player && player.playing ? "image://theme/icon-cover-pause" : "image://theme/icon-cover-play"
@@ -61,6 +62,15 @@ CoverBackground {
         CoverAction {
             iconSource: "image://theme/icon-cover-next-song"
             onTriggered: player.skip()
+        }
+    }
+
+    CoverActionList {
+        enabled: player !== null && player.online && !player.canSkip
+
+        CoverAction {
+            iconSource: player && player.playing ? "image://theme/icon-cover-pause" : "image://theme/icon-cover-play"
+            onTriggered: player.playing ? player.pause() : player.play()
         }
     }
 }

@@ -34,6 +34,10 @@ struct Status {
     int volume = -1;        // 0..100, -1 = fixed volume
     bool mute = false;
     bool hasStreamUrl = false; // queue not the source: no next/previous
+    // Stream actions (section 4.8): the URL to call for skip/back, empty when
+    // the stream does not offer it. Relevant only with hasStreamUrl.
+    QString skipActionUrl;
+    QString backActionUrl;
     bool canSeek = false;
 
     bool isPlaying() const { return state == QLatin1String("play") || state == QLatin1String("stream"); }

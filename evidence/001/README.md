@@ -60,3 +60,4 @@ Xperia 10 II (aarch64), Sailfish OS 5.2.0.20, Wi-Fi, a real BluOS player
   - presets that select an input show that input's icon on a tile;
   - cover titles wrap to two lines;
   - all suites pass, the validator succeeded, installed on the device.
+- Build 0.1.0-4 (sha256 c2e351adbf94c84169dcc521b7910fb6e43397d1c72dad5ac2189886b587e8c4): previous/next follow the source (queue /Skip+/Back, stream actions per API 4.8, otherwise hidden; the cover shows play/pause only); all suites pass (xml 20, client 23); validator succeeded.

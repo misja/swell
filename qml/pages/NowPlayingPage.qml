@@ -140,10 +140,13 @@ Page {
                     anchors.horizontalCenter: parent.horizontalCenter
                     spacing: Theme.paddingLarge
 
+                    // Hidden, not greyed, when the source has nothing to go back or
+                    // forward to (plain radio: streamUrl without actions, API 4.8).
                     IconButton {
                         anchors.verticalCenter: parent.verticalCenter
                         icon.source: "image://theme/icon-m-previous"
-                        enabled: player && player.online && player.canSkip
+                        visible: player && player.canBack
+                        enabled: player && player.online
                         onClicked: player.back()
                     }
                     IconButton {
@@ -155,7 +158,8 @@ Page {
                     IconButton {
                         anchors.verticalCenter: parent.verticalCenter
                         icon.source: "image://theme/icon-m-next"
-                        enabled: player && player.online && player.canSkip
+                        visible: player && player.canSkip
+                        enabled: player && player.online
                         onClicked: player.skip()
                     }
                 }

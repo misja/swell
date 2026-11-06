@@ -106,8 +106,38 @@ void Client::stop()
 
 void Client::play() { send(QStringLiteral("/Play"), QString()); }
 void Client::pause() { send(QStringLiteral("/Pause"), QString()); }
-void Client::skip() { send(QStringLiteral("/Skip"), QString()); }
-void Client::back() { send(QStringLiteral("/Back"), QString()); }
+void Client::skip()
+{
+    if (!m_status.hasStreamUrl)
+        send(QStringLiteral("/Skip"), QString());
+    else if (!m_status.skipActionUrl.isEmpty())
+        sendAction(m_status.skipActionUrl);
+}
+
+void Client::back()
+{
+    if (!m_status.hasStreamUrl)
+        send(QStringLiteral("/Back"), QString());
+    else if (!m_status.backActionUrl.isEmpty())
+        sendAction(m_status.backActionUrl);
+}
+
+void Client::sendAction(const QString &actionUrl)
+{
+    // A path with its query, from the player itself; only player-relative paths are used.
+    if (!actionUrl.startsWith(QLatin1Char('/')) || actionUrl.startsWith(QLatin1String("//"))) {
+        emit commandFailed(actionUrl, QStringLiteral("unsupported action URL"));
+        return;
+    }
+    const int q = actionUrl.indexOf(QLatin1Char('?'));
+    const QString path = q < 0 ? actionUrl : actionUrl.left(q);
+    const QString query = q < 0 ? QString() : actionUrl.mid(q + 1);
+    if (!url(path, query).isValid()) {
+        emit commandFailed(path, QStringLiteral("invalid action URL"));
+        return;
+    }
+    send(path, query);
+}
 
 void Client::setVolume(int level)
 {

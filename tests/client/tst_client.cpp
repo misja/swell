@@ -70,6 +70,7 @@ private slots:
     void playInputRejectsUnsafeUrl();
     void errorBodyIsACommandFailure();
     void inputsFetched();
+    void skipFollowsTheSource();
 
 private:
     void startClient(const Client::Timing &timing = fast());
@@ -387,6 +388,37 @@ void TstClient::inputsFetched()
     QCOMPARE(in.value(QStringLiteral("url")).toString(), QStringLiteral("Capture%3Ahw%3A1"));
     QCOMPARE(m_player->requests(QStringLiteral("/RadioBrowse")).first().target,
              QByteArray("/RadioBrowse?service=Capture"));
+}
+
+void TstClient::skipFollowsTheSource()
+{
+    // A plain radio stream: nothing to skip.
+    m_player->setStatus("<status etag=\"r1\"><state>stream</state><streamUrl>Radio:x</streamUrl></status>");
+    startClient();
+    QTRY_VERIFY(m_client->online());
+    QVERIFY(!m_client->canSkip());
+    QVERIFY(!m_client->canBack());
+    m_client->skip();
+    m_client->back();
+
+    // A stream that offers skip (API 4.8): its own action URL is called.
+    m_player->serve(QStringLiteral("/Action"), "<skip/>");
+    m_player->setStatus("<status etag=\"r2\"><state>stream</state><streamUrl>Svc:x</streamUrl>"
+                        "<actions><action name=\"back\"/>"
+                        "<action name=\"skip\" url=\"/Action?service=Svc&amp;skip=42\"/></actions></status>");
+    QTRY_VERIFY(m_client->canSkip());
+    QVERIFY(!m_client->canBack());
+    m_client->skip();
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Action")).size(), 1);
+    QCOMPARE(m_player->requests(QStringLiteral("/Action")).first().target,
+             QByteArray("/Action?service=Svc&skip=42"));
+
+    // The queue: /Skip and /Back.
+    m_player->setStatus("<status etag=\"q1\"><state>play</state></status>");
+    QTRY_VERIFY(m_client->canBack());
+    m_client->skip();
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Skip")).size(), 1);
+    QCOMPARE(m_player->requests(QStringLiteral("/Back")).size(), 0);
 }
 
 QTEST_GUILESS_MAIN(TstClient)
