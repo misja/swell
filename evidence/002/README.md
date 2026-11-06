@@ -97,4 +97,6 @@ sha256 9da4a081b929dc681fc7d425359fb84283ceca0bd58f705e46a488ab281cfcae.
   so reopening now also reloads while the length is unknown (mutation check:
   the old rule fails the new test). Residual, accepted: after a resume or a
   player switch, the old rows show for about one status round trip.
-- Device check: pending.
+- Device check (Misja, 0.2.0-6): swiping between Now Playing and the queue
+  no longer flashes; after a new album (the official app replaces the queue)
+  the list loads once with a smooth transition.
