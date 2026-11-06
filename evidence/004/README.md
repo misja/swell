@@ -82,4 +82,4 @@ Misja's feedback on 0.3.0-2 (screenshot 2026-11-06 23:39), fixed in 0.3.0-4:
 ## Not yet done
 
 - Misja walks through 0.3.0-5/-6 at leisure; more feedback to follow
-  (2026-11-07). 0.3.0-6 is built but not installed.
+  (2026-11-07). 0.3.0-6 installed on 2026-11-07.

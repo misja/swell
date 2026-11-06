@@ -7,8 +7,8 @@ Current owner / next owner / decision owner: root / root (next session) / Misja.
 Objective and acceptance criteria: feature 004 (browse, issue #7) on branch
 004-browse: specs/004-browse/{spec,plan,tasks}.md. UI agreed on the canvas
 (B1–B9), scope/design and result reviews done and their findings fixed (also
-the re-check of the device-feedback changes). Device: 0.3.0-5 installed;
-0.3.0-6 (TuneIn menu icons at icon size) built, not installed. Misja is
+the re-check of the device-feedback changes). Device: 0.3.0-6 installed
+(TuneIn menu icons at icon size). Misja is
 walking through it at leisure; further feedback follows (2026-11-07). Then:
 final device check, PR. Decisions: browse reads unpaced; no recently played
 and no extra state in Swell (published API only); no header per letter.
@@ -29,7 +29,7 @@ Artifacts and evidence:
   0.1.0-7: all suites pass, validator succeeded, 1 accepted warning) and the
   history. evidence/002/README.md holds the 002 results (0.2.0-4), reviews
   and device checks.
-- Device: the Xperia 10 II (Sailfish OS 5.2.0.20) runs 0.3.0-5, against a NAD
+- Device: the Xperia 10 II (Sailfish OS 5.2.0.20) runs 0.3.0-6, against a NAD
   C 379.
 - Device facts (2026-11-06): `/Play?id=` alone plays from a queue entry; the
   queue id changes on every modification, including a delete (as API
