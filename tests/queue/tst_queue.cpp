@@ -28,6 +28,7 @@ private slots:
     void removalByAnotherControllerIsRefused();
     void twoRemovesRunOneAfterTheOther();
     void removesStillRunAfterLeavingThePage();
+    void secondRemoveUsesTheShiftedRow();
     void duplicateTrackRemovesTheChosenRow();
     void removingTheCurrentEntry();
     void failedDeleteIsReportedAndDoesNotBlock();
@@ -269,6 +270,26 @@ void TstQueue::twoRemovesRunOneAfterTheOther()
     QVERIFY(q->known());
     QCOMPARE(q->data(q->index(1), QueueModel::LoadedRole).toBool(), true);
     QTRY_COMPARE(title(2), QStringLiteral("Track 4"));
+}
+
+void TstQueue::secondRemoveUsesTheShiftedRow()
+{
+    // The UI path: row 3's remorse ends after row 2's delete has finished;
+    // by then that row's index is 2, and that is what the page sends.
+    startClient();
+    QueueModel *q = m_client->queueModel();
+    q->setActive(true);
+    QTRY_COMPARE(title(3), QStringLiteral("Track 3"));
+    const QString pid = q->pid();
+    const QString second = q->identityAt(3);
+    m_client->removeQueueEntry(2, pid, q->identityAt(2));
+    QTRY_COMPARE(q->length(), 299);
+    QCOMPARE(q->identityAt(2), second);
+    QSignalSpy refused(m_client, &Client::removeRefused);
+    m_client->removeQueueEntry(2, pid, second);
+    QTRY_COMPARE(q->length(), 298);
+    QCOMPARE(refused.size(), 0);
+    QCOMPARE(m_queue.at(2), QStringLiteral("Track 4"));
 }
 
 void TstQueue::removesStillRunAfterLeavingThePage()

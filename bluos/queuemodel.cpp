@@ -98,12 +98,17 @@ void QueueModel::removeEntry(int position)
     beginRemoveRows(QModelIndex(), position, position);
     m_rows.remove(position);
     endRemoveRows();
-    // A window read sent before the delete has old positions: ignore it.
+    // A window read sent before the delete has old positions: ignore it, and
+    // ask again for what was on its way.
+    const int again = m_inFlight >= 0 ? m_inFlight : m_wanted;
     ++m_generation;
     m_inFlight = -1;
     m_wanted = -1;
     m_failed.clear();
     emit loadingChanged();
+    if (again >= 0 && again * WindowSize < m_rows.size()) {
+        want(again);
+    }
     if (m_current > position) {
         --m_current;
         emit currentChanged();

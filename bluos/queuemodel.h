@@ -63,7 +63,9 @@ public:
     int currentIndex() const { return m_current; }
     bool streaming() const { return m_streaming; }
 
-    Q_INVOKABLE QString identityAt(int position) const;
+    QString identityAt(int position) const;
+    // Changes whenever the rows are replaced or shifted.
+    int generation() const { return m_generation; }
     // The player removed this entry: drop the row, keep the rest.
     void removeEntry(int position);
 

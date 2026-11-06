@@ -305,9 +305,10 @@ void Client::processRemovals()
     }
     m_removing = true;
     const Removal removal = m_removals.first();
+    const int generation = m_queue->generation();
     // Positions shift on every delete, and another controller may have changed
     // the queue: ask the player what is at that position right now.
-    fetchQueueWindow(removal.position, removal.position, [this, removal](const Playlist &now) {
+    fetchQueueWindow(removal.position, removal.position, [this, removal, generation](const Playlist &now) {
         const bool same = now.ok && now.id == removal.pid && now.songs.size() == 1
                 && now.songs.first().position == removal.position
                 && now.songs.first().identity() == removal.identity;
@@ -321,11 +322,14 @@ void Client::processRemovals()
         QUrlQuery query;
         query.addQueryItem(QStringLiteral("id"), QString::number(removal.position));
         // Not through the merging gate: removals are not idempotent.
-        fetch(QStringLiteral("/Delete"), encoded(query), [this, removal](const QByteArray &body) {
+        fetch(QStringLiteral("/Delete"), encoded(query), [this, removal, generation](const QByteArray &body) {
             const QString error = body.isEmpty() ? QStringLiteral("no answer") : errorIn(body);
             m_removals.removeFirst();
             if (error.isEmpty()) {
-                m_queue->removeEntry(removal.position);
+                // If the list was read again meanwhile, it already shows this.
+                if (m_queue->generation() == generation) {
+                    m_queue->removeEntry(removal.position);
+                }
                 for (Removal &later : m_removals) {
                     if (later.position > removal.position) {
                         --later.position;

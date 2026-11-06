@@ -114,12 +114,15 @@ Page {
             id: item
 
             function remove() {
-                // Captured now: positions shift, so the client checks both later.
+                // The player confirms pid and identity before deleting. The row's
+                // index follows earlier removals; once the row is gone, the
+                // position recorded here is the best guess left.
                 var pid = page._queue.pid
                 var identity = model.identity
                 var position = model.position
                 remorseAction(qsTr("Removing"), function() {
-                    page._player.removeQueueEntry(position, pid, identity)
+                    var now = typeof index === "number" && index >= 0 ? index : position
+                    page._player.removeQueueEntry(now, pid, identity)
                 })
             }
 

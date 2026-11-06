@@ -123,6 +123,10 @@ repeat.
 
 ## Evidence and assumptions
 
+- Open until the device check: whether `/Delete` changes the queue id. If it
+  does, a second remove queued before the first finished is refused (safe;
+  the user repeats it).
+
 - API v1.7 §5 and §4.1 were read on 2026-11-06.
 - The player currently has an empty queue (`length` 0). Rows with real data
   are checked on the device once a queue is filled from the official app.
