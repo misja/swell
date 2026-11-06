@@ -25,6 +25,7 @@ private slots:
     void failedReadIsRetried();
     void staleRemoveIsRefused();
     void twoRemovesRunOneAfterTheOther();
+    void removesAfterLeavingThePageAreNotGuessed();
     void clearReplyResets();
     void playFromSendsId();
 
@@ -225,6 +226,26 @@ void TstQueue::twoRemovesRunOneAfterTheOther()
     QCOMPARE(m_queue.at(2), QStringLiteral("Track 4"));
     QTRY_COMPARE(q->length(), 298);
     QTRY_COMPARE(title(2), QStringLiteral("Track 4"));
+}
+
+void TstQueue::removesAfterLeavingThePageAreNotGuessed()
+{
+    startClient();
+    QueueModel *q = m_client->queueModel();
+    q->setActive(true);
+    QTRY_COMPARE(title(3), QStringLiteral("Track 3"));
+    const QString pid = q->pid();
+    const QString second = q->identityAt(3);
+    // The page is popped; both pending remorses fire on destruction.
+    q->setActive(false);
+    QSignalSpy failed(m_client, &Client::commandFailed);
+    m_client->removeQueueEntry(2, pid, q->identityAt(2));
+    m_client->removeQueueEntry(3, pid, second);
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Delete")).size(), 1);
+    QTRY_COMPARE(failed.size(), 1);
+    QTest::qWait(400);
+    QCOMPARE(m_player->requests(QStringLiteral("/Delete")).size(), 1);
+    QCOMPARE(m_queue.at(2), QStringLiteral("Track 3"));   // not removed by a guess
 }
 
 void TstQueue::clearReplyResets()

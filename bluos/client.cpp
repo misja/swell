@@ -327,8 +327,13 @@ void Client::processRemovals()
         // removal waits for that (QueueModel::reloaded).
         m_queue->reload();
         if (!m_queue->active()) {
+            // No reload while off screen, so the remaining positions are
+            // unknown: refuse the rest rather than guess.
             m_removing = false;
-            processRemovals();
+            if (!m_removals.isEmpty()) {
+                m_removals.clear();
+                emit commandFailed(QStringLiteral("/Delete"), QStringLiteral("the queue changed"));
+            }
         }
     });
 }

@@ -13,6 +13,13 @@ Page {
 
     allowedOrientations: Orientation.All
 
+    // The queue is the page attached to Now Playing (swipe left).
+    onStatusChanged: {
+        if (status === PageStatus.Active && pageStack.nextPage(page) === null) {
+            pageStack.pushAttached(Qt.resolvedUrl("QueuePage.qml"))
+        }
+    }
+
     function _formatTime(secs) {
         if (secs < 0) {
             return ""
