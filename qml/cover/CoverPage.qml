@@ -25,21 +25,25 @@ CoverBackground {
         Label {
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
-            truncationMode: TruncationMode.Fade
+            wrapMode: Text.Wrap
+            maximumLineCount: 2
+            elide: Text.ElideRight
             color: Theme.highlightColor
             text: player && player.title1 !== "" ? player.title1 : qsTr("Swell")
         }
         Label {
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
-            truncationMode: TruncationMode.Fade
+            wrapMode: Text.Wrap
+            maximumLineCount: 2
+            elide: Text.ElideRight
             font.pixelSize: Theme.fontSizeSmall
             text: player ? player.title2 : ""
         }
         Label {
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
-            truncationMode: TruncationMode.Fade
+            elide: Text.ElideRight
             font.pixelSize: Theme.fontSizeExtraSmall
             color: Theme.secondaryColor
             text: player ? player.name : ""

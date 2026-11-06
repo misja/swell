@@ -16,6 +16,18 @@ Page {
 
     allowedOrientations: Orientation.All
 
+    // The icon the user chose for an input in the official app; presets that
+    // select an input carry only a generic one.
+    function inputImage(inputId) {
+        if (!player || inputId === "")
+            return ""
+        for (var i = 0; i < player.inputs.length; ++i) {
+            if (player.inputs[i].id === inputId)
+                return player.inputs[i].image
+        }
+        return ""
+    }
+
     onStatusChanged: {
         if (status !== PageStatus.Active)
             return
@@ -79,29 +91,41 @@ Page {
                     model: player ? player.presets : []
 
                     BackgroundItem {
+                        id: tile
+                        readonly property bool isInput: modelData.inputId !== ""
                         width: page.tileSize
                         height: page.tileSize + nameLabel.height + Theme.paddingSmall
                         enabled: player.online
                         onClicked: player.playPreset(modelData.id)
 
-                        Image {
-                            id: art
+                        // Inputs are line icons: give them a tile like the station logos.
+                        Rectangle {
                             width: page.tileSize
                             height: page.tileSize
-                            fillMode: Image.PreserveAspectCrop
+                            visible: tile.isInput
+                            color: Theme.rgba(Theme.highlightBackgroundColor, Theme.highlightBackgroundOpacity)
+                        }
+                        Image {
+                            id: art
+                            x: tile.isInput ? (page.tileSize - width) / 2 : 0
+                            y: tile.isInput ? (page.tileSize - height) / 2 : 0
+                            width: tile.isInput ? page.tileSize * 0.55 : page.tileSize
+                            height: width
+                            fillMode: tile.isInput ? Image.PreserveAspectFit : Image.PreserveAspectCrop
                             asynchronous: true
                             sourceSize.width: width
                             sourceSize.height: height
-                            source: modelData.image
+                            source: page.inputImage(modelData.inputId) || modelData.image
                         }
                         Icon {
-                            anchors.centerIn: art
+                            x: (page.tileSize - width) / 2
+                            y: (page.tileSize - height) / 2
                             visible: art.status !== Image.Ready
                             source: "image://theme/icon-m-media-radio"
                         }
                         Label {
                             id: nameLabel
-                            anchors.top: art.bottom
+                            y: page.tileSize
                             anchors.topMargin: Theme.paddingSmall
                             width: parent.width
                             font.pixelSize: Theme.fontSizeExtraSmall

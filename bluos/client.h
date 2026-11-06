@@ -97,7 +97,8 @@ public:
     bool canSkip() const { return m_status.ok && !m_status.hasStreamUrl; }
     int duration() const { return m_status.totlen; }
     int position() const;
-    // Each entry: id (int), name, image (resolved URL). Cached per player.
+    // Each entry: id (int), name, image (resolved URL), inputId (the capture
+    // input it selects, or empty). Cached per player.
     QVariantList presets() const { return m_presets; }
     // Each entry: id, text, inputType, image (resolved URL), url (encoded, as given).
     QVariantList inputs() const { return m_inputs; }

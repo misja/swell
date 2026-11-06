@@ -54,3 +54,9 @@ Xperia 10 II (aarch64), Sailfish OS 5.2.0.20, Wi-Fi, a real BluOS player
   setting) removes it from `/RadioBrowse?service=Capture`. Verified after
   Misja changed it: 4 inputs remain. Swell follows the player; no local
   hide list.
+- Build 0.1.0-3 (sha256 3b64393d165101af0a93379eca197dd89140f06c6027cbd23e9f1626e5c60200):
+  - Home is attached to Players (swipe left), on one horizontal axis with
+    Now Playing;
+  - presets that select an input show that input's icon on a tile;
+  - cover titles wrap to two lines;
+  - all suites pass, the validator succeeded, installed on the device.

@@ -194,6 +194,8 @@ void Client::fetchPresets()
             item.insert(QStringLiteral("id"), p.id);
             item.insert(QStringLiteral("name"), p.name);
             item.insert(QStringLiteral("image"), resolveImage(p.image));
+            // A preset that selects an input; Home shows that input's own icon.
+            item.insert(QStringLiteral("inputId"), p.inputId());
             list.append(item);
         }
         if (list != m_presets) {

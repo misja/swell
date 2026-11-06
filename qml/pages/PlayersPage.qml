@@ -8,6 +8,20 @@ Page {
 
     allowedOrientations: Orientation.All
 
+    // Shows the current player's Home, one swipe to the left of this list.
+    function openCurrent(immediate) {
+        if (!players.current)
+            return
+        if (pageStack.nextPage(page) === null)
+            pageStack.pushAttached(Qt.resolvedUrl("HomePage.qml"))
+        pageStack.navigateForward(immediate ? PageStackAction.Immediate : PageStackAction.Animated)
+    }
+
+    onStatusChanged: {
+        if (status === PageStatus.Active && players.current && pageStack.nextPage(page) === null)
+            pageStack.pushAttached(Qt.resolvedUrl("HomePage.qml"))
+    }
+
     // Every player polls only while this list is on screen (spec: background polling).
     Binding {
         target: players
@@ -55,7 +69,7 @@ Page {
 
             onClicked: {
                 players.currentId = model.playerId
-                pageStack.push(Qt.resolvedUrl("HomePage.qml"))
+                page.openCurrent(false)
             }
 
             Column {

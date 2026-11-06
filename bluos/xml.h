@@ -82,6 +82,9 @@ struct Preset {
     int id = 0;
     QString name;
     QString image;          // may be relative and may redirect, or an absolute URL
+    QString url;            // what the preset loads, e.g. "Capture:…?id=<input id>"
+    // The capture input this preset selects, from the id= in its url; empty otherwise.
+    QString inputId() const;
 };
 
 struct Presets {

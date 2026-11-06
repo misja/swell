@@ -37,7 +37,7 @@ ApplicationWindow {
             if (!players.searching && players.currentId === "" && players.count === 1
                     && pageStack.currentPage && pageStack.currentPage.objectName === "players") {
                 players.currentId = players.idAt(0)
-                pageStack.push(Qt.resolvedUrl("pages/HomePage.qml"))
+                pageStack.currentPage.openCurrent(false)
             }
         }
         onManualHostsChanged: manualHosts.value = players.manualHosts
@@ -59,10 +59,14 @@ ApplicationWindow {
     // Opens Now Playing from the mini-player: forward from Home, or via Home from Players.
     function openNowPlaying() {
         var page = pageStack.currentPage
-        if (page.objectName === "home")
+        if (page.objectName === "home") {
             pageStack.navigateForward()
-        else if (page.objectName === "players")
-            pageStack.push(Qt.resolvedUrl("pages/HomePage.qml"), { openNowPlaying: true })
+        } else if (page.objectName === "players") {
+            page.openCurrent(false)
+            var home = pageStack.nextPage(page)
+            if (home)
+                home.openNowPlaying = true
+        }
     }
 
     Component.onCompleted: {
@@ -71,7 +75,7 @@ ApplicationWindow {
             players.addManual(hosts[i])
         if (currentId.value !== "") {
             players.restoreCurrent(currentId.value, currentNodeId.value)
-            pageStack.push(Qt.resolvedUrl("pages/HomePage.qml"), {}, PageStackAction.Immediate)
+            startOnHome.start()
         }
     }
 
@@ -148,6 +152,15 @@ ApplicationWindow {
                 onClicked: miniPlayer.player.playing ? miniPlayer.player.pause() : miniPlayer.player.play()
             }
         }
+    }
+
+    // The initial page exists only once the window is complete; open the
+    // remembered player's Home right after.
+    Timer {
+        id: startOnHome
+        interval: 0
+        onTriggered: if (pageStack.currentPage && pageStack.currentPage.objectName === "players")
+                         pageStack.currentPage.openCurrent(true)
     }
 
     Label {

@@ -126,6 +126,20 @@ SyncStatus parseSyncStatus(const QByteArray &xml)
     return s;
 }
 
+QString Preset::inputId() const
+{
+    if (!url.startsWith(QLatin1String("Capture:")))
+        return QString();
+    const int q = url.indexOf(QLatin1Char('?'));
+    if (q < 0)
+        return QString();
+    for (const QString &pair : url.mid(q + 1).split(QLatin1Char('&'))) {
+        if (pair.startsWith(QLatin1String("id=")))
+            return pair.mid(3);
+    }
+    return QString();
+}
+
 Presets parsePresets(const QByteArray &xml)
 {
     Presets p;
@@ -141,6 +155,7 @@ Presets parsePresets(const QByteArray &xml)
             preset.id = a.value(QLatin1String("id")).toString().toInt(&ok);
             preset.name = a.value(QLatin1String("name")).toString();
             preset.image = a.value(QLatin1String("image")).toString();
+            preset.url = a.value(QLatin1String("url")).toString();
             if (ok)
                 p.items.append(preset);
         }

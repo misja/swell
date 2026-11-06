@@ -160,16 +160,20 @@ void TstXml::presets()
 {
     const Presets p = parsePresets(
         "<presets prid=\"3\">"
+        "<preset id=\"1\" name=\"CD Player\" url=\"Capture:hw:x,0/1/25/2?id=xdynamic-Source3\" image=\"/images/capture/o.png\"/>"
         "<preset id=\"7\" name=\"North Sea FM\" url=\"Radio:/1/north\" image=\"https://img.example/n.jpg\"/>"
         "<preset id=\"2\" name=\"Morning Mix\" url=\"/Load?service=X&amp;id=1\" image=\"/Artwork?service=X&amp;id=1\"/>"
         "<preset name=\"No id\"/><future/></presets>");
     QVERIFY2(p.ok, qPrintable(p.error));
     QCOMPARE(p.prid, QStringLiteral("3"));
-    QCOMPARE(p.items.size(), 2);
-    QCOMPARE(p.items.at(0).id, 7);
-    QCOMPARE(p.items.at(0).name, QStringLiteral("North Sea FM"));
-    QCOMPARE(p.items.at(1).id, 2);
-    QCOMPARE(p.items.at(1).image, QStringLiteral("/Artwork?service=X&id=1"));
+    QCOMPARE(p.items.size(), 3);
+    QCOMPARE(p.items.at(0).inputId(), QStringLiteral("xdynamic-Source3"));
+    QCOMPARE(p.items.at(1).id, 7);
+    QCOMPARE(p.items.at(1).name, QStringLiteral("North Sea FM"));
+    QCOMPARE(p.items.at(1).inputId(), QString());
+    QCOMPARE(p.items.at(2).id, 2);
+    QCOMPARE(p.items.at(2).image, QStringLiteral("/Artwork?service=X&id=1"));
+    QCOMPARE(p.items.at(2).inputId(), QString());
 }
 
 void TstXml::presetsEmptyAndMalformed()
