@@ -5,6 +5,7 @@
 
 #include "client.h"
 #include "playermodel.h"
+#include "queuemodel.h"
 
 namespace Swell {
 
@@ -14,6 +15,8 @@ void registerTypes()
                                               QStringLiteral("Players come from the player model"));
     qmlRegisterUncreatableType<BluOS::PlayerModel>("Swell", 1, 0, "PlayerModel",
                                                    QStringLiteral("The app provides the player model"));
+    qmlRegisterUncreatableType<BluOS::QueueModel>("Swell", 1, 0, "QueueModel",
+                                                  QStringLiteral("Each player provides its queue"));
 }
 
 } // namespace Swell

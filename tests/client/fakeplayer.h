@@ -6,6 +6,8 @@
 #ifndef FAKEPLAYER_H
 #define FAKEPLAYER_H
 
+#include <functional>
+
 #include <QElapsedTimer>
 #include <QHash>
 #include <QList>
@@ -61,7 +63,7 @@ public:
         m_held.clear();
         for (const Held &h : held)
             if (h.socket)
-                respond(h.socket, QStringLiteral("/Status"));
+                respond(h.socket, QStringLiteral("/Status"), QUrlQuery());
     }
 
     void serve(const QString &path, const QByteArray &body,
@@ -72,8 +74,17 @@ public:
     }
 
     void redirect(const QString &path, const QUrl &to) { m_redirects.insert(path, to); }
+    // Answers this path from its query, e.g. /Playlist windows.
+    void handle(const QString &path, const std::function<QByteArray(const QUrlQuery &)> &handler)
+    {
+        m_handlers.insert(path, handler);
+    }
+    // Delays every answer on this path, like a player busy serving covers.
+    void delay(const QString &path, int ms) { m_delays.insert(path, ms); }
+
     // Answers this path with an HTTP error status instead of its document.
     void failWith(const QString &path, int status) { m_failures.insert(path, status); }
+    void stopFailing(const QString &path) { m_failures.remove(path); }
 
     QList<Request> requests() const { return m_requests; }
     QList<Request> requests(const QString &path) const
@@ -134,23 +145,34 @@ private:
                     if (m_held.at(i).socket == guarded) {
                         m_held.removeAt(i);
                         if (guarded)
-                            respond(guarded, QStringLiteral("/Status"));
+                            respond(guarded, QStringLiteral("/Status"), QUrlQuery());
                         return;
                     }
                 }
             });
             return;
         }
-        respond(socket, path);
+        if (m_delays.contains(path)) {
+            QPointer<QTcpSocket> guarded(socket);
+            QTimer::singleShot(m_delays.value(path), this, [this, guarded, path, query]() {
+                if (guarded)
+                    respond(guarded, path, query);
+            });
+            return;
+        }
+        respond(socket, path, query);
     }
 
-    void respond(QTcpSocket *socket, const QString &path)
+    void respond(QTcpSocket *socket, const QString &path, const QUrlQuery &query)
     {
         QByteArray head;
         QByteArray body;
         if (m_failures.contains(path)) {
             body = "error";
             head = "HTTP/1.1 " + QByteArray::number(m_failures.value(path)) + " Error\r\nContent-Type: text/plain\r\n";
+        } else if (m_handlers.contains(path)) {
+            body = m_handlers.value(path)(query);
+            head = "HTTP/1.1 200 OK\r\nContent-Type: text/xml\r\n";
         } else if (m_redirects.contains(path)) {
             head = "HTTP/1.1 302 Found\r\nLocation: " + m_redirects.value(path).toEncoded() + "\r\n";
         } else if (m_routes.contains(path)) {
@@ -172,6 +194,8 @@ private:
     QHash<QString, QByteArray> m_types;
     QHash<QString, QUrl> m_redirects;
     QHash<QString, int> m_failures;
+    QHash<QString, std::function<QByteArray(const QUrlQuery &)>> m_handlers;
+    QHash<QString, int> m_delays;
     QHash<QTcpSocket *, QByteArray> m_buffers;
     QList<Held> m_held;
     QList<Request> m_requests;

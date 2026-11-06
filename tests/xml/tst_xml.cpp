@@ -23,6 +23,10 @@ private slots:
     void syncStatusWrongRoot();
     void statusPrid();
     void statusStreamActions();
+    void statusQueuePosition();
+    void playlistWindow();
+    void playlistStatusForm();
+    void playlistMalformed();
     void presets();
     void presetsEmptyAndMalformed();
     void captureInputs();
@@ -138,6 +142,54 @@ void TstXml::syncStatusWrongRoot()
     QVERIFY(s.error.contains(QStringLiteral("status")));
 }
 
+
+void TstXml::statusQueuePosition()
+{
+    const Status s = parseStatus("<status etag=\"q\"><pid>692</pid><song>3</song></status>");
+    QVERIFY(s.ok);
+    QCOMPARE(s.pid, QStringLiteral("692"));
+    QCOMPARE(s.song, 3);
+}
+
+void TstXml::playlistWindow()
+{
+    const Playlist p = parsePlaylist(
+        "<playlist name=\"Mix\" modified=\"0\" length=\"160\" id=\"1054\">"
+        "<song service=\"Svc\" songid=\"Svc:1\" id=\"5\"><title>Ebb</title><art>Nobody</art>"
+        "<alb>Invented</alb><fn>Svc:1</fn><time>221</time><image>/Artwork?x=1</image><future/></song>"
+        "<song id=\"6\"><title>Slack Water</title><art>Nobody</art><alb>Invented</alb><fn>/f/2.flac</fn></song>"
+        "<song><title>No position</title></song></playlist>");
+    QVERIFY2(p.ok, qPrintable(p.error));
+    QCOMPARE(p.length, 160);
+    QCOMPARE(p.id, QStringLiteral("1054"));
+    QCOMPARE(p.songs.size(), 2);
+    QCOMPARE(p.songs.at(0).position, 5);
+    QCOMPARE(p.songs.at(0).duration, 221);
+    QCOMPARE(p.songs.at(0).image, QStringLiteral("/Artwork?x=1"));
+    QCOMPARE(p.songs.at(0).identity(), QStringLiteral("Svc:1|Ebb"));
+    QCOMPARE(p.songs.at(1).duration, -1);
+    QCOMPARE(p.songs.at(1).identity(), QStringLiteral("/f/2.flac|Slack Water"));
+}
+
+void TstXml::playlistStatusForm()
+{
+    const Playlist p = parsePlaylist("<playlist><length>13</length><id>243</id><name></name><modified>1</modified></playlist>");
+    QVERIFY(p.ok);
+    QCOMPARE(p.length, 13);
+    QCOMPARE(p.id, QStringLiteral("243"));
+    QVERIFY(p.songs.isEmpty());
+    const Playlist cleared = parsePlaylist("<playlist modified=\"0\" length=\"0\" id=\"1056\"/>");
+    QVERIFY(cleared.ok);
+    QCOMPARE(cleared.length, 0);
+    QCOMPARE(cleared.id, QStringLiteral("1056"));
+}
+
+void TstXml::playlistMalformed()
+{
+    QVERIFY(!parsePlaylist("").ok);
+    QVERIFY(!parsePlaylist("<playlist length=\"3\"><song id=\"0\"><title>x").ok);
+    QVERIFY(!parsePlaylist("<status/>").ok);
+}
 
 void TstXml::statusStreamActions()
 {

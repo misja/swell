@@ -87,6 +87,8 @@ Status parseStatus(const QByteArray &xml)
         else if (n == QLatin1String("image")) s.image = reader.readElementText();
         else if (n == QLatin1String("syncStat")) s.syncStat = reader.readElementText();
         else if (n == QLatin1String("prid")) s.prid = reader.readElementText();
+        else if (n == QLatin1String("pid")) s.pid = reader.readElementText();
+        else if (n == QLatin1String("song")) s.song = toInt(reader.readElementText(), -1);
         else if (n == QLatin1String("secs")) s.secs = toInt(reader.readElementText(), -1);
         else if (n == QLatin1String("totlen")) s.totlen = toInt(reader.readElementText(), -1);
         else if (n == QLatin1String("volume")) s.volume = toInt(reader.readElementText(), -1);
@@ -152,6 +154,46 @@ QString Preset::inputId() const
             return pair.mid(3);
     }
     return QString();
+}
+
+Playlist parsePlaylist(const QByteArray &xml)
+{
+    Playlist p;
+    QXmlStreamReader reader(xml);
+    if (!enterRoot(reader, "playlist", &p.error))
+        return p;
+    const QXmlStreamAttributes a = reader.attributes();
+    p.length = toInt(a.value(QLatin1String("length")).toString(), -1);
+    p.id = a.value(QLatin1String("id")).toString();
+    while (reader.readNextStartElement()) {
+        const QStringRef n = reader.name();
+        if (n == QLatin1String("length")) {
+            p.length = toInt(reader.readElementText(), -1);
+        } else if (n == QLatin1String("id")) {
+            p.id = reader.readElementText().trimmed();
+        } else if (n == QLatin1String("song")) {
+            QueueEntry e;
+            const QXmlStreamAttributes sa = reader.attributes();
+            e.position = toInt(sa.value(QLatin1String("id")).toString(), -1);
+            e.songId = sa.value(QLatin1String("songid")).toString();
+            while (reader.readNextStartElement()) {
+                const QStringRef c = reader.name();
+                if (c == QLatin1String("title")) e.title = reader.readElementText();
+                else if (c == QLatin1String("art")) e.artist = reader.readElementText();
+                else if (c == QLatin1String("alb")) e.album = reader.readElementText();
+                else if (c == QLatin1String("fn")) e.fn = reader.readElementText();
+                else if (c == QLatin1String("image")) e.image = reader.readElementText();
+                else if (c == QLatin1String("time")) e.duration = toInt(reader.readElementText(), -1);
+                else reader.skipCurrentElement();
+            }
+            if (e.position >= 0)
+                p.songs.append(e);
+        } else {
+            reader.skipCurrentElement();
+        }
+    }
+    p.ok = finish(reader, &p.error);
+    return p;
 }
 
 Presets parsePresets(const QByteArray &xml)

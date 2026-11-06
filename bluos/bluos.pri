@@ -8,10 +8,12 @@ HEADERS += \
     $$PWD/discovery.h \
     $$PWD/lsdp.h \
     $$PWD/playermodel.h \
+    $$PWD/queuemodel.h \
     $$PWD/xml.h
 SOURCES += \
     $$PWD/client.cpp \
     $$PWD/discovery.cpp \
     $$PWD/lsdp.cpp \
     $$PWD/playermodel.cpp \
+    $$PWD/queuemodel.cpp \
     $$PWD/xml.cpp

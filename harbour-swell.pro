@@ -6,7 +6,7 @@ TARGET = harbour-swell
 CONFIG += sailfishapp
 QT += network
 
-VERSION = 0.1.0
+VERSION = 0.2.0
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 include(bluos/bluos.pri)
@@ -21,6 +21,7 @@ DISTFILES += qml/harbour-swell.qml \
     qml/pages/AddPlayerDialog.qml \
     qml/pages/HomePage.qml \
     qml/pages/NowPlayingPage.qml \
+    qml/pages/QueuePage.qml \
     qml/pages/AboutPage.qml \
     rpm/harbour-swell.changes.run \
     rpm/harbour-swell.spec \
@@ -31,7 +32,8 @@ SAILFISHAPP_ICONS = 86x86 108x108 128x128 172x172
 
 CONFIG += sailfishapp_i18n
 
-TRANSLATIONS += translations/harbour-swell-nl.ts
+TRANSLATIONS += translations/harbour-swell-nl.ts \
+    translations/harbour-swell-en.ts
 
 # Harbour allows files only below /usr/share/$$TARGET, so the license text
 # is installed there rather than with %license.

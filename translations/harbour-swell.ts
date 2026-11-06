@@ -131,13 +131,13 @@
 <context>
     <name>NowPlayingPage</name>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="41"/>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="73"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="48"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="80"/>
         <source>Not reachable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="201"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="208"/>
         <source>Volume</source>
         <translation type="unfinished"></translation>
     </message>
@@ -192,6 +192,66 @@
     <message>
         <location filename="../qml/pages/PlayersPage.qml" line="117"/>
         <source>Pull down to search again or to add a player by address</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QueuePage</name>
+    <message>
+        <location filename="../qml/pages/QueuePage.qml" line="56"/>
+        <source>The player did not accept that.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/QueuePage.qml" line="58"/>
+        <source>The queue has changed. Nothing was removed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/QueuePage.qml" line="72"/>
+        <source>Queue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/pages/QueuePage.qml" line="81"/>
+        <source>%n tracks</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/QueuePage.qml" line="92"/>
+        <source>Now playing %1. Tap a track to play the queue again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/QueuePage.qml" line="106"/>
+        <source>Clear queue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/QueuePage.qml" line="107"/>
+        <source>Clearing queue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/QueuePage.qml" line="123"/>
+        <source>Removing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/QueuePage.qml" line="198"/>
+        <source>Remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/QueuePage.qml" line="207"/>
+        <source>Queue is empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/QueuePage.qml" line="208"/>
+        <source>Play a preset or an input from Home</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
