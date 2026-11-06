@@ -22,6 +22,8 @@ private slots:
     void pidChangeResets();
     void lengthChangeResets();
     void inactiveLoadsNothingThenReloadsWhenStale();
+    void reopeningAnUnchangedQueueKeepsTheRows();
+    void firstReadFailedWhileOffScreenIsRetriedOnReopen();
     void failedReadIsRetried();
     void lateReplyWithAnOldIdIsIgnored();
     void staleRemoveIsRefused();
@@ -193,6 +195,40 @@ void TstQueue::inactiveLoadsNothingThenReloadsWhenStale()
     q->setActive(true);
     QTRY_COMPARE(q->length(), 300);
     QCOMPARE(q->pid(), QString::number(m_pid));
+}
+
+void TstQueue::reopeningAnUnchangedQueueKeepsTheRows()
+{
+    startClient();
+    QueueModel *q = m_client->queueModel();
+    q->setActive(true);
+    QTRY_COMPARE(title(3), QStringLiteral("Track 3"));
+    QTRY_VERIFY(!q->loading());
+    const int reads = m_player->requests(QStringLiteral("/Playlist")).size();
+    QSignalSpy resets(q, &QAbstractItemModel::modelReset);
+    q->setActive(false);
+    setStatus(1);   // the track changes, the queue does not
+    QTRY_COMPARE(q->currentIndex(), 1);
+    q->setActive(true);
+    QTest::qWait(400);
+    QCOMPARE(resets.size(), 0);
+    QCOMPARE(title(3), QStringLiteral("Track 3"));
+    QCOMPARE(m_player->requests(QStringLiteral("/Playlist")).size(), reads);
+}
+
+void TstQueue::firstReadFailedWhileOffScreenIsRetriedOnReopen()
+{
+    m_player->failWith(QStringLiteral("/Playlist"), 503);
+    startClient();
+    QueueModel *q = m_client->queueModel();
+    q->setActive(true);
+    q->setActive(false);   // left during the first read (or a cancelled swipe)
+    QTRY_VERIFY(m_player->requests(QStringLiteral("/Playlist")).size() >= 1);
+    QTRY_VERIFY(!q->loading());
+    QTest::qWait(800);     // past the retry interval, which skips while inactive
+    m_player->stopFailing(QStringLiteral("/Playlist"));
+    q->setActive(true);
+    QTRY_COMPARE(q->length(), 300);
 }
 
 void TstQueue::failedReadIsRetried()

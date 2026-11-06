@@ -60,7 +60,10 @@ repeat.
   - A failed read leaves the rows as placeholders. They are retried when shown
     again, and no error is reported.
 - **Refresh:** a `pid` change in `/Status` that Swell did not cause (a new,
-  changed or cleared queue) resets the list, and so does reopening the page.
+  changed or cleared queue) resets the list. Reopening the page keeps the
+  rows when the id is unchanged, because the id changes on every
+  modification (fix after Misja's device report of a flash on every open,
+  2026-11-06).
   `/Clear` replies with the new empty queue.
 - **Current entry:** `/Status` `song` is the current position, and `pid` the
   queue identity. With `streamUrl` present the queue is not the source (§2.1).
