@@ -37,7 +37,7 @@ Decisions and authorization scope (Misja, 2026-11-06):
   `sailfishapp_i18n`.
 - Approved:
   - the private GitHub repo;
-  - pushes and PRs for swell and for sailfish-workspace#18;
+  - pushes and PRs for swell and for sailfish-workspace#18 (both merged 2026-11-06);
   - device installs through the SDK-registered device, which Misja confirms on
     the phone.
 - Not approved: publication (Harbour, Chum, OBS).
