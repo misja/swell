@@ -53,7 +53,7 @@ C++/QML split. Each part records why it is in C++, as the spec requires:
 | Cover page and cover actions | QML/Silica | `CoverActionList`: play/pause and next. |
 | Persistence (manual hosts, current player) | QML `Nemo.Configuration` (`ConfigurationValue`) | Existing allowed platform facility; no own storage code. |
 | Cover art | C++ helper `artworkUrl()` + QML `Image` | The helper resolves relative image paths against the player and adds `followRedirects=1` (API v1.7 image attributes). `Image` loads through the shared NAM, which also follows redirects as a fallback. |
-| Translations | `qsTr()` + `translations/*.ts`, `CONFIG += sailfishapp_i18n` | As in the SDK template. |
+| Translations | `qsTr()` + `translations/*.ts`, `CONFIG += sailfishapp_i18n` | As in the SDK template. `lupdate` runs at build time and merges new strings without losing translations (checked 2026-11-06: only line references changed). Release check: no `type="unfinished"` left in a maintained language. |
 
 No threads besides Qt's own network handling; everything runs on the event loop.
 

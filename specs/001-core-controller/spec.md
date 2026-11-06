@@ -140,8 +140,13 @@ installation need separate approval.
   refreshed.
 - A failed preset or input play is an HTTP or network error, or an `<error>`
   body. Success is a `<loaded>` or `<state>` response (API §6.2, §11.1).
-- UI strings are translatable using the Sailfish convention; the mechanism is
-  chosen in the plan.
+- Languages (Misja, 2026-11-06): English is the source language and the
+  fallback. Every UI string goes through `qsTr()`, with no text in C++ that
+  reaches the UI untranslated. Translations live in
+  `translations/harbour-swell-<lang>.ts` and are kept complete when strings
+  change. Dutch is maintained from the first release. A new language is one
+  `TRANSLATIONS` entry plus its `.ts` file. How outside translators contribute
+  (e.g. a translation platform) is a later decision.
 
 ## Acceptance criteria and completion condition
 
