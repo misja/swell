@@ -50,10 +50,18 @@ Deploy: in /home/ubuntu/swell-001, `sfdk -c device="Xperia 10 II - Dual SIM (ARM
 sdk-deploy-rpm ~/RPMS/<rpm>`, and confirm on the phone. Plain `deploy --sdk`
 fails there (no session bus over SSH).
 
+Device iterations 0.1.0-2…4 (confirmed by Misja):
+- the only player found is picked on first start;
+- inputs follow the player's Hide source setting;
+- Home is attached to Players;
+- presets that select an input show that input's icon;
+- cover titles wrap;
+- previous/next follow the source (queue, stream actions, otherwise hidden).
+
 Next action:
-1. Small UI polish from the device check: vertical balance of Now Playing in
-   portrait; watch the connection count over time.
-2. The separate result review (AC6), then a PR for Misja.
+1. The separate result review (AC6), then a PR for Misja.
+2. Small polish: vertical balance of Now Playing in portrait; watch the
+   connection count over time.
 3. App icon/logo, in a later session (Misja).
 4. Release-target ID: the device runs 5.2.0.20, the registry says 5.2.0.18;
    to be settled with Misja.
