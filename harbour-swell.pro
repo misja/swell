@@ -6,13 +6,21 @@ TARGET = harbour-swell
 CONFIG += sailfishapp
 QT += network
 
+VERSION = 0.1.0
+DEFINES += APP_VERSION=\\\"$$VERSION\\\"
+
 include(bluos/bluos.pri)
 
-SOURCES += src/harbour-swell.cpp
+INCLUDEPATH += src
+HEADERS += src/registration.h
+SOURCES += src/harbour-swell.cpp src/registration.cpp
 
 DISTFILES += qml/harbour-swell.qml \
     qml/cover/CoverPage.qml \
     qml/pages/PlayersPage.qml \
+    qml/pages/AddPlayerDialog.qml \
+    qml/pages/HomePage.qml \
+    qml/pages/AboutPage.qml \
     rpm/harbour-swell.changes.run \
     rpm/harbour-swell.spec \
     translations/*.ts \

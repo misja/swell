@@ -16,6 +16,8 @@ private slots:
     void initTestCase();
     void spikeWindowCompiles();
     void negativeControlFails();
+    void appFileCompiles_data();
+    void appFileCompiles();
 
 private:
     QQmlComponent::Status compile(const QString &relativePath, QString *errors);
@@ -49,6 +51,29 @@ void TstQml::negativeControlFails()
     QString errors;
     QCOMPARE(compile(QStringLiteral("tests/qml/spike/Broken.qml"), &errors), QQmlComponent::Error);
     QVERIFY(errors.contains(QStringLiteral("noSuchProperty")));
+}
+
+void TstQml::appFileCompiles_data()
+{
+    QTest::addColumn<QString>("file");
+    const QString root = QStringLiteral(SWELL_SOURCE_DIR "/");
+    QDirIterator it(root + QStringLiteral("qml"), { QStringLiteral("*.qml") }, QDir::Files,
+                    QDirIterator::Subdirectories);
+    int count = 0;
+    while (it.hasNext()) {
+        const QString path = it.next().mid(root.size());
+        QTest::newRow(qPrintable(path)) << path;
+        ++count;
+    }
+    QVERIFY2(count > 0, "no QML files found");
+}
+
+void TstQml::appFileCompiles()
+{
+    QFETCH(QString, file);
+    QString errors;
+    QCOMPARE(compile(file, &errors), QQmlComponent::Ready);
+    QVERIFY2(errors.isEmpty(), qPrintable(errors));
 }
 
 int main(int argc, char *argv[])

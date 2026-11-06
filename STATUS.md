@@ -39,14 +39,15 @@ The required result review (AC6) is still due after the UI.
 Remaining blockers, options and recommendation: none. Open discussion:
 player settings (006).
 
+Progress: UI part 1 is done. It covers Players, Add player, Home (presets,
+inputs), About, persistence and the start state. The QML compile test covers
+every app QML file. The RPM is validated (evidence/001). Not yet checked on a
+device (needs approval).
+
 Next action, in tasks.md order:
-1. Players page, add-player dialog and Home (presets, inputs), with
-   Nemo.Configuration persistence (manual hosts, current id + nodeId) and the
-   start-state rule.
-2. Now Playing via pushAttached, landscape layout.
-3. Docked panel (Binding/show/hide), cover, About.
-4. Extend tests/qml to every app QML file.
-5. RPM and validator; then the separate result review.
+1. Now Playing via pushAttached from Home, landscape layout.
+2. Docked panel (Binding/show/hide, hidden on Now Playing and dialogs), cover.
+3. RPM and validator; then the separate result review (AC6).
 
 The old UI drafts are in git stash ("ui-draft-*") as starting material only.
 
