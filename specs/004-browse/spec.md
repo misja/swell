@@ -57,6 +57,9 @@ which Misja finds unclear.
     - **Covers per track:** song lists outside an album (an artist's songs,
       Library songs, search results) show each track's cover. An album's own
       page keeps track numbers and the cover in its header.
+11. No extra state in Swell (Misja, 2026-11-06): favourites and everything
+    else browsed live on the player. Swell stores on the phone only what it
+    already did (manual players, the current player).
 10. Request pacing: the one-second rule stays where the API sets it, on status
    queries with long polling (§2: "must not make two consecutive requests for
    the same resource less than one second apart"). Browse reads are not
