@@ -4,7 +4,7 @@ Linked issue and plan: https://github.com/misja/swell/issues/1; plan.md in this 
 Use this file for bounded implementation steps, not a second status board.
 
 - [x] Scaffold from the SDK `sailfishos-qtquick2app` qmake template (harbour-swell); empty app builds for aarch64.
-- [ ] Spike: loopback QTcpServer + QUdpSocket QtTest via `make check` in the aarch64 target; record the result (i486 fallback only as a recorded deviation).
+- [x] Spike: loopback QTcpServer + QUdpSocket QtTest via `make check` in the aarch64 target; record the result (i486 fallback only as a recorded deviation).
 - [ ] `lsdp::parse` and `LsdpDiscovery` with unit tests (AC2 cases).
 - [ ] `parseStatus` / `parseSyncStatus` / `parseVolume` with unit tests on synthetic fixtures.
 - [ ] `PlayerClient` (shared NAM, long poll, one-second rule, backoff, commands, /SyncStatus policy) and `artworkUrl()`, with in-process fixture tests (AC3).

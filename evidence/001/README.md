@@ -8,3 +8,8 @@
 First validator run failed: `%license` installed to `/usr/share/licenses`, which
 Harbour does not allow; LICENSE is now installed in `/usr/share/harbour-swell`.
 Build tree: `/home/ubuntu/swell-001` in the `sailfish-sdk` container.
+| 2026-11-06 | QtTest spike `tests/spike` via `sfdk build-shell` + `make check` (aarch64, qemu-user) | 5 passed, 0 failed; loopback TCP+HTTP via QNetworkAccessManager, UDP datagram, `qWait(200)` = 207 ms. i486 fallback not needed | spike-aarch64.log |
+
+`qt5-qttest-devel` was already present in the build snapshot
+(`SailfishOS-5.1.0.11-aarch64.default`); `zypper in` reported "Nothing to do",
+so no package was installed (approval granted by Misja 2026-11-06).

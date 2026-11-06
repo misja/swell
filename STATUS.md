@@ -45,9 +45,8 @@ GitHub: private repo misja/swell, issue #1 on the Sailfish board (In
 Progress), branch 001-core-controller.
 Progress 2026-11-06: scaffold builds for aarch64 and passes the Harbour
 validator (1 open warning: binary not stripped); evidence/001/README.md.
-Remaining blockers, options and recommendation: the QtTest spike needs
-qt5-qttest-devel (official Jolla repo) in the SDK build snapshot, which is a
-package installation and needs Misja's approval. Recommendation: allow it as a
-BuildRequires pulled into the sfdk build snapshot only (the original target
-stays untouched).
-Next action: after approval, run the aarch64 spike; then parsers + LSDP.
+Misja 2026-11-06: qt5-qttest-devel may be added to the SDK (it was already in
+the build snapshot; nothing installed); Sailjail OrganizationName io.github.misja.
+Spike passed on aarch64/qemu (evidence/001/spike-aarch64.log).
+Remaining blockers, options and recommendation: none.
+Next action: LSDP parser/discovery and XML parsers with unit tests.

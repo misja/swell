@@ -43,7 +43,7 @@ void TstSpike::tcpLoopbackHttp()
 void TstSpike::udpLoopback()
 {
     QUdpSocket receiver;
-    QVERIFY(receiver.bind(QHostAddress::LocalHost, 0));
+    QVERIFY(receiver.bind(QHostAddress(QHostAddress::LocalHost), 0));
     QUdpSocket sender;
     const QByteArray datagram("\x06LSDP\x01", 6);
     QCOMPARE(sender.writeDatagram(datagram, QHostAddress::LocalHost, receiver.localPort()),
