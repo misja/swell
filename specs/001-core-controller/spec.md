@@ -9,8 +9,9 @@ are unaffected.
 
 - Accountable owner: root (primary assistant session).
 - Decision owner: Misja Hoebe (@misja).
-- Scope reviewer: separate agent `scope_review`, 2026-11-06, verdict "approve
-  with changes"; all findings addressed below (see STATUS.md).
+- Scope reviewers: separate agents `scope_review` (first scope) and
+  `scope_review_2` (MVP revision), both 2026-11-06, verdict "approve with
+  changes". Their findings are addressed below (see STATUS.md).
 - Result reviewer: a separate agent reviews the resulting changes before
   maintainer review.
 - Linked issue: https://github.com/misja/swell/issues/1 (private repository).
@@ -42,21 +43,35 @@ This first increment (the MVP) includes:
    state. Tapping one makes it the current player. Manual players can be
    removed. The current player is remembered and is used again at the next
    start.
-3. **Home page** of the current player; the app starts here. It shows:
+3. **Home page** of the current player. The app starts here when a current
+   player is remembered; otherwise it starts on Players. If the current player
+   is offline, Home shows that state with a hint to pick another player. Home
+   shows:
    - the player's presets (API §6: `/Presets`; play with `/Preset?id=`),
-     refreshed when `prid` in `/Status` changes;
+     fetched on first contact and on every player switch, and refetched when
+     `prid` in `/Status` changes. A player without presets shows a placeholder
+     (presets are created in the official app). A preset is played by its
+     `id`, because ids are not sequential;
    - its inputs (API §11.1: `/RadioBrowse?service=Capture`; play with
-     `/Play?url=`). Only local hardware inputs (items with `inputType`) are
-     shown; Hub inputs and cloud entries are left for later.
+     `/Play?url=`, passing the already percent-encoded `URL` attribute without
+     re-encoding). Only local hardware inputs (items with `inputType`) are
+     shown. Hub inputs and cloud entries, such as Spotify, which belongs to an
+     account, are left out. Known limitation: inactive inputs may be missing
+     from this list (API §11.2), and §11.2 is not used.
    Pulley: Players, About.
 4. **Now Playing** as the page attached to Home (swipe left). It shows cover
-   art, the `title1`–`title3` lines, progress, play/pause, next/previous,
-   volume and mute. It is updated through the `/Status` long poll (etag +
+   art, the `title1`–`title3` lines, progress (display only, no seeking),
+   play/pause, next/previous, volume and mute. The volume control is hidden
+   when the player reports a fixed volume (`volume=-1`). It is updated through the `/Status` long poll (etag +
    timeout), not a polling loop.
 5. A **docked mini-player** on Home and Players (artwork, title, play/pause).
-   Tapping it opens Now Playing.
+   Tapping it opens Now Playing. It is a plain Silica `DockedPanel`.
+   `Sailfish.Media`'s `MediaPlayerControlsPanel` was examined and not reused:
+   it always shows a seek slider, has no artwork/title slot and opens only
+   while playing.
 6. **Cover**: current track, with play/pause and next cover actions.
-7. **Landscape** on every page, using Silica's orientation handling. Now
+7. **Landscape** on every page, using Silica's orientation handling. Pages
+   default to portrait, so each page sets `allowedOrientations`. Now
    Playing shows the artwork beside the controls; lists stay lists.
 8. **About** page with the privacy statement.
 
@@ -65,8 +80,10 @@ own spec:
 - 002: the Queue page, attached to Now Playing.
 - 003: MPRIS lock-screen controls (needs the `Audio` permission).
 - 004: a generic Browse page for the player's `/Browse` hierarchy, from Home:
-  library, services, playlists, radio and search. Home's sections then come
-  from the top-level `/Browse`.
+  library, services, playlists, radio and search. Whether Home's sections then
+  come from the top-level `/Browse` is decided in 004. 001 keeps play actions
+  generic ("send this play path"), so the source of the inputs can change
+  later.
 - 005: grouping, as its own page opened from Now Playing.
 - 006: player settings and alarms (to be discussed).
 - Later: My Stations (custom radio URLs stored on the phone), a "Track details"
@@ -104,9 +121,20 @@ installation need separate approval.
   suggest endorsement.
 - Sailjail permission: `Internet` only.
 - Presets and inputs show what the player reports. Their images go through the
-  same artwork resolution as the cover art. A failed preset or input play is
-  reported in the UI, and the long poll then shows the actual state.
-- Pulley menus have at most four items, so they also fit in landscape.
+  same artwork resolution as the cover art: player-relative images get
+  `followRedirects=1`, and absolute URLs on other hosts are used as given. A
+  failed play is reported in the UI, and the long poll then shows the actual
+  state.
+- Pulley menus stay short, so they also fit in landscape (Sailfish design
+  guideline, navigation: "below five" options,
+  https://sailfishos.org/design/navigation, checked 2026-11-06).
+- Background polling: only the current player keeps its long poll while the
+  app is in the background, because the cover shows it. Other players are
+  polled only while the Players page is visible. A non-current player shows
+  its last known state; when the Players page appears, every player is
+  refreshed.
+- A failed preset or input play is an HTTP or network error, or an `<error>`
+  body. Success is a `<loaded>` or `<state>` response (API §6.2, §11.1).
 - UI strings are translatable using the Sailfish convention; the mechanism is
   chosen in the plan.
 
@@ -136,11 +164,13 @@ installation need separate approval.
      recovers;
    - a manual host that is not a BluOS player is reported clearly;
    - presets and inputs are fetched, and playing one sends `/Preset?id=` or
-     `/Play?url=` as given;
+     `/Play?url=` with the input URL not encoded twice;
    - a `prid` change in `/Status` refetches `/Presets`.
-4. The QML loads without errors or warnings in the build target. The method
-   (for example an offscreen QML load test or `qmllint`) is chosen in the plan,
-   and whatever cannot be checked without a display is listed as such.
+4. Every QML file compiles, with syntax, imports and types resolved, in the
+   build target. This is checked by a QtTest engine test on the `minimal`
+   platform, which creates a `QQmlComponent` per file without instantiating
+   windows. The target has no `qmllint` and no offscreen platform, so runtime
+   binding warnings and rendering are recorded as not checked.
 5. The RPM passes `sdk-harbour-rpmvalidator` 1.110 (present in the target), or
    deviations are listed with reasons. This is a compliance check, not a
    submission.

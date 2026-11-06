@@ -1,8 +1,9 @@
 # Implementation plan — 001 core controller
 
-Status: revised after separate design review (design_review, 2026-11-06,
-"approve with changes", all findings applied). Implementation of Layer A may
-start; Layer B network steps need the approvals listed under Risks.
+Status: revised 2026-11-06 for the MVP scope revision (spec, scope_review_2).
+The protocol-library parts (rows up to the player model) were design-reviewed
+and are built. The rows marked "MVP" are new and need a separate design review
+before UI implementation (see Review).
 
 ## Linked specification and accepted ADRs
 
@@ -39,13 +40,19 @@ C++/QML split. Each part records why it is in C++, as the spec requires:
 |---|---|---|
 | LSDP discovery (`LsdpDiscovery`) | C++ | QML has no UDP socket. QUdpSocket on port 11430. Sends seven queries at 0, 1, 2, 3, 5, 7 and 10 s with up to 250 ms jitter (API v1.7 Appendix, timing) and keeps listening for announces. Handles Announce and Delete messages and skips unknown types. |
 | LSDP packet parser (`lsdp::parse`) | C++, pure function | Tested with QtTest on synthetic byte arrays. Cases: truncated packet, unknown type, own echoed `Q`, several messages, an announcement split across messages (API Appendix note 2), a Delete message, the class filter, and an address change for the same node id. The control port comes from TXT `port`, falling back to 11000. Name and model are taken from TXT when present; `/SyncStatus` is authoritative. |
-| Player client (`PlayerClient`, one per player) | C++ | Reason: the long-poll, one-second-rule and backoff state machine must be covered by QtTest (AC3). Timeouts use `QTimer` + `abort()`: Qt 5.6 has no transfer timeout in either QNetworkRequest or QML XHR, as checked in `libQt5Qml.so.5.6.3`. All players share the app's single QNetworkAccessManager, which is also the QML engine's NAM. The one-second rule is keyed by request path (API §2: "must"). Bursts of commands to the same path, such as volume from a slider, collapse to the latest value. Offline state and backoff. Commands: play, pause, skip, back, volume and mute. |
+| Player client (`PlayerClient`, one per player) | C++ | Reason: the long-poll, one-second-rule and backoff state machine must be covered by QtTest (AC3). Timeouts use `QTimer` + `abort()`: Qt 5.6 has no transfer timeout in either QNetworkRequest or QML XHR, as checked in `libQt5Qml.so.5.6.3`. All clients share one QNetworkAccessManager owned by the player model. QML `Image` uses the engine's own NAM, which follows redirects itself. The one-second rule is keyed by request path (API §2: "must"). Bursts of commands to the same path, such as volume from a slider, collapse to the latest value. Offline state and backoff. Commands: play, pause, skip, back, volume and mute. |
 | Polling policy | C++ (`PlayerClient`) | `/Status` long poll with `timeout=100` (API §2.1 recommends 100 s and never less than 10 s; tests inject shorter values). `/SyncStatus` is fetched once when a player is added (name, model, id, group master) and again whenever `<syncStat>` in `/Status` changes. This player's volume and mute come from `/SyncStatus`, because a grouped secondary's `/Status` copies the primary's (API §2). |
 | XML parsing (`parseStatus`, `parseSyncStatus`, `parseVolume`) | C++, QXmlStreamReader, pure functions | Unknown elements are ignored and malformed input returns an error value. QtTest coverage without a network. |
 | Player model (`PlayerModel`) | C++ QAbstractListModel | Merges discovered and manual players by node id / `host:port`. |
-| UI: player list, Now Playing, add-player dialog, About/privacy | QML/Silica | Standard Silica pages. |
-| Cover page and cover actions | QML/Silica | `CoverActionList`. |
-| Persistence (manual hosts, last selection) | QML `Nemo.Configuration` (`ConfigurationValue`) | Existing allowed platform facility; no own storage code. |
+| MVP: `Status.prid` | C++ (`parseStatus`) | Needed to know when presets change (API §2.1, §6.1). |
+| MVP: preset and input parsers (`parsePresets`, `parseCaptureInputs`) | C++, QXmlStreamReader, pure functions | Same reason as the other parsers: QtTest coverage of unknown elements, missing `inputType`, nested Hub `<category>`/`remoteitem` (skipped) and malformed input (AC2). |
+| MVP: presets and inputs on `Client` | C++ | `presets` and `inputs` list properties for QML. Fetched on first contact and on `prid` change (presets); inputs on first contact and when Home is shown. `playPreset(id)` sends `/Preset?id=`; `playInput(url)` sends `/Play?url=` with the given encoded URL as-is (`QUrl::fromEncoded` on the full request URL, so nothing is encoded twice). Both go through the one-second gate. A `playFailed(message)` signal fires on a network/HTTP error or an `<error>` body. Covered by fixture tests (AC3). |
+| MVP: background polling | C++ (`Client::setActive`, `PlayerModel`) + QML | The current player always polls. Other players poll only while Players is visible and the app is active (`Qt.application.state`). Inactive clients stop their long poll, keep their last state, and refresh on activation. |
+| MVP: start state | QML | With a remembered current player, start on Home; otherwise start on Players. If the current player is not online, Home shows its availability with a hint. |
+| MVP: pages | QML/Silica | Players (`SilicaListView`, pulley: About, Add player, Search again; context menu Remove on manual players); Add-player `Dialog`; Home (presets grid, inputs row; pulley: Players, About); Now Playing via `pageStack.pushAttached` from Home; About with the privacy statement. Every page sets `allowedOrientations: Orientation.All`, because Silica defaults pages to portrait (`ApplicationWindow.qml:107`). Now Playing uses `isLandscape` to put the artwork beside the controls. |
+| MVP: docked mini-player | QML, Silica `DockedPanel` | One panel in the `ApplicationWindow`, hidden on Now Playing. It shows artwork, title and play/pause; a tap opens Now Playing. `MediaPlayerControlsPanel` is not reused (seek slider always shown, no artwork/title slot, opens only while playing). Its look may borrow `MediaPlayerPanelBackground`. |
+| Cover page and cover actions | QML/Silica | `CoverActionList`: play/pause and next. |
+| Persistence (manual hosts, current player) | QML `Nemo.Configuration` (`ConfigurationValue`) | Existing allowed platform facility; no own storage code. |
 | Cover art | C++ helper `artworkUrl()` + QML `Image` | The helper resolves relative image paths against the player and adds `followRedirects=1` (API v1.7 image attributes). `Image` loads through the shared NAM, which also follows redirects as a fallback. |
 | Translations | `qsTr()` + `translations/*.ts`, `CONFIG += sailfishapp_i18n` | As in the SDK template. |
 
@@ -76,7 +83,7 @@ No new libraries. No migration; this is a new app.
 
 ## Next bounded increment and completion condition
 
-Increment 1 (this feature) is complete when spec acceptance criteria 1–5 are
+Increment 1 (this feature) is complete when spec acceptance criteria 1–6 are
 met. Internal order:
 1. Scaffold from the template and build an empty app for aarch64. Spike: one
    QtTest with a loopback QTcpServer and a QUdpSocket, run with `make check`
@@ -84,11 +91,18 @@ met. Internal order:
    tests on i486 (native) and record that as a deviation.
 2. Parsers and LSDP with unit tests.
 3. PlayerClient with in-process fixture tests.
-4. QML pages and cover.
-5. Optional: an integration run against `demo-player` (Layer B). It does not
+4. MVP library additions: `Status.prid`, preset/input parsers and client
+   support, `setActive`, with tests. Steps 1–3 are done.
+5. QML engine-load spike (AC4): a QtTest on the `minimal` platform that creates
+   a `QQmlComponent` for one Silica page. If Silica cannot load there, record
+   that and reword AC4 with the maintainer.
+6. QML pages, docked panel, cover and landscape. The stashed drafts
+   ("ui-draft-before-mvp-scope", "ui-draft-pages-before-mvp-scope") are
+   starting material only, reworked to the reviewed structure.
+7. Optional: an integration run against `demo-player` (Layer B). It does not
    gate completion.
-6. Harbour validator run.
-7. Separate result review.
+8. Harbour validator run.
+9. Separate result review.
 
 ## Validation
 
@@ -110,7 +124,15 @@ SDK build engine for the aarch64 target (sb2/qemu; see the spike above):
   - `/SyncStatus` refetch on a `<syncStat>` change;
   - `/Artwork` redirect: an image fetched through the shared NAM follows a
     redirect to a second fixture port, and `artworkUrl()` adds
-    `followRedirects=1`.
+    `followRedirects=1`;
+  - MVP: presets and inputs fetched; `/Preset?id=` and `/Play?url=` sent, the
+    input URL not encoded twice; a `prid` change refetches `/Presets`; an
+    `<error>` body raises `playFailed`; an inactive client stops polling and
+    refreshes on activation.
+- QML engine test (AC4): every `.qml` file becomes a Ready `QQmlComponent` on
+  the `minimal` platform with the target's import path. The target has no
+  `qmllint` and no offscreen platform (checked 2026-11-06), so runtime binding
+  warnings and rendering are recorded as not checked.
 
   The fixture is test code only, about one small class. It is needed because
   azzurro's demo-player answers polls promptly with changing etags rather than
@@ -155,10 +177,11 @@ RPM. No full rebuild of SDK components is needed.
 
 ## Review
 
-- Now: a separate design review of this plan before scaffolding. It should
-  check the C++/QML split, the two test layers and the container isolation.
+- Done: design review of the first plan (design_review, 2026-11-06).
+- Now: a separate design review of the MVP rows, the UI structure and the AC4
+  test before UI implementation, because increment 1's scope changed.
 - Then: a separate result review of the implementation against the spec
-  (spec AC5).
+  (spec AC6).
 - Reopen the design review if the build target, permissions, the scope of
   increment 1 or the test isolation changes.
 
@@ -179,4 +202,5 @@ RPM. No full rebuild of SDK components is needed.
   elements.
 - Risk: QtTest timing under qemu emulation. Mitigated by the step 1 spike and
   injectable timeouts.
-- Open: remote location and issue tracker.
+- Decided: private GitHub repository misja/swell, issue #1.
+- Risk: Silica may not load on the `minimal` platform (AC4 spike decides).

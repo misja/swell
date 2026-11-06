@@ -4,12 +4,12 @@ Updated: 2026-11-06. Decision owner: Misja Hoebe (@misja).
 
 Current owner / next owner / decision owner: root / root / Misja.
 Objective and acceptance criteria: specs/001-core-controller/spec.md
-(revised; first increment = discovery, player list, Now Playing, cover page).
-Changed artifacts and evidence paths: AGENTS.md (baseline 1.3.0 copy),
-specs/001-core-controller/spec.md; plan.md and tasks.md are unfilled templates.
+(MVP: Players, Home with presets and inputs, Now Playing, docked panel, cover, landscape).
+Changed artifacts and evidence paths: AGENTS.md (baseline 1.3.0 copy), LICENSE,
+specs/001-core-controller/{spec,plan,tasks}.md, bluos/, tests/, evidence/001/.
 Decisions and authorization scope: name Swell and location ~/code/sailfish/swell
 chosen by Misja 2026-11-06. Silica/QML + thin Qt 5.6 C++ (Rust 1.75 in SDK
-3.13.5 excludes azzurro's Rust code). Local repository only; no remote,
+3.13.5 excludes azzurro's Rust code). Private GitHub repo misja/swell (approved);
 installation, device or publication.
 Scope review 2026-11-06 (separate agent scope_review): approve with changes.
 All 12 findings applied to the spec: presets/queue/MPRIS split into 002/003;
@@ -54,7 +54,16 @@ first. Design canvas and decisions are linked in issue #1. MVP scope agreed:
 Players, Home (presets + inputs), Now Playing attached to Home, docked
 mini-player, cover, landscape. spec.md has been revised accordingly. The UI
 draft is stashed ("ui-draft-before-mvp-scope"), not committed.
-Remaining blockers, options and recommendation: a separate scope review of the
-revised spec is needed before UI implementation.
-Next action: run the scope review, resolve the findings, update plan/tasks, then
-build presets/inputs in bluos/ and the UI.
+Scope review of the MVP revision (separate agent scope_review_2, 2026-11-06):
+approve with changes, no blockers. root verified its target claims: the
+MediaPlayerControlsPanel always shows a slider; the target has no qmllint and
+no offscreen platform; Silica defaults pages to portrait. All findings are
+applied to spec/plan/tasks: start state, background polling, display-only
+progress, inputs via §11.1 with the URL not re-encoded, preset edge cases, a
+plain DockedPanel, a reworded AC4, renumbered ACs, citation of the pulley
+guideline.
+Remaining blockers, options and recommendation: a separate design review of
+the revised plan (MVP rows, UI structure, AC4 test) is due before UI
+implementation.
+Next action: design review; meanwhile MVP library work (presets/inputs) stays
+within the reviewed library design.
