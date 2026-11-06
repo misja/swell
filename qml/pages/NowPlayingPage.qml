@@ -34,6 +34,7 @@ Page {
             spacing: Theme.paddingLarge
 
             Column {
+                id: artColumn
                 width: page.isLandscape ? page.artSize + Theme.horizontalPageMargin : page.width
 
                 PageHeader {
@@ -70,10 +71,26 @@ Page {
                 spacing: Theme.paddingMedium
 
                 PageHeader {
+                    id: sideHeader
                     visible: page.isLandscape
                     title: player ? (player.name !== "" ? player.name : player.host) : ""
                     description: player && !player.online ? qsTr("Not reachable") : ""
                 }
+
+                // Centres the controls in the space left beside (landscape) or
+                // below (portrait) the artwork, instead of leaving it empty.
+                Item {
+                    width: parent.width
+                    height: Math.max(0, Math.floor((page.height
+                                                    - (page.isLandscape ? sideHeader.height + 2 * Theme.paddingLarge
+                                                                        : artColumn.height)
+                                                    - controls.height) / 2) - Theme.paddingMedium)
+                }
+
+                Column {
+                    id: controls
+                    width: parent.width
+                    spacing: Theme.paddingMedium
 
                 // The API requires title1..title3 for three-line now-playing text.
                 Column {
@@ -198,6 +215,7 @@ Page {
                         }
                         onValueChanged: if (down && player) player.setVolume(Math.round(value))
                     }
+                }
                 }
             }
         }

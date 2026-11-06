@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.1">
+<context>
+    <name>AboutPage</name>
+    <message>
+        <location filename="../qml/pages/AboutPage.qml" line="18"/>
+        <source>About Swell</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AboutPage.qml" line="23"/>
+        <source>Swell %1 (works with BluOS)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AboutPage.qml" line="31"/>
+        <source>An independent controller for BluOS players on your local network. It is not made, endorsed or supported by Lenbrook.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AboutPage.qml" line="34"/>
+        <source>Privacy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AboutPage.qml" line="40"/>
+        <source>Swell talks only to players on your local network and to the image servers their artwork comes from. It has no account and collects, sends and shares no personal data. It stores only the player addresses you add and the player you last chose, on this device.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AboutPage.qml" line="43"/>
+        <source>License</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AboutPage.qml" line="49"/>
+        <source>MIT License. Source: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>AddPlayerDialog</name>
+    <message>
+        <location filename="../qml/pages/AddPlayerDialog.qml" line="15"/>
+        <source>Add</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AddPlayerDialog.qml" line="16"/>
+        <source>Add player</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AddPlayerDialog.qml" line="23"/>
+        <source>Address, optionally with :port</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AddPlayerDialog.qml" line="37"/>
+        <source>Use this when the player is not found automatically, for example on another network segment.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CoverPage</name>
+    <message>
+        <location filename="../qml/cover/CoverPage.qml" line="32"/>
+        <source>Swell</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>HomePage</name>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="47"/>
+        <source>The player did not accept that: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="56"/>
+        <source>About</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="60"/>
+        <source>Players</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="75"/>
+        <source>Connecting…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="77"/>
+        <source>Not a BluOS player</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="78"/>
+        <source>Not reachable. Pull down to pick another player.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="82"/>
+        <source>Presets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="146"/>
+        <source>No presets on this player. Presets are created in the official app.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="150"/>
+        <source>Inputs</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>NowPlayingPage</name>
+    <message>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="43"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="77"/>
+        <source>Not reachable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="206"/>
+        <source>Volume</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>PlayersPage</name>
+    <message>
+        <location filename="../qml/pages/PlayersPage.qml" line="34"/>
+        <source>Connecting…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayersPage.qml" line="35"/>
+        <source>Not reachable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayersPage.qml" line="36"/>
+        <source>Not a BluOS player</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayersPage.qml" line="46"/>
+        <source>Players</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayersPage.qml" line="51"/>
+        <source>About</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayersPage.qml" line="55"/>
+        <source>Add player…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayersPage.qml" line="59"/>
+        <source>Search again</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayersPage.qml" line="104"/>
+        <source>Remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayersPage.qml" line="113"/>
+        <source>No players found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayersPage.qml" line="114"/>
+        <source>Pull down to search again or to add a player by address</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+</TS>
