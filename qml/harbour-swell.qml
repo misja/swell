@@ -90,8 +90,9 @@ ApplicationWindow {
         } else if (page.objectName === "queue") {
             pageStack.navigateBack()
         } else if (page.objectName === "about") {
-            pageStack.pop(undefined, PageStackAction.Immediate)
-            openNowPlaying()
+            if (pageStack.pop(undefined, PageStackAction.Immediate)) {
+                openNowPlaying()
+            }
         } else if (page.objectName === "players") {
             page.openCurrent(false)
             var home = pageStack.nextPage(page)

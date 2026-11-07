@@ -1,7 +1,7 @@
 # Evidence — 004 browse
 
 Date: 2026-11-06. Branch `004-browse`. Package harbour-swell-0.3.0-7.aarch64.rpm,
-sha256 7bcc632db49dd9f3c1a6430e07fd145460f26a1740bde57a2d1240932dfa2f77.
+sha256 0a7ab9726c29e890313956099c61b7e37a939707e5201f9492e28b1ecb538467.
 
 ## Automated (builder)
 
@@ -86,7 +86,10 @@ Misja's feedback on 0.3.0-2 (screenshot 2026-11-06 23:39), fixed in 0.3.0-4:
   changes; M1 fixed (a mini-player tap during a page transition is ignored,
   so Home's openNowPlaying flag cannot stay set). Device checks it asked for:
   no flicker on landing at Home, a tap mid-transition, landscape letter
-  index, where `#` sits in a long list.
+  index, where `#` sits in a long list. Re-check of the Queue/About follow-up:
+  approve; H1 applied (About's tap recurses only after a successful pop).
+  Added device checks: About → mini-player from Home and from Players; Now
+  Playing ⇄ Queue swipe; tap from Queue.
 
 ## Not yet done
 
