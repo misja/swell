@@ -1,19 +1,17 @@
 # Session handoff
 
-Updated: 2026-11-06 (feature 002, queue). Decision owner: Misja Hoebe (@misja).
+Updated: 2026-11-08 (feature 004, browse). Decision owner: Misja Hoebe (@misja).
 
 Current owner / next owner / decision owner: root / root (next session) / Misja.
 
 Objective and acceptance criteria: feature 004 (browse, issue #7) on branch
 004-browse: specs/004-browse/{spec,plan,tasks}.md. UI agreed on the canvas
-(B1–B9), scope/design and result reviews done and their findings fixed (also
-the re-check of the device-feedback changes). Device: 0.3.0-6 installed.
-Misja's walk-through (2026-11-07) led to decision 12 (navigation: play
-returns to Home, mini-player on every page except Now Playing; canvas N1–N5) and no `#` in
-the letter index, built as 0.3.0-7; result review done (M1, H1 fixed).
-App icon (#3): Misja's sound-bar design, source icons/harbour-swell.svg,
-accepted on the device. 0.3.0-12 (cover placeholders, decision 13) installed on 2026-11-08; navigation
-device check pending. Then: final device check, PR. Decisions: browse reads unpaced; no recently played
+(B1–B9, N1–N5). Separate reviews done and findings fixed (scope/design,
+result, navigation, covers). Device check by Misja passed on 0.3.0-12
+(2026-11-08), including navigation (decision 12) and cover placeholders
+(decision 13). App icon (#3): Misja's sound-bar design, source
+icons/harbour-swell.svg, accepted on the device. PR opened for 004; merge
+is Misja's decision. Decisions: browse reads unpaced; no recently played
 and no extra state in Swell (published API only); no header per letter.
 Issue #8 (typed bluos/ interfaces) follows 004. Workspace principles 1.2.0
 (Sailfish UI check in reviews) merged (sailfish-workspace#19, 13985f2).

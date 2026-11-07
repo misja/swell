@@ -11,5 +11,5 @@ Linked issue and plan: https://github.com/misja/swell/issues/7; plan.md in this 
 - [x] Build, validator, evidence/004.
 - [x] Navigation: play returns to Home, mini-player on Browse and Search, no `#` in the letter index (decision 12, canvas N1–N5).
 - [x] Cover placeholder as in the Media player (decision 13).
-- [ ] Device check with Misja (library scrolling and letter jumps, actions, favourites, search, radio, another player language).
-- [ ] Separate result review, then a PR.
+- [x] Device check with Misja (library scrolling and letter jumps, actions, favourites, search, radio, navigation, covers); another player language not checked.
+- [x] Separate result reviews (whole feature, navigation, covers); findings applied. PR opened.

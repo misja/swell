@@ -78,28 +78,37 @@ Misja's feedback on 0.3.0-2 (screenshot 2026-11-06 23:39), fixed in 0.3.0-4:
   icon-sized image on a normal row; covers stay for albums, tracks, stations.
 - TuneIn has its own Favourites link (seen in that menu). Not wired into
   Swell's Favourites entry (v1: Library only).
-- Navigation (Misja, 2026-11-07, spec decision 12, canvas N1–N5): in 0.3.0-7
-  a play action pops to Home, the mini-player shows on Browse, Search,
-  Queue and About (every page except Now Playing),
-  and the player's `#` section is left out of the letter index. Not yet on
-  the device (installed 2026-11-07; 0.3.0-8 to -10 only changed the app
-  icon, #3; the sha256 above is 0.3.0-12).
-- Covers (decision 13): 0.3.0-11 shows the Media player's placeholder while
-  a cover loads (loading ahead stays Silica's default of 8 rows). Read-only check of the
-  player (2026-11-07): the `#` album section comes first, as assumed for
-  the letter index; covers are 600×600 JPEG, 17–35 KB, ~5 ms, no cache
-  headers. Result review (separate agent, 2026-11-08): approve with
-  changes; applied: no extra cacheBuffer, placeholder stays until the fade
-  ends, icons per row kind, Icon `highlighted`. Result review (separate agent, 2026-11-07): approve with
-  changes; M1 fixed (a mini-player tap during a page transition is ignored,
-  so Home's openNowPlaying flag cannot stay set). Device checks it asked for:
-  no flicker on landing at Home, a tap mid-transition, landscape letter
-  index, where `#` sits in a long list. Re-check of the Queue/About follow-up:
-  approve; H1 applied (About's tap recurses only after a successful pop).
-  Added device checks: About → mini-player from Home and from Players; Now
-  Playing ⇄ Queue swipe; tap from Queue.
+- Navigation (Misja, 2026-11-07, spec decision 12, canvas N1–N5): a play
+  action pops to Home; the mini-player shows on every page except Now
+  Playing; the player's `#` section is left out of the letter index (the
+  player sends it first, checked read-only 2026-11-07). Result review
+  (separate agent, 2026-11-07): approve with changes; M1 fixed (a
+  mini-player tap during a page transition is ignored, so Home's
+  openNowPlaying flag cannot stay set). Re-check of the Queue/About
+  follow-up: approve; H1 applied (About's tap goes on only after a
+  successful pop).
+- App icon (#3): 0.3.0-7 to -10 tried Misja's designs; the sound-bar icon
+  (`icons/harbour-swell.svg`) was accepted in the launcher (2026-11-07). The
+  launcher shows a changed icon only after lipstick restarts.
+- Covers (decision 13): the Media player's placeholder while a cover loads,
+  only where the player sends an image (0.3.0-11 left artists, genres and
+  composers on it; fixed in 0.3.0-12). Loading ahead stays Silica's default
+  of 8 rows. Covers are 600×600 JPEG, 17–35 KB, ~5 ms, no cache headers.
+  Result review (separate agent, 2026-11-08): approve with changes;
+  applied: no extra cacheBuffer, the placeholder stays until the fade ends,
+  icons per row kind, Icon `highlighted`.
 
-## Not yet done
+## Device check (Misja, Xperia 10 II, NAD C 379)
 
-- Misja walks through 0.3.0-5/-6 at leisure; more feedback to follow
-  (2026-11-07). 0.3.0-6 installed on 2026-11-07.
+- 0.3.0-6: library scrolling and letter jumps, favourites on top, artist
+  pages, covers per track, TuneIn icons, actions (2026-11-07: "alles werkt
+  prima tot zover").
+- 0.3.0-7: navigation, play returns to Home, mini-player everywhere except
+  Now Playing ("navigatie werkt", 2026-11-08).
+- 0.3.0-12: cover placeholders; artists, genres and composers without one
+  ("werkt", 2026-11-08).
+
+## Not checked
+
+- The English plural on a locale without a Swell translation.
+- A player set to another language than Dutch or English.
