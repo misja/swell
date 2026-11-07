@@ -1,8 +1,12 @@
 # Evidence — 001 core controller
 
+Raw build and test logs named below (`*.log`) are kept locally by the
+builder, not in the repository (since 2026-11-08); this file holds the
+conclusions.
+
 ## Current result (HEAD, release 0.1.0-7)
 
-These logs are committed for this commit:
+Logs for this result:
 - `sdk-build-aarch64.log`: `sfdk build`, exit 0.
 - `harbour-validator.log`: succeeded; 1 accepted warning ("file is not
   stripped").

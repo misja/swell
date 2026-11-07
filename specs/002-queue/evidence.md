@@ -1,5 +1,9 @@
 # Evidence — 002 queue
 
+Raw build and test logs named below (`*.log`) are kept locally by the
+builder, not in the repository (since 2026-11-08); this file holds the
+conclusions.
+
 Date: 2026-11-06. Branch `002-queue`. Package harbour-swell-0.2.0-4.aarch64.rpm,
 sha256 9da4a081b929dc681fc7d425359fb84283ceca0bd58f705e46a488ab281cfcae.
 

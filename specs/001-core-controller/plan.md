@@ -176,8 +176,9 @@ RPM. No full rebuild of SDK components is needed.
 
 ## Evidence
 
-- `evidence/001/`: test logs, toolchain/version records, validator output and
-  RPM hashes. Raw logs stay there; STATUS.md links the conclusion.
+- `specs/001-core-controller/evidence.md`: results, toolchain/version
+  records, validator output and RPM hashes. Raw logs stay local (since
+  2026-11-08); STATUS.md links the conclusion.
 
 ## Risks, approval boundaries and remaining decisions
 

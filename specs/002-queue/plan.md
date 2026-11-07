@@ -28,8 +28,8 @@ specs/002-queue/spec.md; builds on 001, merged as 69bd6b1.
   answer by query (a handler for `/Playlist` windows) and to hold or delay
   replies.
 - **qml:** the compile test covers the new page.
-- **Build, validator, Dutch complete** (including the plural form); logs in
-  evidence/002/.
+- **Build, validator, Dutch complete** (including the plural form); results in
+  specs/002-queue/evidence.md.
 - **Device check by Misja:**
   - rows, durations and scrolling to the current entry;
   - play from an entry, trying `/Play?id=` and `seek=0&id=` while the queue
