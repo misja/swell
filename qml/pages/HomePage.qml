@@ -125,22 +125,32 @@ Page {
                             color: Theme.rgba(Theme.highlightBackgroundColor, Theme.highlightBackgroundOpacity)
                         }
                         Image {
-                            id: art
-                            x: tile._isInput ? (page._tileSize - width) / 2 : 0
-                            y: tile._isInput ? (page._tileSize - height) / 2 : 0
-                            width: tile._isInput ? page._tileSize * 0.55 : page._tileSize
+                            id: inputArt
+                            visible: tile._isInput
+                            x: (page._tileSize - width) / 2
+                            y: (page._tileSize - height) / 2
+                            width: page._tileSize * 0.55
                             height: width
-                            fillMode: tile._isInput ? Image.PreserveAspectFit : Image.PreserveAspectCrop
+                            fillMode: Image.PreserveAspectFit
                             asynchronous: true
                             sourceSize.width: width
                             sourceSize.height: height
-                            source: page._inputImage(modelData.inputId) || modelData.image
+                            source: tile._isInput ? page._inputImage(modelData.inputId) || modelData.image : ""
                         }
                         Icon {
                             x: (page._tileSize - width) / 2
                             y: (page._tileSize - height) / 2
-                            visible: art.status !== Image.Ready
+                            visible: tile._isInput && inputArt.status !== Image.Ready
                             source: "image://theme/icon-m-media-radio"
+                        }
+                        // Stations, albums and playlists: the cover placeholder.
+                        CoverImage {
+                            visible: !tile._isInput
+                            width: page._tileSize
+                            height: width
+                            highlighted: tile.highlighted
+                            icon: "image://theme/icon-m-media-radio"
+                            source: tile._isInput ? "" : modelData.image
                         }
                         Label {
                             id: nameLabel

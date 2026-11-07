@@ -103,7 +103,7 @@
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="70"/>
         <location filename="../qml/pages/BrowsePage.qml" line="230"/>
-        <location filename="../qml/pages/BrowsePage.qml" line="392"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="395"/>
         <source>Favourites</source>
         <translation>Favorieten</translation>
     </message>
@@ -151,37 +151,37 @@
         <translation>Alles afspelen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="434"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="437"/>
         <source>Player offline</source>
         <translation>Speler offline</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="437"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="440"/>
         <source>The player could not show this</source>
         <translation>De speler kon dit niet tonen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="439"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="442"/>
         <source>No favourites yet</source>
         <translation>Nog geen favorieten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="440"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="443"/>
         <source>Nothing here</source>
         <translation>Hier staat niets</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="444"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="447"/>
         <source>Swell will try again when it is back</source>
         <translation>Swell probeert het opnieuw zodra hij terug is</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="448"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="451"/>
         <source>No usable answer from the player</source>
         <translation>Geen bruikbaar antwoord van de speler</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="451"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="454"/>
         <source>Long press an album, artist or track and choose Add to favourites</source>
         <translation>Houd een album, artiest of nummer ingedrukt en kies Aan favorieten toevoegen</translation>
     </message>
@@ -242,12 +242,12 @@
         <translation>Presets</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="166"/>
+        <location filename="../qml/pages/HomePage.qml" line="176"/>
         <source>No presets on this player. Presets are created in the official app.</source>
         <translation>Geen presets op deze speler. Presets maak je in de officiële app.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="170"/>
+        <location filename="../qml/pages/HomePage.qml" line="180"/>
         <source>Inputs</source>
         <translation>Ingangen</translation>
     </message>

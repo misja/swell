@@ -351,7 +351,8 @@ Page {
             }
 
             // Covers keep their place, with the placeholder until they load
-            // or when the player has none; a link's icon only shows if sent.
+            // or when the player has none. A link's icon (TuneIn's menus)
+            // only shows if sent, on a bare tile until it loads.
             CoverImage {
                 id: art
                 visible: item._cover || (page._images && model.image.toString() !== "")
@@ -359,10 +360,12 @@ Page {
                 anchors.verticalCenter: parent.verticalCenter
                 width: !visible ? 0 : (item._cover ? Theme.itemSizeMedium - 2 * Theme.paddingSmall : Theme.iconSizeMedium)
                 height: width
-                placeholder: item._cover && model.type !== "section"
+                placeholder: model.type !== "section"
                 // The Media player's icon for the kind of row.
                 icon: {
                     switch (model.type) {
+                    case "link":
+                        return ""
                     case "artist":
                         return "image://theme/icon-m-media-artists"
                     case "playlist":

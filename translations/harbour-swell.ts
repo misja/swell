@@ -103,7 +103,7 @@
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="70"/>
         <location filename="../qml/pages/BrowsePage.qml" line="230"/>
-        <location filename="../qml/pages/BrowsePage.qml" line="392"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="395"/>
         <source>Favourites</source>
         <translation type="unfinished"></translation>
     </message>
@@ -150,37 +150,37 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="434"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="437"/>
         <source>Player offline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="437"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="440"/>
         <source>The player could not show this</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="439"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="442"/>
         <source>No favourites yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="440"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="443"/>
         <source>Nothing here</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="444"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="447"/>
         <source>Swell will try again when it is back</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="448"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="451"/>
         <source>No usable answer from the player</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="451"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="454"/>
         <source>Long press an album, artist or track and choose Add to favourites</source>
         <translation type="unfinished"></translation>
     </message>
@@ -241,12 +241,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="166"/>
+        <location filename="../qml/pages/HomePage.qml" line="176"/>
         <source>No presets on this player. Presets are created in the official app.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="170"/>
+        <location filename="../qml/pages/HomePage.qml" line="180"/>
         <source>Inputs</source>
         <translation type="unfinished"></translation>
     </message>

@@ -87,6 +87,12 @@ which Misja finds unclear.
     (`AlbumArt.qml`: a faint gradient with `icon-m-media-albums`; artists,
     playlists and stations get the theme's artists, playlists and radio
     icons) until a cover is ready or when there is none, then a short fade.
+    Misja (2026-11-08): everywhere images load from the player or the
+    internet. Radio Paradise's stations (`audio` rows, 512 px covers from
+    img.radioparadise.com) get the radio icon; TuneIn's menu icons a bare
+    tile; Home's preset tiles the radio icon; the mini-player the songs icon.
+    Now Playing keeps its own `icon-l-music` fallback, and the input icons on
+    Home (small images from the player) stay as they are.
     Loading ahead is left to Silica: `SilicaListView` already sets
     `cacheBuffer: Theme.itemSizeMedium * 8` (5.1.0.11); a larger buffer was
     tried and dropped after review (smaller in landscape, and buffer rows can

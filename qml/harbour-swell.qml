@@ -147,16 +147,14 @@ ApplicationWindow {
             anchors.fill: parent
             onClicked: app.openNowPlaying()
 
-            Image {
+            CoverImage {
                 id: miniArt
                 x: Theme.horizontalPageMargin
                 anchors.verticalCenter: parent.verticalCenter
                 width: parent.height - 2 * Theme.paddingMedium
                 height: width
-                fillMode: Image.PreserveAspectCrop
-                asynchronous: true
-                sourceSize.width: width
-                sourceSize.height: height
+                highlighted: miniItem.highlighted
+                icon: "image://theme/icon-m-media-songs"
                 source: miniPlayer._player ? miniPlayer._player.artworkUrl : ""
             }
 

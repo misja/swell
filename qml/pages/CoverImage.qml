@@ -10,8 +10,8 @@ Item {
 
     property alias source: image.source
     property bool highlighted
-    // Off for images that are icons rather than covers (TuneIn's menus).
     property bool placeholder: true
+    // Empty for the bare tile, as for a menu icon still on its way.
     property string icon: "image://theme/icon-m-media-albums"
 
     Rectangle {
@@ -24,6 +24,7 @@ Item {
         }
 
         Icon {
+            visible: root.icon !== ""
             anchors.centerIn: parent
             // The medium icon, smaller where the cover itself is small.
             width: Math.min(Theme.iconSizeMedium, Math.round(root.width * 0.6))
