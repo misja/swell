@@ -152,6 +152,9 @@ Page {
         anchors.fill: parent
         model: browseModel
         quickScroll: !browseModel.sectioned
+        // Rows just out of view are made ahead, so their covers load before
+        // they scroll in.
+        cacheBuffer: height
 
         header: Column {
             width: list.width
@@ -180,15 +183,11 @@ Page {
                 height: cover.height + 2 * Theme.paddingLarge
                 spacing: Theme.paddingLarge
 
-                Image {
+                CoverImage {
                     id: cover
                     y: Theme.paddingLarge
                     width: Theme.itemSizeExtraLarge
                     height: width
-                    fillMode: Image.PreserveAspectCrop
-                    asynchronous: true
-                    sourceSize.width: width
-                    sourceSize.height: height
                     source: page.headerImage
                 }
 
@@ -250,12 +249,9 @@ Page {
                             height: coverGrid.cell
                             onClicked: page._open(model)
 
-                            Image {
+                            CoverImage {
                                 anchors.fill: parent
-                                fillMode: Image.PreserveAspectCrop
-                                asynchronous: true
-                                sourceSize.width: width
-                                sourceSize.height: height
+                                highlighted: parent.highlighted
                                 source: model.image
                             }
                             // The image covers BackgroundItem's own highlight.
@@ -357,17 +353,17 @@ Page {
                 color: item.highlighted ? Theme.highlightColor : Theme.primaryColor
             }
 
-            Image {
+            // Covers keep their place, with the placeholder until they load
+            // or when the player has none; a link's icon only shows if sent.
+            CoverImage {
                 id: art
-                visible: page._images && model.image.toString() !== ""
+                visible: item._cover || (page._images && model.image.toString() !== "")
                 x: Theme.horizontalPageMargin
                 anchors.verticalCenter: parent.verticalCenter
                 width: !visible ? 0 : (item._cover ? Theme.itemSizeMedium - 2 * Theme.paddingSmall : Theme.iconSizeMedium)
                 height: width
-                fillMode: Image.PreserveAspectCrop
-                asynchronous: true
-                sourceSize.width: width
-                sourceSize.height: height
+                placeholder: item._cover
+                highlighted: item.highlighted
                 source: visible ? model.image : ""
             }
 

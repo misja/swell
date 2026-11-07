@@ -135,6 +135,7 @@ PASS   : TstQml::spikeWindowCompiles()
 PASS   : TstQml::negativeControlFails()
 PASS   : TstQml::appFileCompiles(qml/cover/CoverPage.qml)
 PASS   : TstQml::appFileCompiles(qml/harbour-swell.qml)
+PASS   : TstQml::appFileCompiles(qml/pages/CoverImage.qml)
 PASS   : TstQml::appFileCompiles(qml/pages/NowPlayingPage.qml)
 PASS   : TstQml::appFileCompiles(qml/pages/AddPlayerDialog.qml)
 PASS   : TstQml::appFileCompiles(qml/pages/HomePage.qml)
@@ -145,7 +146,7 @@ PASS   : TstQml::appFileCompiles(qml/pages/SearchPage.qml)
 PASS   : TstQml::appFileCompiles(qml/pages/QueuePage.qml)
 PASS   : TstQml::appFileCompiles(qml/pages/BrowsePage.qml)
 PASS   : TstQml::cleanupTestCase()
-Totals: 15 passed, 0 failed, 0 skipped, 0 blacklisted
+Totals: 16 passed, 0 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of TstQml *********
 ********* Start testing of TstQueue *********
 Config: Using QtTest library 5.6.3, Qt 5.6.3 (arm64-little_endian-lp64 shared (dynamic) release build; by GCC 13.4.0 20250605 (Sailfish OS gcc 13.4.0-1))

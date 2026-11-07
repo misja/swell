@@ -4,42 +4,42 @@
 <context>
     <name>AboutPage</name>
     <message>
-        <location filename="../qml/pages/AboutPage.qml" line="18"/>
+        <location filename="../qml/pages/AboutPage.qml" line="19"/>
         <source>About Swell</source>
         <translation>Over Swell</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AboutPage.qml" line="23"/>
+        <location filename="../qml/pages/AboutPage.qml" line="24"/>
         <source>Swell %1</source>
         <translation>Swell %1</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AboutPage.qml" line="31"/>
+        <location filename="../qml/pages/AboutPage.qml" line="32"/>
         <source>A Sailfish OS controller for BluOS players on your local network.</source>
         <translation>Een Sailfish OS-bediening voor BluOS-spelers op je lokale netwerk.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AboutPage.qml" line="34"/>
+        <location filename="../qml/pages/AboutPage.qml" line="35"/>
         <source>Privacy</source>
         <translation>Privacy</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AboutPage.qml" line="40"/>
+        <location filename="../qml/pages/AboutPage.qml" line="41"/>
         <source>Swell talks only to players on your local network and to the image servers their artwork comes from. It has no account and collects, sends and shares no personal data. It stores only the player addresses you add and the player you last chose, on this device.</source>
         <translation>Swell praat alleen met spelers op je lokale netwerk en met de servers waar hun afbeeldingen vandaan komen. Er is geen account en Swell verzamelt, verstuurt of deelt geen persoonsgegevens. Op dit toestel bewaart Swell alleen de spelersadressen die je toevoegt en de speler die je het laatst koos.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AboutPage.qml" line="43"/>
+        <location filename="../qml/pages/AboutPage.qml" line="44"/>
         <source>License</source>
         <translation>Licentie</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AboutPage.qml" line="49"/>
+        <location filename="../qml/pages/AboutPage.qml" line="50"/>
         <source>MIT License. Source: %1</source>
         <translation>MIT-licentie. Broncode: %1</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AboutPage.qml" line="57"/>
+        <location filename="../qml/pages/AboutPage.qml" line="58"/>
         <source>Not affiliated with, endorsed by or supported by Lenbrook Industries. BluOS is a trademark of Lenbrook Industries Limited.</source>
         <translation>Niet gelieerd aan, goedgekeurd of ondersteund door Lenbrook Industries. BluOS is een handelsmerk van Lenbrook Industries Limited.</translation>
     </message>
@@ -76,7 +76,7 @@
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="43"/>
-        <location filename="../qml/pages/BrowsePage.qml" line="313"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="309"/>
         <source>Shuffle</source>
         <translation>Willekeurig</translation>
     </message>
@@ -102,8 +102,8 @@
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="70"/>
-        <location filename="../qml/pages/BrowsePage.qml" line="234"/>
-        <location filename="../qml/pages/BrowsePage.qml" line="387"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="233"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="383"/>
         <source>Favourites</source>
         <translation>Favorieten</translation>
     </message>
@@ -123,12 +123,12 @@
         <translation>Toegevoegd aan de wachtrij</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="162"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="165"/>
         <source>Browse</source>
         <translation>Bladeren</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/pages/BrowsePage.qml" line="222"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="221"/>
         <source>%n tracks</source>
         <translation>
             <numerusform>%n nummer</numerusform>
@@ -136,52 +136,52 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="305"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="301"/>
         <source>Search</source>
         <translation>Zoeken</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="318"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="314"/>
         <source>Play album</source>
         <translation>Album afspelen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="318"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="314"/>
         <source>Play all</source>
         <translation>Alles afspelen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="429"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="425"/>
         <source>Player offline</source>
         <translation>Speler offline</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="432"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="428"/>
         <source>The player could not show this</source>
         <translation>De speler kon dit niet tonen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="434"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="430"/>
         <source>No favourites yet</source>
         <translation>Nog geen favorieten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="435"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="431"/>
         <source>Nothing here</source>
         <translation>Hier staat niets</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="439"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="435"/>
         <source>Swell will try again when it is back</source>
         <translation>Swell probeert het opnieuw zodra hij terug is</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="443"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="439"/>
         <source>No usable answer from the player</source>
         <translation>Geen bruikbaar antwoord van de speler</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="446"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="442"/>
         <source>Long press an album, artist or track and choose Add to favourites</source>
         <translation>Houd een album, artiest of nummer ingedrukt en kies Aan favorieten toevoegen</translation>
     </message>
@@ -332,12 +332,12 @@
         <translation>De wachtrij is veranderd. Er is niets verwijderd.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="74"/>
+        <location filename="../qml/pages/QueuePage.qml" line="77"/>
         <source>Queue</source>
         <translation>Wachtrij</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/pages/QueuePage.qml" line="83"/>
+        <location filename="../qml/pages/QueuePage.qml" line="86"/>
         <source>%n tracks</source>
         <translation>
             <numerusform>%n nummer</numerusform>
@@ -345,22 +345,22 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="94"/>
+        <location filename="../qml/pages/QueuePage.qml" line="97"/>
         <source>Now playing %1. Tap a track to play the queue again.</source>
         <translation>Nu speelt %1. Tik op een nummer om de wachtrij weer te spelen.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="108"/>
+        <location filename="../qml/pages/QueuePage.qml" line="111"/>
         <source>Clear queue</source>
         <translation>Wachtrij wissen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="109"/>
+        <location filename="../qml/pages/QueuePage.qml" line="112"/>
         <source>Clearing queue</source>
         <translation>Wachtrij wissen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="125"/>
+        <location filename="../qml/pages/QueuePage.qml" line="128"/>
         <source>Removing</source>
         <translation>Verwijderen</translation>
     </message>

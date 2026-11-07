@@ -66,6 +66,9 @@ Page {
         id: list
         anchors.fill: parent
         model: page._queue
+        // Rows just out of view are made ahead, so their covers load before
+        // they scroll in.
+        cacheBuffer: height
 
         header: Column {
             width: list.width
@@ -135,16 +138,13 @@ Page {
 
             onClicked: page._player.playQueueEntry(model.position)
 
-            Image {
+            CoverImage {
                 id: art
                 x: Theme.horizontalPageMargin
                 anchors.verticalCenter: parent.verticalCenter
                 width: Theme.itemSizeMedium - 2 * Theme.paddingSmall
                 height: width
-                fillMode: Image.PreserveAspectCrop
-                asynchronous: true
-                sourceSize.width: width
-                sourceSize.height: height
+                highlighted: item.highlighted
                 source: model.image
             }
 
