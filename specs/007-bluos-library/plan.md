@@ -1,77 +1,95 @@
 # Plan — 007 bluos library
 
-Status: draft 2026-11-08, for the scope/design review.
+Status: revised 2026-11-08 after the scope/design review. Open: Misja's
+choice between option 0 and option 3.
 
 ## How QML reads typed values
 
-The question is how QML reads `QList<Preset>`, `QList<Input>`, letters,
-`moreLinks` and actions once the library exposes them typed. Options, least
-intrusive first:
+The pages use these lists as JS arrays:
+- `.length` and `[i]`: HomePage.qml for presets and inputs, LetterIndex.qml
+  for letters (which also builds a new array with `push`);
+- lists passed on into JS objects: BrowsePage.qml for actions and
+  `moreLinks`.
 
-1. **Q_GADGET values, no adapter.**
-   - The structs get `Q_GADGET` and `Q_PROPERTY` members. They are QtCore,
-     not QML.
-   - The library exposes `Q_PROPERTY(QList<BluOS::Preset> presets …)`.
-   - QML would turn such a sequence into a JS array of value-type wrappers,
-     but only if Qt 5.6's engine converts registered sequential containers
-     (`QSequentialIterable`) and wraps gadgets. **Unverified for Qt 5.6.**
-     A spike in `tests/qml` on the 5.1.0.11 target decides this before
-     anything else is built.
-   - If it works, the QML pages keep `modelData.name` etc. and `src/` adds
-     nothing.
-2. **Converters registered in `src/`.**
-   - `QMetaType::registerConverter<QList<Preset>, QVariantList>()` in
-     `src/registration.cpp`, with the gadget-to-map conversion there.
-   - This only helps if the 5.6 engine uses registered converters when it
-     reads a property. The same spike checks it.
-3. **A QML-facing subclass in `src/`.**
-   - `Swell::QmlPlayer : BluOS::Client` adds the `QVariantList` properties.
-   - `PlayerModel` gets a client factory, so the app can create the
-     subclass.
-   - This works for certain, but needs more code and a factory hook in the
-     library.
+Map keys: presets `id, name, image, inputId`; inputs `id, text, image, url`;
+letters `text, row`; moreLinks `text, browseKey`; actions `type, text, url`.
 
-Which one is used depends on the spike. Option 3 is the fallback. The spike's
-result and the choice are recorded here before the build.
+Rejected after review (H1):
+- `Q_GADGET` lists read straight by QML;
+- converters registered in `src/`.
+
+The Qt 5.6.3 `libQt5Qml` only uses `QSequentialIterable` in the list
+accessor behind `Repeater { model: }`. `QV4::ExecutionEngine::fromVariant`
+does not use it and does not apply registered converters. So `.length`,
+`[i]` and `push` would very likely fail. This was inferred from the binary
+and not tested; it is enough to not build on it.
+
+### Option 0: typed accessors beside the current properties
+
+- The library keeps the `QVariantList` properties for QML and adds typed C++
+  accessors next to them: `presetList()`, `inputList()`, `letterList()`, …
+- **Cost:** the least change; the QML stays untouched.
+- **Against:** the conversion for QML stays in the library, which the issue
+  wanted to move to `src/`. Other Qt apps get both forms.
+
+### Option 3: typed library, QML shaping in `src/`
+
+- **The library offers only typed accessors** with the existing NOTIFY
+  signals: `presets()` returns `QList<Preset>`, and so on. There is no
+  `Q_PROPERTY` under the same name, so nothing is shadowed.
+- **`Swell::QmlPlayer : BluOS::Client`** in `src/` adds the `QVariantList`
+  properties `presets` and `inputs`. `PlayerModel::createClient` changes from
+  private to protected virtual; that is Qt's usual factory method, not a new
+  mechanism. `Swell::QmlPlayerModel` overrides it and is what the app
+  creates.
+- **`Swell::QmlBrowseModel : BluOS::BrowseModel`** adds `letters` and
+  `moreLinks`, and overrides `data()` for the `actions` role. It is
+  registered under the existing QML name `BrowseModel`. It needs no factory,
+  because QML creates it.
+- **The QML pages keep the same names and keys.**
+- **Cost:** two small subclasses in `src/` and one `virtual` in the library.
+- **For it:** what the issue asked for. A desktop or command-line app sees
+  only typed C++.
+
+Recommendation: option 3. It is the result the issue and Misja's original
+question ("a pure C/C++ implementation others can reuse") ask for, at a small
+cost. The runtime QML test (scope item 4) covers the risk of a page losing a
+key.
 
 ## Other changes
 
 - **Typed pointers:** `Q_PROPERTY(BluOS::QueueModel *queue …)` and
   `Q_PROPERTY(BluOS::Client *current …)`.
-  - QML already knows both types (`qmlRegisterUncreatableType`).
-  - Forward declarations stay where they avoid include cycles.
-- **Resolved images:**
-  - `Client` returns `Preset` and `Input` copies whose `image` is already
-    resolved against the player.
-  - `Preset::image` and `Input::image` become `QUrl`.
-  - The XML parsers keep returning the raw string, in a separate field, so
-    the parser tests stay as they are.
+- **Images:** the parser structs keep their raw `QString` image.
+  - `Client::presets()` and `inputs()` fill a separate `imageUrl` (`QUrl`)
+    field on copies, resolved with `resolveImage`. This is the same pattern
+    as the models' rows.
+  - `Preset::inputId()` stays a method. The QML-facing map gets it as a key.
 - **A1:** `onCommandReply` uses `errorIn`.
-- **A2:** when the client is stopped, `fetch` queues the handler with
-  `QTimer::singleShot(0, this, …)` instead of calling it inline.
-- **C1:** a separate commit with layout only. Check:
-  `git diff -w --stat` shows no token changes apart from braces.
-- **Library-only check:** `tests/library/library.pro` with `QT = core
-  network`, `include(../../bluos/bluos.pri)` and a `main` that creates a
-  `PlayerModel` and a `BrowseModel`. If anything pulls in QtQml, it does not
-  link.
+- **A2:** when stopped, `fetch` queues the handler with
+  `QTimer::singleShot(0, this, …)`.
+- **A3:** `fetchBrowse(key, q, context, handler)` and
+  `fetchQueueWindow(start, end, context, handler)`. The handler runs only
+  while the context object exists; internal callers pass `this`.
+  `BrowseModel`'s own `QPointer` guard can stay as it is.
+- **C2:** header comments without QML or page references.
+- **Style:** touched code follows the Qt Coding Style, including its
+  exceptions. There is no bulk commit.
 
 ## Checks and reuse
 
-- **Existing suites:** xml, client, model, queue, browse and qml stay. They
-  change only where they read maps.
-- **Spike:** a QML test that reads `presets[0].name` and `letters[0].row`
-  from a fixture client, on the target.
+- **Existing suites:** xml, client, model, queue, browse, lsdp and qml. They
+  change only where they read maps or call the fetch functions.
+- **New client tests:** A1, A2 and A3.
+- **New runtime QML test** (`tests/qml`, with a fixture player). It
+  instantiates the real `QmlPlayer`/`QmlBrowseModel`, or the library classes
+  under option 0. It then evaluates the expressions the pages use, for every
+  key listed above, and `.length`, `[i]` and `push`.
 - **Build:** SDK build and Harbour validator.
-- **Device check:**
-  - Home: presets and inputs;
-  - Now Playing;
-  - Queue;
-  - Browse: letters, the artist pulley, context menus.
+- **Device check by Misja.**
 
 ## Review triggers
 
-- The spike result is option 3. That is a larger change and needs a short
-  re-check by the reviewer before building.
-- Anything that changes the request policy or timing is out of scope; it
-  would reopen the review.
+- A short re-check by the reviewer of the chosen option before building, if
+  Misja picks option 3 (as the review asked).
+- Anything that changes request policy or timing reopens the review.

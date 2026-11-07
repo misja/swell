@@ -1,6 +1,8 @@
 # Feature specification — 007 bluos library
 
-Status: draft 2026-11-08, for the scope/design review. No implementation yet.
+Status: revised 2026-11-08 after the scope/design review (approve with
+changes; findings applied below). Open: Misja's choice between option 0 and
+option 3 (plan.md). No implementation yet.
 
 ## Owner and linked issue
 
@@ -45,6 +47,18 @@ No change of approach is needed. Small findings:
 - **A2:** `Client::fetch` calls its handler synchronously when the client is
   stopped. A caller that sends again from the handler re-enters `fetch`.
   Today it is harmless, but it is an easy trap for library users.
+- **A3 (review M4):** the public `fetchBrowse` and `fetchQueueWindow` take a
+  `std::function` but no context object, so a handler can outlive what it
+  captured. `BrowseModel` guards with `QPointer`; `QueueModel` is safe only
+  because it is the client's child. Qt's own pattern is a context argument,
+  as in `QTimer::singleShot(ms, context, functor)`.
+- **LSDP (review L2):** discovery adds the random timing the API asks for,
+  but `qrand()` is never seeded. Fixing it changes timing, so it is noted
+  here and left out of scope.
+- **Not needed:** connection reuse is already right, because all clients
+  share one `QNetworkAccessManager`, which keeps HTTP/1.1 connections open;
+  pyblu shares a session the same way. Neither pyblu nor Home Assistant adds
+  jitter to HTTP retries.
 
 ## Check of C/C++ conventions (2026-11-08)
 
@@ -64,10 +78,13 @@ Conventions for C++; Qt5 connect syntax; ranged-for; CamelCase namespaces.
   - Every reply is deleted with `deleteLater`.
   - No compiler warnings in the SDK build. The flags are qmake's defaults;
     no extra warning flags are set.
-- **C1:** brace style is mixed. The Qt Coding Style leaves out braces on
-  one-line bodies. Older code does that; newer code (`queuemodel.cpp`, parts
-  of `browsemodel.cpp` and `client.cpp`) uses them. Counted with a simple
-  pattern: about 140 one-line bodies without braces and 170 with.
+- **C1:** brace style is mixed. The Qt Coding Style uses braces only when a
+  body has more than one line, with exceptions: a wrapped condition, both
+  branches when either is multi-line, and empty bodies. Older code follows
+  it; newer code (`queuemodel.cpp`, parts of `browsemodel.cpp` and
+  `client.cpp`) puts braces on one-line bodies too. Decision (review M2):
+  no bulk layout commit. New and touched code follows the Qt Coding Style,
+  including its exceptions.
 - **C2:** the header comment of `client.h` says "usable … from QML". Some
   header comments refer to app pages.
 
@@ -83,23 +100,37 @@ Conventions for C++; Qt5 connect syntax; ranged-for; CamelCase namespaces.
 - Model `data()` returns `QVariant`. That is the Qt model API, not
   QML-specific, so it stays.
 
-## Scope (proposed)
+## Scope (revised after review)
 
 1. **Typed pointers:** `Client::queue` → `QueueModel *`;
-   `PlayerModel::current` and `client()` → `Client *`. The types are already
-   registered with QML, so the QML pages need no change.
-2. **Typed values:** `Client` offers `QList<Preset>` and `QList<Input>`, with
-   images already resolved. `BrowseModel` offers `QList<Letter>` and
-   `QList<BrowseItem>` for `moreLinks`, plus typed actions. The conversion to
-   what QML reads moves to `src/` (design in plan.md).
-3. **Library-only build check:** a test target that builds and links
-   `bluos/` with `QT = core network` only, and fails if QtQml or QtQuick is
-   needed.
-4. **Small fixes:** A1 (one `<error>` parser), A2 (a stopped client answers
-   asynchronously), C2 (comments without QML or page references).
-5. **C1:** make brace style consistent with the Qt Coding Style in `bluos/`
-   and `src/`. Hand-edited and without behaviour change, in a separate
-   commit, so the review sees only layout changes.
+   `PlayerModel::current` and `client()` → `Client *`. Typed pointer
+   properties already work in Swell on Qt 5.6 (`BrowseModel::client`), and
+   the types are registered with QML.
+2. **Typed values:** `Client` offers `QList<Preset>` and `QList<Input>`;
+   `BrowseModel` offers typed letters, `moreLinks` and actions. Where QML
+   reads them depends on Misja's choice of option 0 or 3 (plan.md). The
+   parser structs keep their raw `QString` images; resolved images are a
+   separate field or come from `Client::resolveImage` (review M3).
+3. **Small fixes:** A1 (one `<error>` parser), A2 (a stopped client answers
+   on the next event loop turn), A3 (a context object on the public fetch
+   functions), C2 (comments without QML or page references).
+4. **A runtime QML test** (review H2): a test that loads the real data
+   through a fixture player (`tests/client/fakeplayer.h`) and reads every
+   key the pages use:
+   - presets: id, name, image, inputId;
+   - inputs: id, text, image, url;
+   - letters: text, row;
+   - moreLinks: text, browseKey;
+   - actions: type, text, url.
+
+   It also checks the JS uses (`.length`, `[i]`, passing a list on). Today
+   only compilation is tested, so a key that turns `undefined` shows as a
+   blank tile and nothing fails.
+
+Dropped after review:
+- a separate library-only build target (M1): the six non-QML test suites
+  already build `bluos/` with `QT -= gui` and no QML;
+- a bulk brace-style commit (M2).
 
 ## Out of scope
 
@@ -111,19 +142,28 @@ Conventions for C++; Qt5 connect syntax; ranged-for; CamelCase namespaces.
 - New API features, and changes to timing or request policy.
 - A formatter (`.clang-format`) or extra compiler warning flags as
   enforcement: new tooling; to be proposed separately if wanted.
+- Pimpl or ABI stability: the library is used as source through the `.pri`.
+- The LSDP seed (see above) and anything else that changes timing.
 
 ## Acceptance criteria
 
-1. `bluos/` has no QML-specific types in its public interface:
-   - no `QVariantList` or `QVariantMap` properties;
-   - no `QObject *` where a concrete type is meant.
+1. The library offers typed C++ access to everything it exposes:
+   - no `QObject *` where a concrete type is meant;
+   - typed accessors for presets, inputs, letters, `moreLinks` and actions.
 
-   Model `data()` and `roleNames()` stay.
-2. The library-only check builds without QtQml and QtQuick.
-3. All existing test suites pass. The tests use the typed accessors where
-   they now read maps.
-4. The QML compile test passes. A device check by Misja shows Home (presets,
-   inputs), Now Playing, Queue and Browse (letters, artist pulley, context
-   menus) unchanged.
-5. A1, A2 and C2 are done. C1 is a layout-only commit.
-6. A separate result review before the PR.
+   With option 3, the library has no lists of string-keyed maps in its
+   interface. The `actions` role then returns them from the src/ subclass.
+   With option 0 they remain beside the typed accessors. Model `data()` and
+   `roleNames()` stay.
+2. The non-QML test `.pro` files stay free of qml and quick.
+3. All existing test suites pass, plus tests for A1 (a command `<error>`
+   reply), A2 (no synchronous handler call when stopped) and A3 (a handler is
+   dropped when its context goes away).
+4. The runtime QML test passes, along with the compile test.
+5. The SDK build and Harbour validator pass.
+6. A device check by Misja shows these unchanged:
+   - Home: presets and inputs;
+   - Now Playing;
+   - Queue;
+   - Browse: letters, artist pulley, context menus.
+7. A separate result review before the PR.
