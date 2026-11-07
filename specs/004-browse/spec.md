@@ -91,6 +91,13 @@ which Misja finds unclear.
     internet. Radio Paradise's stations (`audio` rows, 512 px covers from
     img.radioparadise.com) get the radio icon; TuneIn's menu icons a bare
     tile; Home's preset tiles the radio icon; the mini-player the songs icon.
+    The placeholder shows only where the player sends an image (device,
+    0.3.0-11: Library artists stayed on it). Read-only survey of the NAD
+    C 379, 2026-11-08, rows per list: with `image` are albums, tracks
+    (songs, search), Radio Paradise and Airable stations (`audio`) and
+    TuneIn's menu links; without are artists (letter lists, search),
+    genres (240), composers, sections and the Library, Favourites, search
+    and radio menus (`link`). No list mixed both.
     Now Playing keeps its own `icon-l-music` fallback, and the input icons on
     Home (small images from the player) stay as they are.
     Loading ahead is left to Silica: `SilicaListView` already sets

@@ -1,7 +1,7 @@
 # Evidence — 004 browse
 
-Date: 2026-11-06. Branch `004-browse`. Package harbour-swell-0.3.0-11.aarch64.rpm,
-sha256 d6814fa9eaee8a5fe3b933220c131d5730b6215f6286190a3f8be6cf416cd113.
+Date: 2026-11-06. Branch `004-browse`. Package harbour-swell-0.3.0-12.aarch64.rpm,
+sha256 993837d2b47ef6e6baf865723e3b186d0e0702ebc2c9c483570bd4c1b090c6f5.
 
 ## Automated (builder)
 
@@ -83,7 +83,7 @@ Misja's feedback on 0.3.0-2 (screenshot 2026-11-06 23:39), fixed in 0.3.0-4:
   Queue and About (every page except Now Playing),
   and the player's `#` section is left out of the letter index. Not yet on
   the device (installed 2026-11-07; 0.3.0-8 to -10 only changed the app
-  icon, #3; the sha256 above is 0.3.0-11).
+  icon, #3; the sha256 above is 0.3.0-12).
 - Covers (decision 13): 0.3.0-11 shows the Media player's placeholder while
   a cover loads (loading ahead stays Silica's default of 8 rows). Read-only check of the
   player (2026-11-07): the `#` album section comes first, as assumed for

@@ -350,12 +350,12 @@ Page {
                 color: item.highlighted ? Theme.highlightColor : Theme.primaryColor
             }
 
-            // Covers keep their place, with the placeholder until they load
-            // or when the player has none. A link's icon (TuneIn's menus)
-            // only shows if sent, on a bare tile until it loads.
+            // Only where the player sends an image: the placeholder shows while
+            // it loads or if it fails. Rows without one (Library artists) keep
+            // just their text. A link's icon (TuneIn's menus) gets a bare tile.
             CoverImage {
                 id: art
-                visible: item._cover || (page._images && model.image.toString() !== "")
+                visible: page._images && model.image.toString() !== ""
                 x: Theme.horizontalPageMargin
                 anchors.verticalCenter: parent.verticalCenter
                 width: !visible ? 0 : (item._cover ? Theme.itemSizeMedium - 2 * Theme.paddingSmall : Theme.iconSizeMedium)
