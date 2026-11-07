@@ -10,8 +10,8 @@ Objective and acceptance criteria: feature 004 (browse, issue #7) on branch
 result, navigation, covers). Device check by Misja passed on 0.3.0-12
 (2026-11-08), including navigation (decision 12) and cover placeholders
 (decision 13). App icon (#3): Misja's sound-bar design, source
-icons/harbour-swell.svg, accepted on the device. PR opened for 004; merge
-is Misja's decision. Decisions: browse reads unpaced; no recently played
+icons/harbour-swell.svg, accepted on the device. 004 merged (PR #9, f48abda,
+2026-11-08); #7 and #3 closed. Next: issue #8 (typed bluos/ interfaces). Decisions: browse reads unpaced; no recently played
 and no extra state in Swell (published API only); no header per letter.
 Issue #8 (typed bluos/ interfaces) follows 004. Workspace principles 1.2.0
 (Sailfish UI check in reviews) merged (sailfish-workspace#19, 13985f2).
