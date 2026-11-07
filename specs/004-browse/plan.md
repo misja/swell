@@ -46,7 +46,7 @@ specs/004-browse/spec.md; builds on 002 (main 88939d0).
   - search, top-level and per source;
   - an error reply.
 - **qml:** the compile test covers the new pages.
-- **Build, validator, Dutch complete;** logs in evidence/004/.
+- **Build, validator, Dutch complete;** results in specs/004-browse/evidence.md.
 - **Device check by Misja,** spec AC5.
 
 ## Review

@@ -26,10 +26,9 @@ Artifacts and evidence:
 - src/ holds the app stub and QML type registration; qml/ the pages.
 - tests/ holds spike, lsdp, xml, client, model, qml and queue.
 - translations/ holds English (source) and Dutch (complete).
-- evidence/001/README.md holds the current results for HEAD (release
-  0.1.0-7: all suites pass, validator succeeded, 1 accepted warning) and the
-  history. evidence/002/README.md holds the 002 results (0.2.0-4), reviews
-  and device checks.
+- specs/<feature>/evidence.md holds each feature's results, reviews and
+  device checks (001: 0.1.0-7, 002: 0.2.0-4, 004: 0.3.0-12). Raw build and
+  test logs stay local in evidence/ (ignored by Git since 2026-11-08).
 - Device: the Xperia 10 II (Sailfish OS 5.2.0.20) runs 0.3.0-12, against a NAD
   C 379.
 - Device facts (2026-11-06): `/Play?id=` alone plays from a queue entry; the
@@ -61,7 +60,7 @@ Reviews (separate assistant agents; not a human audit):
 - result_review (AC6): resolved and re-checked, "ready for maintainer review".
 - 002: review_002 (scope/design), result review and its re-check, a design
   review of the queue-id adoption and two checks of its implementation; all
-  findings resolved (details in evidence/002).
+  findings resolved (details in specs/002-queue/evidence.md).
 
 App icon: parked by Misja on 2026-11-06 (issue #3, on the board as Todo).
 Three rounds of wave concepts were tried and the wave motif was rejected as a

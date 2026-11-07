@@ -8,7 +8,7 @@ Linked issue and plan: https://github.com/misja/swell/issues/7; plan.md in this 
 - [x] Client: key/q encoding, browse reads without the interval, hardened `sendAction` round-trip rule, additive actions through `fetch`; tests.
 - [x] `BrowseModel` (segments, bounded loading, paging within a letter, fallbacks, root filter, Favourites detection); fixture tests.
 - [x] Pages: Browse (generic), LetterIndex, album header, search; Home pulley; Dutch translation.
-- [x] Build, validator, evidence/004.
+- [x] Build, validator, evidence (specs/004-browse/evidence.md).
 - [x] Navigation: play returns to Home, mini-player on Browse and Search, no `#` in the letter index (decision 12, canvas N1–N5).
 - [x] Cover placeholder as in the Media player (decision 13).
 - [x] Device check with Misja (library scrolling and letter jumps, actions, favourites, search, radio, navigation, covers); another player language not checked.

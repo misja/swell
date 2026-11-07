@@ -12,3 +12,6 @@ Makefile
 /tests/**/tst_*
 !/tests/**/tst_*.cpp
 !/tests/**/*.pro
+
+# Raw build and test logs stay local; conclusions are in specs/<feature>/evidence.md
+/evidence/

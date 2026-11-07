@@ -18,4 +18,4 @@ Use this file for bounded implementation steps, not a second status board.
 - [x] AC4 engine test over all QML files.
 - [x] Build the RPM and run `sdk-harbour-rpmvalidator` (AC5); record deviations (one accepted warning: binary not stripped).
 - [x] Complete the separate result review against the spec (AC6): done 2026-11-06; findings resolved and re-checked.
-- [ ] Prepare a change for maintainer review with evidence in `evidence/001/`.
+- [ ] Prepare a change for maintainer review with evidence in `specs/001-core-controller/evidence.md`.

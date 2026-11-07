@@ -1,5 +1,9 @@
 # Evidence — 004 browse
 
+Raw build and test logs named below (`*.log`) are kept locally by the
+builder, not in the repository (since 2026-11-08); this file holds the
+conclusions.
+
 Date: 2026-11-06. Branch `004-browse`. Package harbour-swell-0.3.0-12.aarch64.rpm,
 sha256 993837d2b47ef6e6baf865723e3b186d0e0702ebc2c9c483570bd4c1b090c6f5.
 
