@@ -1,7 +1,7 @@
 # Evidence — 004 browse
 
 Date: 2026-11-06. Branch `004-browse`. Package harbour-swell-0.3.0-11.aarch64.rpm,
-sha256 608a2d579a06d0c1fb52bba2fe56c171d17796b93a2087f69fbaf0effca21212.
+sha256 d5bfbb18215618963b4cc2429b7c9c60c3385048329de8e8aa224a59e1166353.
 
 ## Automated (builder)
 
@@ -85,10 +85,12 @@ Misja's feedback on 0.3.0-2 (screenshot 2026-11-06 23:39), fixed in 0.3.0-4:
   the device (installed 2026-11-07; 0.3.0-8 to -10 only changed the app
   icon, #3; the sha256 above is 0.3.0-11).
 - Covers (decision 13): 0.3.0-11 shows the Media player's placeholder while
-  a cover loads and makes rows one screen ahead. Read-only check of the
+  a cover loads (loading ahead stays Silica's default of 8 rows). Read-only check of the
   player (2026-11-07): the `#` album section comes first, as assumed for
   the letter index; covers are 600×600 JPEG, 17–35 KB, ~5 ms, no cache
-  headers. Result review (separate agent, 2026-11-07): approve with
+  headers. Result review (separate agent, 2026-11-08): approve with
+  changes; applied: no extra cacheBuffer, placeholder stays until the fade
+  ends, icons per row kind, Icon `highlighted`. Result review (separate agent, 2026-11-07): approve with
   changes; M1 fixed (a mini-player tap during a page transition is ignored,
   so Home's openNowPlaying flag cannot stay set). Device checks it asked for:
   no flicker on landing at Home, a tap mid-transition, landscape letter

@@ -76,7 +76,7 @@
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="43"/>
-        <location filename="../qml/pages/BrowsePage.qml" line="309"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="306"/>
         <source>Shuffle</source>
         <translation>Willekeurig</translation>
     </message>
@@ -102,8 +102,8 @@
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="70"/>
-        <location filename="../qml/pages/BrowsePage.qml" line="233"/>
-        <location filename="../qml/pages/BrowsePage.qml" line="383"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="230"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="392"/>
         <source>Favourites</source>
         <translation>Favorieten</translation>
     </message>
@@ -123,12 +123,12 @@
         <translation>Toegevoegd aan de wachtrij</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="165"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="162"/>
         <source>Browse</source>
         <translation>Bladeren</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/pages/BrowsePage.qml" line="221"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="218"/>
         <source>%n tracks</source>
         <translation>
             <numerusform>%n nummer</numerusform>
@@ -136,52 +136,52 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="301"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="298"/>
         <source>Search</source>
         <translation>Zoeken</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="314"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="311"/>
         <source>Play album</source>
         <translation>Album afspelen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="314"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="311"/>
         <source>Play all</source>
         <translation>Alles afspelen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="425"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="434"/>
         <source>Player offline</source>
         <translation>Speler offline</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="428"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="437"/>
         <source>The player could not show this</source>
         <translation>De speler kon dit niet tonen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="430"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="439"/>
         <source>No favourites yet</source>
         <translation>Nog geen favorieten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="431"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="440"/>
         <source>Nothing here</source>
         <translation>Hier staat niets</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="435"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="444"/>
         <source>Swell will try again when it is back</source>
         <translation>Swell probeert het opnieuw zodra hij terug is</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="439"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="448"/>
         <source>No usable answer from the player</source>
         <translation>Geen bruikbaar antwoord van de speler</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="442"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="451"/>
         <source>Long press an album, artist or track and choose Add to favourites</source>
         <translation>Houd een album, artiest of nummer ingedrukt en kies Aan favorieten toevoegen</translation>
     </message>
@@ -332,12 +332,12 @@
         <translation>De wachtrij is veranderd. Er is niets verwijderd.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="77"/>
+        <location filename="../qml/pages/QueuePage.qml" line="74"/>
         <source>Queue</source>
         <translation>Wachtrij</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/pages/QueuePage.qml" line="86"/>
+        <location filename="../qml/pages/QueuePage.qml" line="83"/>
         <source>%n tracks</source>
         <translation>
             <numerusform>%n nummer</numerusform>
@@ -345,37 +345,37 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="97"/>
+        <location filename="../qml/pages/QueuePage.qml" line="94"/>
         <source>Now playing %1. Tap a track to play the queue again.</source>
         <translation>Nu speelt %1. Tik op een nummer om de wachtrij weer te spelen.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="111"/>
+        <location filename="../qml/pages/QueuePage.qml" line="108"/>
         <source>Clear queue</source>
         <translation>Wachtrij wissen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="112"/>
+        <location filename="../qml/pages/QueuePage.qml" line="109"/>
         <source>Clearing queue</source>
         <translation>Wachtrij wissen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="128"/>
+        <location filename="../qml/pages/QueuePage.qml" line="125"/>
         <source>Removing</source>
         <translation>Verwijderen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="200"/>
+        <location filename="../qml/pages/QueuePage.qml" line="197"/>
         <source>Remove</source>
         <translation>Verwijderen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="209"/>
+        <location filename="../qml/pages/QueuePage.qml" line="206"/>
         <source>Queue is empty</source>
         <translation>Wachtrij is leeg</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="210"/>
+        <location filename="../qml/pages/QueuePage.qml" line="207"/>
         <source>Play a preset or an input from Home</source>
         <translation>Speel een preset of ingang af vanaf Home</translation>
     </message>

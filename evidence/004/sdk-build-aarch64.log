@@ -3,7 +3,7 @@ NOTICE: Generating changelog entries with '/home/ubuntu/swell-001/rpm/harbour-sw
 NOTICE: No tags describe the HEAD, will not fix package version.
 Building target platforms: aarch64-meego-linux-gnu
 Building for target aarch64-meego-linux-gnu
-Executing(%build): /bin/sh -e /var/tmp/rpm-tmp.3BjXa5
+Executing(%build): /bin/sh -e /var/tmp/rpm-tmp.bj6mYZ
 + umask 022
 + cd /home/ubuntu/swell-001
 + LANG=C
@@ -25,10 +25,10 @@ make: Nothing to be done for 'first'.
 + RPM_EC=0
 ++ jobs -p
 + exit 0
-Executing(%install): /bin/sh -e /var/tmp/rpm-tmp.0gl4WI
+Executing(%install): /bin/sh -e /var/tmp/rpm-tmp.9qi1jF
 + umask 022
 + cd /home/ubuntu/swell-001
-+ flock /home/mersdk/.mb2.lock.lock flock /home/mersdk/.mb2.lock ln -f /home/mersdk/.mb2.lock.g2L /home/mersdk/.mb2.lock
++ flock /home/mersdk/.mb2.lock.lock flock /home/mersdk/.mb2.lock ln -f /home/mersdk/.mb2.lock.4ug /home/mersdk/.mb2.lock
 + '[' /home/deploy/installroot '!=' / ']'
 + rm -rf /home/deploy/installroot
 ++ dirname /home/deploy/installroot
@@ -82,7 +82,7 @@ Requires(rpmlib): rpmlib(CompressedFileNames) <= 3.0.4-1 rpmlib(FileDigests) <= 
 Requires: ld-linux-aarch64.so.1()(64bit) ld-linux-aarch64.so.1(GLIBC_2.17)(64bit) libQt5Core.so.5()(64bit) libQt5Core.so.5(Qt_5)(64bit) libQt5Gui.so.5()(64bit) libQt5Gui.so.5(Qt_5)(64bit) libQt5Network.so.5()(64bit) libQt5Network.so.5(Qt_5)(64bit) libQt5Qml.so.5()(64bit) libQt5Qml.so.5(Qt_5)(64bit) libQt5Quick.so.5()(64bit) libQt5Quick.so.5(Qt_5)(64bit) libc.so.6()(64bit) libc.so.6(GLIBC_2.17)(64bit) libc.so.6(GLIBC_2.34)(64bit) libgcc_s.so.1()(64bit) libgcc_s.so.1(GCC_3.0)(64bit) libsailfishapp.so.1()(64bit) libstdc++.so.6()(64bit) libstdc++.so.6(CXXABI_1.3)(64bit) libstdc++.so.6(CXXABI_1.3.9)(64bit) libstdc++.so.6(GLIBCXX_3.4)(64bit) libstdc++.so.6(GLIBCXX_3.4.14)(64bit)
 Checking for unpackaged file(s): /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/lib/rpm/check-files /home/deploy/installroot
 Wrote: /home/ubuntu/swell-001/RPMS/harbour-swell-0.3.0-11.aarch64.rpm
-Executing(%clean): /bin/sh -e /var/tmp/rpm-tmp.Yrkdzw
+Executing(%clean): /bin/sh -e /var/tmp/rpm-tmp.zHOvSy
 + umask 022
 + cd /home/ubuntu/swell-001
 + /bin/rm -rf /home/deploy/installroot

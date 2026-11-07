@@ -152,9 +152,6 @@ Page {
         anchors.fill: parent
         model: browseModel
         quickScroll: !browseModel.sectioned
-        // Rows just out of view are made ahead, so their covers load before
-        // they scroll in.
-        cacheBuffer: height
 
         header: Column {
             width: list.width
@@ -362,7 +359,19 @@ Page {
                 anchors.verticalCenter: parent.verticalCenter
                 width: !visible ? 0 : (item._cover ? Theme.itemSizeMedium - 2 * Theme.paddingSmall : Theme.iconSizeMedium)
                 height: width
-                placeholder: item._cover
+                placeholder: item._cover && model.type !== "section"
+                // The Media player's icon for the kind of row.
+                icon: {
+                    switch (model.type) {
+                    case "artist":
+                        return "image://theme/icon-m-media-artists"
+                    case "playlist":
+                        return "image://theme/icon-m-media-playlists"
+                    case "audio":
+                        return "image://theme/icon-m-media-radio"
+                    }
+                    return "image://theme/icon-m-media-albums"
+                }
                 highlighted: item.highlighted
                 source: visible ? model.image : ""
             }

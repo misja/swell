@@ -66,9 +66,6 @@ Page {
         id: list
         anchors.fill: parent
         model: page._queue
-        // Rows just out of view are made ahead, so their covers load before
-        // they scroll in.
-        cacheBuffer: height
 
         header: Column {
             width: list.width

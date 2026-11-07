@@ -84,10 +84,13 @@ which Misja finds unclear.
     - Library stays one entry in Browse (not flattened).
 13. Covers while they load (Misja, 2026-11-07, after seeing gaps when
     scrolling through all albums): the placeholder of Jolla's Media player
-    (`AlbumArt.qml`: a faint gradient with `icon-m-media-albums`) until a
-    cover is ready or when there is none, then a short fade; Browse and the
-    Queue make rows one screen ahead (`cacheBuffer`) so covers load before
-    they scroll in. No disk cache: covers are 600×600 JPEGs of 17–35 KB that
+    (`AlbumArt.qml`: a faint gradient with `icon-m-media-albums`; artists,
+    playlists and stations get the theme's artists, playlists and radio
+    icons) until a cover is ready or when there is none, then a short fade.
+    Loading ahead is left to Silica: `SilicaListView` already sets
+    `cacheBuffer: Theme.itemSizeMedium * 8` (5.1.0.11); a larger buffer was
+    tried and dropped after review (smaller in landscape, and buffer rows can
+    take the load wish from rows on screen). No disk cache: covers are 600×600 JPEGs of 17–35 KB that
     the player serves in about 5 ms on the LAN (after a 301 from port 11000
     to 11004), without Cache-Control, ETag or Last-Modified, so Swell would
     have to invent staleness rules; Qt's in-memory image cache stays as is.

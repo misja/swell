@@ -12,10 +12,12 @@ Item {
     property bool highlighted
     // Off for images that are icons rather than covers (TuneIn's menus).
     property bool placeholder: true
+    property string icon: "image://theme/icon-m-media-albums"
 
     Rectangle {
         anchors.fill: parent
-        visible: root.placeholder && image.status !== Image.Ready
+        // Until the cover has faded in completely, so no gap shows between.
+        visible: root.placeholder && (image.status !== Image.Ready || image.opacity < 1.0)
         gradient: Gradient {
             GradientStop { position: 0.0; color: Theme.rgba(Theme.primaryColor, Theme.opacityFaint) }
             GradientStop { position: 1.0; color: Theme.rgba(Theme.primaryColor, 0.05) }
@@ -28,8 +30,8 @@ Item {
             height: width
             sourceSize.width: width
             sourceSize.height: height
-            source: "image://theme/icon-m-media-albums"
-            color: root.highlighted ? Theme.highlightColor : Theme.primaryColor
+            source: root.icon
+            highlighted: root.highlighted
         }
     }
 
