@@ -1,7 +1,7 @@
 # Evidence — 004 browse
 
 Date: 2026-11-06. Branch `004-browse`. Package harbour-swell-0.3.0-7.aarch64.rpm,
-sha256 0fe6f4893c0d5473eea5a67fe36e2e1be761cc00a260e44aaa7090112139eb8b.
+sha256 5dbe4de1eaee6a343bbfe9ca075d9e9d98138dfa2d618ef91ef8310c92484c85.
 
 ## Automated (builder)
 
@@ -81,7 +81,11 @@ Misja's feedback on 0.3.0-2 (screenshot 2026-11-06 23:39), fixed in 0.3.0-4:
 - Navigation (Misja, 2026-11-07, spec decision 12, canvas N1–N5): in 0.3.0-7
   a play action pops to Home, the mini-player shows on Browse and Search,
   and the player's `#` section is left out of the letter index. Not yet on
-  the device.
+  the device. Result review (separate agent, 2026-11-07): approve with
+  changes; M1 fixed (a mini-player tap during a page transition is ignored,
+  so Home's openNowPlaying flag cannot stay set). Device checks it asked for:
+  no flicker on landing at Home, a tap mid-transition, landscape letter
+  index, where `#` sits in a long list.
 
 ## Not yet done
 

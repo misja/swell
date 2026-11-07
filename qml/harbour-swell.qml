@@ -59,7 +59,12 @@ ApplicationWindow {
     }
 
     // Back to Home in one step from a Browse or Search page (spec 004).
+    // Both ignore a tap during a transition: Silica's pop does nothing then
+    // (PageStack.js doPop), and Home's openNowPlaying flag would stay set.
     function returnHome() {
+        if (pageStack.busy) {
+            return
+        }
         var home = _homePage()
         if (home) {
             pageStack.pop(home)
@@ -69,6 +74,9 @@ ApplicationWindow {
     // Opens Now Playing from the mini-player: forward from Home, via Home from
     // Players, or back to Home and on from a Browse or Search page.
     function openNowPlaying() {
+        if (pageStack.busy) {
+            return
+        }
         var page = pageStack.currentPage
         if (page.objectName === "home") {
             pageStack.navigateForward()
