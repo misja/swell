@@ -10,8 +10,10 @@ Objective and acceptance criteria: feature 004 (browse, issue #7) on branch
 the re-check of the device-feedback changes). Device: 0.3.0-6 installed.
 Misja's walk-through (2026-11-07) led to decision 12 (navigation: play
 returns to Home, mini-player on every page except Now Playing; canvas N1–N5) and no `#` in
-the letter index, built as 0.3.0-7 with Misja's trial icon (#3); result review done (M1, H1
-fixed); 0.3.0-10 (sound-bar icon, narrower inner disc) installed on 2026-11-07, device check pending. Then: final device check, PR. Decisions: browse reads unpaced; no recently played
+the letter index, built as 0.3.0-7; result review done (M1, H1 fixed).
+App icon (#3): Misja's sound-bar design, source icons/harbour-swell.svg,
+accepted on the device. 0.3.0-10 installed on 2026-11-07; navigation
+device check pending. Then: final device check, PR. Decisions: browse reads unpaced; no recently played
 and no extra state in Swell (published API only); no header per letter.
 Issue #8 (typed bluos/ interfaces) follows 004. Workspace principles 1.2.0
 (Sailfish UI check in reviews) merged (sailfish-workspace#19, 13985f2).

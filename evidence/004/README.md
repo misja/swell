@@ -82,8 +82,8 @@ Misja's feedback on 0.3.0-2 (screenshot 2026-11-06 23:39), fixed in 0.3.0-4:
   a play action pops to Home, the mini-player shows on Browse, Search,
   Queue and About (every page except Now Playing),
   and the player's `#` section is left out of the letter index. Not yet on
-  the device (0.3.0-7 installed 2026-11-07, sha256 above, with the trial
-  icon of #3). Result review (separate agent, 2026-11-07): approve with
+  the device (installed 2026-11-07; 0.3.0-8 to -10 only changed the app
+  icon, #3; the sha256 above is 0.3.0-10). Result review (separate agent, 2026-11-07): approve with
   changes; M1 fixed (a mini-player tap during a page transition is ignored,
   so Home's openNowPlaying flag cannot stay set). Device checks it asked for:
   no flicker on landing at Home, a tap mid-transition, landscape letter
