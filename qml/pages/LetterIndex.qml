@@ -18,15 +18,26 @@ Item {
     signal top()
 
     readonly property int _minBox: Theme.fontSizeExtraSmall + Theme.paddingSmall
+    // The player's "#" section (titles starting with a digit or sign) is
+    // left out of the index: it is at the top of the list anyway.
+    readonly property var _letters: {
+        var list = []
+        for (var i = 0; i < letters.length; ++i) {
+            if (letters[i].text !== "#") {
+                list.push(letters[i])
+            }
+        }
+        return list
+    }
     readonly property int _slots: Math.max(1, Math.floor(height / _minBox) - (favourites ? 1 : 0))
-    readonly property int _step: Math.max(1, Math.ceil(letters.length / _slots))
+    readonly property int _step: Math.max(1, Math.ceil(_letters.length / _slots))
     readonly property var _shown: {
         var list = []
         if (favourites) {
             list.push({ "text": "", "row": -1 })
         }
-        for (var i = 0; i < letters.length; i += _step) {
-            list.push(letters[i])
+        for (var i = 0; i < _letters.length; i += _step) {
+            list.push(_letters[i])
         }
         return list
     }

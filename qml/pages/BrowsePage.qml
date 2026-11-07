@@ -7,6 +7,7 @@ import Swell 1.0
 // source, letter lists, albums and search results all use this page.
 Page {
     id: page
+    objectName: "browse"
 
     property bool root
     property string key
@@ -76,6 +77,20 @@ Page {
         })
     }
 
+    // Starting playback ends the browsing: back to Home in one step, where the
+    // mini-player shows what plays (canvas N1-N3). Adding to the queue stays
+    // on the page. Home reports a failed command.
+    function _play(path) {
+        page._player.playPath(path)
+        app.returnHome()
+    }
+    function _run(url, type) {
+        page._player.runAction(url, type)
+        if (type.indexOf("-now") > 0 || type === "add-shuffle") {
+            app.returnHome()
+        }
+    }
+
     function _shuffleUrl() {
         for (var i = 0; i < parentActions.length; ++i) {
             if (parentActions[i].type === "add-shuffle") {
@@ -116,9 +131,7 @@ Page {
                 if (favouritesModel.key !== "") {
                     favouritesModel.load()
                 }
-            } else if (type.indexOf("-now") > 0 || type === "add-shuffle") {
-                app.notify(qsTr("Playing"))
-            } else {
+            } else if (type.indexOf("-now") < 0 && type !== "add-shuffle") {
                 app.notify(qsTr("Added to the queue"))
             }
         }
@@ -299,12 +312,12 @@ Page {
             MenuItem {
                 text: qsTr("Shuffle")
                 visible: page._tracks && page._shuffleUrl() !== ""
-                onClicked: page._player.runAction(page._shuffleUrl(), "add-shuffle")
+                onClicked: page._run(page._shuffleUrl(), "add-shuffle")
             }
             MenuItem {
                 text: page._tracks ? qsTr("Play album") : qsTr("Play all")
                 visible: browseModel.listType === "tracks" && browseModel.playUrl !== ""
-                onClicked: page._player.playPath(browseModel.playUrl)
+                onClicked: page._play(browseModel.playUrl)
             }
         }
 
@@ -329,9 +342,9 @@ Page {
                 if (model.browseKey !== "") {
                     page._open(model)
                 } else if (model.autoplayUrl !== "") {
-                    page._player.playPath(model.autoplayUrl)
+                    page._play(model.autoplayUrl)
                 } else if (model.playUrl !== "") {
-                    page._player.playPath(model.playUrl)
+                    page._play(model.playUrl)
                 }
             }
 
@@ -402,7 +415,7 @@ Page {
                         model: item._actions
                         MenuItem {
                             text: page._actionText(modelData.type)
-                            onClicked: page._player.runAction(modelData.url, modelData.type)
+                            onClicked: page._run(modelData.url, modelData.type)
                         }
                     }
                 }

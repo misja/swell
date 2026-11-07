@@ -6,6 +6,7 @@ import Sailfish.Silica 1.0
 // results open as a Browse page.
 Page {
     id: page
+    objectName: "search"
 
     // A source's searchKey; empty searches everywhere.
     property string searchKey

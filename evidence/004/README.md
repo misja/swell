@@ -1,7 +1,7 @@
 # Evidence — 004 browse
 
-Date: 2026-11-06. Branch `004-browse`. Package harbour-swell-0.3.0-6.aarch64.rpm,
-sha256 87d3d5a997b18d627618daabd5c9886d6bbdf9d7c296b2b84e51e3eaf6095f3b.
+Date: 2026-11-06. Branch `004-browse`. Package harbour-swell-0.3.0-7.aarch64.rpm,
+sha256 0fe6f4893c0d5473eea5a67fe36e2e1be761cc00a260e44aaa7090112139eb8b.
 
 ## Automated (builder)
 
@@ -78,6 +78,10 @@ Misja's feedback on 0.3.0-2 (screenshot 2026-11-06 23:39), fixed in 0.3.0-4:
   icon-sized image on a normal row; covers stay for albums, tracks, stations.
 - TuneIn has its own Favourites link (seen in that menu). Not wired into
   Swell's Favourites entry (v1: Library only).
+- Navigation (Misja, 2026-11-07, spec decision 12, canvas N1–N5): in 0.3.0-7
+  a play action pops to Home, the mini-player shows on Browse and Search,
+  and the player's `#` section is left out of the letter index. Not yet on
+  the device.
 
 ## Not yet done
 

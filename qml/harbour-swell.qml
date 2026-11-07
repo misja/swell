@@ -54,11 +54,30 @@ ApplicationWindow {
     allowedOrientations: defaultAllowedOrientations
     bottomMargin: miniPlayer.visibleSize
 
-    // Opens Now Playing from the mini-player: forward from Home, or via Home from Players.
+    function _homePage() {
+        return pageStack.find(function (page) { return page.objectName === "home" })
+    }
+
+    // Back to Home in one step from a Browse or Search page (spec 004).
+    function returnHome() {
+        var home = _homePage()
+        if (home) {
+            pageStack.pop(home)
+        }
+    }
+
+    // Opens Now Playing from the mini-player: forward from Home, via Home from
+    // Players, or back to Home and on from a Browse or Search page.
     function openNowPlaying() {
         var page = pageStack.currentPage
         if (page.objectName === "home") {
             pageStack.navigateForward()
+        } else if (page.objectName === "browse" || page.objectName === "search") {
+            var home = _homePage()
+            if (home) {
+                home.openNowPlaying = true
+                pageStack.pop(home)
+            }
         } else if (page.objectName === "players") {
             page.openCurrent(false)
             var home = pageStack.nextPage(page)
@@ -79,14 +98,19 @@ ApplicationWindow {
         }
     }
 
-    // The docked mini-player: only on Home and Players, only with a current
-    // player that is online. A drag closes it (DockedPanel sets open = false),
-    // so the state is driven by a Binding rather than a plain open: binding.
+    // The docked mini-player: on Home, Players, Browse and Search, only with a
+    // current player that is online. A drag closes it (DockedPanel sets
+    // open = false), so the state is driven by a Binding rather than a plain
+    // open: binding. It closes while the stack moves from Home or Players
+    // (towards Now Playing), but stays between Browse pages: a push makes the
+    // new page current before its animation and a pop after it (Silica
+    // PageStack.js), so the name is "browse" or "search" throughout.
     DockedPanel {
         id: miniPlayer
 
         readonly property QtObject _player: players.current
         readonly property string _pageName: pageStack.currentPage ? pageStack.currentPage.objectName : ""
+        readonly property bool _browsing: _pageName === "browse" || _pageName === "search"
 
         width: parent.width
         height: pageStack.currentPage && pageStack.currentPage.isLandscape ? Theme.itemSizeMedium : Theme.itemSizeLarge
@@ -97,8 +121,9 @@ ApplicationWindow {
             target: miniPlayer
             property: "open"
             value: miniPlayer._player !== null && miniPlayer._player.online
-                   && (miniPlayer._pageName === "home" || miniPlayer._pageName === "players")
-                   && !pageStack.busy
+                   && (miniPlayer._browsing
+                       || ((miniPlayer._pageName === "home" || miniPlayer._pageName === "players")
+                           && !pageStack.busy))
         }
 
         BackgroundItem {

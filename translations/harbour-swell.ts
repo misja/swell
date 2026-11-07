@@ -70,122 +70,117 @@
 <context>
     <name>BrowsePage</name>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="40"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="41"/>
         <source>Play now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="42"/>
-        <location filename="../qml/pages/BrowsePage.qml" line="300"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="43"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="313"/>
         <source>Shuffle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="45"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="46"/>
         <source>Add next</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="48"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="49"/>
         <source>Add last</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="50"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="51"/>
         <source>Add to favourites</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="52"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="53"/>
         <source>Remove from favourites</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="69"/>
-        <location filename="../qml/pages/BrowsePage.qml" line="221"/>
-        <location filename="../qml/pages/BrowsePage.qml" line="372"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="70"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="234"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="387"/>
         <source>Favourites</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="114"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="129"/>
         <source>Added to favourites</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="114"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="129"/>
         <source>Removed from favourites</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="120"/>
-        <source>Playing</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="122"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="135"/>
         <source>Added to the queue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="149"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="162"/>
         <source>Browse</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/pages/BrowsePage.qml" line="209"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="222"/>
         <source>%n tracks</source>
         <translation type="unfinished">
             <numerusform></numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="292"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="305"/>
         <source>Search</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="305"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="318"/>
         <source>Play album</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="305"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="318"/>
         <source>Play all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="414"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="429"/>
         <source>Player offline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="417"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="432"/>
         <source>The player could not show this</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="419"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="434"/>
         <source>No favourites yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="420"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="435"/>
         <source>Nothing here</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="424"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="439"/>
         <source>Swell will try again when it is back</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="428"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="443"/>
         <source>No usable answer from the player</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="431"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="446"/>
         <source>Long press an album, artist or track and choose Add to favourites</source>
         <translation type="unfinished"></translation>
     </message>
@@ -386,17 +381,17 @@
 <context>
     <name>SearchPage</name>
     <message>
-        <location filename="../qml/pages/SearchPage.qml" line="33"/>
+        <location filename="../qml/pages/SearchPage.qml" line="34"/>
         <source>Search</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SearchPage.qml" line="34"/>
+        <location filename="../qml/pages/SearchPage.qml" line="35"/>
         <source>Everywhere</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SearchPage.qml" line="40"/>
+        <location filename="../qml/pages/SearchPage.qml" line="41"/>
         <source>Artist, album, track or station</source>
         <translation type="unfinished"></translation>
     </message>

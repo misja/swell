@@ -39,7 +39,9 @@ which Misja finds unclear.
    results have no icons.
 7. Letter lists work like the People app: one list with a letter index on the
    side. There is no header per letter (Misja, 2026-11-06: it clutters the
-   list); the index lights the letter of the part in view.
+   list); the index lights the letter of the part in view. The player's `#`
+   section (titles starting with a digit or sign) is left out of the index
+   (Misja, 2026-11-07); those rows stay at the top of the list.
 8. The album page shows the cover beside the title. Tapping a track plays the
    album from that track (`autoplayURL`). The API calls the choice between
    `playURL` and `autoplayURL` a user preference; Misja chose this behaviour.
@@ -66,6 +68,16 @@ which Misja finds unclear.
    the same resource less than one second apart"). Browse reads are not
    interval-limited; each page has at most one request in flight. Commands
    (volume, play, …) keep their current gate; changing that is outside 004.
+12. The way back (Misja, 2026-11-07; canvas N1–N5). Going in stays as it is;
+    the return gets two shortcuts made from existing parts:
+    - **Play returns to Home:** Play album, Play now, Shuffle, and tapping a
+      track or station start playback and pop the stack to Home in one step
+      (`pageStack.pop(home)`). Add next, Add last and favourites stay on the
+      page with their notice. A failed command is reported on Home, as now.
+    - **Mini-player on Browse and Search:** the docked mini-player, already on
+      Home and Players, also shows on every Browse and Search page; a tap pops
+      to Home and goes on to Now Playing. It stays open between Browse pages.
+    - Library stays one entry in Browse (not flattened).
 
 ## Facts (read-only requests to the NAD C 379, 2026-11-06)
 

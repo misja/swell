@@ -7,10 +7,11 @@ Current owner / next owner / decision owner: root / root (next session) / Misja.
 Objective and acceptance criteria: feature 004 (browse, issue #7) on branch
 004-browse: specs/004-browse/{spec,plan,tasks}.md. UI agreed on the canvas
 (B1–B9), scope/design and result reviews done and their findings fixed (also
-the re-check of the device-feedback changes). Device: 0.3.0-6 installed
-(TuneIn menu icons at icon size). Misja is
-walking through it at leisure; further feedback follows (2026-11-07). Then:
-final device check, PR. Decisions: browse reads unpaced; no recently played
+the re-check of the device-feedback changes). Device: 0.3.0-6 installed.
+Misja's walk-through (2026-11-07) led to decision 12 (navigation: play
+returns to Home, mini-player on Browse/Search; canvas N1–N5) and no `#` in
+the letter index, built as 0.3.0-7: result review, then install on Misja's
+approval. Then: final device check, PR. Decisions: browse reads unpaced; no recently played
 and no extra state in Swell (published API only); no header per letter.
 Issue #8 (typed bluos/ interfaces) follows 004. Workspace principles 1.2.0
 (Sailfish UI check in reviews) merged (sailfish-workspace#19, 13985f2).
