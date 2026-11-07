@@ -123,7 +123,7 @@ void TstQueue::startClient()
     t.pollTimeoutSecs = 1;
     t.deadlineGraceMs = 2000;
     t.commandTimeoutMs = 3000;
-    t.queueReadTimeoutMs = 3000;
+    t.readTimeoutMs = 3000;
     t.queueRetryMs = 500;
     t.minIntervalMs = 200;
     t.backoffInitialMs = 200;

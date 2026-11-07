@@ -6,7 +6,7 @@ TARGET = harbour-swell
 CONFIG += sailfishapp
 QT += network
 
-VERSION = 0.2.0
+VERSION = 0.3.0
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 include(bluos/bluos.pri)
@@ -22,6 +22,10 @@ DISTFILES += qml/harbour-swell.qml \
     qml/pages/HomePage.qml \
     qml/pages/NowPlayingPage.qml \
     qml/pages/QueuePage.qml \
+    qml/pages/BrowsePage.qml \
+    qml/pages/LetterIndex.qml \
+    qml/pages/CoverImage.qml \
+    qml/pages/SearchPage.qml \
     qml/pages/AboutPage.qml \
     rpm/harbour-swell.changes.run \
     rpm/harbour-swell.spec \

@@ -3,6 +3,7 @@
 
 #include <QtQml>
 
+#include "browsemodel.h"
 #include "client.h"
 #include "playermodel.h"
 #include "queuemodel.h"
@@ -17,6 +18,8 @@ void registerTypes()
                                                    QStringLiteral("The app provides the player model"));
     qmlRegisterUncreatableType<BluOS::QueueModel>("Swell", 1, 0, "QueueModel",
                                                   QStringLiteral("Each player provides its queue"));
+    // One per Browse page, owned by that page.
+    qmlRegisterType<BluOS::BrowseModel>("Swell", 1, 0, "BrowseModel");
 }
 
 } // namespace Swell

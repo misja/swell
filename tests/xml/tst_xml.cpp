@@ -27,6 +27,13 @@ private slots:
     void playlistWindow();
     void playlistStatusForm();
     void playlistMalformed();
+    void browseMenu();
+    void browseSections();
+    void browseAlbumsWithContextMenu();
+    void browseTracks();
+    void browseCategoryAndPaging();
+    void browseError();
+    void browseMalformed();
     void presets();
     void presetsEmptyAndMalformed();
     void captureInputs();
@@ -189,6 +196,99 @@ void TstXml::playlistMalformed()
     QVERIFY(!parsePlaylist("").ok);
     QVERIFY(!parsePlaylist("<playlist length=\"3\"><song id=\"0\"><title>x").ok);
     QVERIFY(!parsePlaylist("<status/>").ok);
+}
+
+void TstXml::browseMenu()
+{
+    const Browse b = parseBrowse(
+        "<browse type=\"menu\">"
+        "<item browseKey=\"BluOS:\" text=\"Playlists\" image=\"/images/p.png\" type=\"link\"></item>"
+        "<item playURL=\"/Play?url=Capture%3Abluez%3Abluetooth\" text=\"Bluetooth\" type=\"audio\" inputType=\"bluetooth\"></item>"
+        "<item browseKey=\"LocalMusic:\" text=\"Library\" type=\"link\"><future/></item>"
+        "</browse>");
+    QVERIFY2(b.ok, qPrintable(b.error));
+    QCOMPARE(b.type, QStringLiteral("menu"));
+    QCOMPARE(b.items.size(), 3);
+    QCOMPARE(b.items.at(0).browseKey, QStringLiteral("BluOS:"));
+    QCOMPARE(b.items.at(1).type, QStringLiteral("audio"));
+    QCOMPARE(b.items.at(1).inputType, QStringLiteral("bluetooth"));
+    QCOMPARE(b.items.at(1).playUrl, QStringLiteral("/Play?url=Capture%3Abluez%3Abluetooth"));
+}
+
+void TstXml::browseSections()
+{
+    const Browse b = parseBrowse(
+        "<browse serviceName=\"Library\" searchKey=\"LocalMusic:Search\" type=\"sections\">"
+        "<item browseKey=\"LocalMusic:S:Album/%2Flibrary%2Fv1%2FAlbums%3Fservice=LocalMusic&amp;limit=50&amp;section=%23\" text=\"#\" text2=\"17\" type=\"section\"/>"
+        "<item browseKey=\"LocalMusic:S:Album/x&amp;section=A\" text=\"A\" text2=\"65\" type=\"section\"/>"
+        "</browse>");
+    QVERIFY(b.ok);
+    QCOMPARE(b.type, QStringLiteral("sections"));
+    QCOMPARE(b.searchKey, QStringLiteral("LocalMusic:Search"));
+    QCOMPARE(b.items.at(0).browseKey,
+             QStringLiteral("LocalMusic:S:Album/%2Flibrary%2Fv1%2FAlbums%3Fservice=LocalMusic&limit=50&section=%23"));
+    QCOMPARE(b.items.at(1).text2, QStringLiteral("65"));
+}
+
+void TstXml::browseAlbumsWithContextMenu()
+{
+    const Browse b = parseBrowse(
+        "<browse type=\"albums\"><item browseKey=\"LocalMusic:MG/LocalMusic-Album?album=Low+Tide&amp;artist=Harbour+Lights\""
+        " playURL=\"/Add?playnow=1&amp;service=LocalMusic&amp;album=Low+Tide\" text=\"Low Tide\" text2=\"Harbour Lights\""
+        " image=\"/Artwork?service=LocalMusic&amp;album=Low+Tide\" type=\"album\"><contextMenu>"
+        "<item actionURL=\"/AddFavourite?album=Low+Tide&amp;service=LocalMusic\" text=\"Favourite\" type=\"favourite-add\"/>"
+        "<item actionURL=\"/Add?album=Low+Tide&amp;playnow=-1&amp;service=LocalMusic&amp;where=last\" text=\"Add last\" type=\"addAll-last\"/>"
+        "<item text=\"No URL\" type=\"add-next\"/>"
+        "</contextMenu></item></browse>");
+    QVERIFY2(b.ok, qPrintable(b.error));
+    QCOMPARE(b.items.size(), 1);
+    const BrowseItem &album = b.items.first();
+    QCOMPARE(album.text2, QStringLiteral("Harbour Lights"));
+    QCOMPARE(album.actions.size(), 2);
+    QCOMPARE(album.actions.at(1).type, QStringLiteral("addAll-last"));
+    QCOMPARE(album.actions.at(1).actionUrl,
+             QStringLiteral("/Add?album=Low+Tide&playnow=-1&service=LocalMusic&where=last"));
+}
+
+void TstXml::browseTracks()
+{
+    const Browse b = parseBrowse(
+        "<browse type=\"tracks\" playURL=\"/Add?service=LocalMusic&amp;album=Low+Tide&amp;playnow=1\">"
+        "<item playURL=\"/Add?playnow=1&amp;file=%2Fm%2F1.flac\" autoplayURL=\"/Add?listindex=0&amp;playnow=1\""
+        " text=\"1. Ebb\" duration=\"221\" type=\"track\"/></browse>");
+    QVERIFY(b.ok);
+    QCOMPARE(b.playUrl, QStringLiteral("/Add?service=LocalMusic&album=Low+Tide&playnow=1"));
+    QCOMPARE(b.items.first().duration, 221);
+    QCOMPARE(b.items.first().autoplayUrl, QStringLiteral("/Add?listindex=0&playnow=1"));
+}
+
+void TstXml::browseCategoryAndPaging()
+{
+    const Browse b = parseBrowse(
+        "<browse type=\"tracks\" nextKey=\"LocalMusic:S:Song/x&amp;start=50\">"
+        "<category text=\"Songs\"><item text=\"Ebb\" type=\"track\"/></category>"
+        "<item text=\"Loose\" type=\"track\"/></browse>");
+    QVERIFY(b.ok);
+    QCOMPARE(b.nextKey, QStringLiteral("LocalMusic:S:Song/x&start=50"));
+    QCOMPARE(b.items.size(), 2);
+    QCOMPARE(b.items.at(0).category, QStringLiteral("Songs"));
+    QCOMPARE(b.items.at(1).category, QString());
+}
+
+void TstXml::browseError()
+{
+    const Browse b = parseBrowse("<error><message>Not signed in</message><detail>x</detail></error>");
+    QVERIFY(!b.ok);
+    QVERIFY(b.playerError);
+    QCOMPARE(b.error, QStringLiteral("Not signed in"));
+}
+
+void TstXml::browseMalformed()
+{
+    QVERIFY(!parseBrowse("").ok);
+    QVERIFY(!parseBrowse("<browse><item text=\"x\"").ok);
+    QVERIFY(!parseBrowse("<status/>").ok);
+    QVERIFY(!parseBrowse("<browse/>").playerError);
 }
 
 void TstXml::statusStreamActions()

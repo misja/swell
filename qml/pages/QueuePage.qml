@@ -135,16 +135,13 @@ Page {
 
             onClicked: page._player.playQueueEntry(model.position)
 
-            Image {
+            CoverImage {
                 id: art
                 x: Theme.horizontalPageMargin
                 anchors.verticalCenter: parent.verticalCenter
                 width: Theme.itemSizeMedium - 2 * Theme.paddingSmall
                 height: width
-                fillMode: Image.PreserveAspectCrop
-                asynchronous: true
-                sourceSize.width: width
-                sourceSize.height: height
+                highlighted: item.highlighted
                 source: model.image
             }
 

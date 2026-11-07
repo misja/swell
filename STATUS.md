@@ -1,15 +1,21 @@
 # Session handoff
 
-Updated: 2026-11-06 (feature 002, queue). Decision owner: Misja Hoebe (@misja).
+Updated: 2026-11-08 (feature 004, browse). Decision owner: Misja Hoebe (@misja).
 
 Current owner / next owner / decision owner: root / root (next session) / Misja.
 
-Objective and acceptance criteria: feature 002 (queue) is done and merged
-(PR #5 → main b5c47f0; issue #4 closed); specs/002-queue/spec.md, AC1–AC6.
-Follow-up fix PR #6 (no flash when reopening the queue) merged; the device
-runs 0.2.0-6.
-Feature 001 (MVP) is done and merged (PR #2 → main 69bd6b1; issue #1 closed).
-Next: choose 003 (MPRIS) or 004 (browse) with Misja.
+Objective and acceptance criteria: feature 004 (browse, issue #7) on branch
+004-browse: specs/004-browse/{spec,plan,tasks}.md. UI agreed on the canvas
+(B1–B9, N1–N5). Separate reviews done and findings fixed (scope/design,
+result, navigation, covers). Device check by Misja passed on 0.3.0-12
+(2026-11-08), including navigation (decision 12) and cover placeholders
+(decision 13). App icon (#3): Misja's sound-bar design, source
+icons/harbour-swell.svg, accepted on the device. PR opened for 004; merge
+is Misja's decision. Decisions: browse reads unpaced; no recently played
+and no extra state in Swell (published API only); no header per letter.
+Issue #8 (typed bluos/ interfaces) follows 004. Workspace principles 1.2.0
+(Sailfish UI check in reviews) merged (sailfish-workspace#19, 13985f2).
+002 (queue) done (PR #5, #6); 001 done (PR #2).
 - Spec 001: specs/001-core-controller/spec.md, criteria AC1–AC6.
 - Shared conventions PR https://github.com/misja/sailfish-workspace/pull/18
   (principles 1.1.0).
@@ -24,7 +30,7 @@ Artifacts and evidence:
   0.1.0-7: all suites pass, validator succeeded, 1 accepted warning) and the
   history. evidence/002/README.md holds the 002 results (0.2.0-4), reviews
   and device checks.
-- Device: the Xperia 10 II (Sailfish OS 5.2.0.20) runs 0.2.0-6, against a NAD
+- Device: the Xperia 10 II (Sailfish OS 5.2.0.20) runs 0.3.0-12, against a NAD
   C 379.
 - Device facts (2026-11-06): `/Play?id=` alone plays from a queue entry; the
   queue id changes on every modification, including a delete (as API
@@ -63,6 +69,9 @@ whole. Learnings and options are in issue #3. The template placeholder stays.
 
 Open items:
 - Release-target ID: the device runs 5.2.0.20, the registry names 5.2.0.18.
+- After an icon change, the launcher keeps the old icon until lipstick
+  restarts (`systemctl --user restart lipstick`, with Misja's approval);
+  the installed PNGs were already correct (2026-11-07).
 - `sfdk deploy --sdk` fails on the device (no D-Bus session bus over SSH). Use
   the deploy steps below.
 - Connections to the player: 8 seen at once (expected from Qt pools). Watch

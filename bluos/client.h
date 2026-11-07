@@ -64,7 +64,7 @@ public:
         int pollTimeoutSecs = 100;   // API 2.1: recommended 100 s, never below 10 s
         int deadlineGraceMs = 15000; // added to the poll timeout before aborting
         int commandTimeoutMs = 10000;
-        int queueReadTimeoutMs = 30000;  // the player answers after serving covers
+        int readTimeoutMs = 30000;  // queue and browse reads; the player answers after serving covers
         int queueRetryMs = 3000;         // pause before a failed window is read again
         int minIntervalMs = 1000;    // API 2: same resource at most once per second
         int backoffInitialMs = 1000;
@@ -114,6 +114,14 @@ public:
 
     // One /Playlist window (section 5.1); the handler gets ok == false on failure.
     void fetchQueueWindow(int start, int end, const std::function<void(const Playlist &)> &handler);
+    // One /Browse read (sections 7.1, 7.2): the top level for an empty key, a
+    // search when q is set. Keys are sent byte for byte (encoded once). Not
+    // paced by the one-second rule, which the API sets for status polling.
+    void fetchBrowse(const QString &key, const QString &q, const std::function<void(const Browse &)> &handler);
+    // Splits a player path from a /Browse reply into path and encoded query.
+    // False unless it starts with a single '/', has no fragment and survives
+    // Qt's URL handling unchanged; the host is always this player.
+    bool splitPlayerPath(const QString &playerPath, QString *path, QString *query) const;
 
     // Resolves an image path from a player document against this player and
     // adds followRedirects=1 to player-served images (API v1.7, image attributes).
@@ -140,6 +148,11 @@ public slots:
     // one at a time; later ones move up as earlier ones succeed (section 5.2).
     void removeQueueEntry(int position, const QString &pid, const QString &identity);
     void clearQueue();
+    // Plays a playURL or autoplayURL from /Browse; the last tap wins.
+    void playPath(const QString &playerPath);
+    // Runs a context-menu actionURL (add, add all, favourite). Never merged
+    // with another request; actionDone or commandFailed follows.
+    void runAction(const QString &playerPath, const QString &type);
 
 signals:
     void availabilityChanged();
@@ -152,6 +165,8 @@ signals:
     void commandFailed(const QString &path, const QString &error);
     // A removal was not sent because the queue no longer matched.
     void removeRefused();
+    // A context-menu action succeeded (type as in the menu, e.g. addAll-last).
+    void actionDone(const QString &type);
 
 private:
     struct Gate {
@@ -171,7 +186,8 @@ private:
     void sendAction(const QString &actionUrl);
     // One GET under the per-path interval; the handler gets the body on success.
     void fetch(const QString &path, const QString &encodedQuery,
-               const std::function<void(const QByteArray &)> &handler, int deadlineMs = -1);
+               const std::function<void(const QByteArray &)> &handler, int deadlineMs = -1,
+               bool paced = true);
     void processRemovals();
     void adoptQueueId(int position);
     void finishRemoval();
