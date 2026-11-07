@@ -9,7 +9,7 @@ Objective and acceptance criteria: feature 004 (browse, issue #7) on branch
 (B1–B9), scope/design and result reviews done and their findings fixed (also
 the re-check of the device-feedback changes). Device: 0.3.0-6 installed.
 Misja's walk-through (2026-11-07) led to decision 12 (navigation: play
-returns to Home, mini-player on Browse/Search; canvas N1–N5) and no `#` in
+returns to Home, mini-player on every page except Now Playing; canvas N1–N5) and no `#` in
 the letter index, built as 0.3.0-7; result review done (M1 fixed), install
 on Misja's approval. Then: final device check, PR. Decisions: browse reads unpaced; no recently played
 and no extra state in Swell (published API only); no header per letter.

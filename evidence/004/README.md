@@ -1,7 +1,7 @@
 # Evidence — 004 browse
 
 Date: 2026-11-06. Branch `004-browse`. Package harbour-swell-0.3.0-7.aarch64.rpm,
-sha256 5dbe4de1eaee6a343bbfe9ca075d9e9d98138dfa2d618ef91ef8310c92484c85.
+sha256 7bcc632db49dd9f3c1a6430e07fd145460f26a1740bde57a2d1240932dfa2f77.
 
 ## Automated (builder)
 
@@ -79,7 +79,8 @@ Misja's feedback on 0.3.0-2 (screenshot 2026-11-06 23:39), fixed in 0.3.0-4:
 - TuneIn has its own Favourites link (seen in that menu). Not wired into
   Swell's Favourites entry (v1: Library only).
 - Navigation (Misja, 2026-11-07, spec decision 12, canvas N1–N5): in 0.3.0-7
-  a play action pops to Home, the mini-player shows on Browse and Search,
+  a play action pops to Home, the mini-player shows on Browse, Search,
+  Queue and About (every page except Now Playing),
   and the player's `#` section is left out of the letter index. Not yet on
   the device. Result review (separate agent, 2026-11-07): approve with
   changes; M1 fixed (a mini-player tap during a page transition is ignored,

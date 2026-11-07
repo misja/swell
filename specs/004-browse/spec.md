@@ -77,6 +77,10 @@ which Misja finds unclear.
     - **Mini-player on Browse and Search:** the docked mini-player, already on
       Home and Players, also shows on every Browse and Search page; a tap pops
       to Home and goes on to Now Playing. It stays open between Browse pages.
+    - **Mini-player on Queue and About too** (Misja, 2026-11-07): the original
+      map (canvas board 6) put it on every page except Now Playing; 001 and
+      002 had left it at Home and Players. From the Queue a tap goes back to
+      Now Playing; from About via the page About was opened from.
     - Library stays one entry in Browse (not flattened).
 
 ## Facts (read-only requests to the NAD C 379, 2026-11-06)

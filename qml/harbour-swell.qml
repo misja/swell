@@ -72,7 +72,8 @@ ApplicationWindow {
     }
 
     // Opens Now Playing from the mini-player: forward from Home, via Home from
-    // Players, or back to Home and on from a Browse or Search page.
+    // Players, back to Home and on from a Browse or Search page, back from the
+    // Queue, and from About via the page it was opened from.
     function openNowPlaying() {
         if (pageStack.busy) {
             return
@@ -86,6 +87,11 @@ ApplicationWindow {
                 home.openNowPlaying = true
                 pageStack.pop(home)
             }
+        } else if (page.objectName === "queue") {
+            pageStack.navigateBack()
+        } else if (page.objectName === "about") {
+            pageStack.pop(undefined, PageStackAction.Immediate)
+            openNowPlaying()
         } else if (page.objectName === "players") {
             page.openCurrent(false)
             var home = pageStack.nextPage(page)
@@ -106,19 +112,20 @@ ApplicationWindow {
         }
     }
 
-    // The docked mini-player: on Home, Players, Browse and Search, only with a
+    // The docked mini-player: on every page except Now Playing, only with a
     // current player that is online. A drag closes it (DockedPanel sets
     // open = false), so the state is driven by a Binding rather than a plain
     // open: binding. It closes while the stack moves from Home or Players
-    // (towards Now Playing), but stays between Browse pages: a push makes the
-    // new page current before its animation and a pop after it (Silica
-    // PageStack.js), so the name is "browse" or "search" throughout.
+    // (towards Now Playing), but stays between the other pages: a push makes
+    // the new page current before its animation and a pop after it (Silica
+    // PageStack.js), so the name stays theirs throughout.
     DockedPanel {
         id: miniPlayer
 
         readonly property QtObject _player: players.current
         readonly property string _pageName: pageStack.currentPage ? pageStack.currentPage.objectName : ""
-        readonly property bool _browsing: _pageName === "browse" || _pageName === "search"
+        readonly property bool _staysOpen: _pageName === "browse" || _pageName === "search"
+                                           || _pageName === "queue" || _pageName === "about"
 
         width: parent.width
         height: pageStack.currentPage && pageStack.currentPage.isLandscape ? Theme.itemSizeMedium : Theme.itemSizeLarge
@@ -129,7 +136,7 @@ ApplicationWindow {
             target: miniPlayer
             property: "open"
             value: miniPlayer._player !== null && miniPlayer._player.online
-                   && (miniPlayer._browsing
+                   && (miniPlayer._staysOpen
                        || ((miniPlayer._pageName === "home" || miniPlayer._pageName === "players")
                            && !pageStack.busy))
         }
