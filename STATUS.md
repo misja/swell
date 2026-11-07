@@ -10,8 +10,8 @@ Objective and acceptance criteria: feature 004 (browse, issue #7) on branch
 the re-check of the device-feedback changes). Device: 0.3.0-6 installed.
 Misja's walk-through (2026-11-07) led to decision 12 (navigation: play
 returns to Home, mini-player on every page except Now Playing; canvas N1–N5) and no `#` in
-the letter index, built as 0.3.0-7; result review done (M1 fixed), install
-on Misja's approval. Then: final device check, PR. Decisions: browse reads unpaced; no recently played
+the letter index, built as 0.3.0-7 with Misja's trial icon (#3); result review done (M1, H1
+fixed); 0.3.0-7 installed on 2026-11-07, device check pending. Then: final device check, PR. Decisions: browse reads unpaced; no recently played
 and no extra state in Swell (published API only); no header per letter.
 Issue #8 (typed bluos/ interfaces) follows 004. Workspace principles 1.2.0
 (Sailfish UI check in reviews) merged (sailfish-workspace#19, 13985f2).
@@ -30,7 +30,7 @@ Artifacts and evidence:
   0.1.0-7: all suites pass, validator succeeded, 1 accepted warning) and the
   history. evidence/002/README.md holds the 002 results (0.2.0-4), reviews
   and device checks.
-- Device: the Xperia 10 II (Sailfish OS 5.2.0.20) runs 0.3.0-6, against a NAD
+- Device: the Xperia 10 II (Sailfish OS 5.2.0.20) runs 0.3.0-7, against a NAD
   C 379.
 - Device facts (2026-11-06): `/Play?id=` alone plays from a queue entry; the
   queue id changes on every modification, including a delete (as API
