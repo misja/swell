@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="86" height="86" viewBox="0 0 86 86">
+<title>Swell — flat Sailfish icon concept</title>
+<defs>
+<path id="sailfish-outline" d="M84.277,0.3H43C19.417,0.3,0.3,19.418,0.3,43v41.277c0,0.786,0.637,1.423,1.423,1.423H43c23.583,0,42.7-19.118,42.7-42.7V1.723C85.7,0.937,85.063,0.3,84.277,0.3z"/>
+<clipPath id="shape"><use href="#sailfish-outline"/></clipPath>
+</defs>
+<g clip-path="url(#shape)">
+ <use href="#sailfish-outline" fill="#145DA5"/>
+ <!-- dark water, deliberate simple geometry -->
+ <path d="M-3 85 L-3 65 C20 66 34 55 47 47 C63 37 76 40 90 48 L90 90Z" fill="#174486"/>
+ <!-- body of wave: substantial and unmistakably rising -->
+ <path d="M-4 63 C17 66 27 50 39 36 C53 19 65 16 74 22 C84 29 86 40 90 43 L90 60 C77 49 64 47 53 53 C37 62 23 78 -4 83Z" fill="#00B9C8"/>
+ <!-- broad crest, asymmetric peak and taper -->
+ <path d="M-4 63 C17 65 28 47 40 34 C53 20 64 17 73 22 C81 27 85 34 90 42 C77 35 68 33 58 39 C39 51 24 65 -4 69Z" fill="#83EAC0"/>
+ <!-- overlap accent: one clearly bounded transparent shape -->
+ <path d="M-4 65 C16 67 31 61 45 53 C60 44 74 44 90 51 L90 62 C75 52 64 50 53 54 C34 63 18 76 -4 80Z" fill="#167FD0" opacity=".42"/>
+</g>
+</svg>

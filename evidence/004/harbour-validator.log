@@ -4,7 +4,7 @@ NOTICE: Testing with suites: harbour
 Validating for target SailfishOS-5.1.0.11-aarch64.default
 Using validation suites: harbour
 RPM Validation script v1.110
-Created temporary directory /tmp/RPM-CHECK-Fjomb2VU
+Created temporary directory /tmp/RPM-CHECK-RYmQELFc
 Reading config scripts from /home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/share/sdk-harbour-rpmvalidator
 Prepare for RPM validation of file /home/ubuntu/swell-001/RPMS/harbour-swell-0.3.0-7.aarch64.rpm
 ./usr/bin/harbour-swell
@@ -32,7 +32,7 @@ Prepare for RPM validation of file /home/ubuntu/swell-001/RPMS/harbour-swell-0.3
 ./usr/share/icons/hicolor/128x128/apps/harbour-swell.png
 ./usr/share/icons/hicolor/172x172/apps/harbour-swell.png
 ./usr/share/icons/hicolor/86x86/apps/harbour-swell.png
-1032 blocks
+1005 blocks
 
 
 Package name
