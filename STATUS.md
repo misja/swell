@@ -69,6 +69,9 @@ whole. Learnings and options are in issue #3. The template placeholder stays.
 
 Open items:
 - Release-target ID: the device runs 5.2.0.20, the registry names 5.2.0.18.
+- After an icon change, the launcher keeps the old icon until lipstick
+  restarts (`systemctl --user restart lipstick`, with Misja's approval);
+  the installed PNGs were already correct (2026-11-07).
 - `sfdk deploy --sdk` fails on the device (no D-Bus session bus over SSH). Use
   the deploy steps below.
 - Connections to the player: 8 seen at once (expected from Qt pools). Watch
