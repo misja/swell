@@ -1,7 +1,7 @@
 # Evidence — 004 browse
 
-Date: 2026-11-06. Branch `004-browse`. Package harbour-swell-0.3.0-8.aarch64.rpm,
-sha256 c443e7cc6a097b0b16652989283faa27a8eea0b694dde09cba779005f79ad1c8.
+Date: 2026-11-06. Branch `004-browse`. Package harbour-swell-0.3.0-9.aarch64.rpm,
+sha256 0b22783f1d60184998be5ad877a9e840aa70b5f210b47aeb4bf4ade5b130bad9.
 
 ## Automated (builder)
 
