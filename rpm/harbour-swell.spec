@@ -20,6 +20,22 @@ Swell finds BluOS players on the local network and controls playback and
 volume. Not affiliated with or endorsed by Lenbrook Industries. BluOS is a
 trademark of Lenbrook Industries Limited.
 
+%if 0%{?_chum}
+Title: Swell
+Type: desktop-application
+DeveloperName: Misja Hoebe
+Categories:
+ - AudioVideo
+ - Audio
+ - Player
+Custom:
+  Repo: https://github.com/misja/swell
+PackageIcon: https://raw.githubusercontent.com/misja/swell/main/icons/harbour-swell.svg
+Links:
+  Homepage: https://github.com/misja/swell
+  Bugtracker: https://github.com/misja/swell/issues
+%endif
+
 
 %prep
 %setup -q -n %{name}-%{version}
@@ -34,8 +50,11 @@ trademark of Lenbrook Industries Limited.
 %install
 %qmake5_install
 # The platform's brp-strip removes only debug info (strip -g); the Harbour
-# validator warns unless the symbol table is gone too.
+# validator warns unless the symbol table is gone too. Chum builds a
+# debuginfo package from the unstripped binary instead.
+%if !0%{?_chum}
 %{__strip} %{buildroot}%{_bindir}/%{name}
+%endif
 
 
 desktop-file-install --delete-original       \
