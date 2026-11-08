@@ -59,6 +59,8 @@ public:
     // An /AddSlave on any player silently leaves player i out (pyblu notes
     // that a failed add is only missing from the answer).
     void refuseToJoin(int i) { m_refused.insert(i); }
+    // A secondary that lost its primary and is trying to get it back.
+    void setReconnecting(int i, bool on) { m_rooms[i].reconnecting = on; publish(); }
     // The §2.2 example: a primary also names itself in <master>.
     void setPrimaryNamesItself(bool on) { m_selfMaster = on; publish(); }
 
@@ -68,6 +70,7 @@ private:
         int leader = -1;
         int volume = 30;
         bool mute = false;
+        bool reconnecting = false;
         QByteArray status;
         int syncGeneration = 0;
         int statusGeneration = 0;
@@ -100,7 +103,7 @@ private:
         const QList<int> members = membersOf(i);
         if (r.leader >= 0) {
             inner += "<master port=\"" + QByteArray::number(port(r.leader))
-                    + "\" reconnecting=\"false\">127.0.0.1</master>";
+                    + "\" reconnecting=\"" + (r.reconnecting ? "true" : "false") + "\">127.0.0.1</master>";
         } else if (!members.isEmpty() && m_selfMaster) {
             inner += "<master port=\"" + QByteArray::number(port(i)) + "\">127.0.0.1</master>";
         }
@@ -171,7 +174,10 @@ private:
             QByteArray added;
             for (int k = 0; k < hosts.size() && k < ports.size(); ++k) {
                 const int j = indexOf(hosts.at(k), ports.at(k).toInt());
-                if (j < 0 || j == i || m_refused.contains(j))
+                // A leader, or the adder's own primary, cannot join: real
+                // players are not expected to form loops (spec 005 review).
+                if (j < 0 || j == i || m_refused.contains(j) || !membersOf(j).isEmpty()
+                        || m_rooms.at(i).leader == j)
                     continue;
                 m_rooms[j].leader = i;
                 added += "<slave port=\"" + ports.at(k).toUtf8() + "\" id=\"" + hosts.at(k).toUtf8() + "\"/>";

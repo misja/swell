@@ -89,9 +89,28 @@ void Client::start()
         return;
     m_running = true;
     m_backoffMs = 0;
-    fetchSyncStatus();
+    m_syncBackoffMs = 0;
+    if (m_statusPolling) {
+        fetchSyncStatus();
+        schedulePoll(0);
+    }
     watchSyncStatus();
-    schedulePoll(0);
+}
+
+void Client::setStatusPolling(bool polling)
+{
+    if (m_statusPolling == polling)
+        return;
+    m_statusPolling = polling;
+    if (!m_running)
+        return;
+    if (polling) {
+        schedulePoll(0);
+    } else {
+        m_pollTimer.stop();
+        if (m_statusReply)
+            m_statusReply->abort();
+    }
 }
 
 void Client::stop()
@@ -793,13 +812,21 @@ void Client::onSyncWatchReply(QNetworkReply *reply)
         m_syncWatchReply = nullptr;
     if (!m_running || !m_syncWatch)
         return;
-    if (reply->error() != QNetworkReply::NoError) {
-        // The status poll owns availability; try again after a pause.
-        QTimer::singleShot(m_timing.backoffInitialMs, this, &Client::watchSyncStatus);
+    const SyncStatus sync = reply->error() == QNetworkReply::NoError ? parseSyncStatus(reply->readAll())
+                                                                     : SyncStatus();
+    if (!sync.ok) {
+        // Without a status poll, this read decides availability.
+        if (!m_statusPolling)
+            setAvailability(Offline);
+        m_syncBackoffMs = m_syncBackoffMs ? qMin(m_syncBackoffMs * 2, m_timing.backoffMaxMs)
+                                          : m_timing.backoffInitialMs;
+        QTimer::singleShot(m_syncBackoffMs, this, &Client::watchSyncStatus);
         return;
     }
-    const SyncStatus sync = parseSyncStatus(reply->readAll());
-    if (sync.ok && (!m_sync.ok || sync.etag != m_sync.etag))
+    m_syncBackoffMs = 0;
+    if (!m_statusPolling)
+        setAvailability(Online);
+    if (!m_sync.ok || sync.etag != m_sync.etag)
         takeSyncStatus(sync);
     watchSyncStatus();
 }

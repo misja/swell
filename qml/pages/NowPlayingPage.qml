@@ -50,7 +50,7 @@ Page {
 
         PullDownMenu {
             MenuItem {
-                text: qsTr("Group…")
+                text: qsTr("Group")
                 enabled: _player !== null && _player.online
                 onClicked: pageStack.push(Qt.resolvedUrl("GroupPage.qml"))
             }

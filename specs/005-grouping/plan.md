@@ -19,8 +19,9 @@ decided (spec.md).
   - `/Status` `groupVolume` is parsed for the group volume slider;
     `groupName` comes from `/SyncStatus`.
 - **Commands on a primary:**
-  - `addSecondaries(QList<QPair<QString,int>>)` sends `/AddSlave`: the
-    single form for one, `slaves=…&ports=…` for several. IP addresses only.
+  - `addSecondaries(QStringList)` sends one `/AddSlave` per player, each
+    after the last one answered (concurrent calls race, as azzurro
+    observed). IP addresses only.
   - The `<addSlave>` answer is compared with the request. Missing players
     give `commandFailed`.
   - `removeSecondaries(…)` sends `/RemoveSlave` the same way. Its answer is
@@ -33,6 +34,11 @@ decided (spec.md).
     `setVolume`.
   - `setVolume` is unchanged.
   - The level in a `/Volume` answer updates the player's volume at once.
+- **Sync-only mode (result review H2/M1):** `setStatusPolling(false)`
+  leaves a running client with only the `/SyncStatus` watch; availability
+  then comes from that watch, with exponential backoff. While the group
+  page is open, every player other than the current one runs this way, so
+  members and candidates are both current.
 - **`/SyncStatus` long poll:**
   - `setSyncPolling(bool)` starts or stops an etag long poll with a 180 s
     timeout, under the one-second rule.

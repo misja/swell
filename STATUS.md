@@ -11,9 +11,10 @@ Next (2026-11-08): feature 005 (grouping, issue #21) on branch 005-grouping,
 not pushed: specs/005-grouping/{spec,plan,tasks}.md. Scope/design review done
 (approve with changes, applied). Canvas page "Grouping (005)" G1–G3 agreed
 (option B: a group is one player; no Group all; azzurro's role lines).
-Mini-player and cover unchanged. Next step: the C++
-household fixture and tests, then library, model, QML. Device check uses a
-Python household on the host LAN (approval each run). Chum: metadata merged
+Mini-player and cover unchanged. Built: library, model, QML,
+tests (group suite), RPM 0.4.0-2 installed. Result review applied
+(H1 recursion, H2 candidates, M1–M6). Next: Misja's device check with the
+Python household on the host LAN (approval each run), then the PR. Chum: metadata merged
 (#22); OBS account, screenshots and the changelog approach still open; the
 route is in ~/code/sailfish/CHUM.md (not in a repo).
 

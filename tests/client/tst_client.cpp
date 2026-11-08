@@ -247,7 +247,7 @@ void TstClient::secondaryUsesItsOwnSyncVolume()
     m_player->serve(QStringLiteral("/SyncStatus"),
                     syncStatus("Kitchen", "s1", 12, "<master port=\"11000\">192.0.2.10</master>"));
     startClient();
-    QTRY_VERIFY(m_client->syncStatus().isSecondary());
+    QTRY_VERIFY(m_client->syncStatus().hasMaster());
     QCOMPARE(m_client->volume(), 12);
 }
 

@@ -34,6 +34,11 @@ private slots:
     void choosingAMemberChoosesItsPrimary();
     void theGroupPageWatchesTheMembers();
     void joinAndLeaveThroughTheModel();
+    void aStaleGroupLoopDoesNotRecurse();
+    void theGroupPageKeepsCandidatesCurrent();
+    void aMembershipChangeElsewhereShows();
+    void aLonePlayersRequestsAreUnchanged();
+    void aReconnectingSecondary();
 
 private:
     Client *client(int i);
@@ -104,7 +109,7 @@ void TstGroup::aPrimaryNamingItselfIsStillPrimary()
     m_house->group(0, { 1 });
     Client *lead = client(0);
     QTRY_COMPARE(lead->groupRole(), Client::Primary);
-    QVERIFY(lead->syncStatus().isSecondary());   // the parser alone would say so
+    QVERIFY(lead->syncStatus().hasMaster());   // a master alone does not make a secondary
     QVERIFY(lead->primaryId().isEmpty());
 }
 
@@ -129,10 +134,10 @@ void TstGroup::addSeveralOneAtATime()
 {
     Client *lead = client(0);
     QTRY_VERIFY(lead->online());
-    m_house->player(0)->delay(QStringLiteral("/AddSlave"), 300);
+    m_house->player(0)->delay(QStringLiteral("/AddSlave"), 1000);
     lead->addSecondaries({ m_house->id(1), m_house->id(2) });
     QTRY_COMPARE(m_house->player(0)->requests(QStringLiteral("/AddSlave")).size(), 1);
-    QTest::qWait(150);   // the first is not answered yet: no second request
+    QTest::qWait(300);   // the first is not answered yet: no second request
     QCOMPARE(m_house->player(0)->requests(QStringLiteral("/AddSlave")).size(), 1);
     QTRY_COMPARE(m_house->player(0)->requests(QStringLiteral("/AddSlave")).size(), 2);
     QTRY_COMPARE(m_house->leaderOf(2), 0);
@@ -310,6 +315,79 @@ void TstGroup::joinAndLeaveThroughTheModel()
     model->leave(m_house->id(2));
     QTRY_COMPARE(m_house->leaderOf(2), -1);
     QTRY_COMPARE(model->current()->groupRole(), Client::Alone);
+}
+
+void TstGroup::aStaleGroupLoopDoesNotRecurse()
+{
+    // Kitchen last saw Living Room as its primary, then stopped polling.
+    m_house->group(0, { 1 });
+    QScopedPointer<PlayerModel> model(household(m_house, nullptr));
+    model->setPollAll(true);
+    model->setCurrentId(m_house->id(0));
+    QTRY_COMPARE(model->client(m_house->id(1))->groupRole(), Client::Secondary);
+    model->setPollAll(false);
+    QVERIFY(!model->client(m_house->id(1))->running());
+    // Elsewhere, Living Room now follows Kitchen, while Kitchen's last known
+    // state still says it follows Living Room: a loop through stale states.
+    m_house->group(1, { 0 });
+    QTRY_COMPARE(model->currentId(), m_house->id(1));   // one step, no recursion
+    QTest::qWait(500);
+    QVERIFY(!model->currentId().isEmpty());
+}
+
+void TstGroup::theGroupPageKeepsCandidatesCurrent()
+{
+    QScopedPointer<PlayerModel> model(household(m_house, nullptr));
+    model->setCurrentId(m_house->id(0));
+    QTRY_VERIFY(model->current()->online());
+    model->setGroupPage(true);
+    // The others watch /SyncStatus only, and come online from it.
+    QTRY_VERIFY(model->client(m_house->id(1))->online());
+    QTRY_VERIFY(model->client(m_house->id(2))->online());
+    QCOMPARE(model->client(m_house->id(1))->groupRole(), Client::Alone);
+    QTest::qWait(500);
+    QCOMPARE(m_house->player(1)->requests(QStringLiteral("/Status")).size(), 0);
+}
+
+void TstGroup::aMembershipChangeElsewhereShows()
+{
+    QScopedPointer<PlayerModel> model(household(m_house, nullptr));
+    model->setCurrentId(m_house->id(0));
+    QTRY_VERIFY(model->current()->online());
+    model->setGroupPage(true);
+    QTRY_VERIFY(model->client(m_house->id(2))->online());
+    m_house->group(0, { 2 });   // the official app groups Studio
+    QTRY_COMPARE(model->memberIds(m_house->id(0)), QStringList({ m_house->id(2) }));
+    QTRY_COMPARE(model->client(m_house->id(2))->groupRole(), Client::Secondary);
+}
+
+void TstGroup::aLonePlayersRequestsAreUnchanged()
+{
+    Client *lone = client(0);
+    QTRY_VERIFY(lone->online());
+    QTest::qWait(2500);
+    QSet<QString> paths;
+    for (const auto &r : m_house->player(0)->requests())
+        paths.insert(r.path);
+    const QSet<QString> expected{ QStringLiteral("/Status"), QStringLiteral("/SyncStatus"),
+                                  QStringLiteral("/Presets"), QStringLiteral("/RadioBrowse"),
+                                  QStringLiteral("/Playlist") };
+    const QSet<QString> extra = paths - expected;
+    QVERIFY2(extra.isEmpty(), qPrintable(QStringList(extra.values()).join(QLatin1Char(','))));
+    // As before 005: one read at start, before /Status gives a syncStat, and
+    // one more for the syncStat it then learns. No long poll.
+    QCOMPARE(m_house->player(0)->requests(QStringLiteral("/SyncStatus")).size(), 2);
+}
+
+void TstGroup::aReconnectingSecondary()
+{
+    m_house->group(0, { 1 });
+    m_house->setReconnecting(1, true);
+    Client *member = client(1);
+    QTRY_VERIFY(member->primaryReconnecting());
+    m_house->setReconnecting(1, false);
+    member->setSyncWatch(true);
+    QTRY_VERIFY(!member->primaryReconnecting());
 }
 
 QTEST_GUILESS_MAIN(TstGroup)

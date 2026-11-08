@@ -26,8 +26,10 @@ TRACKS = [("Undertow", "Harbour Lights", "Low Tide Sessions"),
 
 
 class House:
-    def __init__(self, host):
+    def __init__(self, host, refused=(), self_master=False):
         self.host = host
+        self.refused = set(refused)
+        self.self_master = self_master
         self.lock = threading.Condition()
         self.leader = [-1, -1, -1]
         self.volume = [30, 30, 30]
@@ -50,6 +52,8 @@ class House:
         inner = ""
         if self.leader[i] >= 0:
             inner += '<master port="%d" reconnecting="false">%s</master>' % (PORTS[self.leader[i]], self.host)
+        elif self.members(i) and self.self_master:
+            inner += '<master port="%d">%s</master>' % (PORTS[i], self.host)
         for m in self.members(i):
             inner += '<slave port="%d" id="%s"/>' % (PORTS[m], self.host)
         lead = self.leader[i] if self.leader[i] >= 0 else (i if self.members(i) else -1)
@@ -126,7 +130,9 @@ def handler_for(house, i):
                 if path == "/AddSlave":
                     added = ""
                     for j in self.targets(q):
-                        if j >= 0 and j != i:
+                        # Refused players, leaders and our own primary stay out.
+                        if j >= 0 and j != i and j not in house.refused and not house.members(j) \
+                                and house.leader[i] != j:
                             house.leader[j] = i
                             added += '<slave port="%d" id="%s"/>' % (PORTS[j], house.host)
                     house.publish()
@@ -171,16 +177,23 @@ def handler_for(house, i):
 
 
 def main():
-    if len(sys.argv) != 2:
-        sys.exit("usage: household.py ADDRESS   (the address the phone reaches this machine on)")
-    house = House(sys.argv[1])
+    args = sys.argv[1:]
+    refused = [int(a.split("=")[1]) for a in args if a.startswith("--refuse=")]
+    self_master = "--self-master" in args
+    rest = [a for a in args if not a.startswith("--")]
+    if len(rest) != 1:
+        sys.exit("usage: household.py ADDRESS [--refuse=N] [--self-master]\n"
+                 "  ADDRESS        the address the phone reaches this machine on\n"
+                 "  --refuse=N     /AddSlave silently leaves player N (0-2) out\n"
+                 "  --self-master  a primary also names itself in <master> (API 2.2 example)")
+    house = House(rest[0], refused, self_master)
     servers = []
     for i, port in enumerate(PORTS):
-        server = ThreadingHTTPServer((sys.argv[1], port), handler_for(house, i))
+        server = ThreadingHTTPServer((rest[0], port), handler_for(house, i))
         server.daemon_threads = True
         threading.Thread(target=server.serve_forever, daemon=True).start()
         servers.append(server)
-        print("%s on %s:%d" % (NAMES[i], sys.argv[1], port))
+        print("%s on %s:%d" % (NAMES[i], rest[0], port))
     print("Ctrl-C stops all three.")
     try:
         threading.Event().wait()

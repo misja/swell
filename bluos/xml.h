@@ -72,7 +72,8 @@ struct SyncStatus {
     // On the primary player of a group: "host:port" entries.
     QStringList slaves;
 
-    bool isSecondary() const { return !masterHost.isEmpty(); }
+    // Not the same as being a secondary; see above.
+    bool hasMaster() const { return !masterHost.isEmpty(); }
 };
 
 // The answer to /AddSlave (section 8.1, 8.2): the players that were added.

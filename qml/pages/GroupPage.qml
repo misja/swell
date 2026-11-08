@@ -12,35 +12,27 @@ Page {
 
     readonly property QtObject _player: players.current
     readonly property bool _busy: _player !== null && _player.groupBusy
+    // The current player follows a primary Swell does not know: it cannot
+    // lead here (spec 005: offer to add the primary instead).
+    readonly property bool _follows: _player !== null && _player.groupRole === Player.Secondary
+    // The members as the current player lists them; re-read when that changes.
+    readonly property var _memberIds: _player && _player.secondaryIds ? players.memberIds(players.currentId) : []
     // Members the model does not know (not found, not added): by address.
-    property var _unknown: []
+    readonly property var _unknown: {
+        var list = []
+        for (var i = 0; i < _memberIds.length; ++i) {
+            if (players.indexOf(_memberIds[i]) < 0) {
+                list.push(_memberIds[i])
+            }
+        }
+        return list
+    }
 
     allowedOrientations: Orientation.All
 
-    function _refreshUnknown() {
-        var list = []
-        var ids = players.memberIds(players.currentId)
-        for (var i = 0; i < ids.length; ++i) {
-            if (players.indexOf(ids[i]) < 0) {
-                list.push(ids[i])
-            }
-        }
-        _unknown = list
-    }
-
-    onStatusChanged: {
-        if (status === PageStatus.Activating) {
-            players.groupPage = true
-            _refreshUnknown()
-        } else if (status === PageStatus.Deactivating) {
-            players.groupPage = false
-        }
-    }
-
-    Connections {
-        target: page._player
-        onSyncStatusChanged: page._refreshUnknown()
-    }
+    // The other players are kept current while this page is shown.
+    onStatusChanged: players.groupPage = status === PageStatus.Activating || status === PageStatus.Active
+    Component.onDestruction: players.groupPage = false
 
     SilicaFlickable {
         anchors.fill: parent
@@ -52,13 +44,29 @@ Page {
 
             PageHeader {
                 title: qsTr("Group")
-                description: _player ? qsTr("%1 leads").arg(_player.name !== "" ? _player.name : _player.host) : ""
+                description: _player && !page._follows ? qsTr("%1 leads").arg(_player.name !== "" ? _player.name : _player.host) : ""
+            }
+
+            Label {
+                visible: page._follows
+                x: Theme.horizontalPageMargin
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                wrapMode: Text.Wrap
+                color: Theme.highlightColor
+                text: qsTr("This player follows %1, which is not in your player list.").arg(_player ? _player.primaryId : "")
+            }
+            Button {
+                visible: page._follows
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: qsTr("Add %1").arg(_player ? _player.primaryId : "")
+                onClicked: players.addManual(_player.primaryId)
             }
 
             Slider {
                 id: groupVolume
                 width: parent.width
                 visible: _player !== null && _player.groupRole === Player.Primary
+                         && (_player.groupVolume >= 0 || _player.volume >= 0)
                 minimumValue: 0
                 maximumValue: 100
                 stepSize: 1
@@ -80,15 +88,18 @@ Page {
                 }
             }
 
-            SectionHeader { text: qsTr("In this group") }
+            SectionHeader {
+                visible: !page._follows
+                text: qsTr("In this group")
+            }
 
             Repeater {
                 model: players
                 delegate: Column {
                     readonly property bool _lead: model.playerId === players.currentId
-                    readonly property bool _member: model.leaderId === players.currentId
+                    readonly property bool _member: page._memberIds.indexOf(model.playerId) >= 0
                     width: column.width
-                    visible: _lead || _member
+                    visible: (_lead && !page._follows) || _member
 
                     TextSwitch {
                         text: model.name
@@ -135,13 +146,18 @@ Page {
                 }
             }
 
-            SectionHeader { text: qsTr("Can join") }
+            SectionHeader {
+                visible: !page._follows
+                text: qsTr("Can join")
+            }
 
             Repeater {
                 model: players
+                // Only lone players: one already in a group is changed from there.
                 delegate: TextSwitch {
-                    visible: model.playerId !== players.currentId && model.leaderId !== players.currentId
-                             && model.online
+                    visible: !page._follows && model.playerId !== players.currentId
+                             && page._memberIds.indexOf(model.playerId) < 0
+                             && model.online && model.groupRole === Player.Alone
                     text: model.name
                     description: model.nowPlaying
                     checked: false

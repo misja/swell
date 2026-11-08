@@ -184,12 +184,13 @@ Client *PlayerModel::client(const QString &id) const
 
 void PlayerModel::setCurrentId(const QString &id)
 {
+    // One level: BluOS groups are flat, and a loop through stale group
+    // states must not recurse.
     const QString leader = leaderOf(id);
-    if (!leader.isEmpty())
-        return setCurrentId(leader);
-    if (m_currentId == id)
+    const QString target = leader.isEmpty() ? id : leader;
+    if (m_currentId == target)
         return;
-    m_currentId = id;
+    m_currentId = target;
     applyPolicy();
     emit currentChanged();
 }
@@ -242,14 +243,20 @@ void PlayerModel::setGroupPage(bool groupPage)
 
 void PlayerModel::applyPolicy()
 {
-    const QStringList members = m_groupPage ? memberIds(m_currentId) : QStringList();
     for (const Entry &e : m_entries) {
-        const bool member = members.contains(e.client->id());
-        e.client->setSyncWatch(member);
-        if (m_pollAll || member || e.client->id() == m_currentId)
-            e.client->start();
-        else
+        const bool current = e.client->id() == m_currentId;
+        // The group page shows every other player's group and volume: they
+        // keep only /SyncStatus current (a secondary's /Status is its
+        // primary's copy anyway).
+        const bool status = m_pollAll || current;
+        const bool watch = m_groupPage && !current;
+        if (!status && !watch) {
             e.client->stop();
+            continue;
+        }
+        e.client->setStatusPolling(status);
+        e.client->setSyncWatch(watch);
+        e.client->start();
     }
 }
 
@@ -267,8 +274,9 @@ QString PlayerModel::memberId(const QString &ref) const
 
 QString PlayerModel::leaderOf(const QString &id) const
 {
+    // A stopped client's group state is stale.
     const Client *c = client(id);
-    return c && c->groupRole() == Client::Secondary ? memberId(c->primaryId()) : QString();
+    return c && c->running() && c->groupRole() == Client::Secondary ? memberId(c->primaryId()) : QString();
 }
 
 QStringList PlayerModel::memberIds(const QString &leaderId) const
@@ -419,8 +427,6 @@ void PlayerModel::clientChanged()
         const QString leader = memberId(c->primaryId());
         if (!leader.isEmpty())
             setCurrentId(leader);
-    } else if (m_groupPage) {
-        applyPolicy();   // the members may have changed
     }
 }
 

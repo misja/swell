@@ -197,37 +197,47 @@
 <context>
     <name>GroupPage</name>
     <message>
-        <location filename="../qml/pages/GroupPage.qml" line="54"/>
+        <location filename="../qml/pages/GroupPage.qml" line="46"/>
         <source>Group</source>
         <translation>Groep</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GroupPage.qml" line="55"/>
+        <location filename="../qml/pages/GroupPage.qml" line="47"/>
         <source>%1 leads</source>
         <translation>%1 leidt</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GroupPage.qml" line="65"/>
+        <location filename="../qml/pages/GroupPage.qml" line="56"/>
+        <source>This player follows %1, which is not in your player list.</source>
+        <translation>Deze speler volgt %1, die niet in je spelerslijst staat.</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GroupPage.qml" line="61"/>
+        <source>Add %1</source>
+        <translation>%1 toevoegen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GroupPage.qml" line="73"/>
         <source>Group volume</source>
         <translation>Groepsvolume</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GroupPage.qml" line="83"/>
+        <location filename="../qml/pages/GroupPage.qml" line="93"/>
         <source>In this group</source>
         <translation>In deze groep</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GroupPage.qml" line="95"/>
+        <location filename="../qml/pages/GroupPage.qml" line="106"/>
         <source>Leads</source>
         <translation>Leidt</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GroupPage.qml" line="130"/>
+        <location filename="../qml/pages/GroupPage.qml" line="141"/>
         <source>Not in your player list</source>
         <translation>Niet in je spelerslijst</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GroupPage.qml" line="138"/>
+        <location filename="../qml/pages/GroupPage.qml" line="151"/>
         <source>Can join</source>
         <translation>Kan meedoen</translation>
     </message>
@@ -312,8 +322,8 @@
     </message>
     <message>
         <location filename="../qml/pages/NowPlayingPage.qml" line="53"/>
-        <source>Group…</source>
-        <translation>Groep…</translation>
+        <source>Group</source>
+        <translation>Groep</translation>
     </message>
     <message>
         <location filename="../qml/pages/NowPlayingPage.qml" line="71"/>

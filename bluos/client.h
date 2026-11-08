@@ -50,6 +50,7 @@ class Client : public QObject
     Q_PROPERTY(QString groupName READ groupName NOTIFY syncStatusChanged)
     Q_PROPERTY(bool primaryReconnecting READ primaryReconnecting NOTIFY syncStatusChanged)
     Q_PROPERTY(QStringList secondaryIds READ secondaryIds NOTIFY syncStatusChanged)
+    Q_PROPERTY(QString primaryId READ primaryId NOTIFY syncStatusChanged)
     Q_PROPERTY(int groupVolume READ groupVolume NOTIFY statusChanged)
     Q_PROPERTY(bool groupBusy READ groupBusy NOTIFY groupBusyChanged)
 
@@ -125,6 +126,9 @@ public:
     // /Status is a copy of its primary's (API 2: a secondary's volume is only
     // in its own /SyncStatus).
     void setSyncWatch(bool watch);
+    // Off: a running client polls only /SyncStatus (with the watch), and its
+    // availability comes from that; for players shown beside the current one.
+    void setStatusPolling(bool polling);
 
     // The queue can always skip; a stream only when it offers the action (4.8).
     bool canSkip() const { return m_status.ok && (!m_status.hasStreamUrl || !m_status.skipActionUrl.isEmpty()); }
@@ -184,9 +188,9 @@ public slots:
     // with another request; actionDone or commandFailed follows.
     void runAction(const QString &playerPath, const QString &type);
     // On a primary (or a lone player): adds players ("host:port", host an IP
-    // address) to its group, one at a time, since the primary rebuilds the
-    // group on each call. A player missing from the answer is reported
-    // through commandFailed.
+    // address) to its group, one at a time: concurrent calls race over the
+    // membership (as observed by azzurro). A player missing from the answer
+    // is reported through commandFailed.
     void addSecondaries(const QStringList &ids);
     // On a primary: takes players out of its group (/RemoveSlave).
     void removeSecondaries(const QStringList &ids);
@@ -265,6 +269,8 @@ private:
     QPointer<QNetworkReply> m_syncReply;
     QPointer<QNetworkReply> m_syncWatchReply;
     bool m_syncWatch = false;
+    bool m_statusPolling = true;
+    int m_syncBackoffMs = 0;
     QStringList m_pendingAdds;
     bool m_groupCommandRunning = false;
     bool m_groupBusy = false;
