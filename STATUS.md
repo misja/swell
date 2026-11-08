@@ -9,22 +9,21 @@ Current owner / next owner / decision owner: root / root (next session) / Misja.
 
 Handoff (2026-11-08, evening), towards 0.5.0:
 - 005 merged (#23), names primary/secondary (#24), Chum metadata (#22).
-- Branch group-in-players (local, not pushed; 0.4.0-10 built, 0.4.0-9 on
-  the phone): grouping moved to the player list (canvas option A, agreed):
+- Branch group-in-players (PR open; 0.4.0-15 on the phone): grouping moved to the player list (canvas option A, agreed):
   a group is a tree in Players; long press: Follow <current> / Leave group;
   Now Playing: group volume and group mute for a leader, Per player with
   each member's volume and mute; group page and Now Playing pulley item
-  removed. Misja device-checked it with the emulated household. A separate
-  result review was started; apply its findings, update specs/005 docs
-  (they still describe the group page and option B), then PR.
+  removed. Misja device-checked it with the emulated household; result
+  review applied (H1, M1–M4, L1–L8), own solutions replaced by platform
+  mechanisms (evidence.md), specs/005 revised for option A. The final
+  0.4.0-15 was installed but not group-checked again (Misja: fine for now).
 - Branch english-fallback: dropped (Misja, 2026-11-08). An own fallback
   translator is an own solution; libsailfishapp has none and Swell follows
   the platform. Not to be merged.
-- Wording check done (Jolla Media player and home catalogs on the phone):
-  proposed Favorites (US, as the platform), "Toevoegen aan/Verwijderen uit
-  favorieten", remorse texts "Wachtrij wordt gewist" / "Wordt verwijderd";
-  Misja chose "nummer(s)" (2026-11-08). Record the wording
-  rules in CONTRIBUTING.md. Also add the app icon to README.md.
+- Wording applied (Favorites, Jolla's Dutch terms, remorse texts,
+  "nummer(s)"), rules in CONTRIBUTING.md; app icon in README.md.
+- Workspace principles 1.4.0 (sailfish-workspace#21, daf32fa): platform
+  mechanisms in code; libsailfishapp has no English fallback.
 - Decided: TuneIn stays as it is (no consolidated favourites across
   services). Members' context: no ellipses in labels.
 - Then release 0.5.0 (version bump, tag, aarch64 + armv7hl, notes).
