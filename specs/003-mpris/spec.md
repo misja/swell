@@ -1,6 +1,8 @@
 # Feature specification — 003 MPRIS lock-screen controls
 
-Status: draft 2026-11-08, for the scope/design review. No implementation yet.
+Status: revised 2026-11-08 after the scope/design review (approve with
+changes; findings applied below). Open: Misja's answers to Q1 and Q2. No
+implementation yet.
 
 ## Owner and linked issue
 
@@ -34,24 +36,50 @@ the session bus.
   - Signals: playRequested, pauseRequested, playPauseRequested,
     nextRequested, previousRequested, raiseRequested, seekRequested,
     positionRequested, …
-- **Units and names, from upstream source (master; to be checked against
-  1.2.9 in the review):**
-  - `position` and `metaData.duration` are in milliseconds; D-Bus gets
-    microseconds.
-  - `serviceName` becomes `org.mpris.MediaPlayer2.<name>`.
+- **Behaviour of amber-mpris 1.2.9 (tag a5fc15b), verified by the review:**
+  - `position` and `metaData.duration` are in milliseconds, and D-Bus gets
+    microseconds. A duration of 0 or less removes `mpris:length`.
+  - The QML type adds the process id to the name:
+    `org.mpris.MediaPlayer2.harbour-swell.instance<pid>`. That still matches
+    the permission's `org.mpris.MediaPlayer2.*`. An empty serviceName still
+    registers `….instance<pid>`, which is not a valid name, so serviceName
+    is never bound to a condition.
   - When `canControl` is false, all can* properties read false and D-Bus
     calls are refused.
+  - `canControl`, `hasShuffle` and `hasLoopStatus` lock after the first
+    D-Bus GetAll or Introspect; later changes are silently ignored.
+    `hasShuffle` and `hasLoopStatus` default to true.
+  - Reading `position` emits `positionRequested` synchronously. Upstream's
+    pattern is to assign `position` in that handler.
+  - playbackStatus uses `Mpris.Stopped` (0), `Mpris.Playing` (1) and
+    `Mpris.Paused` (2).
+  - Amber's `MprisController` changes the current service only when none is
+    current, or when a service starts Playing and the current one is not
+    Playing (`mpriscontroller.cpp:975-1080`).
+- **The lock screen (a community copy of Sailfish's QML; its version is not
+  known):**
+  - It shows the controls while any MPRIS service exists, also a Stopped one.
+  - Play/pause calls PlayPause.
+  - Art is a plain `Image` in lipstick, which is not sandboxed.
+  - Lipstick also sends headset and media keys to the current service.
 - **Harbour:**
   - `allowed_qmlimports.conf:44` allows `Amber.Mpris 1.0`.
   - `allowed_requires.conf:62-63` allows `amber-qml-plugin-mpris` and
     `qml(Amber.Mpris)`.
 - **Sandbox:**
   - Only `Audio.permission` grants `dbus-user.own org.mpris.MediaPlayer2.*`.
-    This holds in the target and on the phone (Sailfish OS 5.2.0.20); no
-    other permission grants it.
+    This holds in the target, on the phone (Sailfish OS 5.2.0.20) and in
+    sailjail-permissions master (027ddfc). No narrower permission exists.
   - The same permission also opens PulseAudio, which can include recording.
-    The user sees "Play and record audio, and show audio controls on
-    lockscreen".
+    Its descriptions are "Play and record audio" (short) and "Play and record
+    audio, and show audio controls on lockscreen" (long); which one the
+    prompt shows is checked on the device.
+  - Precedent: gPodder and harbour-sailcast publish MPRIS with
+    Permissions=Audio. Both also play audio themselves; no sandboxed
+    remote-control app was found that does this.
+- **Packaging:** this target's rpm generates no `qml(...)` requires. The
+  plugin package provides `qml(Amber.Mpris)`
+  (`rpm -q --provides amber-qml-plugin-mpris`, 2026-11-08).
   - Swell has `Permissions=Internet` today.
 - **What the client already offers:**
   - `state` (play, stream, pause, stop, …) and `playing`;
@@ -64,33 +92,45 @@ the session bus.
 
 ## Scope
 
-1. One `MprisPlayer` in the app window (QML only; no C++). It follows
-   `players.current`:
-   - **Identity:** `serviceName` "harbour-swell", `identity` "Swell",
-     `desktopEntry` "harbour-swell".
-   - **Playback status:** Playing when `playing`, Paused when `state` is
-     "pause", Stopped otherwise. It is also Stopped when there is no current
-     player or the player is offline.
+1. **`qml/Mpris.qml`:** an `MprisPlayer` with a `player` property, which
+   `harbour-swell.qml` sets to `players.current`. It needs no C++ and no
+   Silica.
+   - **Constant properties,** as literals, because amber locks them:
+     - `serviceName` "harbour-swell", `identity` "Swell" and `desktopEntry`
+       "harbour-swell";
+     - `canControl` true, `hasShuffle` false and `hasLoopStatus` false;
+     - `canSeek` false and `canRaise` true.
+   - **Playback status:** Playing when `player.playing` (play, stream); Paused
+     when `state` is "pause"; Stopped otherwise, and when there is no player
+     or it is offline.
    - **Capabilities:**
-     - `canControl` is true;
-     - `canPlay` and `canPause` follow `online`;
-     - `canGoNext` follows `canSkip` and `canGoPrevious` follows `canBack`;
-     - `canSeek` is false;
-     - `canRaise` is true, and `raiseRequested` brings the app forward.
+     - `canPlay` and `canPause` follow `player && player.online`;
+     - `canGoNext` follows `canSkip` and `canGoPrevious` follows `canBack`,
+       both also requiring online.
    - **Metadata:**
-     - title ← `title1`;
-     - contributingArtist ← `title2`;
-     - albumTitle ← `title3`;
-     - artUrl ← `artworkUrl`;
-     - duration ← `duration` × 1000;
-     - position ← `position` × 1000.
-   - **Requests:** play, pause, playPause, next and previous call the
-     player's commands. Seek requests are ignored.
+     - title ← `title1`, contributingArtist ← `title2` and albumTitle ←
+       `title3`, as plain strings;
+     - artUrl ← `String(artworkUrl)`;
+     - duration ← `duration` × 1000.
+     - All are cleared, not left stale, when there is no player or it is
+       offline. The controls then still show "Swell", with disabled
+       buttons.
+   - **Position:** set in `onPositionRequested` to
+     `max(0, player.position) × 1000`, since `position` is -1 when unknown.
+     There is no binding and no Seeked signal.
+   - **Requests:**
+     - playPause uses `player.playing`, as the cover does;
+     - play, pause, next and previous call the commands directly;
+     - each handler first checks `player && player.online`;
+     - stop, seek, shuffle and loop requests are ignored.
+   - **Raise:** `harbour-swell.qml` handles it with `app.activate()`.
 2. **Packaging:**
    - `Permissions=Internet;Audio` in the desktop file;
-   - `Requires: amber-qml-plugin-mpris` in the spec.
-3. **About:** the privacy text says why Swell asks for Audio, if Misja agrees
-   (Q2).
+   - `Requires: qml(Amber.Mpris)` in the spec, as gPodder and sailcast do.
+     No BuildRequires: the tests run in the SDK target, not in `%check`.
+3. **Text:** one sentence on why Swell asks for Audio, in the RPM
+   description and the changelog. About stays as it is, unless Misja wants
+   it there too (Q2).
 
 ## Out of scope
 
@@ -105,15 +145,22 @@ the session bus.
 
 ## Open questions for Misja
 
-- **Q1:** is the system's own lock-screen control enough, with no setting to
-  turn it off? (Recommended: yes. It shows only while Swell runs.)
-- **Q2:** the Audio permission. On first start, the sandbox will ask for
-  "Play and record audio, and show audio controls on lockscreen". Swell
-  plays and records nothing; the permission is only for the controls. Is
-  that acceptable, with a sentence in About? (The alternative is no 003.)
-- **Q3:** cover art on the lock screen is an http URL on the player. Whether
-  the lock screen loads remote art is not documented. If it does not, the
-  controls work without art. Acceptable?
+- **Q1, Swell takes the lock screen and the headset buttons.** While the
+  BluOS player plays, Swell is "Playing" and owns the system media controls.
+  - A local player that starts afterwards (Jolla Media, a podcast app) does
+    not take them over.
+  - Headset and Bluetooth play/pause/next then control the living-room
+    player, not the phone.
+  - The controls show only while Swell runs; there is no setting.
+
+  Is that acceptable? There is no cheap way around it, and none is proposed
+  before you decide.
+- **Q2, the Audio permission.** On first start, and probably again on
+  upgrade for current users, the sandbox asks for "Play and record audio
+  (…and show audio controls on lockscreen)". Swell plays and records
+  nothing; the permission is only for the controls. Refusing it probably
+  stops Swell from starting. Both are inferred and checked on the device.
+  Acceptable? Should About also explain it? (The alternative is no 003.)
 
 ## Acceptance criteria
 
@@ -122,15 +169,25 @@ the session bus.
    player, and next and previous are disabled when the player cannot skip.
 2. The controls follow a change of current player, and changes made in the
    official app or on the player itself.
-3. With no player, or with the player offline, the controls show stopped and
-   do nothing.
+3. With no player, or with the player offline, the controls show "Swell",
+   stopped, with no title or art, and do nothing.
 4. The validator passes with the new import, requirement and permission. The
-   RPM requires amber-qml-plugin-mpris.
-5. All existing suites pass. A test checks that the MPRIS mapping (status,
-   capabilities, metadata, requests) follows the player, against the fake
-   player, if Amber.Mpris can be instantiated in the build engine;
-   otherwise the review decides what replaces it.
-6. A device check by Misja covers the lock screen, the events view, playing
-   from the official app while the screen is locked, and the first-start
-   permission prompt.
+   RPM requires `qml(Amber.Mpris)`.
+5. All existing suites pass. The runtime QML test creates `Mpris.qml`
+   against the fake player, with no session bus
+   (`DBUS_SESSION_BUS_ADDRESS` pointing nowhere), and checks:
+   - playbackStatus: play and stream are 1, pause is 2, stop and
+     connecting are 0;
+   - canGoNext and canGoPrevious follow a stream's skip and back actions,
+     which also catches canControl not being true;
+   - metaData title, contributingArtist, albumTitle, artUrl and duration;
+   - position: secs × 1000, and 0 when unknown;
+   - requests: playPause, next and previous reach `/Pause` or `/Play`,
+     `/Skip` and `/Back`;
+   - offline: canPlay and canPause are false, and the metadata is cleared.
+6. A device check by Misja covers:
+   - the lock screen and the events view, including cover art over http;
+   - playing from the official app while the screen is locked;
+   - the first-start permission prompt and an upgrade from 0.3.0-13;
+   - local audio started while BluOS plays, and headset play/pause (Q1).
 7. A separate result review before the PR.
