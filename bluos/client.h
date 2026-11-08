@@ -106,12 +106,17 @@ public:
     QList<Input> inputs() const { return m_inputs; }
     QueueModel *queue() const { return m_queue; }
 
+    // The handlers of these reads run only while context exists, as with
+    // QTimer::singleShot(msec, context, functor), and never before the call
+    // returns.
     // One /Playlist window (section 5.1); the handler gets ok == false on failure.
-    void fetchQueueWindow(int start, int end, const std::function<void(const Playlist &)> &handler);
+    void fetchQueueWindow(int start, int end, QObject *context,
+                          const std::function<void(const Playlist &)> &handler);
     // One /Browse read (sections 7.1, 7.2): the top level for an empty key, a
     // search when q is set. Keys are sent byte for byte (encoded once). Not
     // paced by the one-second rule, which the API sets for status polling.
-    void fetchBrowse(const QString &key, const QString &q, const std::function<void(const Browse &)> &handler);
+    void fetchBrowse(const QString &key, const QString &q, QObject *context,
+                     const std::function<void(const Browse &)> &handler);
     // Splits a player path from a /Browse reply into path and encoded query.
     // False unless it starts with a single '/', has no fragment and survives
     // Qt's URL handling unchanged; the host is always this player.

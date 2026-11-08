@@ -231,7 +231,7 @@ void BrowseModel::readFirst(const QString &key)
     emit loadingChanged();
     const int generation = m_generation;
     QPointer<BrowseModel> self(this);
-    m_client->fetchBrowse(key, m_expanded ? QString() : m_query, [self, generation](const Browse &reply) {
+    m_client->fetchBrowse(key, m_expanded ? QString() : m_query, this, [self, generation](const Browse &reply) {
         if (!self || generation != self->m_generation)
             return;  // the page went away, or it was read again
         self->m_inFlight = -1;
@@ -321,7 +321,7 @@ void BrowseModel::findListFavourites(const QString &kind)
         return;
     const int generation = m_generation;
     QPointer<BrowseModel> self(this);
-    m_client->fetchBrowse(QStringLiteral("LocalMusic:"), QString(), [self, generation, kind](const Browse &menu) {
+    m_client->fetchBrowse(QStringLiteral("LocalMusic:"), QString(), this, [self, generation, kind](const Browse &menu) {
         if (!self || generation != self->m_generation || !menu.ok || !self->m_client)
             return;
         bool offered = false;
@@ -329,7 +329,7 @@ void BrowseModel::findListFavourites(const QString &kind)
             offered = offered || item.browseKey == QLatin1String(FavouritesKey);
         if (!offered)
             return;
-        self->m_client->fetchBrowse(QString::fromLatin1(FavouritesKey), QString(),
+        self->m_client->fetchBrowse(QString::fromLatin1(FavouritesKey), QString(), self,
                                     [self, generation, kind](const Browse &favourites) {
             if (!self || generation != self->m_generation || !favourites.ok)
                 return;
@@ -369,7 +369,7 @@ void BrowseModel::findFavourites()
         return;
     const int generation = m_generation;
     QPointer<BrowseModel> self(this);
-    m_client->fetchBrowse(QStringLiteral("LocalMusic:"), QString(), [self, generation](const Browse &menu) {
+    m_client->fetchBrowse(QStringLiteral("LocalMusic:"), QString(), this, [self, generation](const Browse &menu) {
         if (!self || generation != self->m_generation || !menu.ok || self->m_favourites)
             return;
         for (const BrowseItem &item : menu.items) {
@@ -419,7 +419,7 @@ void BrowseModel::request(int segment)
     const QString key = s.started ? s.nextKey : s.key;
     const int generation = m_generation;
     QPointer<BrowseModel> self(this);
-    m_client->fetchBrowse(key, QString(), [self, generation, segment, key](const Browse &reply) {
+    m_client->fetchBrowse(key, QString(), this, [self, generation, segment, key](const Browse &reply) {
         if (self)
             self->onPage(generation, segment, key, reply);
     });

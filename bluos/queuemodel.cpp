@@ -290,7 +290,7 @@ void QueueModel::request(int window)
     m_inFlight = window;
     emit loadingChanged();
     const int generation = m_generation;
-    m_client->fetchQueueWindow(window * WindowSize, window * WindowSize + WindowSize - 1,
+    m_client->fetchQueueWindow(window * WindowSize, window * WindowSize + WindowSize - 1, this,
                                [this, generation, window](const Playlist &playlist) {
         onWindow(generation, window, playlist);
     });

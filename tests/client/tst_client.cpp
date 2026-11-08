@@ -69,6 +69,9 @@ private slots:
     void playInputIsSentByteForByte();
     void playInputRejectsUnsafeUrl();
     void errorBodyIsACommandFailure();
+    void errorBodyWithoutMessage();
+    void aStoppedClientAnswersLater();
+    void handlersGoWithTheirContext();
     void inputsFetched();
     void skipFollowsTheSource();
     void muteIsNotLostInAVolumeBurst();
@@ -377,6 +380,64 @@ void TstClient::errorBodyIsACommandFailure()
     QTRY_COMPARE(failed.size(), 1);
     QCOMPARE(failed.first().at(0).toString(), QStringLiteral("/Preset"));
     QCOMPARE(failed.first().at(1).toString(), QStringLiteral("No such preset"));
+}
+
+void TstClient::errorBodyWithoutMessage()
+{
+    m_player->serve(QStringLiteral("/Preset"), "<error/>");
+    startClient();
+    QTRY_VERIFY(m_client->online());
+    QSignalSpy failed(m_client, &Client::commandFailed);
+    m_client->playPreset(99);
+    QTRY_COMPARE(failed.size(), 1);
+    QCOMPARE(failed.first().at(1).toString(), QStringLiteral("error"));
+}
+
+void TstClient::aStoppedClientAnswersLater()
+{
+    // Not started: the handler gets the failure, but not inside the call.
+    m_client = new Client(m_nam, QStringLiteral("127.0.0.1"), m_player->port());
+    int called = 0;
+    Browse answer;
+    m_client->fetchBrowse(QString(), QString(), this, [&](const Browse &b) {
+        ++called;
+        answer = b;
+    });
+    QCOMPARE(called, 0);
+    QTRY_COMPARE(called, 1);
+    QVERIFY(!answer.ok);
+    QVERIFY(m_player->requests(QStringLiteral("/Browse")).isEmpty());
+}
+
+void TstClient::handlersGoWithTheirContext()
+{
+    m_player->serve(QStringLiteral("/Browse"), "<browse type=\"menu\"/>");
+    m_player->delay(QStringLiteral("/Browse"), 200);
+    m_player->serve(QStringLiteral("/Playlist"), "<playlist name=\"q\" id=\"1\" length=\"0\"/>");
+    m_player->delay(QStringLiteral("/Playlist"), 200);
+    startClient();
+    QTRY_VERIFY(m_client->online());
+    int kept = 0;
+    int dropped = 0;
+    QObject stays;
+    auto *goes = new QObject;
+    m_client->fetchBrowse(QString(), QString(), &stays, [&](const Browse &) { ++kept; });
+    m_client->fetchBrowse(QString(), QString(), goes, [&](const Browse &) { ++dropped; });
+    m_client->fetchQueueWindow(0, 9, &stays, [&](const Playlist &) { ++kept; });
+    m_client->fetchQueueWindow(0, 9, goes, [&](const Playlist &) { ++dropped; });
+    delete goes;
+    QTRY_COMPARE(kept, 2);
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Browse")).size(), 2);
+    QTest::qWait(400);
+    QCOMPARE(dropped, 0);
+
+    // Also when a stopped client answers on the next turn.
+    m_client->stop();
+    goes = new QObject;
+    m_client->fetchBrowse(QString(), QString(), goes, [&](const Browse &) { ++dropped; });
+    delete goes;
+    QTest::qWait(50);
+    QCOMPARE(dropped, 0);
 }
 
 void TstClient::inputsFetched()
