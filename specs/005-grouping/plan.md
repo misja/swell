@@ -42,12 +42,16 @@ decided (spec.md).
 
 ## Player model
 
-- **Home follows the group (Q1):** while the current player is a secondary,
-  Home's presets, inputs and play commands use the primary's client. The
-  volume stays the secondary's own.
+- **A group is one player (option B, canvas G3):**
+  - The model shows a group as one row, the leader.
+  - Making a member current makes its leader current. When the current
+    player becomes a secondary elsewhere, current moves to its leader.
+  - Home and Now Playing therefore always talk to a leader or a lone
+    player.
+- **Adding players:** one at a time, each `/AddSlave` after the last one
+  answered (azzurro: concurrent calls race over the membership list).
 - **Polling policy** (`applyPolicy`):
-  - The current player polls `/Status` as today. It also polls
-    `/SyncStatus` while it is a secondary.
+  - The current player polls `/Status` as today.
   - With `groupPage` set (a new property the group page sets), every other
     member polls `/SyncStatus` only.
   - `pollAll` is unchanged.

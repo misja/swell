@@ -13,8 +13,17 @@ no UI yet; the UI is agreed on the design canvas before it is built.
   from Now Playing.
 - Review: a separate agent reviews scope and design before implementation,
   and the result before the PR.
-- UI: design canvas page "Grouping (005)", boards G1–G4 (proposed
-  2026-11-08, to be agreed); the canvas is linked in issue #1.
+- UI: design canvas page "Grouping (005)", boards G1–G3, agreed by Misja
+  on 2026-11-08 (the canvas is linked in issue #1):
+  - **G1:** "Group…" in the Now Playing pulley, with the leader's role
+    under its name, worded as azzurro does ("Leading 2 players",
+    "Reconnecting…").
+  - **G2:** the group page: group volume on top, then the members with
+    their own volume and a switch, then the players that can join.
+    Players are added one at a time; there is no "Group all".
+  - **G3:** a group is one player (option B): one row "Living Room + 2" in
+    Players. Tapping it, or a member, makes the leader current.
+  - Still open: the group on the mini-player only, not on the cover.
 - Scope agreed by Misja (2026-11-08): show groups, group and ungroup players,
   and group volume. Fixed groups are out of scope.
 
@@ -121,9 +130,8 @@ needs the official app for that.
      player's `setVolume` request stays exactly as today. The level in a
      `/Volume` answer is taken over at once.
    - **Keeping a secondary current:** a `/SyncStatus` long poll (with etag,
-     timeout 180 s), used only while it is needed:
-     - for the current player while it is a secondary;
-     - for every member while the group page is open.
+     timeout 180 s), used only while the group page is open, for every
+     member. With option B the current player is never a secondary.
 
      Such members need no `/Status` poll of their own, since a secondary's
      is the primary's copy. A failed `/SyncStatus` read counts for
@@ -170,7 +178,8 @@ needs the official app for that.
 
 ## Decisions (Misja, 2026-11-08)
 
-- **Q1, Home follows the group.**
+- **Q1, Home follows the group** (made concrete by option B: the current
+  player is always the leader).
   - When the current player is a secondary, Home and Now Playing show the
     group's primary: its playback, presets and inputs. Playing a preset or
     input acts on the group's source.
