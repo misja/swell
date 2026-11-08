@@ -98,3 +98,13 @@ Xperia 10 II (aarch64), Sailfish OS 5.2.0.20, Wi-Fi, a real BluOS player
     trademark notice.
   - The GitHub description is now "Sailfish OS controller for BluOS players".
   - All suites pass, the validator succeeded, and Dutch is complete.
+
+## Follow-up: LSDP random delay seeded (2026-11-08)
+
+Found in the 007 review (L2). `jitter()` used `qrand()` without `qsrand()`.
+Qt documents that as seed 1, so every device made the same sequence of
+delays (0–250 ms, API appendix "timing"). It now draws from a
+`std::minstd_rand` seeded once from `std::random_device`. This keeps Qt's
+global `qrand()` state untouched. The range and the burst times are
+unchanged. All nine suites pass on SailfishOS-5.1.0.11-aarch64. No test
+checks the random values, because they are random by design.
