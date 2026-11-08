@@ -8,8 +8,7 @@ implementation yet.
 
 - Accountable owner: root (primary assistant session).
 - Decision owner: Misja Hoebe (@misja).
-- Issue: none yet. 001 lists 003 in its "Agreed structure for later
-  features". An issue is opened once Misja approves.
+- Issue: https://github.com/misja/swell/issues/13.
 - Review: a separate agent reviews scope and design before implementation,
   and the result before the PR. The permission change makes this
   release-relevant.

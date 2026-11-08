@@ -2,11 +2,12 @@ Name:       harbour-swell
 
 Summary:    Controller for BluOS players
 Version:    0.3.0
-Release:    13
+Release:    14
 License:    MIT
 URL:        https://github.com/misja/swell
 Source0:    %{name}-%{version}.tar.bz2
 Requires:   sailfishsilica-qt5 >= 0.10.9
+Requires:   qml(Amber.Mpris)
 BuildRequires:  pkgconfig(sailfishapp) >= 1.0.2
 BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5Qml)
