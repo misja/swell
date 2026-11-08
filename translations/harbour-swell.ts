@@ -364,7 +364,7 @@
     </message>
     <message>
         <location filename="../qml/pages/PlayersPage.qml" line="58"/>
-        <source>Add player…</source>
+        <source>Add player</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

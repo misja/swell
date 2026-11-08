@@ -10,5 +10,6 @@
 - [x] Household fixture and tests first.
 - [x] Library, model, QML (no src/ shaping needed: typed properties and model roles).
 - [x] Tests, aarch64 build, validator, evidence.md (armv7hl at release).
-- [ ] Device check with the emulated household (Python on the host LAN; approval each time it runs) and the NAD.
-- [ ] Separate result review, then a PR.
+- [x] Device check with the emulated household and the NAD: passed (2026-11-08).
+- [x] Separate result review (approve with changes); findings applied.
+- [ ] PR.

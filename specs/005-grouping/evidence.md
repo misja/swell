@@ -51,6 +51,25 @@ These have no real grouped hardware behind them (one player, the NAD C 379):
 - what `/Volume` without `tell_slaves` does on a primary;
 - whether `/Presets` is proxied by a secondary.
 
+## Device check (2026-11-08)
+
+Misja checked 0.4.0-3 on the Xperia 10 II (Sailfish OS 5.2.0.22). The
+emulated household ran on the host, at 192.168.1.2 on ports 11010–11030;
+the phone reached it, ufw was active, and it was stopped afterwards. He went
+through the list given before the check:
+- grouping from the Now Playing pulley;
+- the role line and the one-row group in Players;
+- group volume and a member's own volume;
+- choosing a member chooses the leader;
+- ungrouping;
+- the NAD as a lone player.
+
+He reported "klopt allemaal" (all correct), noting that the navigation
+takes some getting used to.
+Follow-up: "Add player…" became "Add player" (no ellipses in menu
+labels, Misja). Built as 0.4.0-4; all ten suites pass; the validator
+succeeds.
+
 ## Review findings
 
 Scope/design review, 2026-11-08 (approve with changes): H1–H3, M1–M5 and

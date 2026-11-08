@@ -55,7 +55,7 @@ Page {
                 onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
             }
             MenuItem {
-                text: qsTr("Add player…")
+                text: qsTr("Add player")
                 onClicked: pageStack.push(Qt.resolvedUrl("AddPlayerDialog.qml"))
             }
             MenuItem {
