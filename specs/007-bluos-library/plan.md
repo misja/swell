@@ -85,11 +85,13 @@ key.
   `Q_PROPERTY(BluOS::Client *current …)`, fully qualified.
   `Client::queueModel()` then duplicates `queue()` and goes; the queue tests
   call `queue()` (re-check L3).
-- **Images:** the parser structs keep their raw `QString` image.
-  - `Client::presets()` and `inputs()` fill a separate `imageUrl` (`QUrl`)
-    field on copies, resolved with `resolveImage`. This is the same pattern
-    as the models' rows.
+- **Images:** the parser structs keep their raw `QString` image, and
+  `Client::presets()` and `inputs()` return them as parsed. `QmlPlayer`
+  resolves them with the public `Client::resolveImage`; no extra field was
+  needed (built 2026-11-08; the spec allowed either).
   - `Preset::inputId()` stays a method. The QML-facing map gets it as a key.
+  - `Preset` and `Input` get `operator==`, so the client still emits a
+    change only when the list changed.
 - **A1:** `onCommandReply` uses `errorIn`.
 - **A2:** when stopped, `fetch` queues the handler with
   `QTimer::singleShot(0, this, …)` (context form, Qt 5.4 and later).

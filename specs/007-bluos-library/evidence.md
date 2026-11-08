@@ -27,6 +27,24 @@ Recorded behaviour the change must keep: the favourites row gives JavaScript
 `undefined` for its actions; a row not read yet gives an empty list; LetterIndex
 leaves `#` out.
 
+## Build and tests after the change (2026-11-08)
+
+Branch 007-bluos-library at 222c4ee, SDK target SailfishOS-5.1.0.11-aarch64.
+
+- `make check`: all nine suites pass: spike 5, lsdp 18, xml 30, client 29,
+  model 26, qml 16, qmlruntime 10, queue 28, browse 26. The runtime QML test
+  is unchanged except that it creates `Swell::QmlPlayerModel`; it now runs
+  against `QmlPlayer` and `QmlBrowseModel`, since the library classes no longer
+  have those properties.
+- New client tests: `errorBodyWithoutMessage` (A1; `errorBodyIsACommandFailure`
+  already covered a command `<error>` with a message), `aStoppedClientAnswersLater`
+  (A2), `handlersGoWithTheirContext` (A3, for both fetch functions and for a
+  stopped client).
+- No compiler warnings in the test or RPM build.
+- `sfdk build`: harbour-swell-0.3.0-13.aarch64.rpm. `sfdk check -s harbour`:
+  validation succeeded. Translations unchanged.
+- The non-QML test `.pro` files still have no qml or quick.
+
 ## Review findings and what became of them
 
 Scope/design review, 2026-11-08 (approve with changes):
