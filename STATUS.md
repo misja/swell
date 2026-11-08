@@ -7,7 +7,12 @@ Updated: 2026-11-08 (feature 003, MPRIS). Decision owner: Misja Hoebe (@misja).
 
 Current owner / next owner / decision owner: root / root (next session) / Misja.
 
-Now (2026-11-08): release 0.5.0 prepared (PR). Since 0.4.0: grouping
+Released 0.5.0 (2026-11-08): annotated tag v0.5.0 on 3fdd246, GitHub
+release https://github.com/misja/swell/releases/tag/v0.5.0, built from a
+clean checkout of the tag; both RPMs validated; all ten suites pass on
+aarch64 and armv7hl. sha256: aarch64
+7e66b38b96a00b1071d2440cc9666c5d11ba40b06d1d4afdf0d9ab09bb591677, armv7hl
+71fc3d14b4757086b706a38761947ad811ad3edaeed831fc913f02f8d8fee33b. Since 0.4.0: grouping
 (005, #23; in the player list #25), primary/secondary names (#24), Chum
 metadata (#22), README/CONTRIBUTING (#20), wording rules, AGENTS.md
 "Platform mechanisms in code" (workspace principles 1.4.0). Decided: TuneIn
