@@ -34,6 +34,8 @@ PackageIcon: https://raw.githubusercontent.com/misja/swell/main/icons/harbour-sw
 Links:
   Homepage: https://github.com/misja/swell
   Bugtracker: https://github.com/misja/swell/issues
+AIRating: V
+AINote: Written with AI coding agents (~90%) through a spec-driven process: written specs, separate AI design and result reviews, automated tests, maintainer device checks and review before merge.
 %endif
 
 
