@@ -50,6 +50,13 @@ Artifacts and evidence:
   §2.1/§5.1 say; azzurro's note was wrong).
 
 Releases (Misja, 2026-11-08):
+- 0.4.0 published 2026-11-08: tag v0.4.0 (annotated) on 533e61a, GitHub
+  release https://github.com/misja/swell/releases/tag/v0.4.0. Built from a
+  clean checkout of the tag on SailfishOS-5.1.0.11; both RPMs validated;
+  all nine suites pass on aarch64 and armv7hl (qt5-qttest-devel added to the
+  armv7hl target with approval). sha256:
+  - aarch64 7b081e2160d7112c9d292c5a05a5b236121bbd9a6aeb2b11a0bbe0ef3ffbb703
+  - armv7hl d0a521f97ee21dc53efa860607d534603f3d546efa255ce1a6aa6701dbf31ed3
 - Semantic versions, starting carefully at 0.4.0. `Version` in
   rpm/harbour-swell.spec and `VERSION` in harbour-swell.pro must match.
 - A published release has `Release: 1` and an annotated tag `vX.Y.Z` on its
