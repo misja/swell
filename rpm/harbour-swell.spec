@@ -33,6 +33,9 @@ Industries. BluOS is a trademark of Lenbrook Industries Limited.
 
 %install
 %qmake5_install
+# The platform's brp-strip removes only debug info (strip -g); the Harbour
+# validator warns unless the symbol table is gone too.
+%{__strip} %{buildroot}%{_bindir}/%{name}
 
 
 desktop-file-install --delete-original       \

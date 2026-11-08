@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 #include "discovery.h"
 
+#include <random>
+
 #include <QNetworkInterface>
-#include <QtGlobal>
 
 namespace BluOS {
 
@@ -15,7 +16,10 @@ const int BurstCount = int(sizeof(BurstMs) / sizeof(BurstMs[0]));
 
 int jitter()
 {
-    return qrand() % 251;
+    // Seeded once per process: an unseeded qrand() gives every device the
+    // same delays, so devices that start together would send together.
+    static std::minstd_rand engine(std::random_device{}());
+    return std::uniform_int_distribution<int>(0, 250)(engine);
 }
 
 } // namespace
