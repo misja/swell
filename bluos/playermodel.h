@@ -80,8 +80,9 @@ public:
     Q_INVOKABLE QStringList memberIds(const QString &leaderId) const;
     // Adds a player to the current player's group.
     Q_INVOKABLE void join(const QString &id);
-    // Takes a secondary out of its group, through its primary.
-    Q_INVOKABLE void leave(const QString &id);
+    // Takes a secondary out of its group, through its primary (leaderId when
+    // given, for a member Swell does not know).
+    Q_INVOKABLE void leave(const QString &id, const QString &leaderId = QString());
     // A player's own volume, for the group page.
     Q_INVOKABLE void setPlayerVolume(const QString &id, int level);
     // Makes a remembered player current at once, before discovery answers. With

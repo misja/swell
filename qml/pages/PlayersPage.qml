@@ -64,80 +64,123 @@ Page {
             }
         }
 
-        delegate: ListItem {
-            id: item
-            // A group is one row, its primary's (spec 005, canvas G3).
+        // A group is a small tree: its primary, then its members indented
+        // (spec 005, canvas A1). Members' own rows are hidden; they are drawn
+        // under their primary instead.
+        delegate: Column {
+            id: entry
+            readonly property string _id: model.playerId
             readonly property bool _follower: model.leaderId !== ""
             readonly property bool _leads: model.memberNames.length > 0
+            // Re-read when the member names change.
+            readonly property var _members: _leads ? (model.memberNames, players.memberIds(_id)) : []
+            width: list.width
             visible: !_follower
-            contentHeight: _follower ? 0 : (_leads ? Theme.itemSizeLarge : Theme.itemSizeMedium)
-            // Long press (spec 005, canvas A1): join the current player's
-            // group, take a member out of this group, or remove a player
-            // added by address.
-            readonly property string _id: model.playerId
-            readonly property bool _canJoin: model.canJoin && players.current !== null
-                                             && !players.current.groupBusy
-            menu: _canJoin || _leads || model.manual ? playerMenu : null
-            highlighted: down || model.playerId === players.currentId
 
-            onClicked: {
-                players.currentId = model.playerId
-                page.openCurrent(false)
-            }
+            ListItem {
+                id: item
+                contentHeight: entry._follower ? 0 : Theme.itemSizeMedium
+                // Long press: join the current player's group, or remove a
+                // player added by address.
+                readonly property bool _canJoin: model.canJoin && players.current !== null
+                                                 && !players.current.groupBusy
+                menu: _canJoin || model.manual ? playerMenu : null
+                highlighted: down || model.playerId === players.currentId
 
-            Column {
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    leftMargin: Theme.horizontalPageMargin
-                    rightMargin: Theme.horizontalPageMargin
-                    verticalCenter: parent.verticalCenter
+                onClicked: {
+                    players.currentId = model.playerId
+                    page.openCurrent(false)
                 }
-                Label {
-                    width: parent.width
-                    text: item._leads ? qsTr("%1 + %2").arg(model.name).arg(model.memberNames.length) : model.name
-                    truncationMode: TruncationMode.Fade
-                    color: item.highlighted ? Theme.highlightColor : Theme.primaryColor
-                }
-                Label {
-                    width: parent.width
-                    font.pixelSize: Theme.fontSizeExtraSmall
-                    truncationMode: TruncationMode.Fade
-                    color: item.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
-                    text: model.availability === 1
-                          ? (model.nowPlaying !== "" ? model.nowPlaying : model.modelName)
-                          : page._availabilityText(model.availability)
-                }
-                Label {
-                    visible: item._leads
-                    width: parent.width
-                    font.pixelSize: Theme.fontSizeExtraSmall
-                    truncationMode: TruncationMode.Fade
-                    color: item.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
-                    text: qsTr("With %1").arg(model.memberNames.join(", "))
-                }
-            }
 
-            Component {
-                id: playerMenu
-                ContextMenu {
-                    MenuItem {
-                        visible: item._canJoin
-                        text: qsTr("Join %1").arg(players.current ? players.current.name : "")
-                        onClicked: players.join(model.playerId)
+                Column {
+                    anchors {
+                        left: parent.left
+                        right: parent.right
+                        leftMargin: Theme.horizontalPageMargin
+                        rightMargin: Theme.horizontalPageMargin
+                        verticalCenter: parent.verticalCenter
                     }
-                    Repeater {
-                        model: item._leads ? players.memberIds(item._id) : []
+                    Label {
+                        width: parent.width
+                        text: model.name
+                        truncationMode: TruncationMode.Fade
+                        color: item.highlighted ? Theme.highlightColor : Theme.primaryColor
+                    }
+                    Label {
+                        width: parent.width
+                        font.pixelSize: Theme.fontSizeExtraSmall
+                        truncationMode: TruncationMode.Fade
+                        color: item.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
+                        text: model.availability === 1
+                              ? (model.nowPlaying !== "" ? model.nowPlaying : model.modelName)
+                              : page._availabilityText(model.availability)
+                    }
+                }
+
+                Component {
+                    id: playerMenu
+                    ContextMenu {
                         MenuItem {
-                            readonly property int _row: players.indexOf(modelData)
-                            text: qsTr("Ungroup %1").arg(_row >= 0 ? players.nameAt(_row) : modelData)
-                            onClicked: players.leave(modelData)
+                            visible: item._canJoin
+                            text: qsTr("Join %1").arg(players.current ? players.current.name : "")
+                            onClicked: players.join(entry._id)
+                        }
+                        MenuItem {
+                            visible: model.manual
+                            text: qsTr("Remove")
+                            onClicked: players.removeManual(entry._id)
                         }
                     }
-                    MenuItem {
-                        visible: model.manual
-                        text: qsTr("Remove")
-                        onClicked: players.removeManual(model.playerId)
+                }
+            }
+
+            Repeater {
+                model: entry._members
+                delegate: ListItem {
+                    id: member
+                    readonly property int _row: players.indexOf(modelData)
+                    contentHeight: Theme.itemSizeSmall
+                    highlighted: down || entry._id === players.currentId
+                    menu: memberMenu
+
+                    // A member plays its primary's source: choosing it
+                    // chooses the primary.
+                    onClicked: {
+                        players.currentId = entry._id
+                        page.openCurrent(false)
+                    }
+
+                    Rectangle {
+                        id: branch
+                        x: Theme.horizontalPageMargin + Theme.paddingLarge
+                        width: Theme.paddingSmall / 2
+                        height: parent.height - Theme.paddingSmall
+                        anchors.verticalCenter: parent.verticalCenter
+                        color: Theme.highlightColor
+                        opacity: Theme.opacityLow
+                    }
+                    Label {
+                        anchors {
+                            left: branch.right
+                            leftMargin: Theme.paddingLarge
+                            right: parent.right
+                            rightMargin: Theme.horizontalPageMargin
+                            verticalCenter: parent.verticalCenter
+                        }
+                        text: member._row >= 0 ? players.nameAt(member._row) : modelData
+                        truncationMode: TruncationMode.Fade
+                        color: member.highlighted ? Theme.highlightColor : Theme.primaryColor
+                    }
+
+                    Component {
+                        id: memberMenu
+                        ContextMenu {
+                            MenuItem {
+                                text: qsTr("Leave group")
+                                enabled: players.current === null || !players.current.groupBusy
+                                onClicked: players.leave(modelData, entry._id)
+                            }
+                        }
                     }
                 }
             }
