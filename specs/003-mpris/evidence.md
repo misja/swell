@@ -25,6 +25,8 @@ Branch 003-mpris, SDK target SailfishOS-5.1.0.11-aarch64.
   after the result review; the first build was 4b948e9e…).
   - Requires `qml(Amber.Mpris)`.
   - Its desktop file has `Permissions=Internet;Audio`.
+- **Phone:** 0.3.0-14 installed 2026-11-08; the phone has amber-qml-plugin-mpris
+  1.2.10-1.10.1 (the target has 1.2.9).
 - **`sfdk check -s harbour`:** validation succeeded. Its one warning, "file
   is not stripped", was already in the 001, 002 and 004 validator logs.
 - Translations unchanged.
