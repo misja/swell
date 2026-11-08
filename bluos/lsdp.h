@@ -53,7 +53,7 @@ Packet parse(const QByteArray &datagram);
 
 QByteArray buildQuery(const QVector<quint16> &classes);
 
-// "90:56:82:9F:02:78" style rendering of a node id, for display and logs.
+// "02:00:00:00:00:0A" style rendering of a node id, for display and logs.
 QString nodeIdToString(const QByteArray &nodeId);
 
 } // namespace Lsdp
