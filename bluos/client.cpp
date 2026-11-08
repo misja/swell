@@ -252,8 +252,8 @@ Client::GroupRole Client::groupRole() const
     if (!m_sync.ok)
         return Alone;
     if (!m_sync.primaryHost.isEmpty()) {
-        const QString master = QStringLiteral("%1:%2").arg(m_sync.primaryHost).arg(m_sync.primaryPort);
-        if (master != id() && master != m_sync.id)
+        const QString primary = QStringLiteral("%1:%2").arg(m_sync.primaryHost).arg(m_sync.primaryPort);
+        if (primary != id() && primary != m_sync.id)
             return Secondary;
     }
     return m_sync.secondaries.isEmpty() ? Alone : Primary;
