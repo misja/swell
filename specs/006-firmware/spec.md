@@ -35,9 +35,24 @@ they are out of this spec (see "Out of scope").
     no `version` attribute when no update is offered.
   - `GET http://192.168.1.72/upgrade` is an HTML page titled "Upgrade" (827
     bytes) that says "No update available."
-- **Other parts of `/Settings`** (port 11001, observed): alarms, sleep timer,
-  network shares, reindex, artwork optimisation and server mode, as
-  undocumented forms. Not used here.
+- **The settings tree** (undocumented; read on Misja's NAD with GET only,
+  2026-11-08). `/Settings` answers 301 to port 11001, and pages are read with
+  `?id=<menuGroup id>`. Each `<setting>` has a `class` (text, boolean, list,
+  range, dual-range, button, iconlist) and a write `url` on port 11000
+  (`/setting`, `/audiomodes`, `/alsa_setting`, `/Name`). None of the write
+  URLs were called.
+  - **Top level:** alarms, sleep timer, the menu groups Audio, Player and
+    Music library (network shares as a web view of the player's port-80
+    page; reindex; artwork optimisation; server mode).
+  - **Player:** WiFi (web view of the player's page), room name, "Customize
+    sources" (`id=capture`), indicator brightness, LCD volume display.
+  - **Audio:** speakers, crossover, replay gain, output mode, volume limits,
+    balance, tone controls, reset.
+  - **Customize sources:** Bluetooth autoplay, and one menu group per input
+    (`capture-xdynamic-SourceN`: Optical 1, Optical 2, CD Player, Coaxial 2,
+    Phono, Line 1, Line 2, HDMI eARC, Bluetooth). Per input: name, icon, MQA
+    pass-through, A/V mode, lip-sync delay, compressed grouped audio, and
+    **"Hide source"** (boolean): turning an input on or off.
 
 ## Proposed scope (for decision)
 
@@ -62,6 +77,10 @@ they are out of this spec (see "Out of scope").
   exists.
 
 ## Open questions for Misja
+
+- **Q0:** settings such as "Hide source" per input are writable only through
+  this undocumented tree. Use them (and which), or keep them in the official
+  app?
 
 - **Q1:** is the read-only `upgrade=check` acceptable? It is undocumented
   but non-destructive, and it is the only way to know about an update
