@@ -30,7 +30,10 @@ Page {
     Binding {
         target: players
         property: "pollAll"
-        value: page.status === PageStatus.Active && Qt.application.active
+        // Also while the page comes in, so groups are known before it shows
+        // (members would otherwise flash as rows of their own).
+        value: (page.status === PageStatus.Active || page.status === PageStatus.Activating)
+               && Qt.application.active
     }
 
     function _availabilityText(availability) {
@@ -127,7 +130,8 @@ Page {
                     ContextMenu {
                         MenuItem {
                             visible: item._canJoin
-                            text: qsTr("Follow %1").arg(players.current ? players.current.name : "")
+                            text: qsTr("Follow %1").arg(!players.current ? ""
+                                                        : (players.current.name !== "" ? players.current.name : players.current.host))
                             onClicked: players.join(entry._id)
                         }
                         MenuItem {

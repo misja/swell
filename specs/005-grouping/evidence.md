@@ -157,3 +157,15 @@ unknown primary; test aFollowerOfAnUnknownLeaderOffersIt) and M4 (spec
 revision for option A, 001 note, plan status, tasks). Wording rules applied
 (Favorites, Jolla Dutch terms, remorse texts). All ten suites pass
 (group 27); 0.4.0-12 built, Dutch complete.
+
+Low findings, 2026-11-08: L1 applied (pollAll also while Players is
+Activating); L2 applied (watchGroup only while the app is active); L3
+applied (leave falls back to the current player only if it lists the
+member; test); L5 applied ("<name>: fixed volume" instead of a 0 slider);
+L6 applied (member button height itemSizeSmall; "Per player" in primary
+colour; icon-system-volume exists on 5.2.0.22; ExpandingSection not used:
+not verified in the target's Silica, the plain fold-out works); L7 applied
+(Follow falls back to the host; comments). Accepted: L4 (Per player rows
+follow model order; members unknown to Swell are not listed there, they can
+be added from Players), L7 memberIds role (the dependency trick works), L8
+(scrollToBottom with many members).

@@ -333,9 +333,12 @@ void PlayerModel::join(const QString &id)
 
 void PlayerModel::leave(const QString &id, const QString &leaderId)
 {
-    // The member's own primary, which may not be the current player.
-    const QString leader = leaderId.isEmpty() ? leaderOf(id) : leaderId;
-    if (Client *lead = leader.isEmpty() ? current() : client(leader))
+    // The member's own primary, which may not be the current player; the
+    // current player only if it lists this member.
+    QString leader = leaderId.isEmpty() ? leaderOf(id) : leaderId;
+    if (leader.isEmpty() && memberIds(m_currentId).contains(id))
+        leader = m_currentId;
+    if (Client *lead = client(leader))
         lead->removeSecondaries({ addressOf(id) });
 }
 

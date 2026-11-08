@@ -42,6 +42,7 @@ private slots:
     void groupAndMemberMute();
     void groupMuteWithMembersNotShown();
     void aFollowerOfAnUnknownLeaderOffersIt();
+    void leaveWithoutALeaderUsesTheCurrentOnlyIfItListsTheMember();
     void pairHalvesHubsAndZonesCannotJoin();
 
 private:
@@ -498,6 +499,20 @@ void TstGroup::aFollowerOfAnUnknownLeaderOffersIt()
     QVERIFY(model.addManual(model.data(row, PlayerModel::PrimaryIdRole).toString()));
     QTRY_COMPARE(model.data(model.index(model.indexOf(m_house->id(1))), PlayerModel::LeaderIdRole).toString(),
                  m_house->id(0));
+}
+
+void TstGroup::leaveWithoutALeaderUsesTheCurrentOnlyIfItListsTheMember()
+{
+    m_house->group(1, { 2 });
+    QScopedPointer<PlayerModel> model(household(m_house, nullptr));
+    model->setCurrentId(m_house->id(0));
+    QTRY_VERIFY(model->current()->online());
+    // Studio is not in the current player's group and its own leader is not
+    // polled: nothing is sent.
+    model->leave(m_house->id(2));
+    QTest::qWait(500);
+    QCOMPARE(m_house->player(0)->requests(QStringLiteral("/RemoveSlave")).size(), 0);
+    QCOMPARE(m_house->leaderOf(2), 1);
 }
 
 QTEST_GUILESS_MAIN(TstGroup)

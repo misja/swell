@@ -85,7 +85,7 @@ public:
     // Takes a secondary out of its group, through its primary (leaderId when
     // given, for a member Swell does not know).
     Q_INVOKABLE void leave(const QString &id, const QString &leaderId = QString());
-    // A player's own volume, for the group page.
+    // A player's own volume and mute (Now Playing, Per player).
     Q_INVOKABLE void setPlayerVolume(const QString &id, int level);
     Q_INVOKABLE void setPlayerMuted(const QString &id, bool muted);
     // Whether a primary and all its secondaries are muted.

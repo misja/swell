@@ -26,7 +26,7 @@ Page {
     Binding {
         target: players
         property: "watchGroup"
-        value: page.status === PageStatus.Active && page._leads && page._perPlayer
+        value: page.status === PageStatus.Active && Qt.application.active && page._leads && page._perPlayer
     }
     Component.onDestruction: players.watchGroup = false
     // Artwork edge: the short side of the page, flush with the page edges
@@ -306,7 +306,7 @@ Page {
                             verticalCenter: parent.verticalCenter
                         }
                         text: qsTr("Per player")
-                        color: parent.highlighted ? Theme.highlightColor : Theme.secondaryColor
+                        color: parent.highlighted ? Theme.highlightColor : Theme.primaryColor
                     }
                     Icon {
                         id: arrow
@@ -333,6 +333,7 @@ Page {
                         // This member's own mute.
                         IconButton {
                             width: mute.width
+                            height: Theme.itemSizeSmall
                             anchors.verticalCenter: parent.verticalCenter
                             // The theme's small volume icons, drawn for this size.
                             icon.source: model.muted ? "image://theme/icon-system-volume-mute" : "image://theme/icon-system-volume"
@@ -340,10 +341,19 @@ Page {
                             onClicked: players.setPlayerMuted(model.playerId, !model.muted)
                         }
 
+                        // A member with a fixed volume: its name only.
+                        Label {
+                            visible: model.volume < 0
+                            width: parent.width - mute.width
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: qsTr("%1: fixed volume").arg(model.name)
+                            color: Theme.secondaryColor
+                        }
                         Slider {
                             id: member
+                            visible: model.volume >= 0
                             width: parent.width - mute.width
-                            enabled: model.online && model.volume >= 0
+                            enabled: model.online
                             minimumValue: 0
                             maximumValue: 100
                             stepSize: 1
