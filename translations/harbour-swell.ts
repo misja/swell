@@ -331,7 +331,7 @@
     </message>
     <message>
         <location filename="../qml/pages/PlayersPage.qml" line="126"/>
-        <source>Join %1</source>
+        <source>Follow %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

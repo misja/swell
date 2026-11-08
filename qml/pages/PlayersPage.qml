@@ -123,7 +123,7 @@ Page {
                     ContextMenu {
                         MenuItem {
                             visible: item._canJoin
-                            text: qsTr("Join %1").arg(players.current ? players.current.name : "")
+                            text: qsTr("Follow %1").arg(players.current ? players.current.name : "")
                             onClicked: players.join(entry._id)
                         }
                         MenuItem {

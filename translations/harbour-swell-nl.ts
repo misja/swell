@@ -333,8 +333,8 @@
     </message>
     <message>
         <location filename="../qml/pages/PlayersPage.qml" line="126"/>
-        <source>Join %1</source>
-        <translation>Meedoen met %1</translation>
+        <source>Follow %1</source>
+        <translation>Volg %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/PlayersPage.qml" line="131"/>
