@@ -46,6 +46,13 @@ class Client : public QObject
     Q_PROPERTY(int duration READ duration NOTIFY statusChanged)
     Q_PROPERTY(int position READ position NOTIFY positionChanged)
     Q_PROPERTY(BluOS::QueueModel *queue READ queue CONSTANT)
+    Q_PROPERTY(GroupRole groupRole READ groupRole NOTIFY syncStatusChanged)
+    Q_PROPERTY(QString groupName READ groupName NOTIFY syncStatusChanged)
+    Q_PROPERTY(bool primaryReconnecting READ primaryReconnecting NOTIFY syncStatusChanged)
+    Q_PROPERTY(QStringList secondaryIds READ secondaryIds NOTIFY syncStatusChanged)
+    Q_PROPERTY(QString primaryId READ primaryId NOTIFY syncStatusChanged)
+    Q_PROPERTY(int groupVolume READ groupVolume NOTIFY statusChanged)
+    Q_PROPERTY(bool groupBusy READ groupBusy NOTIFY groupBusyChanged)
 
 public:
     enum Availability {
@@ -56,6 +63,14 @@ public:
     };
     Q_ENUM(Availability)
 
+    // A player's place in a group (API section 8).
+    enum GroupRole {
+        Alone,
+        Primary,      // leads: other players follow its source
+        Secondary     // follows a primary; keeps its own volume
+    };
+    Q_ENUM(GroupRole)
+
     struct Timing {
         int pollTimeoutSecs = 100;   // API 2.1: recommended 100 s, never below 10 s
         int deadlineGraceMs = 15000; // added to the poll timeout before aborting
@@ -65,6 +80,7 @@ public:
         int minIntervalMs = 1000;    // API 2: same resource at most once per second
         int backoffInitialMs = 1000;
         int backoffMaxMs = 30000;
+        int syncPollTimeoutSecs = 180;   // API 2.2: recommended 180 s
     };
 
     Client(QNetworkAccessManager *nam, const QString &host, int port = 11000,
@@ -95,6 +111,25 @@ public:
     QString title2() const { return m_status.title2; }
     QString title3() const { return m_status.title3; }
     QUrl artworkUrl() const { return resolveImage(m_status.image); }
+    GroupRole groupRole() const;
+    QString groupName() const { return m_sync.group; }
+    // The primary's "host:port" while this player is a secondary.
+    QString primaryId() const;
+    // The secondaries' "host:port" while this player is a primary.
+    QStringList secondaryIds() const { return groupRole() == Primary ? m_sync.slaves : QStringList(); }
+    bool primaryReconnecting() const { return groupRole() == Secondary && m_sync.masterReconnecting; }
+    // The group's volume on a primary (from /Status), -1 if unknown.
+    int groupVolume() const { return m_status.groupVolume; }
+    // A group command is being sent; controls for it wait.
+    bool groupBusy() const { return m_groupBusy; }
+    // Keeps /SyncStatus current with its own long poll, for a player whose
+    // /Status is a copy of its primary's (API 2: a secondary's volume is only
+    // in its own /SyncStatus).
+    void setSyncWatch(bool watch);
+    // Off: a running client polls only /SyncStatus (with the watch), and its
+    // availability comes from that; for players shown beside the current one.
+    void setStatusPolling(bool polling);
+
     // The queue can always skip; a stream only when it offers the action (4.8).
     bool canSkip() const { return m_status.ok && (!m_status.hasStreamUrl || !m_status.skipActionUrl.isEmpty()); }
     bool canBack() const { return m_status.ok && (!m_status.hasStreamUrl || !m_status.backActionUrl.isEmpty()); }
@@ -152,12 +187,22 @@ public slots:
     // Runs a context-menu actionURL (add, add all, favourite). Never merged
     // with another request; actionDone or commandFailed follows.
     void runAction(const QString &playerPath, const QString &type);
+    // On a primary (or a lone player): adds players ("host:port", host an IP
+    // address) to its group, one at a time: concurrent calls race over the
+    // membership (as observed by azzurro). A player missing from the answer
+    // is reported through commandFailed.
+    void addSecondaries(const QStringList &ids);
+    // On a primary: takes players out of its group (/RemoveSlave).
+    void removeSecondaries(const QStringList &ids);
+    // On a primary: sets every player in the group (tell_slaves=1).
+    void setGroupVolume(int level);
 
 signals:
     void availabilityChanged();
     void statusChanged();
     void syncStatusChanged();
     void positionChanged();
+    void groupBusyChanged();
     void presetsChanged();
     void inputsChanged();
     // A command request failed; the poll keeps running.
@@ -197,6 +242,11 @@ private:
     void onStatusReply(QNetworkReply *reply);
     void fetchSyncStatus();
     void onSyncStatusReply(QNetworkReply *reply);
+    void watchSyncStatus();
+    void onSyncWatchReply(QNetworkReply *reply);
+    void takeSyncStatus(const SyncStatus &sync);
+    void nextGroupCommand();
+    void setGroupBusy(bool busy);
     void onCommandReply(QNetworkReply *reply, const QString &path);
 
     void succeeded();
@@ -217,6 +267,13 @@ private:
 
     QPointer<QNetworkReply> m_statusReply;
     QPointer<QNetworkReply> m_syncReply;
+    QPointer<QNetworkReply> m_syncWatchReply;
+    bool m_syncWatch = false;
+    bool m_statusPolling = true;
+    int m_syncBackoffMs = 0;
+    QStringList m_pendingAdds;
+    bool m_groupCommandRunning = false;
+    bool m_groupBusy = false;
     QTimer m_pollTimer;
     QTimer m_positionTimer;
     int m_backoffMs = 0;

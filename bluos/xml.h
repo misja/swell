@@ -36,6 +36,7 @@ struct Status {
     int totlen = -1;
     int volume = -1;        // 0..100, -1 = fixed volume
     bool mute = false;
+    int groupVolume = -1;   // on a group's primary (section 2.1); -1 otherwise
     bool hasStreamUrl = false; // queue not the source: no next/previous
     // Stream actions (section 4.8): the URL to call for skip/back, empty when
     // the stream does not offer it. Relevant only with hasStreamUrl.
@@ -62,14 +63,40 @@ struct SyncStatus {
     int volume = -1;        // 0..100, -1 = fixed volume
     bool mute = false;
     bool initialized = true;
-    // Present only on a secondary player in a group.
+    // On a secondary player in a group. The section 2.2 example also shows a
+    // primary naming itself here, so Client::groupRole() compares it with the
+    // player's own address.
     QString masterHost;
     int masterPort = 0;
     bool masterReconnecting = false;
-    // Present only on the primary player of a group: "host:port" entries.
+    // On the primary player of a group: "host:port" entries.
     QStringList slaves;
+    // A fixed group (stereo pair, surround set), configured in the player;
+    // out of scope for grouping (section 8).
+    QString zone;
+    bool zoneMaster = false;
+    bool zoneSlave = false;
 
-    bool isSecondary() const { return !masterHost.isEmpty(); }
+    // Not the same as being a secondary; see above.
+    bool hasMaster() const { return !masterHost.isEmpty(); }
+};
+
+// The answer to /AddSlave (section 8.1, 8.2): the players that were added.
+// A player that could not be added is only missing from it.
+struct AddSlave {
+    bool ok = false;
+    QString error;
+
+    QStringList added;      // "host:port"
+};
+
+// The answer to /Volume (section 3): the player's level after the change.
+struct VolumeReply {
+    bool ok = false;
+    QString error;
+
+    int level = -1;
+    bool mute = false;
 };
 
 // /Presets (section 6.1). Ids are not sequential; play a preset by its id.
@@ -189,6 +216,8 @@ Playlist parsePlaylist(const QByteArray &xml);
 Presets parsePresets(const QByteArray &xml);
 Inputs parseCaptureInputs(const QByteArray &xml);
 SyncStatus parseSyncStatus(const QByteArray &xml);
+AddSlave parseAddSlave(const QByteArray &xml);
+VolumeReply parseVolume(const QByteArray &xml);
 
 } // namespace BluOS
 

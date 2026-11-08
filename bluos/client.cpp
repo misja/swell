@@ -89,8 +89,28 @@ void Client::start()
         return;
     m_running = true;
     m_backoffMs = 0;
-    fetchSyncStatus();
-    schedulePoll(0);
+    m_syncBackoffMs = 0;
+    if (m_statusPolling) {
+        fetchSyncStatus();
+        schedulePoll(0);
+    }
+    watchSyncStatus();
+}
+
+void Client::setStatusPolling(bool polling)
+{
+    if (m_statusPolling == polling)
+        return;
+    m_statusPolling = polling;
+    if (!m_running)
+        return;
+    if (polling) {
+        schedulePoll(0);
+    } else {
+        m_pollTimer.stop();
+        if (m_statusReply)
+            m_statusReply->abort();
+    }
 }
 
 void Client::stop()
@@ -102,6 +122,9 @@ void Client::stop()
         m_statusReply->abort();
     if (m_syncReply)
         m_syncReply->abort();
+    if (m_syncWatchReply)
+        m_syncWatchReply->abort();
+    m_pendingAdds.clear();
     for (Gate &gate : m_gates) {
         if (gate.timer)
             gate.timer->stop();
@@ -214,6 +237,117 @@ void Client::setVolume(int level)
     QUrlQuery query;
     query.addQueryItem(QStringLiteral("level"), QString::number(qBound(0, level, 100)));
     send(QStringLiteral("/Volume"), encoded(query));
+}
+
+void Client::setGroupVolume(int level)
+{
+    // tell_slaves first: the gate key is the first parameter, so this does
+    // not replace (or get replaced by) the player's own volume.
+    send(QStringLiteral("/Volume"),
+         QStringLiteral("tell_slaves=1&level=%1").arg(qBound(0, level, 100)));
+}
+
+Client::GroupRole Client::groupRole() const
+{
+    if (!m_sync.ok)
+        return Alone;
+    if (!m_sync.masterHost.isEmpty()) {
+        const QString master = QStringLiteral("%1:%2").arg(m_sync.masterHost).arg(m_sync.masterPort);
+        if (master != id() && master != m_sync.id)
+            return Secondary;
+    }
+    return m_sync.slaves.isEmpty() ? Alone : Primary;
+}
+
+QString Client::primaryId() const
+{
+    if (groupRole() != Secondary)
+        return QString();
+    return QStringLiteral("%1:%2").arg(m_sync.masterHost).arg(m_sync.masterPort);
+}
+
+void Client::addSecondaries(const QStringList &ids)
+{
+    m_pendingAdds += ids;
+    nextGroupCommand();
+}
+
+void Client::nextGroupCommand()
+{
+    if (m_groupCommandRunning)
+        return;
+    if (m_pendingAdds.isEmpty()) {
+        setGroupBusy(false);
+        return;
+    }
+    const QString target = m_pendingAdds.takeFirst();
+    const int colon = target.lastIndexOf(QLatin1Char(':'));
+    QUrlQuery query;
+    query.addQueryItem(QStringLiteral("slave"), colon > 0 ? target.left(colon) : target);
+    query.addQueryItem(QStringLiteral("port"), colon > 0 ? target.mid(colon + 1) : QStringLiteral("11000"));
+    m_groupCommandRunning = true;
+    setGroupBusy(true);
+    fetch(QStringLiteral("/AddSlave"), encoded(query), [this, target](const QByteArray &body) {
+        m_groupCommandRunning = false;
+        const AddSlave answer = parseAddSlave(body);
+        if (body.isEmpty())
+            emit commandFailed(QStringLiteral("/AddSlave"), QStringLiteral("no answer"));
+        else if (!answer.ok)
+            emit commandFailed(QStringLiteral("/AddSlave"),
+                               errorIn(body).isEmpty() ? answer.error : errorIn(body));
+        else if (!answer.added.contains(target))
+            emit commandFailed(QStringLiteral("/AddSlave"), QStringLiteral("%1 was not added").arg(target));
+        fetchSyncStatus();
+        nextGroupCommand();
+    });
+}
+
+void Client::removeSecondaries(const QStringList &ids)
+{
+    if (ids.isEmpty())
+        return;
+    QStringList hosts;
+    QStringList ports;
+    for (const QString &target : ids) {
+        const int colon = target.lastIndexOf(QLatin1Char(':'));
+        hosts << (colon > 0 ? target.left(colon) : target);
+        ports << (colon > 0 ? target.mid(colon + 1) : QStringLiteral("11000"));
+    }
+    QUrlQuery query;
+    const bool one = ids.size() == 1;
+    const QLatin1Char comma(',');
+    query.addQueryItem(one ? QStringLiteral("slave") : QStringLiteral("slaves"), hosts.join(comma));
+    query.addQueryItem(one ? QStringLiteral("port") : QStringLiteral("ports"), ports.join(comma));
+    setGroupBusy(true);
+    fetch(QStringLiteral("/RemoveSlave"), encoded(query), [this](const QByteArray &body) {
+        // The answer is the primary's /SyncStatus (section 8.3).
+        const SyncStatus sync = parseSyncStatus(body);
+        if (sync.ok)
+            takeSyncStatus(sync);
+        else
+            emit commandFailed(QStringLiteral("/RemoveSlave"),
+                               body.isEmpty() ? QStringLiteral("no answer") : errorIn(body));
+        setGroupBusy(m_groupCommandRunning || !m_pendingAdds.isEmpty());
+    });
+}
+
+void Client::setGroupBusy(bool busy)
+{
+    if (m_groupBusy == busy)
+        return;
+    m_groupBusy = busy;
+    emit groupBusyChanged();
+}
+
+void Client::setSyncWatch(bool watch)
+{
+    if (m_syncWatch == watch)
+        return;
+    m_syncWatch = watch;
+    if (watch)
+        watchSyncStatus();
+    else if (m_syncWatchReply)
+        m_syncWatchReply->abort();
 }
 
 void Client::setMuted(bool muted)
@@ -637,12 +771,64 @@ void Client::onSyncStatusReply(QNetworkReply *reply)
     const SyncStatus sync = parseSyncStatus(reply->readAll());
     if (!sync.ok)
         return;
-    m_sync = sync;
-    emit syncStatusChanged();
+    takeSyncStatus(sync);
     // The status may have moved on while this was in flight; compare with what
     // was asked for, not with the answer, which need not echo it.
     if (m_status.ok && m_status.syncStat != m_syncRequestedFor)
         fetchSyncStatus();
+}
+
+void Client::takeSyncStatus(const SyncStatus &sync)
+{
+    m_sync = sync;
+    emit syncStatusChanged();
+}
+
+void Client::watchSyncStatus()
+{
+    if (!m_running || !m_syncWatch || m_syncWatchReply)
+        return;
+    const int wait = msUntilAllowed(QStringLiteral("/SyncStatus"));
+    if (wait > 0) {
+        QTimer::singleShot(wait, Qt::PreciseTimer, this, &Client::watchSyncStatus);
+        return;
+    }
+    QUrlQuery query;
+    int deadline = m_timing.commandTimeoutMs;
+    if (m_sync.ok && !m_sync.etag.isEmpty()) {
+        query.addQueryItem(QStringLiteral("timeout"), QString::number(m_timing.syncPollTimeoutSecs));
+        query.addQueryItem(QStringLiteral("etag"), m_sync.etag);
+        deadline = m_timing.syncPollTimeoutSecs * 1000 + m_timing.deadlineGraceMs;
+    }
+    QNetworkReply *reply = get(QStringLiteral("/SyncStatus"), encoded(query), deadline);
+    m_syncWatchReply = reply;
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() { onSyncWatchReply(reply); });
+}
+
+void Client::onSyncWatchReply(QNetworkReply *reply)
+{
+    reply->deleteLater();
+    if (m_syncWatchReply == reply)
+        m_syncWatchReply = nullptr;
+    if (!m_running || !m_syncWatch)
+        return;
+    const SyncStatus sync = reply->error() == QNetworkReply::NoError ? parseSyncStatus(reply->readAll())
+                                                                     : SyncStatus();
+    if (!sync.ok) {
+        // Without a status poll, this read decides availability.
+        if (!m_statusPolling)
+            setAvailability(Offline);
+        m_syncBackoffMs = m_syncBackoffMs ? qMin(m_syncBackoffMs * 2, m_timing.backoffMaxMs)
+                                          : m_timing.backoffInitialMs;
+        QTimer::singleShot(m_syncBackoffMs, this, &Client::watchSyncStatus);
+        return;
+    }
+    m_syncBackoffMs = 0;
+    if (!m_statusPolling)
+        setAvailability(Online);
+    if (!m_sync.ok || sync.etag != m_sync.etag)
+        takeSyncStatus(sync);
+    watchSyncStatus();
 }
 
 void Client::onCommandReply(QNetworkReply *reply, const QString &path)
@@ -650,11 +836,23 @@ void Client::onCommandReply(QNetworkReply *reply, const QString &path)
     reply->deleteLater();
     if (reply->error() != QNetworkReply::NoError) {
         emit commandFailed(path, describe(reply));
-    } else {
-        // A command can also fail with an <error> document (API 7.1).
-        const QString error = errorIn(reply->readAll());
-        if (!error.isEmpty())
-            emit commandFailed(path, error);
+        return;
+    }
+    const QByteArray body = reply->readAll();
+    // A command can also fail with an <error> document (API 7.1).
+    const QString error = errorIn(body);
+    if (!error.isEmpty()) {
+        emit commandFailed(path, error);
+        return;
+    }
+    // /Volume answers with the new level: show it before /SyncStatus does.
+    if (path == QLatin1String("/Volume") && m_sync.ok) {
+        const VolumeReply volume = parseVolume(body);
+        if (volume.ok && (volume.level != m_sync.volume || volume.mute != m_sync.mute)) {
+            m_sync.volume = volume.level;
+            m_sync.mute = volume.mute;
+            emit syncStatusChanged();
+        }
     }
 }
 

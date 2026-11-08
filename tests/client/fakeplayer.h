@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 // A minimal in-process stand-in for a player's control port, for tests only.
 // It serves fixed documents per path, holds /Status long polls until the
-// status changes or the requested timeout passes, can redirect a path to
+// status changes or the requested timeout passes (and /SyncStatus long polls
+// the same way), can redirect a path to
 // another server, and logs every request it receives.
 #ifndef FAKEPLAYER_H
 #define FAKEPLAYER_H
@@ -56,14 +57,21 @@ public:
     void rememberPort() { m_port = m_server.serverPort(); }
 
     // The <status> document; its etag attribute must change when it changes.
-    void setStatus(const QByteArray &xml)
+    void setStatus(const QByteArray &xml) { setDocument(QStringLiteral("/Status"), xml); }
+
+    // A long-polled document (/Status or /SyncStatus). Polls held on its old
+    // etag are answered with the new one.
+    void setDocument(const QString &path, const QByteArray &xml)
     {
-        m_routes.insert(QStringLiteral("/Status"), xml);
+        m_routes.insert(path, xml);
         const QList<Held> held = m_held;
         m_held.clear();
-        for (const Held &h : held)
-            if (h.socket)
-                respond(h.socket, QStringLiteral("/Status"), QUrlQuery());
+        for (const Held &h : held) {
+            if (h.path != path)
+                m_held.append(h);
+            else if (h.socket)
+                respond(h.socket, path, QUrlQuery());
+        }
     }
 
     void serve(const QString &path, const QByteArray &body,
@@ -99,6 +107,7 @@ public:
 private:
     struct Held {
         QPointer<QTcpSocket> socket;
+        QString path;
     };
 
     static QString etagOf(const QByteArray &xml)
@@ -135,17 +144,18 @@ private:
         const QString path = target.path();
         m_requests.append({ path, query, m_clock.elapsed(), raw });
 
-        if (path == QLatin1String("/Status") && query.hasQueryItem(QStringLiteral("etag"))
+        if ((path == QLatin1String("/Status") || path == QLatin1String("/SyncStatus"))
+                && query.hasQueryItem(QStringLiteral("etag"))
                 && query.queryItemValue(QStringLiteral("etag")) == etagOf(m_routes.value(path))) {
             const int timeout = query.queryItemValue(QStringLiteral("timeout")).toInt();
-            m_held.append({ socket });
+            m_held.append({ socket, path });
             QPointer<QTcpSocket> guarded(socket);
-            QTimer::singleShot(timeout * 1000, this, [this, guarded]() {
+            QTimer::singleShot(timeout * 1000, this, [this, guarded, path]() {
                 for (int i = 0; i < m_held.size(); ++i) {
                     if (m_held.at(i).socket == guarded) {
                         m_held.removeAt(i);
                         if (guarded)
-                            respond(guarded, QStringLiteral("/Status"), QUrlQuery());
+                            respond(guarded, path, QUrlQuery());
                         return;
                     }
                 }

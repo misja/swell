@@ -57,6 +57,23 @@ Item {
         }
     }
 
+    // NowPlayingPage, PlayersPage and GroupPage: group values (spec 005).
+    function group() {
+        return [_player.groupRole === Player.Alone, _player.secondaryIds.length, _player.primaryReconnecting,
+                _player.groupVolume, _player.groupBusy].join(" ")
+    }
+    Repeater {
+        id: playerRows
+        model: players
+        Item {
+            readonly property string keys: [model.groupRole, model.leaderId === "", model.memberNames.length,
+                                            model.memberNames.join(","), model.volume].join(" ")
+        }
+    }
+    function playerRow() {
+        return playerRows.itemAt(0).keys
+    }
+
     // QueuePage and the mini-player: the player's queue, a typed pointer.
     readonly property QtObject _queue: _player ? _player.queue : null
     function queue() {

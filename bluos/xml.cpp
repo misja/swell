@@ -91,6 +91,7 @@ Status parseStatus(const QByteArray &xml)
         else if (n == QLatin1String("song")) s.song = toInt(reader.readElementText(), -1);
         else if (n == QLatin1String("secs")) s.secs = toInt(reader.readElementText(), -1);
         else if (n == QLatin1String("totlen")) s.totlen = toInt(reader.readElementText(), -1);
+        else if (n == QLatin1String("groupVolume")) s.groupVolume = toInt(reader.readElementText(), -1);
         else if (n == QLatin1String("volume")) s.volume = toInt(reader.readElementText(), -1);
         else if (n == QLatin1String("mute")) s.mute = toBool(reader.readElementText());
         else reader.skipCurrentElement();
@@ -115,6 +116,9 @@ SyncStatus parseSyncStatus(const QByteArray &xml)
     s.mac = a.value(QLatin1String("mac")).toString();
     s.syncStat = a.value(QLatin1String("syncStat")).toString();
     s.group = a.value(QLatin1String("group")).toString();
+    s.zone = a.value(QLatin1String("zone")).toString();
+    s.zoneMaster = toBool(a.value(QLatin1String("zoneMaster")).toString());
+    s.zoneSlave = toBool(a.value(QLatin1String("zoneSlave")).toString());
     s.volume = toInt(a.value(QLatin1String("volume")).toString(), -1);
     s.mute = toBool(a.value(QLatin1String("mute")).toString());
     if (a.hasAttribute(QLatin1String("initialized")))
@@ -338,5 +342,37 @@ Inputs parseCaptureInputs(const QByteArray &xml)
     return inputs;
 }
 
+
+AddSlave parseAddSlave(const QByteArray &xml)
+{
+    AddSlave s;
+    QXmlStreamReader reader(xml);
+    if (!enterRoot(reader, "addSlave", &s.error))
+        return s;
+    while (reader.readNextStartElement()) {
+        if (reader.name() == QLatin1String("slave")) {
+            const QXmlStreamAttributes a = reader.attributes();
+            const QString host = a.value(QLatin1String("id")).toString();
+            const int port = toInt(a.value(QLatin1String("port")).toString(), 11000);
+            if (!host.isEmpty())
+                s.added.append(QStringLiteral("%1:%2").arg(host).arg(port));
+        }
+        reader.skipCurrentElement();
+    }
+    s.ok = finish(reader, &s.error);
+    return s;
+}
+
+VolumeReply parseVolume(const QByteArray &xml)
+{
+    VolumeReply v;
+    QXmlStreamReader reader(xml);
+    if (!enterRoot(reader, "volume", &v.error))
+        return v;
+    v.mute = toBool(reader.attributes().value(QLatin1String("mute")).toString());
+    v.level = toInt(reader.readElementText(), -1);
+    v.ok = finish(reader, &v.error) && v.level >= 0;
+    return v;
+}
 
 } // namespace BluOS

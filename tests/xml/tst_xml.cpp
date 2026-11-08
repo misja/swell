@@ -21,6 +21,10 @@ private slots:
     void syncStatusPrimary();
     void syncStatusSecondary();
     void syncStatusWrongRoot();
+    void groupVolumeInStatus();
+    void addSlaveAnswer();
+    void volumeAnswer();
+    void fixedGroupFields();
     void statusPrid();
     void statusStreamActions();
     void statusQueuePosition();
@@ -122,7 +126,7 @@ void TstXml::syncStatusPrimary()
     QCOMPARE(s.volume, 30);
     QCOMPARE(s.syncStat, QStringLiteral("9"));
     QVERIFY(s.initialized);
-    QVERIFY(!s.isSecondary());
+    QVERIFY(!s.hasMaster());
     QCOMPARE(s.slaves, QStringList({ QStringLiteral("192.0.2.11:11000") }));
 }
 
@@ -133,7 +137,7 @@ void TstXml::syncStatusSecondary()
         "id=\"192.0.2.11:11000\" initialized=\"false\">"
         "<master port=\"11010\" reconnecting=\"true\">192.0.2.10</master></SyncStatus>");
     QVERIFY2(s.ok, qPrintable(s.error));
-    QVERIFY(s.isSecondary());
+    QVERIFY(s.hasMaster());
     QCOMPARE(s.masterHost, QStringLiteral("192.0.2.10"));
     QCOMPARE(s.masterPort, 11010);
     QVERIFY(s.masterReconnecting);
@@ -369,6 +373,43 @@ void TstXml::captureInputsMalformed()
     const Inputs none = parseCaptureInputs("<radiotime service=\"Capture\"/>");
     QVERIFY(none.ok);
     QVERIFY(none.items.isEmpty());
+}
+
+void TstXml::groupVolumeInStatus()
+{
+    const Status s = parseStatus("<status etag=\"1\"><state>play</state><groupVolume>42</groupVolume></status>");
+    QVERIFY2(s.ok, qPrintable(s.error));
+    QCOMPARE(s.groupVolume, 42);
+    QCOMPARE(parseStatus("<status etag=\"1\"><state>play</state></status>").groupVolume, -1);
+}
+
+void TstXml::addSlaveAnswer()
+{
+    const AddSlave a = parseAddSlave("<addSlave><slave port=\"11000\" id=\"192.0.2.11\"/>"
+                                     "<slave port=\"11010\" id=\"192.0.2.12\"/></addSlave>");
+    QVERIFY2(a.ok, qPrintable(a.error));
+    QCOMPARE(a.added, QStringList({ QStringLiteral("192.0.2.11:11000"), QStringLiteral("192.0.2.12:11010") }));
+    QVERIFY(parseAddSlave("<addSlave/>").added.isEmpty());
+    QVERIFY(!parseAddSlave("<error><message>x</message></error>").ok);
+}
+
+void TstXml::volumeAnswer()
+{
+    const VolumeReply v = parseVolume("<volume db=\"-30\" mute=\"1\" etag=\"v2\">15</volume>");
+    QVERIFY2(v.ok, qPrintable(v.error));
+    QCOMPARE(v.level, 15);
+    QVERIFY(v.mute);
+    QVERIFY(!parseVolume("<volume>x</volume>").ok);
+}
+
+void TstXml::fixedGroupFields()
+{
+    const SyncStatus s = parseSyncStatus("<SyncStatus etag=\"1\" name=\"Right\" zone=\"Lounge\" "
+                                         "zoneSlave=\"true\" id=\"192.0.2.12:11000\"/>");
+    QVERIFY2(s.ok, qPrintable(s.error));
+    QCOMPARE(s.zone, QStringLiteral("Lounge"));
+    QVERIFY(s.zoneSlave);
+    QVERIFY(!s.zoneMaster);
 }
 
 QTEST_GUILESS_MAIN(TstXml)
