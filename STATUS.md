@@ -42,7 +42,8 @@ Artifacts and evidence:
 - specs/<feature>/evidence.md holds each feature's results, reviews and
   device checks (001: 0.1.0-7, 002: 0.2.0-4, 004: 0.3.0-12). Raw build and
   test logs stay local in evidence/ (ignored by Git since 2026-11-08).
-- Device: the Xperia 10 II (Sailfish OS 5.2.0.20) runs 0.3.0-12, against a NAD
+- Device: the Xperia 10 II (Sailfish OS 5.2.0.22 since the OTA, 2026-11-08;
+  before that 5.2.0.20) runs 0.3.0-14, against a NAD
   C 379.
 - Device facts (2026-11-06): `/Play?id=` alone plays from a queue entry; the
   queue id changes on every modification, including a delete (as API
@@ -82,7 +83,7 @@ Three rounds of wave concepts were tried and the wave motif was rejected as a
 whole. Learnings and options are in issue #3. The template placeholder stays.
 
 Open items:
-- Release-target ID: the device runs 5.2.0.20, the registry names 5.2.0.18.
+- Release-target ID: the device runs 5.2.0.22, the registry names 5.2.0.18.
 - After an icon change, the launcher keeps the old icon until lipstick
   restarts (`systemctl --user restart lipstick`, with Misja's approval);
   the installed PNGs were already correct (2026-11-07).
