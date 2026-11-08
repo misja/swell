@@ -12,6 +12,8 @@ Page {
     // volumes folding out under it (spec 005, canvas A2).
     readonly property bool _leads: _player !== null && _player.groupRole === Player.Primary
     property bool _perPlayer: false
+    // The members as the leader lists them (each row's own view may lag).
+    readonly property var _memberIds: _leads && _player.secondaryIds ? players.memberIds(players.currentId) : []
 
     // Members keep their own volume current only while it is shown.
     Binding {
@@ -57,6 +59,7 @@ Page {
     }
 
     SilicaFlickable {
+        id: flickable
         anchors.fill: parent
         contentHeight: Math.max(height, layout.height + Theme.paddingLarge)
 
@@ -266,7 +269,20 @@ Page {
                 BackgroundItem {
                     visible: page._leads
                     width: parent.width
-                    onClicked: page._perPlayer = !page._perPlayer
+                    onClicked: {
+                        page._perPlayer = !page._perPlayer
+                        if (page._perPlayer) {
+                            // The members sit below the fold: bring them in.
+                            scrollDown.restart()
+                        }
+                    }
+
+                    // After the list has grown.
+                    Timer {
+                        id: scrollDown
+                        interval: 50
+                        onTriggered: flickable.scrollToBottom()
+                    }
 
                     Label {
                         anchors {
@@ -291,7 +307,8 @@ Page {
                     model: page._leads && page._perPlayer ? players : null
                     delegate: Slider {
                         id: member
-                        visible: model.playerId === players.currentId || model.leaderId === players.currentId
+                        visible: model.playerId === players.currentId
+                                 || page._memberIds.indexOf(model.playerId) >= 0
                         width: parent.width
                         enabled: model.online && model.volume >= 0
                         minimumValue: 0
