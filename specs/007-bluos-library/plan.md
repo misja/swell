@@ -103,10 +103,10 @@ key.
 
 ## Checks and reuse
 
-- **Existing suites:** xml, client, model, queue, browse, lsdp and qml. They
+- **Existing suites:** spike, xml, client, model, queue, browse, lsdp and qml. They
   change only where they read maps or call the fetch functions.
 - **New client tests:** A1, A2 and A3.
-- **New runtime QML test** (`tests/qml`, with a fixture player). It
+- **New runtime QML test** (`tests/qmlruntime`, with the fixture player). It
   compiles the `src/` classes and creates `QmlPlayerModel`/`QmlPlayer` and
   `QmlBrowseModel` through the app's own registration (re-check M3). It
   evaluates the expressions the pages use, for every key listed above, and

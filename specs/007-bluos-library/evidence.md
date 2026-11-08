@@ -13,6 +13,20 @@ constructor, moc accepts it. At runtime the property reports
 `notify=shapedListChanged()`, and emitting the base signal reaches it once.
 The test project was a scratch build and is not kept in the repository.
 
+## Runtime QML test against the code before the change (2026-11-08)
+
+`tests/qmlruntime` (Probe.qml reads what HomePage, BrowsePage and the real
+LetterIndex read) was written first and run on the SDK target against the
+library as it was: 10 passed, 0 failed. All nine suites passed with it.
+
+Negative control: in the SDK copy only, the preset key `inputId` was renamed
+to `inputID`. The test then failed in `presets()` with `…|` where `…|input1`
+was expected; the copy was restored and the suites passed again.
+
+Recorded behaviour the change must keep: the favourites row gives JavaScript
+`undefined` for its actions; a row not read yet gives an empty list; LetterIndex
+leaves `#` out.
+
 ## Review findings and what became of them
 
 Scope/design review, 2026-11-08 (approve with changes):
