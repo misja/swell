@@ -7,9 +7,9 @@ Current owner / next owner / decision owner: root / root (next session) / Misja.
 Now (2026-11-08): feature 003 (MPRIS lock-screen controls, issue #13) on
 branch 003-mpris: specs/003-mpris/{spec,plan,tasks,evidence}.md. Scope/design
 review and result review done (approve with changes, applied). RPM 0.3.0-14
-built and validated; the branch also carries Misja's centred icon. Next:
-device check by Misja, then the PR. Separate open PRs: #12 (LSDP seed);
-branch fix-strip (validator "not stripped" warning), not pushed yet.
+built and validated; the branch also carries Misja's centred icon. Device
+check by Misja passed (2026-11-08). Next: the PR. Merged: #12 (LSDP seed,
+29a8e66) and #14 (binary fully stripped, d90f50e).
 007 (#8) merged in PR #11 (6ddda82).
 
 Objective and acceptance criteria: feature 004 (browse, issue #7) on branch

@@ -6,6 +6,6 @@
 - [x] Misja approves opening the issue: #13.
 - [x] Mpris.qml, harbour-swell.qml, packaging.
 - [x] Tests, build, validator, evidence.md.
-- [ ] Device check with Misja.
+- [x] Device check with Misja: 0.3.0-14 works (2026-11-08).
 - [x] Separate result review (approve with changes); findings applied (evidence.md).
 - [ ] PR.

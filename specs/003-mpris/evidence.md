@@ -34,6 +34,15 @@ Branch 003-mpris, SDK target SailfishOS-5.1.0.11-aarch64.
   translate of 1.005). The PNGs were rendered again with QSvgRenderer at
   86, 108, 128 and 172 px.
 
+## Device check (2026-11-08)
+
+Misja checked 0.3.0-14 on the Xperia 10 II (Sailfish OS 5.2.0.20,
+amber-qml-plugin-mpris 1.2.10): "werkt" (works), against the AC6 list:
+- the lock screen and the events view;
+- controls while locked, and changes from the official app;
+- local audio while BluOS plays, and the headset key;
+- the permission prompt, and Audio revoked, where Settings allows it.
+
 ## Review findings
 
 Scope/design review, 2026-11-08 (approve with changes):
