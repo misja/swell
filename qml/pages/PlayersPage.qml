@@ -76,8 +76,7 @@ Page {
             readonly property string _id: model.playerId
             readonly property bool _follower: model.leaderId !== ""
             readonly property bool _leads: model.memberNames.length > 0
-            // Re-read when the member names change.
-            readonly property var _members: _leads ? (model.memberNames, players.memberIds(_id)) : []
+            readonly property var _members: model.memberIds
             readonly property var _names: model.memberNames
             width: list.width
             visible: !_follower

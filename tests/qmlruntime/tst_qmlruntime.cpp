@@ -196,7 +196,7 @@ void TstQmlRuntime::groupValues()
 {
     // A lone player: what the pages read for a group reaches JavaScript.
     QCOMPARE(call("group"), QStringLiteral("true 0 false -1 false"));
-    QTRY_COMPARE(call("playerRow"), QStringLiteral("0 true 0  20"));
+    QTRY_COMPARE(call("playerRow"), QStringLiteral("0 true 0  20 0 false false"));
 }
 
 void TstQmlRuntime::rowActions()

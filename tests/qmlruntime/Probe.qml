@@ -67,7 +67,8 @@ Item {
         model: players
         Item {
             readonly property string keys: [model.groupRole, model.leaderId === "", model.memberNames.length,
-                                            model.memberNames.join(","), model.volume].join(" ")
+                                            model.memberNames.join(","), model.volume, model.memberIds.length,
+                                            model.canJoin, model.muted].join(" ")
         }
     }
     function playerRow() {

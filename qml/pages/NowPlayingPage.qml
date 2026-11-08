@@ -282,93 +282,77 @@ Page {
                     }
                 }
 
-                BackgroundItem {
+                // Silica's own fold-out; members are watched only while open.
+                ExpandingSection {
+                    id: perPlayer
                     visible: page._leads
-                    width: parent.width
-                    onClicked: {
-                        page._perPlayer = !page._perPlayer
-                        if (page._perPlayer) {
+                    title: qsTr("Per player")
+                    onExpandedChanged: {
+                        page._perPlayer = expanded
+                        if (expanded) {
                             // The members sit below the fold: bring them in.
                             scrollDown.restart()
                         }
                     }
 
-                    // After the list has grown.
+                    // After the section has grown.
                     Timer {
                         id: scrollDown
-                        interval: 50
+                        interval: 300
                         onTriggered: flickable.scrollToBottom()
                     }
 
-                    Label {
-                        anchors {
-                            right: arrow.left
-                            verticalCenter: parent.verticalCenter
-                        }
-                        text: qsTr("Per player")
-                        color: parent.highlighted ? Theme.highlightColor : Theme.primaryColor
-                    }
-                    Icon {
-                        id: arrow
-                        anchors {
-                            right: parent.right
-                            rightMargin: Theme.horizontalPageMargin
-                            verticalCenter: parent.verticalCenter
-                        }
-                        source: page._perPlayer ? "image://theme/icon-m-up" : "image://theme/icon-m-down"
-                    }
-                }
+                    content.sourceComponent: Column {
+                        width: perPlayer.width
+                        Repeater {
+                            model: players
+                            delegate: Row {
+                                visible: model.playerId === players.currentId
+                                         || page._memberIds.indexOf(model.playerId) >= 0
+                                x: Theme.paddingMedium
+                                width: parent.width - Theme.paddingMedium
 
-                Repeater {
-                    model: page._leads && page._perPlayer ? players : null
-                    // Each member's own volume: a small speaker where the
-                    // group's mute button is, so the sliders line up under
-                    // the group volume.
-                    delegate: Row {
-                        visible: model.playerId === players.currentId
-                                 || page._memberIds.indexOf(model.playerId) >= 0
-                        x: Theme.paddingMedium
-                        width: parent.width - Theme.paddingMedium
+                                // This member's own mute.
+                                IconButton {
+                                    width: mute.width
+                                    height: Theme.itemSizeSmall
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    // The theme's small volume icons, drawn for this size.
+                                    icon.source: model.muted ? "image://theme/icon-system-volume-mute" : "image://theme/icon-system-volume"
+                                    enabled: model.online
+                                    onClicked: players.setPlayerMuted(model.playerId, !model.muted)
+                                }
 
-                        // This member's own mute.
-                        IconButton {
-                            width: mute.width
-                            height: Theme.itemSizeSmall
-                            anchors.verticalCenter: parent.verticalCenter
-                            // The theme's small volume icons, drawn for this size.
-                            icon.source: model.muted ? "image://theme/icon-system-volume-mute" : "image://theme/icon-system-volume"
-                            enabled: model.online
-                            onClicked: players.setPlayerMuted(model.playerId, !model.muted)
-                        }
+                                // A member with a fixed volume: its name only.
+                                Label {
+                                    visible: model.volume < 0
+                                    width: parent.width - mute.width
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: qsTr("%1: fixed volume").arg(model.name)
+                                    color: Theme.secondaryColor
+                                }
+                                Slider {
+                                    id: member
+                                    visible: model.volume >= 0
+                                    width: parent.width - mute.width
+                                    enabled: model.online
+                                    minimumValue: 0
+                                    maximumValue: 100
+                                    stepSize: 1
+                                    label: model.name
+                                    valueText: Math.round(value)
 
-                        // A member with a fixed volume: its name only.
-                        Label {
-                            visible: model.volume < 0
-                            width: parent.width - mute.width
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: qsTr("%1: fixed volume").arg(model.name)
-                            color: Theme.secondaryColor
-                        }
-                        Slider {
-                            id: member
-                            visible: model.volume >= 0
-                            width: parent.width - mute.width
-                            enabled: model.online
-                            minimumValue: 0
-                            maximumValue: 100
-                            stepSize: 1
-                            label: model.name
-                            valueText: Math.round(value)
-
-                            Binding {
-                                target: member
-                                property: "value"
-                                value: Math.max(0, model.volume)
-                                when: !member.down
-                            }
-                            onValueChanged: {
-                                if (down) {
-                                    players.setPlayerVolume(model.playerId, Math.round(value))
+                                    Binding {
+                                        target: member
+                                        property: "value"
+                                        value: Math.max(0, model.volume)
+                                        when: !member.down
+                                    }
+                                    onValueChanged: {
+                                        if (down) {
+                                            players.setPlayerVolume(model.playerId, Math.round(value))
+                                        }
+                                    }
                                 }
                             }
                         }

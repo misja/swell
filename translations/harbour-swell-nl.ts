@@ -278,12 +278,12 @@
         <translation>Groepsvolume</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="308"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="289"/>
         <source>Per player</source>
         <translation>Per speler</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="349"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="331"/>
         <source>%1: fixed volume</source>
         <translation>%1: vast volume</translation>
     </message>
@@ -337,32 +337,32 @@
         <translation>Opnieuw zoeken</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="133"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="132"/>
         <source>Follow %1</source>
         <translation>Volg %1</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="139"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="138"/>
         <source>Add %1</source>
         <translation>%1 toevoegen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="144"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="143"/>
         <source>Remove</source>
         <translation>Verwijderen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="194"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="193"/>
         <source>Leave group</source>
         <translation>Groep verlaten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="206"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="205"/>
         <source>No players found</source>
         <translation>Geen spelers gevonden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="207"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="206"/>
         <source>Pull down to search again or to add a player by address</source>
         <translation>Trek omlaag om opnieuw te zoeken of een speler op adres toe te voegen</translation>
     </message>

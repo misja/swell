@@ -80,6 +80,8 @@ QVariant PlayerModel::data(const QModelIndex &index, int role) const
         return c->muted();
     case PrimaryIdRole:
         return c->primaryId();
+    case MemberIdsRole:
+        return memberIds(c->id());
     }
     return QVariant();
 }
@@ -102,6 +104,7 @@ QHash<int, QByteArray> PlayerModel::roleNames() const
         { CanJoinRole, "canJoin" },
         { MutedRole, "muted" },
         { PrimaryIdRole, "primaryId" },
+        { MemberIdsRole, "memberIds" },
     };
 }
 
