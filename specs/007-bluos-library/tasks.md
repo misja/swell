@@ -10,4 +10,5 @@
 - [x] A1, A2, A3 with tests; C2.
 - [x] Tests, build, validator, evidence.md.
 - [ ] Device check with Misja.
-- [ ] Separate result review, then a PR.
+- [x] Separate result review (approve with changes); findings applied (evidence.md).
+- [ ] PR.

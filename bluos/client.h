@@ -108,7 +108,7 @@ public:
 
     // The handlers of these reads run only while context exists, as with
     // QTimer::singleShot(msec, context, functor), and never before the call
-    // returns.
+    // returns. With a null context the answer is dropped.
     // One /Playlist window (section 5.1); the handler gets ok == false on failure.
     void fetchQueueWindow(int start, int end, QObject *context,
                           const std::function<void(const Playlist &)> &handler);

@@ -27,6 +27,7 @@ private slots:
 
     void presets();
     void inputs();
+    void queue();
     void rowActions();
     void parentActionsArePassedOn();
     void favouritesAndUnreadRows();
@@ -177,6 +178,11 @@ void TstQmlRuntime::inputs()
     QCOMPARE(call("inputTile", 0), optical);
     QCOMPARE(call("inputImage", QStringLiteral("input1")),
              QStringLiteral("%1?followRedirects=1").arg(image(QStringLiteral("/images/o.png"))));
+}
+
+void TstQmlRuntime::queue()
+{
+    QCOMPARE(call("queue"), QStringLiteral("true boolean number string boolean number"));
 }
 
 void TstQmlRuntime::rowActions()

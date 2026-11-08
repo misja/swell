@@ -4,7 +4,6 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QVariantMap>
 #include <QXmlStreamReader>
 
 namespace BluOS {

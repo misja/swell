@@ -2,7 +2,7 @@
 
 Status: revised 2026-11-08 after the scope/design review (approve with
 changes; findings applied below). Misja chose option 3 (plan.md) on
-2026-11-08. No implementation yet.
+2026-11-08. Built 2026-11-08 (evidence.md).
 
 ## Owner and linked issue
 
@@ -108,7 +108,7 @@ Conventions for C++; Qt5 connect syntax; ranged-for; CamelCase namespaces.
    the types are registered with QML.
 2. **Typed values:** `Client` offers `QList<Preset>` and `QList<Input>`;
    `BrowseModel` offers typed letters, `moreLinks` and actions. Where QML
-   reads them depends on Misja's choice of option 0 or 3 (plan.md). The
+   reads them: option 3, the src/ subclasses (plan.md). The
    parser structs keep their raw `QString` images; resolved images are a
    separate field or come from `Client::resolveImage` (review M3).
 3. **Small fixes:** A1 (one `<error>` parser), A2 (a stopped client answers

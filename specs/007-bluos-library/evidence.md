@@ -29,10 +29,11 @@ leaves `#` out.
 
 ## Build and tests after the change (2026-11-08)
 
-Branch 007-bluos-library at 222c4ee, SDK target SailfishOS-5.1.0.11-aarch64.
+Branch 007-bluos-library from 222c4ee, rerun after the result review, SDK target SailfishOS-5.1.0.11-aarch64.
 
 - `make check`: all nine suites pass: spike 5, lsdp 18, xml 30, client 29,
-  model 26, qml 16, qmlruntime 10, queue 28, browse 26. The runtime QML test
+  model 26, qml 16, qmlruntime 11 (10 before the queue check from the result
+  review), queue 28, browse 26. The runtime QML test
   is unchanged except that it creates `Swell::QmlPlayerModel`; it now runs
   against `QmlPlayer` and `QmlBrowseModel`, since the library classes no longer
   have those properties.
@@ -55,7 +56,7 @@ Scope/design review, 2026-11-08 (approve with changes):
 | H2 | No runtime QML test | Scope item 4, acceptance criterion 4. |
 | M1 | Library-only build target is redundant | Dropped. |
 | M2 | No bulk brace commit | Touched-code rule (spec C1). |
-| M3 | Keep raw image strings in the parser structs | Separate `imageUrl` field (plan.md). |
+| M3 | Keep raw image strings in the parser structs | Kept; `QmlPlayer` resolves them with `Client::resolveImage`, no extra field (plan.md). |
 | M4 | Callbacks without a context object | A3. |
 | M5 | Option 3 can be smaller | Option 3 as in plan.md. |
 | L1 | Acceptance criterion 1 wording; `ActionsRole` conflict | Criterion 1 rewritten. |
@@ -76,3 +77,18 @@ Re-check of option 3, 2026-11-08 (approve with changes):
 | L2 | `presets()` getter in the subclass hides the typed one | `qmlPresets()`, `qmlInputs()`. |
 | L3 | `queueModel()` duplicates `queue()` | Dropped. |
 | L4 | Stale handoff in STATUS.md | Updated. |
+
+Result review, 2026-11-08 (approve with changes; no High findings):
+
+| ID | Finding | Disposition |
+|---|---|---|
+| M1 | The runtime test does not read `_player.queue` | Added `queue()` to Probe.qml and the test. |
+| L1 | spec.md still said "No implementation yet" | Updated. |
+| L2 | The M3 row above named an `imageUrl` field | Corrected. |
+| L3 | Unused `QVariantMap` include in client.cpp | Removed. |
+| L4 | A null context undocumented; member `operator==` | Documented in client.h; member operators kept. |
+| L5 | Preset equality now includes `url` | Noted for the PR; a change of url now emits presetsChanged. |
+| L6 | The QML maps are rebuilt on every read | Lists are small; no change. |
+
+The A1 test (`errorBodyWithoutMessage`) is a regression guard: A1 is a
+refactor, so it also passes against the old code.

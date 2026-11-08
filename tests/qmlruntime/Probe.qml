@@ -55,6 +55,13 @@ Item {
         }
     }
 
+    // QueuePage and the mini-player: the player's queue, a typed pointer.
+    readonly property QtObject _queue: _player ? _player.queue : null
+    function queue() {
+        return [_queue !== null, typeof _queue.known, typeof _queue.length, typeof _queue.pid,
+                typeof _queue.streaming, typeof _queue.currentIndex].join(" ")
+    }
+
     // BrowsePage: rows and their context menus
     BrowseModel {
         id: listModel
