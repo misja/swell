@@ -1,3 +1,4 @@
 #!/bin/bash
-# Generate the RPM changelog from Git commits and tags (SDK template).
-sfdk-changelog
+# Generate the RPM changelog from Git (SDK template). A release is an
+# annotated tag vX.Y.Z; its subject becomes the entry.
+sfdk-changelog --auto-add-annotations
