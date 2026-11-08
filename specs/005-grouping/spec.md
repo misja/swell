@@ -1,7 +1,8 @@
 # Feature specification — 005 grouping
 
-Status: draft 2026-11-08, for the scope/design review. No implementation and
-no UI yet; the group page is agreed on the design canvas before it is built.
+Status: revised 2026-11-08 after the scope/design review (approve with
+changes; findings applied). Open: Q1 and Q2 for Misja. No implementation and
+no UI yet; the UI is agreed on the design canvas before it is built.
 
 ## Owner and linked issue
 
@@ -25,29 +26,48 @@ needs the official app for that.
 
 - **BluOS Custom Integration API v1.7** (sha256 87fd68fc…, as in spec 001):
   - **Roles (§8):** a group has one primary player and one or more secondary
-    players. Secondary players proxy `/Status`, playback control, the queue
-    and browsing to the primary.
+    players. Requests that a secondary proxies to the primary "include"
+    `/Status`, playback control, the queue and browsing. `/Volume` is not in
+    that list, which fits a secondary keeping its own volume.
   - **Grouping (§8.1, §8.2):** sent to the primary.
     - `/AddSlave?slave=IP&port=P`, optionally with `&group=Name`.
     - For several players at once: `/AddSlave?slaves=IP1,IP2&ports=P1,P2`.
-    - The answer is `<addSlave>` with the slaves added.
+    - The answer is `<addSlave>` with the slaves that were added.
+    - A player that could not be added is simply missing from that list,
+      with HTTP 200 (pyblu 2.2.0 `player.py:289-290`).
   - **Ungrouping (§8.3, §8.4):** `/RemoveSlave?slave=IP&port=P` (or
     `slaves=…&ports=…`), sent to the primary. It answers with the primary's
-    `<SyncStatus>`. Removing the primary from a group of three or more
-    leaves the others as a new group.
+    `<SyncStatus>`.
+  - **Removing the primary:** the API says the others then form a new group
+    (groups of three or more). It does not say how to address that request,
+    which player becomes the new primary, or what happens to a group of two.
+    Home Assistant sends `/RemoveSlave` with the primary's own address to
+    the primary. **Inferred, not verified on hardware.**
   - **Group status (§2.2):** in `/SyncStatus`:
     - `group` is the group name;
     - a primary lists `<slave id="IP" port="P"/>`;
     - a secondary has `<master port="P" reconnecting="…">IP</master>`.
+    - The table says `master` appears only on a secondary. Yet the §2.2
+      example shows a primary with `<master>` naming itself and its slaves
+      listed. A role must therefore not be read from `master` alone.
+    - The recommended `/SyncStatus` long-poll timeout is 180 s.
+    - A player may report its own id as 127.0.0.1 (azzurro `docs/protocol.md`).
   - **Group fields in `/Status` (§2.1):** the primary's carries `groupName`
     and `groupVolume`.
   - **Volume (§3):** `/Volume?level=…&tell_slaves=1` changes the whole group;
     with 0, only the player addressed.
+    - The API does not say whether every member is then set to the same
+      level or keeps its relative level. Nor does it say what a primary does
+      with `level` when `tell_slaves` is omitted, which is what Swell sends
+      today. **Not verified.**
+    - The `/Volume` answer carries the new level; Swell does not use it yet.
   - **Polling (§2):** a secondary's `/Status` is a copy of the primary's, so
     "/SyncStatus long polling is then necessary to track the volume of each
     secondary player".
   - **Fixed groups** (zones, `zoneMaster`/`zoneSlave`) are out of the API's
     scope.
+- **Players that cannot join:** LSDP classes for pair-slaves and hubs, and
+  `zoneSlave` players.
 - **Swell today:**
   - `xml.cpp` already parses `group`, `master` (host, port, reconnecting)
     and the slaves (as "host:port") from `/SyncStatus`.
@@ -55,6 +75,12 @@ needs the official app for that.
   - Nothing reaches the UI.
   - `/SyncStatus` is read again when `syncStat` in `/Status` changes; there
     is no `/SyncStatus` long poll.
+  - A secondary's `/Status` (with its `syncStat`) is the primary's copy. So
+    a volume change on a secondary made elsewhere is not seen today: a
+    latent bug (inferred from the API, not observed).
+  - `isSecondary()` is `!masterHost.isEmpty()`, which would also call the
+    §2.2 example primary a secondary.
+  - Failed `/SyncStatus` reads do not change availability.
   - Only the current player polls, unless `pollAll` is set.
 - **Emulation (only one real player is available, the NAD C 379):**
   - azzurro (jzbz/azzurro 10cce29, MIT) models a household in its Rust
@@ -62,6 +88,13 @@ needs the official app for that.
     `/AddSlave` and `/RemoveSlave` set the leader, `/SyncStatus` is derived
     from it, and a follower serves its leader's status. Swell does not use
     the Rust code (decision 001: no foreign toolchain).
+  - Its limits:
+    - one etag and syncStat shared by every player, so it cannot show
+      per-player changes;
+    - `/RemoveSlave` answers `<addSlave/>`;
+    - no `tell_slaves`, and no form for several players at once.
+
+    It is a model, not evidence of player behaviour.
   - The phone has Python 3.11 (python3-base, a Jolla system package); the
     host has Python 3.14.
   - Swell accepts loopback addresses in "Add a player by address".
@@ -70,36 +103,58 @@ needs the official app for that.
 
 1. **Library (`bluos/`), typed, no QML:**
    - `Client` exposes its group:
-     - a role (alone, primary, secondary);
-     - the group name;
-     - the primary's id when it is a secondary;
-     - the secondaries' ids when it is a primary.
-   - Group commands on a primary: add one or several secondaries, and
-     remove one or several.
-   - Volume of the whole group (`tell_slaves=1`) beside the player's own
-     volume.
-   - Request policy as today: the one-second rule and merging per path and
-     parameter. Group commands are additive and never merged.
+     - **Role:** alone, primary or secondary. Secondary only when `master`
+       is present and differs from the player's own id or address; primary
+       when it has slaves.
+     - The group name, the primary's id (when secondary), the secondaries'
+       ids (when primary), and whether the primary is reconnecting.
+     - Changes come with `syncStatusChanged`, which exists already.
+   - **Group commands on a primary:**
+     - add one or several secondaries (IP addresses only, as the API asks);
+     - remove one or several.
+
+     They are additive actions: paced, never merged. An `<addSlave>` answer
+     missing a requested player is reported as a failure.
+   - **Group volume** (`tell_slaves=1`) has its own gate key. A lone
+     player's `setVolume` request stays exactly as today. The level in a
+     `/Volume` answer is taken over at once.
+   - **Keeping a secondary current:** a `/SyncStatus` long poll (with etag,
+     timeout 180 s), used only while it is needed:
+     - for the current player while it is a secondary;
+     - for every member while the group page is open.
+
+     Such members need no `/Status` poll of their own, since a secondary's
+     is the primary's copy. A failed `/SyncStatus` read counts for
+     availability. A lone player keeps exactly today's requests.
 2. **Player model:**
-   - Which players form a group, from the primaries' and secondaries' views.
-   - Grouping, ungrouping and leaving a group addressed to the right primary.
-   - While the group page is open, the group's members poll, as `pollAll`
-     does for the player list.
+   - Which players form a group. Member references (`<slave id>`,
+     `<master>`) are matched to model ids first by IP:port, then by each
+     client's own reported `id`, ignoring loopback. Members that still do
+     not match are shown by address.
+   - Grouping, ungrouping and leaving go to the primary. If the primary is
+     not in the model, "leave" is not offered; adding the primary at its
+     address is.
+   - Pair-slave, hub and zone-secondary players are not offered as able to
+     join.
+   - QML shaping goes in `src/`, as in 007.
 3. **App (`src/`, `qml/`):** the UI is agreed on the canvas before it is
-   built. Proposed content:
-   - a group page from Now Playing: the players that can join, the current
-     group's members, add/remove, group volume and per-player volume;
-   - the group shown where the player is shown: Now Playing, Home, the mini
-     player, the cover, and the player list (for example "Living Room +
-     Kitchen").
+   built.
+   - **Settled already:** a group page from Now Playing (001).
+   - **Candidates for the canvas:** a group indicator on Now Playing, Home,
+     the player list, the mini player and the cover; group volume and
+     per-player volume on the group page; a primary shown as reconnecting.
+   - Group controls are disabled while a group command is pending.
 4. **Tests:**
-   - **Fixture:** the C++ fake player gets a small household (several
-     players with shared group state, modelled on azzurro's). Client, model
-     and runtime QML tests run against it.
-   - **Device check:** a stdlib-only Python household, `tests/demo/household.py`,
-     with three invented players on 127.0.0.2–.4. It runs on the phone over
-     ssh, with Misja's approval each time; nothing is installed. The real
-     NAD is checked as a lone player only.
+   - **Fixture:** one C++ household in the fake player, with:
+     - several players with per-player etags and syncStat;
+     - a secondary whose `/Status` is the primary's document;
+     - `/SyncStatus` long-poll holding;
+     - `/AddSlave` and `/RemoveSlave` in single and multiple form,
+       including a silent failure;
+     - `tell_slaves`.
+   - Client, model and runtime QML tests run against it.
+   - **Device check:** the household as an emulation on the phone, in the
+     way Misja chooses (Q2). The real NAD is checked as a lone player only.
 
 ## Out of scope
 
@@ -107,41 +162,62 @@ needs the official app for that.
 - Naming groups: the player's default group name is used.
 - Moving playback between players (`canMovePlayback`).
 - Grouping the real NAD with emulated players.
+- A temporary client for a primary that is not in the model.
 - LSDP announcements from the emulated players: they are added by address.
 
 ## Open questions
 
 - **Q1:** when the current player becomes a secondary, Now Playing shows the
-  group's playback (proxied by the player). Do Home's presets and inputs
-  stay those of the secondary, or are they hidden? The API does not say
-  whether `/Presets` is proxied. Proposed: show what the player answers;
-  checked against the household as far as it can be, otherwise marked as
-  not verified on hardware.
-- **Q2:** device-check emulation in Python on the phone (a script, no build)
-  or as a C++/Qt program built for aarch64 (sharing the fixture code).
-  Proposed: Python. It is lighter and needs no build; the automated tests
-  stay in C++.
+  group's playback, proxied by the player.
+  - Should Home's presets and inputs stay those of the secondary, or be
+    hidden? The API does not say whether `/Presets` is proxied.
+  - Does playing a preset or input on a secondary take it out of the group?
+    That is unknown.
+
+  Proposed: show what the player answers, and record both as not verified
+  on hardware.
+- **Q2:** how to run the emulated household for the device check.
+  - (a) **The C++ household, built for aarch64 with the SDK, run on the phone
+    on 127.0.0.2–.4** (recommended): one shared implementation with the
+    tests, no host or network changes. It runs in the foreground over ssh,
+    under `timeout`, with Misja's approval each time; the binary is removed
+    afterwards.
+  - (b) A stdlib-only Python household on the phone. No build is needed,
+    but it is a second model next to the C++ one, and they can drift apart.
+  - (c) The C++ household on the host, on a LAN interface, with one port
+    per player. This needs a host Qt build and opens ports on the LAN.
+  - (d) No emulation on the device: only the automated tests, plus the NAD
+    as a lone player.
 
 ## Acceptance criteria
 
-1. The library exposes a player's group role, the group name, and the
-   members' ids, typed. Grouping, ungrouping and group volume are sent as
-   the API describes. Client tests against the household cover:
-   - adding one or several secondaries;
-   - removing one, including the primary of a group of three;
-   - `tell_slaves`;
-   - a secondary leaving through its primary.
-2. Group changes made elsewhere (the official app, another Swell) appear in
-   Swell without a restart.
+1. The library exposes a player's group role, the group name, the members'
+   ids and whether the primary is reconnecting, typed. Grouping, ungrouping
+   and group volume are sent as the API describes. Client tests against the
+   household cover:
+   - adding one or several secondaries, and a silent failure;
+   - removing one;
+   - a secondary leaving through its primary;
+   - `tell_slaves`, kept apart from the player's own volume;
+   - both role shapes: a primary with and without a `<master>` naming
+     itself;
+   - removing the primary of a group of three, **labelled as an inferred
+     call**.
+2. With the group page open, a change made elsewhere (membership, or a
+   member's volume) shows within one long-poll answer. The same holds for
+   the current player while it is a secondary. A test covers this against
+   the household.
 3. A lone player, the only case the real NAD can show, behaves exactly as
-   before: Now Playing, volume, the queue and browsing. The existing suites
-   pass unchanged.
+   before:
+   - Now Playing, volume, the queue and browsing work as today;
+   - the existing suites pass unchanged;
+   - a test shows its request pattern is unchanged, with no `/SyncStatus`
+     long poll.
 4. The UI agreed on the canvas is built as agreed. Runtime QML tests read
    the group values the pages use.
 5. The SDK build and the Harbour validator pass, for aarch64 and armv7hl.
 6. A device check by Misja covers:
-   - grouping, ungrouping and volume with the emulated household on the
-     phone;
+   - the emulated household (Q2): grouping, ungrouping and volumes;
    - the real NAD as a lone player.
 
    Behaviour that only real grouped hardware can show is recorded as not

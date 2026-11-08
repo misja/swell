@@ -1,80 +1,99 @@
 # Plan — 005 grouping
 
-Status: draft 2026-11-08, for the scope/design review.
+Status: revised 2026-11-08 after the scope/design review. Open: Q1 and Q2
+(spec.md).
 
 ## Library
 
-- **Group status:**
-  - `SyncStatus` already holds group, master and slaves. `Client` adds typed
-    accessors:
+- **Role:**
+  - `SyncStatus` gains `isPrimary()` (has slaves).
+  - `isSecondary()` becomes: `master` present and not this player's own id
+    or address.
+  - `Client` adds typed accessors:
     - `groupRole()` (Alone, Primary, Secondary);
     - `groupName()`;
     - `primaryId()` ("host:port");
-    - `secondaryIds()`.
-  - It also adds a `groupChanged` signal, emitted when they change after a
-    `/SyncStatus` read.
-  - `/Status`'s `groupName` and `groupVolume` are parsed for the primary.
+    - `secondaryIds()`;
+    - `primaryReconnecting()`.
+  - Changes come with `syncStatusChanged`; there is no new signal.
+  - `/Status` `groupVolume` is parsed for the group volume slider;
+    `groupName` comes from `/SyncStatus`.
 - **Commands on a primary:**
-  - `addSecondaries(QList<host:port>)` sends `/AddSlave`: the single form
-    for one, the `slaves=…&ports=…` form for several.
-  - `removeSecondaries(QList<host:port>)` sends `/RemoveSlave` the same way.
-  - These are additive actions: never merged, with errors reported through
-    `commandFailed`.
-  - Afterwards `/SyncStatus` is read again; the answer to `/RemoveSlave`
-    already is one.
+  - `addSecondaries(QList<QPair<QString,int>>)` sends `/AddSlave`: the
+    single form for one, `slaves=…&ports=…` for several. IP addresses only.
+  - The `<addSlave>` answer is compared with the request. Missing players
+    give `commandFailed`.
+  - `removeSecondaries(…)` sends `/RemoveSlave` the same way. Its answer is
+    a `<SyncStatus>` and is taken over.
+  - Both go through `fetch()`: paced, never merged, like `runAction`.
 - **Volume:**
-  - `setGroupVolume(level)` sends `/Volume?level=…&tell_slaves=1`, merged
-    per path and parameter like today's volume.
-  - `setVolume` stays the player's own.
-- **Keeping members current:** a secondary's volume is only in its own
-  `/SyncStatus`, and the group may change elsewhere.
-  - Option A (proposed): while the group page is open, the model sets every
-    member polling, as `pollAll` does. `syncStat` in each member's `/Status`
-    then triggers its `/SyncStatus` read, as today. This adds no new request
-    pattern.
-  - Option B: a `/SyncStatus` long poll per member, as the API suggests in
-    §2. It is a second long poll per player and a new pattern.
-
-  The review decides. A stays within today's request policy.
+  - `setGroupVolume(level)` sends `/Volume?level=…&tell_slaves=1` under its
+    own gate key. The gate key is path plus first parameter name, so it
+    gets a distinct key rather than sharing `/Volume?level` with
+    `setVolume`.
+  - `setVolume` is unchanged.
+  - The level in a `/Volume` answer updates the player's volume at once.
+- **`/SyncStatus` long poll:**
+  - `setSyncPolling(bool)` starts or stops an etag long poll with a 180 s
+    timeout, under the one-second rule.
+  - While it runs, a failed read counts for availability (backoff as for
+    `/Status`).
+  - The `/Status` poll is independent and stays as it is.
 
 ## Player model
 
-- `PlayerModel` resolves a group from its members' clients:
-  - the primary's `secondaryIds`;
-  - each secondary's `primaryId`.
-- Players in a group but not in the model (not discovered, not added) are
-  shown by address only.
-- `group(id)`, `ungroup(id)` and `leave(id)` route to the primary's client.
-  A secondary leaves with `/RemoveSlave` on its primary.
-- The QML shaping of these values goes in `src/`, as in 007.
+- **Polling policy** (`applyPolicy`):
+  - The current player polls `/Status` as today. It also polls
+    `/SyncStatus` while it is a secondary.
+  - With `groupPage` set (a new property the group page sets), every other
+    member polls `/SyncStatus` only.
+  - `pollAll` is unchanged.
+  - A lone current player gets exactly today's requests (AC3).
+- **Matching:** `memberId(ref)` matches by host:port, then by the clients'
+  reported `SyncStatus.id`, ignoring 127.0.0.1. Unmatched members are kept
+  as an address.
+- **Actions:**
+  - `group(primaryId, ids)` and `ungroup(primaryId, ids)`;
+  - `leave(id)` sends `/RemoveSlave` to the secondary's primary. It is
+    refused when the primary is not in the model; the UI offers to add it
+    by address.
+  - "Can join" excludes pair-slave, hub and zone-secondary players.
+- **QML shaping** in `src/` (`QmlPlayerModel`/`QmlPlayer`), as in 007.
 
 ## App
 
-- **UI:** proposals on the design canvas before anything is built:
-  - the group page;
-  - group indicators on Now Playing, Home, the mini player, the cover and
-    the player list.
+- **UI:** proposals on the design canvas first. The group page is settled;
+  the indicators and volume layout are candidates (spec scope 3).
+- **Pending commands:** group controls are disabled while a group command
+  is pending.
 - **Strings:** new strings in English and Dutch.
 
 ## Tests
 
-- **`tests/client/fakeplayer.h`:** a `FakeHousehold` with N FakePlayers
-  sharing state.
-  - `/AddSlave` and `/RemoveSlave`, single and multiple forms.
-  - `/SyncStatus` with `slave`/`master` and a changing etag/syncStat.
-  - A secondary's `/Status` is its primary's.
-  - `/Volume` with `tell_slaves`.
-  - It is modelled on azzurro's demo-player; no code is copied.
-- **New tests** for the client, the model and runtime QML (AC1, AC2, AC4).
-- **`tests/demo/household.py`:** stdlib only (`http.server`, threads), three
-  invented players on 127.0.0.2–.4:11000. Every name, track and MAC is
-  invented (MACs `02:…`). It is used only for the device check and is not
-  packaged.
+- **One C++ household** in `tests/client/fakeplayer.h`:
+  - `FakeHousehold` holds N FakePlayers with per-player etag and syncStat;
+  - a secondary's `/Status` is the primary's document;
+  - `/SyncStatus` long-poll holding (like `/Status` today);
+  - `/AddSlave` and `/RemoveSlave` in single and multiple form, with a
+    switch for a silent AddSlave failure;
+  - `/Volume` with `tell_slaves`;
+  - a switch for the §2.2 primary-with-own-master shape.
+- **Bind option:** FakePlayer gains a bind address (today LocalHost only),
+  so the same household can serve 127.0.0.2–.4 for the device check.
+- **New tests** for the client, the model (matching, policy, request
+  pattern for a lone player) and runtime QML.
+- **Device check (Q2, recommended a):** `tests/demo/household.cpp` wraps
+  the fixture in a small console program, built with the SDK for aarch64.
+  - Over ssh it is copied to the phone and run in the foreground under
+    `timeout`, then removed.
+  - Every name and MAC is invented (`02:…`).
+  - It is not packaged.
 
 ## Risks
 
-- Real players may behave differently from the API and the emulation:
-  timing, reconnecting secondaries, and what a secondary's `/Presets`
-  answers. The device check records what could not be verified.
-- Option A keeps several members polling while the page is open. That is
-  the same load as the player list with `pollAll`.
+- Real players may differ from the API and the emulation: timing,
+  reconnecting, the new primary after removing one, what a secondary's
+  `/Presets` answers, and whether playing on a secondary ungroups it. The
+  device check records what was not verified.
+- Extra polling while the group page is open: one `/SyncStatus` long poll
+  per member, which is lighter than `/Status` polling every member.
