@@ -11,7 +11,7 @@ Next (2026-11-08): feature 005 (grouping, issue #21) on branch 005-grouping,
 not pushed: specs/005-grouping/{spec,plan,tasks}.md. Scope/design review done
 (approve with changes, applied). Canvas page "Grouping (005)" G1–G3 agreed
 (option B: a group is one player; no Group all; azzurro's role lines).
-Open: the group on the mini-player only (Misja). Next step: the C++
+Mini-player and cover unchanged. Next step: the C++
 household fixture and tests, then library, model, QML. Device check uses a
 Python household on the host LAN (approval each run). Chum: metadata merged
 (#22); OBS account, screenshots and the changelog approach still open; the

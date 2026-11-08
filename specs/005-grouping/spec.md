@@ -23,7 +23,8 @@ no UI yet; the UI is agreed on the design canvas before it is built.
     Players are added one at a time; there is no "Group all".
   - **G3:** a group is one player (option B): one row "Living Room + 2" in
     Players. Tapping it, or a member, makes the leader current.
-  - Still open: the group on the mini-player only, not on the cover.
+  - Mini-player and cover unchanged: they show the current player, which is
+    always a leader or a lone player (Misja, 2026-11-08).
 - Scope agreed by Misja (2026-11-08): show groups, group and ungroup players,
   and group volume. Fixed groups are out of scope.
 
