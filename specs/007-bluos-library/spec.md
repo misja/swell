@@ -1,8 +1,8 @@
 # Feature specification — 007 bluos library
 
 Status: revised 2026-11-08 after the scope/design review (approve with
-changes; findings applied below). Open: Misja's choice between option 0 and
-option 3 (plan.md). No implementation yet.
+changes; findings applied below). Misja chose option 3 (plan.md) on
+2026-11-08. No implementation yet.
 
 ## Owner and linked issue
 

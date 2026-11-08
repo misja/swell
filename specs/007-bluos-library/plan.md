@@ -1,7 +1,7 @@
 # Plan — 007 bluos library
 
-Status: revised 2026-11-08 after the scope/design review. Open: Misja's
-choice between option 0 and option 3.
+Status: revised 2026-11-08 after the scope/design review. Misja chose
+option 3 (2026-11-08); reviewer re-check of option 3 pending.
 
 ## How QML reads typed values
 
@@ -51,7 +51,7 @@ and not tested; it is enough to not build on it.
 - **For it:** what the issue asked for. A desktop or command-line app sees
   only typed C++.
 
-Recommendation: option 3. It is the result the issue and Misja's original
+Decision (Misja, 2026-11-08): option 3. It is the result the issue and Misja's original
 question ("a pure C/C++ implementation others can reuse") ask for, at a small
 cost. The runtime QML test (scope item 4) covers the risk of a page losing a
 key.

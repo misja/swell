@@ -2,7 +2,8 @@
 
 - [x] Check of API interaction and C/C++ conventions (spec.md).
 - [x] Scope/design review by a separate agent (approve with changes); findings applied to spec and plan.
-- [ ] Misja chooses option 0 or 3 (plan.md); reviewer re-check if option 3.
+- [x] Misja chooses option 0 or 3 (plan.md): option 3, 2026-11-08.
+- [ ] Reviewer re-check of option 3 before building.
 - [ ] Runtime QML test for every key and JS use the pages rely on (written first, against today's code).
 - [ ] Typed pointers (queue, current, client).
 - [ ] Typed presets, inputs, letters, moreLinks, actions; QML shaping per the chosen option.
