@@ -26,6 +26,9 @@ class PlayerModel : public QAbstractListModel
     Q_PROPERTY(BluOS::Client *current READ current NOTIFY currentChanged)
     // When false only the current player polls; set it while all players are on screen.
     Q_PROPERTY(bool pollAll READ pollAll WRITE setPollAll NOTIFY pollAllChanged)
+    // Set while the current player's group is being edited: its members poll
+    // too, with a /SyncStatus long poll for their own volume.
+    Q_PROPERTY(bool groupPage READ groupPage WRITE setGroupPage NOTIFY groupPageChanged)
 
 public:
     enum Roles {
@@ -36,7 +39,10 @@ public:
         AvailabilityRole,
         ManualRole,
         PlayingRole,
-        NowPlayingRole
+        NowPlayingRole,
+        GroupRoleRole,      // Client::GroupRole
+        LeaderIdRole,       // the primary's id while a secondary it knows; else empty
+        MemberNamesRole     // a primary's secondaries, by name
     };
 
     explicit PlayerModel(QObject *parent = nullptr);
@@ -57,6 +63,22 @@ public:
     Client *current() const;
     bool pollAll() const { return m_pollAll; }
     void setPollAll(bool pollAll);
+    bool groupPage() const { return m_groupPage; }
+    void setGroupPage(bool groupPage);
+
+    // Groups (spec 005). A group is one player: making a secondary current
+    // makes its primary current, and the current player follows its primary
+    // when it joins a group elsewhere.
+    // The model id for a member reference from /SyncStatus ("IP:port"): by
+    // id, then by each player's own reported id. Empty if none matches.
+    Q_INVOKABLE QString memberId(const QString &ref) const;
+    // The primary's model id for a secondary, empty otherwise.
+    Q_INVOKABLE QString leaderOf(const QString &id) const;
+    // A primary's secondaries: model ids, or the reference when not known.
+    Q_INVOKABLE QStringList memberIds(const QString &leaderId) const;
+    // Adds a player to the current player's group, or takes one out of it.
+    Q_INVOKABLE void join(const QString &id);
+    Q_INVOKABLE void leave(const QString &id);
     // Makes a remembered player current at once, before discovery answers. With
     // its node id, a later announcement at a new address moves it there.
     Q_INVOKABLE void restoreCurrent(const QString &id, const QString &nodeId);
@@ -78,6 +100,7 @@ signals:
     void manualHostsChanged();
     void currentChanged();
     void pollAllChanged();
+    void groupPageChanged();
 
 protected:
     // Creates each player's client; a subclass may return a subclass of
@@ -100,6 +123,8 @@ private:
     void removeAt(int row);
     void clientChanged();
     void applyPolicy();
+    // "IP:port" for /AddSlave and /RemoveSlave, which take IP addresses.
+    QString addressOf(const QString &id) const;
 
     QNetworkAccessManager m_nam;
     Discovery m_discovery;
@@ -107,6 +132,7 @@ private:
     QVector<Entry> m_entries;
     QString m_currentId;
     bool m_pollAll = false;
+    bool m_groupPage = false;
 };
 
 } // namespace BluOS

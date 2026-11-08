@@ -54,6 +54,18 @@ QVariant PlayerModel::data(const QModelIndex &index, int role) const
         return c->playing();
     case NowPlayingRole:
         return c->status().twolineTitle1.isEmpty() ? c->title1() : c->status().twolineTitle1;
+    case GroupRoleRole:
+        return int(c->groupRole());
+    case LeaderIdRole:
+        return leaderOf(c->id());
+    case MemberNamesRole: {
+        QStringList names;
+        for (const QString &id : memberIds(c->id())) {
+            const int row = indexOf(id);
+            names.append(row >= 0 ? data(this->index(row), NameRole).toString() : id);
+        }
+        return names;
+    }
     }
     return QVariant();
 }
@@ -69,6 +81,9 @@ QHash<int, QByteArray> PlayerModel::roleNames() const
         { ManualRole, "manual" },
         { PlayingRole, "playing" },
         { NowPlayingRole, "nowPlaying" },
+        { GroupRoleRole, "groupRole" },
+        { LeaderIdRole, "leaderId" },
+        { MemberNamesRole, "memberNames" },
     };
 }
 
@@ -166,6 +181,9 @@ Client *PlayerModel::client(const QString &id) const
 
 void PlayerModel::setCurrentId(const QString &id)
 {
+    const QString leader = leaderOf(id);
+    if (!leader.isEmpty())
+        return setCurrentId(leader);
     if (m_currentId == id)
         return;
     m_currentId = id;
@@ -210,14 +228,81 @@ void PlayerModel::restoreCurrent(const QString &id, const QString &nodeId)
     applyPolicy();
 }
 
+void PlayerModel::setGroupPage(bool groupPage)
+{
+    if (m_groupPage == groupPage)
+        return;
+    m_groupPage = groupPage;
+    applyPolicy();
+    emit groupPageChanged();
+}
+
 void PlayerModel::applyPolicy()
 {
+    const QStringList members = m_groupPage ? memberIds(m_currentId) : QStringList();
     for (const Entry &e : m_entries) {
-        if (m_pollAll || e.client->id() == m_currentId)
+        const bool member = members.contains(e.client->id());
+        e.client->setSyncWatch(member);
+        if (m_pollAll || member || e.client->id() == m_currentId)
             e.client->start();
         else
             e.client->stop();
     }
+}
+
+QString PlayerModel::memberId(const QString &ref) const
+{
+    if (indexOf(ref) >= 0)
+        return ref;
+    if (ref.startsWith(QLatin1String("127.")))
+        return QString();   // a player's own idea of itself, useless from here
+    for (const Entry &e : m_entries)
+        if (e.client->syncStatus().id == ref)
+            return e.client->id();
+    return QString();
+}
+
+QString PlayerModel::leaderOf(const QString &id) const
+{
+    const Client *c = client(id);
+    return c && c->groupRole() == Client::Secondary ? memberId(c->primaryId()) : QString();
+}
+
+QStringList PlayerModel::memberIds(const QString &leaderId) const
+{
+    QStringList ids;
+    const Client *c = client(leaderId);
+    if (!c)
+        return ids;
+    for (const QString &ref : c->secondaryIds()) {
+        const QString id = memberId(ref);
+        ids.append(id.isEmpty() ? ref : id);
+    }
+    return ids;
+}
+
+QString PlayerModel::addressOf(const QString &id) const
+{
+    const Client *c = client(id);
+    if (!c)
+        return id;   // a member reference: already "IP:port"
+    if (!QHostAddress(c->host()).isNull())
+        return c->id();
+    // Added by name: use the address the player reports, if it is usable.
+    const QString reported = c->syncStatus().id;
+    return reported.isEmpty() || reported.startsWith(QLatin1String("127.")) ? c->id() : reported;
+}
+
+void PlayerModel::join(const QString &id)
+{
+    if (Client *lead = current())
+        lead->addSecondaries({ addressOf(id) });
+}
+
+void PlayerModel::leave(const QString &id)
+{
+    if (Client *lead = current())
+        lead->removeSecondaries({ addressOf(id) });
 }
 
 void PlayerModel::onFound(const Discovery::Found &player)
@@ -317,11 +402,16 @@ void PlayerModel::removeAt(int row)
 void PlayerModel::clientChanged()
 {
     Client *c = qobject_cast<Client *>(sender());
-    for (int i = 0; i < m_entries.size(); ++i) {
-        if (m_entries.at(i).client == c) {
-            emit dataChanged(index(i), index(i));
-            return;
-        }
+    // A player's group shows on other rows too (a primary's member names).
+    if (!m_entries.isEmpty())
+        emit dataChanged(index(0), index(m_entries.size() - 1));
+    if (c && c->id() == m_currentId && c->groupRole() == Client::Secondary) {
+        // The current player joined a group elsewhere: follow its primary.
+        const QString leader = memberId(c->primaryId());
+        if (!leader.isEmpty())
+            setCurrentId(leader);
+    } else if (m_groupPage) {
+        applyPolicy();   // the members may have changed
     }
 }
 

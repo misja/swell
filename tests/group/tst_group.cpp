@@ -5,6 +5,7 @@
 #include <QNetworkAccessManager>
 
 #include "client.h"
+#include "playermodel.h"
 #include "fakehousehold.h"
 
 using namespace BluOS;
@@ -29,6 +30,10 @@ private slots:
     void aSecondarysVolumeNeedsTheSyncWatch();
     void theVolumeAnswerShowsAtOnce();
     void aLonePlayerHasNoSyncLongPoll();
+    void theCurrentPlayerFollowsItsPrimary();
+    void choosingAMemberChoosesItsPrimary();
+    void theGroupPageWatchesTheMembers();
+    void joinAndLeaveThroughTheModel();
 
 private:
     Client *client(int i);
@@ -238,6 +243,73 @@ void TstGroup::aLonePlayerHasNoSyncLongPoll()
     QTest::qWait(1500);
     for (const auto &r : m_house->player(0)->requests(QStringLiteral("/SyncStatus")))
         QVERIFY2(!r.query.hasQueryItem(QStringLiteral("etag")), r.target.constData());
+}
+
+static PlayerModel *household(FakeHousehold *house, QObject *parent)
+{
+    auto *model = new PlayerModel(parent);
+    model->setClientTiming(fast());
+    for (int i = 0; i < house->size(); ++i)
+        model->addManual(house->id(i));
+    return model;
+}
+
+void TstGroup::theCurrentPlayerFollowsItsPrimary()
+{
+    QScopedPointer<PlayerModel> model(household(m_house, nullptr));
+    model->setCurrentId(m_house->id(1));
+    QTRY_VERIFY(model->current()->online());
+    // Kitchen joins Living Room's group from elsewhere.
+    model->setPollAll(true);
+    m_house->group(0, { 1 });
+    QTRY_COMPARE(model->currentId(), m_house->id(0));
+}
+
+void TstGroup::choosingAMemberChoosesItsPrimary()
+{
+    m_house->group(0, { 1, 2 });
+    QScopedPointer<PlayerModel> model(household(m_house, nullptr));
+    model->setPollAll(true);
+    QTRY_COMPARE(model->leaderOf(m_house->id(2)), m_house->id(0));
+    model->setCurrentId(m_house->id(2));
+    QCOMPARE(model->currentId(), m_house->id(0));
+    QCOMPARE(model->memberIds(m_house->id(0)), QStringList({ m_house->id(1), m_house->id(2) }));
+    const int row = model->indexOf(m_house->id(0));
+    QCOMPARE(model->data(model->index(row), PlayerModel::MemberNamesRole).toStringList(),
+             QStringList({ QStringLiteral("Kitchen"), QStringLiteral("Studio") }));
+    QCOMPARE(model->data(model->index(model->indexOf(m_house->id(1))), PlayerModel::LeaderIdRole).toString(),
+             m_house->id(0));
+}
+
+void TstGroup::theGroupPageWatchesTheMembers()
+{
+    m_house->group(0, { 1 });
+    QScopedPointer<PlayerModel> model(household(m_house, nullptr));
+    model->setCurrentId(m_house->id(0));
+    QTRY_COMPARE(model->current()->groupRole(), Client::Primary);
+    // Without the group page only the current player polls.
+    QTest::qWait(500);
+    QVERIFY(!model->client(m_house->id(1))->running());
+    model->setGroupPage(true);
+    QTRY_VERIFY(model->client(m_house->id(1))->running());
+    m_house->setVolume(1, 64);
+    QTRY_COMPARE(model->client(m_house->id(1))->volume(), 64);
+    model->setGroupPage(false);
+    QVERIFY(!model->client(m_house->id(1))->running());
+    QVERIFY(!model->client(m_house->id(2))->running());
+}
+
+void TstGroup::joinAndLeaveThroughTheModel()
+{
+    QScopedPointer<PlayerModel> model(household(m_house, nullptr));
+    model->setCurrentId(m_house->id(0));
+    QTRY_VERIFY(model->current()->online());
+    model->join(m_house->id(2));
+    QTRY_COMPARE(m_house->leaderOf(2), 0);
+    QTRY_COMPARE(model->current()->groupRole(), Client::Primary);
+    model->leave(m_house->id(2));
+    QTRY_COMPARE(m_house->leaderOf(2), -1);
+    QTRY_COMPARE(model->current()->groupRole(), Client::Alone);
 }
 
 QTEST_GUILESS_MAIN(TstGroup)
