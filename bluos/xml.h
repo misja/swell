@@ -71,6 +71,11 @@ struct SyncStatus {
     bool masterReconnecting = false;
     // On the primary player of a group: "host:port" entries.
     QStringList slaves;
+    // A fixed group (stereo pair, surround set), configured in the player;
+    // out of scope for grouping (section 8).
+    QString zone;
+    bool zoneMaster = false;
+    bool zoneSlave = false;
 
     // Not the same as being a secondary; see above.
     bool hasMaster() const { return !masterHost.isEmpty(); }

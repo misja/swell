@@ -59,6 +59,8 @@ public:
     // An /AddSlave on any player silently leaves player i out (pyblu notes
     // that a failed add is only missing from the answer).
     void refuseToJoin(int i) { m_refused.insert(i); }
+    // A secondary in a fixed group (stereo pair, surround set).
+    void setZoneSlave(int i, bool on) { m_rooms[i].zoneSlave = on; publish(); }
     // A secondary that lost its primary and is trying to get it back.
     void setReconnecting(int i, bool on) { m_rooms[i].reconnecting = on; publish(); }
     // The §2.2 example: a primary also names itself in <master>.
@@ -71,6 +73,7 @@ private:
         int volume = 30;
         bool mute = false;
         bool reconnecting = false;
+        bool zoneSlave = false;
         QByteArray status;
         int syncGeneration = 0;
         int statusGeneration = 0;
@@ -114,7 +117,8 @@ private:
         if (lead >= 0)
             group = m_rooms.at(lead).name.toUtf8() + " + " + QByteArray::number(membersOf(lead).size());
         return "name=\"" + r.name.toUtf8() + "\" volume=\"" + QByteArray::number(r.volume)
-                + "\" mute=\"" + (r.mute ? "1" : "0") + "\" group=\"" + group + "\" id=\""
+                + "\" mute=\"" + (r.mute ? "1" : "0") + "\" zoneSlave=\"" + (r.zoneSlave ? "true" : "false")
+                + "\" group=\"" + group + "\" id=\""
                 + id(i).toUtf8() + "\">" + inner;
     }
 

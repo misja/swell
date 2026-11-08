@@ -73,9 +73,12 @@ succeeds.
 ## Review findings
 
 Scope/design review, 2026-11-08 (approve with changes): H1–H3, M1–M5 and
-L1–L6 applied to spec and plan (spec.md, plan.md). L1 (pair-slave, hub and
-zone players not offered as able to join) is not built: the model has no
-LSDP class or zone flag per player yet; recorded for the result review.
+L1–L6 applied to spec and plan (spec.md, plan.md). L1 (pair halves, Hubs and
+players in a fixed group not offered as able to join) is built after the
+PR was opened, at Misja's request: the model keeps the LSDP class
+(0x0006 pair half, 0x0008 Hub) and `/SyncStatus` zoneSlave; the role
+`canJoin` combines them; test `pairHalvesHubsAndZonesCannotJoin`. All ten
+suites pass (xml 34, group 24).
 
 ## After the result review (2026-11-08)
 

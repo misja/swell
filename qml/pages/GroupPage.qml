@@ -153,11 +153,10 @@ Page {
 
             Repeater {
                 model: players
-                // Only lone players: one already in a group is changed from there.
+                // Lone players only, and not pair halves, Hubs or players in a
+                // fixed group (the model's canJoin).
                 delegate: TextSwitch {
-                    visible: !page._follows && model.playerId !== players.currentId
-                             && page._memberIds.indexOf(model.playerId) < 0
-                             && model.online && model.groupRole === Player.Alone
+                    visible: !page._follows && model.canJoin && page._memberIds.indexOf(model.playerId) < 0
                     text: model.name
                     description: model.nowPlaying
                     checked: false

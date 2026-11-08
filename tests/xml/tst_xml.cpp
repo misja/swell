@@ -24,6 +24,7 @@ private slots:
     void groupVolumeInStatus();
     void addSlaveAnswer();
     void volumeAnswer();
+    void fixedGroupFields();
     void statusPrid();
     void statusStreamActions();
     void statusQueuePosition();
@@ -399,6 +400,16 @@ void TstXml::volumeAnswer()
     QCOMPARE(v.level, 15);
     QVERIFY(v.mute);
     QVERIFY(!parseVolume("<volume>x</volume>").ok);
+}
+
+void TstXml::fixedGroupFields()
+{
+    const SyncStatus s = parseSyncStatus("<SyncStatus etag=\"1\" name=\"Right\" zone=\"Lounge\" "
+                                         "zoneSlave=\"true\" id=\"192.0.2.12:11000\"/>");
+    QVERIFY2(s.ok, qPrintable(s.error));
+    QCOMPARE(s.zone, QStringLiteral("Lounge"));
+    QVERIFY(s.zoneSlave);
+    QVERIFY(!s.zoneMaster);
 }
 
 QTEST_GUILESS_MAIN(TstXml)

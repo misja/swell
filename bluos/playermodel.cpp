@@ -68,6 +68,13 @@ QVariant PlayerModel::data(const QModelIndex &index, int role) const
     }
     case VolumeRole:
         return c->volume();
+    case CanJoinRole:
+        // A lone, reachable player other than the current one. Not the
+        // second half of a stereo pair or a Hub (LSDP classes 0x0006 and
+        // 0x0008), nor a player in a fixed group (zoneSlave, API 2.2).
+        return c->id() != m_currentId && c->online() && c->groupRole() == Client::Alone
+                && e.classId != Lsdp::ClassPlayerPairSlave && e.classId != Lsdp::ClassHub
+                && !c->syncStatus().zoneSlave;
     }
     return QVariant();
 }
@@ -87,6 +94,7 @@ QHash<int, QByteArray> PlayerModel::roleNames() const
         { LeaderIdRole, "leaderId" },
         { MemberNamesRole, "memberNames" },
         { VolumeRole, "volume" },
+        { CanJoinRole, "canJoin" },
     };
 }
 
@@ -330,6 +338,7 @@ void PlayerModel::onFound(const Discovery::Found &player)
         Entry &e = m_entries[i];
         if (e.nodeId == player.nodeId && e.client->port() == player.port) {
             e.discoveredName = player.name;
+            e.classId = player.classId;
             if (e.client->host() != host) {
                 const bool wasCurrent = e.client->id() == m_currentId;
                 e.client->deleteLater();
@@ -349,6 +358,7 @@ void PlayerModel::onFound(const Discovery::Found &player)
     if (row >= 0) {
         m_entries[row].nodeId = player.nodeId;
         m_entries[row].discoveredName = player.name;
+        m_entries[row].classId = player.classId;
         emit dataChanged(index(row), index(row));
         if (m_entries.at(row).client->id() == m_currentId)
             emit currentChanged();  // the node id is now known for persistence
@@ -357,6 +367,7 @@ void PlayerModel::onFound(const Discovery::Found &player)
     Entry e;
     e.nodeId = player.nodeId;
     e.discoveredName = player.name;
+    e.classId = player.classId;
     e.client = createClient(host, player.port);
     insert(e);
 }

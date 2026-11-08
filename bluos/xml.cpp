@@ -116,6 +116,9 @@ SyncStatus parseSyncStatus(const QByteArray &xml)
     s.mac = a.value(QLatin1String("mac")).toString();
     s.syncStat = a.value(QLatin1String("syncStat")).toString();
     s.group = a.value(QLatin1String("group")).toString();
+    s.zone = a.value(QLatin1String("zone")).toString();
+    s.zoneMaster = toBool(a.value(QLatin1String("zoneMaster")).toString());
+    s.zoneSlave = toBool(a.value(QLatin1String("zoneSlave")).toString());
     s.volume = toInt(a.value(QLatin1String("volume")).toString(), -1);
     s.mute = toBool(a.value(QLatin1String("mute")).toString());
     if (a.hasAttribute(QLatin1String("initialized")))

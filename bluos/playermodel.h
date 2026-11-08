@@ -43,7 +43,8 @@ public:
         GroupRoleRole,      // Client::GroupRole
         LeaderIdRole,       // the primary's id while a secondary it knows; else empty
         MemberNamesRole,    // a primary's secondaries, by name
-        VolumeRole          // the player's own volume, -1 if fixed or unknown
+        VolumeRole,         // the player's own volume, -1 if fixed or unknown
+        CanJoinRole         // can be added to the current player's group
     };
 
     explicit PlayerModel(QObject *parent = nullptr);
@@ -115,6 +116,7 @@ private:
     struct Entry {
         QString nodeId;   // empty if never announced
         bool manual = false;
+        quint16 classId = 0;   // LSDP class, 0 when added by address
         QString discoveredName;
         Client *client = nullptr;
     };

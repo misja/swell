@@ -39,6 +39,7 @@ private slots:
     void aMembershipChangeElsewhereShows();
     void aLonePlayersRequestsAreUnchanged();
     void aReconnectingSecondary();
+    void pairHalvesHubsAndZonesCannotJoin();
 
 private:
     Client *client(int i);
@@ -388,6 +389,48 @@ void TstGroup::aReconnectingSecondary()
     m_house->setReconnecting(1, false);
     member->setSyncWatch(true);
     QTRY_VERIFY(!member->primaryReconnecting());
+}
+
+// An LSDP announcement (API appendix) for a household player on 127.0.0.1.
+static QByteArray announce(char node, quint16 classId, quint16 port)
+{
+    auto prefixed = [](const QByteArray &b) { return char(b.size()) + b; };
+    QByteArray m("A");
+    m.append(prefixed(QByteArray("\x02\x00\x00\x00\x00", 5) + node));
+    m.append(prefixed(QByteArray("\x7F\x00\x00\x01", 4)));
+    m.append(char(1));
+    m.append(char(classId >> 8)).append(char(classId & 0xFF)).append(char(1));
+    m.append(prefixed("port")).append(prefixed(QByteArray::number(port)));
+    return QByteArray("\x06LSDP\x01", 6) + char(m.size() + 1) + m;
+}
+
+void TstGroup::pairHalvesHubsAndZonesCannotJoin()
+{
+    auto *house = new FakeHousehold(5, this);
+    house->setZoneSlave(2, true);
+    PlayerModel model;
+    model.setClientTiming(fast());
+    model.addManual(house->id(0));
+    model.addManual(house->id(1));
+    model.addManual(house->id(2));
+    model.discovery()->handleDatagram(announce('\x03', 0x0006, house->port(3)));   // pair half
+    model.discovery()->handleDatagram(announce('\x04', 0x0008, house->port(4)));   // Hub
+    QCOMPARE(model.rowCount(), 5);
+    model.setCurrentId(house->id(0));
+    model.setGroupPage(true);
+    auto canJoin = [&model](const QString &id) {
+        return model.data(model.index(model.indexOf(id)), PlayerModel::CanJoinRole).toBool();
+    };
+    QTRY_VERIFY(canJoin(house->id(1)));
+    QTRY_VERIFY(model.client(house->id(2))->syncStatus().zoneSlave);
+    QTRY_VERIFY(model.client(house->id(3))->online());
+    QTRY_VERIFY(model.client(house->id(4))->online());
+    QVERIFY(!canJoin(house->id(0)));   // the current player
+    QVERIFY(!canJoin(house->id(2)));   // in a fixed group
+    QVERIFY(!canJoin(house->id(3)));   // the second half of a stereo pair
+    QVERIFY(!canJoin(house->id(4)));   // a Hub
+    model.setGroupPage(false);
+    delete house;
 }
 
 QTEST_GUILESS_MAIN(TstGroup)
