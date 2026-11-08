@@ -15,8 +15,8 @@
     </message>
     <message>
         <location filename="../qml/pages/AboutPage.qml" line="32"/>
-        <source>A Sailfish OS controller for BluOS players on your local network.</source>
-        <translation>Een Sailfish OS-bediening voor BluOS-spelers op je lokale netwerk.</translation>
+        <source>A Sailfish OS controller for BluOS players.</source>
+        <translation>Een Sailfish OS-bediening voor BluOS-spelers.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AboutPage.qml" line="35"/>
@@ -25,8 +25,8 @@
     </message>
     <message>
         <location filename="../qml/pages/AboutPage.qml" line="41"/>
-        <source>Swell talks only to players on your local network and to the image servers their artwork comes from. It has no account and collects, sends and shares no personal data. It stores only the player addresses you add and the player you last chose, on this device.</source>
-        <translation>Swell praat alleen met spelers op je lokale netwerk en met de servers waar hun afbeeldingen vandaan komen. Er is geen account en Swell verzamelt, verstuurt of deelt geen persoonsgegevens. Op dit toestel bewaart Swell alleen de spelersadressen die je toevoegt en de speler die je het laatst koos.</translation>
+        <source>Swell connects only to your players and to the servers their artwork comes from. There is no account, and no data is collected or shared. Only the addresses you add and your last player are stored, on this device.</source>
+        <translation>Swell maakt alleen verbinding met je spelers en met de servers van hun afbeeldingen. Er is geen account en er worden geen gegevens verzameld of gedeeld. Alleen de adressen die je toevoegt en je laatste speler worden bewaard, op dit toestel.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AboutPage.qml" line="44"/>
@@ -40,8 +40,8 @@
     </message>
     <message>
         <location filename="../qml/pages/AboutPage.qml" line="58"/>
-        <source>Not affiliated with, endorsed by or supported by Lenbrook Industries. BluOS is a trademark of Lenbrook Industries Limited.</source>
-        <translation>Niet gelieerd aan, goedgekeurd of ondersteund door Lenbrook Industries. BluOS is een handelsmerk van Lenbrook Industries Limited.</translation>
+        <source>Not affiliated with or endorsed by Lenbrook Industries. BluOS is a trademark of Lenbrook Industries Limited.</source>
+        <translation>Niet gelieerd aan of goedgekeurd door Lenbrook Industries. BluOS is een handelsmerk van Lenbrook Industries Limited.</translation>
     </message>
 </context>
 <context>

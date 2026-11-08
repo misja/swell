@@ -38,8 +38,8 @@ Branch 003-mpris, SDK target SailfishOS-5.1.0.11-aarch64.
 
 Misja checked 0.3.0-14 on the Xperia 10 II (amber-qml-plugin-mpris
 1.2.10). The phone was on Sailfish OS 5.2.0.20 at install and reported
-5.2.0.22 after an OTA the same day; which one the check ran on was not
-recorded and reported "werkt" (works). He was given
+5.2.0.22 after an OTA the same day. Misja confirmed that MPRIS also works
+on 5.2.0.22 (2026-11-08) and reported "werkt" (works). He was given
 the AC6 list before the check:
 - the permission prompt;
 - the lock screen and the events view;
