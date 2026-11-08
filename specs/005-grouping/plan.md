@@ -1,7 +1,7 @@
 # Plan — 005 grouping
 
-Status: revised 2026-11-08 after the scope/design review. Open: Q1 and Q2
-(spec.md).
+Status: revised 2026-11-08 after the scope/design review. Q1 and Q2
+decided (spec.md).
 
 ## Library
 
@@ -42,6 +42,9 @@ Status: revised 2026-11-08 after the scope/design review. Open: Q1 and Q2
 
 ## Player model
 
+- **Home follows the group (Q1):** while the current player is a secondary,
+  Home's presets, inputs and play commands use the primary's client. The
+  volume stays the secondary's own.
 - **Polling policy** (`applyPolicy`):
   - The current player polls `/Status` as today. It also polls
     `/SyncStatus` while it is a secondary.
@@ -78,14 +81,20 @@ Status: revised 2026-11-08 after the scope/design review. Open: Q1 and Q2
     switch for a silent AddSlave failure;
   - `/Volume` with `tell_slaves`;
   - a switch for the §2.2 primary-with-own-master shape.
-- **Bind option:** FakePlayer gains a bind address (today LocalHost only),
-  so the same household can serve 127.0.0.2–.4 for the device check.
+- **Behaviour list.** Both households follow this list:
+  - per-player etag and syncStat;
+  - a secondary's `/Status` is the primary's document;
+  - `/SyncStatus` long-poll holding;
+  - `/AddSlave` and `/RemoveSlave` in single and multiple form;
+  - a silent AddSlave failure;
+  - `tell_slaves`;
+  - the own-master primary shape.
 - **New tests** for the client, the model (matching, policy, request
   pattern for a lone player) and runtime QML.
-- **Device check (Q2, recommended a):** `tests/demo/household.cpp` wraps
-  the fixture in a small console program, built with the SDK for aarch64.
-  - Over ssh it is copied to the phone and run in the foreground under
-    `timeout`, then removed.
+- **Device check (Q2):** `tests/demo/household.py`, stdlib only.
+  - Three invented players on one LAN address with ports 11010, 11020 and
+    11030 (default 192.168.1.2, given as an argument).
+  - Started by hand in the foreground; stopped with Ctrl-C.
   - Every name and MAC is invented (`02:…`).
   - It is not packaged.
 

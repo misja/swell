@@ -1,7 +1,7 @@
 # Feature specification — 005 grouping
 
 Status: revised 2026-11-08 after the scope/design review (approve with
-changes; findings applied). Open: Q1 and Q2 for Misja. No implementation and
+changes; findings applied). Q1 and Q2 decided by Misja. No implementation and
 no UI yet; the UI is agreed on the design canvas before it is built.
 
 ## Owner and linked issue
@@ -153,8 +153,8 @@ needs the official app for that.
        including a silent failure;
      - `tell_slaves`.
    - Client, model and runtime QML tests run against it.
-   - **Device check:** the household as an emulation on the phone, in the
-     way Misja chooses (Q2). The real NAD is checked as a lone player only.
+   - **Device check:** the Python household on the host's LAN address (Q2).
+     The real NAD is checked as a lone player only.
 
 ## Out of scope
 
@@ -164,30 +164,30 @@ needs the official app for that.
 - Grouping the real NAD with emulated players.
 - A temporary client for a primary that is not in the model.
 - LSDP announcements from the emulated players: they are added by address.
+- Running emulated players on the phone.
 
-## Open questions
+## Decisions (Misja, 2026-11-08)
 
-- **Q1:** when the current player becomes a secondary, Now Playing shows the
-  group's playback, proxied by the player.
-  - Should Home's presets and inputs stay those of the secondary, or be
-    hidden? The API does not say whether `/Presets` is proxied.
-  - Does playing a preset or input on a secondary take it out of the group?
-    That is unknown.
-
-  Proposed: show what the player answers, and record both as not verified
-  on hardware.
-- **Q2:** how to run the emulated household for the device check.
-  - (a) **The C++ household, built for aarch64 with the SDK, run on the phone
-    on 127.0.0.2–.4** (recommended): one shared implementation with the
-    tests, no host or network changes. It runs in the foreground over ssh,
-    under `timeout`, with Misja's approval each time; the binary is removed
-    afterwards.
-  - (b) A stdlib-only Python household on the phone. No build is needed,
-    but it is a second model next to the C++ one, and they can drift apart.
-  - (c) The C++ household on the host, on a LAN interface, with one port
-    per player. This needs a host Qt build and opens ports on the LAN.
-  - (d) No emulation on the device: only the automated tests, plus the NAD
-    as a lone player.
+- **Q1, Home follows the group.**
+  - When the current player is a secondary, Home and Now Playing show the
+    group's primary: its playback, presets and inputs. Playing a preset or
+    input acts on the group's source.
+  - The secondary keeps its own volume.
+  - Expected use: a household has a main player (for Misja, the NAD) that
+    leads, and others join it.
+  - Whether playing on a secondary would ungroup it is avoided by sending
+    those commands to the primary. **Not verified on hardware.**
+- **Q2, the emulated players run on the local network, not on the phone.**
+  - The host (192.168.1.2) has Python 3.14 but no Qt or C++ compiler.
+  - So the device-check household is a stdlib-only Python script on the
+    host: three invented players on 192.168.1.2, ports 11010, 11020 and
+    11030 (one IP with several ports, as on the NAD CI580). The phone adds
+    them by "host:port".
+  - The automated tests keep the C++ household. Both follow one written
+    behaviour list (plan.md) to limit drift.
+  - Running it opens three ports on the LAN while it runs: started by hand,
+    in the foreground, with Misja's approval each time. The host's ufw
+    state is checked then.
 
 ## Acceptance criteria
 
@@ -217,7 +217,8 @@ needs the official app for that.
    the group values the pages use.
 5. The SDK build and the Harbour validator pass, for aarch64 and armv7hl.
 6. A device check by Misja covers:
-   - the emulated household (Q2): grouping, ungrouping and volumes;
+   - the emulated household on the LAN (Q2): grouping, ungrouping,
+     volumes, and Home following the primary (Q1);
    - the real NAD as a lone player.
 
    Behaviour that only real grouped hardware can show is recorded as not
