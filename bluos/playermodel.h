@@ -45,7 +45,8 @@ public:
         MemberNamesRole,    // a primary's secondaries, by name
         VolumeRole,         // the player's own volume, -1 if fixed or unknown
         CanJoinRole,        // can be added to the current player's group
-        MutedRole
+        MutedRole,          // the player's own mute
+        PrimaryIdRole       // a secondary's primary as it reports it, also when not in the model
     };
 
     explicit PlayerModel(QObject *parent = nullptr);

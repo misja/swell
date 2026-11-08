@@ -78,6 +78,8 @@ QVariant PlayerModel::data(const QModelIndex &index, int role) const
                 && !c->syncStatus().fixedSecondary;
     case MutedRole:
         return c->muted();
+    case PrimaryIdRole:
+        return c->primaryId();
     }
     return QVariant();
 }
@@ -99,6 +101,7 @@ QHash<int, QByteArray> PlayerModel::roleNames() const
         { VolumeRole, "volume" },
         { CanJoinRole, "canJoin" },
         { MutedRole, "muted" },
+        { PrimaryIdRole, "primaryId" },
     };
 }
 

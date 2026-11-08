@@ -41,6 +41,7 @@ private slots:
     void aReconnectingSecondary();
     void groupAndMemberMute();
     void groupMuteWithMembersNotShown();
+    void aFollowerOfAnUnknownLeaderOffersIt();
     void pairHalvesHubsAndZonesCannotJoin();
 
 private:
@@ -479,6 +480,24 @@ void TstGroup::groupMuteWithMembersNotShown()
              QByteArray("/Volume?mute=1&tell_slaves=1"));
     model->current()->setGroupMuted(false);
     QTRY_VERIFY(!model->groupMuted(m_house->id(0)));
+}
+
+void TstGroup::aFollowerOfAnUnknownLeaderOffersIt()
+{
+    // Kitchen follows Living Room, which Swell has not found or been given.
+    m_house->group(0, { 1 });
+    PlayerModel model;
+    model.setClientTiming(fast());
+    model.addManual(m_house->id(1));
+    model.setPollAll(true);
+    const QModelIndex row = model.index(model.indexOf(m_house->id(1)));
+    QTRY_COMPARE(model.data(row, PlayerModel::GroupRoleRole).toInt(), int(Client::Secondary));
+    QCOMPARE(model.data(row, PlayerModel::LeaderIdRole).toString(), QString());
+    QCOMPARE(model.data(row, PlayerModel::PrimaryIdRole).toString(), m_house->id(0));
+    // Adding it makes the group known.
+    QVERIFY(model.addManual(model.data(row, PlayerModel::PrimaryIdRole).toString()));
+    QTRY_COMPARE(model.data(model.index(model.indexOf(m_house->id(1))), PlayerModel::LeaderIdRole).toString(),
+                 m_house->id(0));
 }
 
 QTEST_GUILESS_MAIN(TstGroup)

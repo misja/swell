@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import Swell 1.0
 
 Page {
     id: page
@@ -85,7 +86,10 @@ Page {
                 // player added by address.
                 readonly property bool _canJoin: model.canJoin && players.current !== null
                                                  && !players.current.groupBusy
-                menu: _canJoin || model.manual ? playerMenu : null
+                // Follows a primary Swell does not know: offer to add it.
+                readonly property bool _unknownLeader: model.groupRole === Player.Secondary
+                                                       && model.leaderId === "" && model.primaryId !== ""
+                menu: _canJoin || _unknownLeader || model.manual ? playerMenu : null
                 highlighted: down || model.playerId === players.currentId
 
                 onClicked: {
@@ -125,6 +129,11 @@ Page {
                             visible: item._canJoin
                             text: qsTr("Follow %1").arg(players.current ? players.current.name : "")
                             onClicked: players.join(entry._id)
+                        }
+                        MenuItem {
+                            visible: item._unknownLeader
+                            text: qsTr("Add %1").arg(model.primaryId)
+                            onClicked: players.addManual(model.primaryId)
                         }
                         MenuItem {
                             visible: model.manual
