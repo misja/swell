@@ -49,6 +49,19 @@ Artifacts and evidence:
   queue id changes on every modification, including a delete (as API
   §2.1/§5.1 say; azzurro's note was wrong).
 
+Releases (Misja, 2026-11-08):
+- Semantic versions, starting carefully at 0.4.0. `Version` in
+  rpm/harbour-swell.spec and `VERSION` in harbour-swell.pro must match.
+- A published release has `Release: 1` and an annotated tag `vX.Y.Z` on its
+  merge commit. The tag subject becomes the RPM changelog entry
+  (`sfdk-changelog --auto-add-annotations`). Test builds for the device bump
+  `Release` instead.
+- Published as a GitHub release with RPMs for aarch64 and armv7hl. armv7hl
+  is built and tested in the SDK only; there is no armv7hl device.
+- Build each architecture from a clean tree: the build runs in the source
+  directory, and leftover objects from another architecture break
+  `%install`.
+
 Decisions and authorization scope (Misja, 2026-11-06):
 - Name and licence: name Swell; MIT.
 - Targets: build target 5.1.0.11-aarch64 mapped to release target
