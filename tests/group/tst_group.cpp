@@ -110,7 +110,7 @@ void TstGroup::aPrimaryNamingItselfIsStillPrimary()
     m_house->group(0, { 1 });
     Client *lead = client(0);
     QTRY_COMPARE(lead->groupRole(), Client::Primary);
-    QVERIFY(lead->syncStatus().hasMaster());   // a master alone does not make a secondary
+    QVERIFY(lead->syncStatus().namesPrimary());   // naming a primary does not make a secondary
     QVERIFY(lead->primaryId().isEmpty());
 }
 
@@ -407,7 +407,7 @@ static QByteArray announce(char node, quint16 classId, quint16 port)
 void TstGroup::pairHalvesHubsAndZonesCannotJoin()
 {
     auto *house = new FakeHousehold(5, this);
-    house->setZoneSlave(2, true);
+    house->setFixedSecondary(2, true);
     PlayerModel model;
     model.setClientTiming(fast());
     model.addManual(house->id(0));
@@ -422,7 +422,7 @@ void TstGroup::pairHalvesHubsAndZonesCannotJoin()
         return model.data(model.index(model.indexOf(id)), PlayerModel::CanJoinRole).toBool();
     };
     QTRY_VERIFY(canJoin(house->id(1)));
-    QTRY_VERIFY(model.client(house->id(2))->syncStatus().zoneSlave);
+    QTRY_VERIFY(model.client(house->id(2))->syncStatus().fixedSecondary);
     QTRY_VERIFY(model.client(house->id(3))->online());
     QTRY_VERIFY(model.client(house->id(4))->online());
     QVERIFY(!canJoin(house->id(0)));   // the current player

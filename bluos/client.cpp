@@ -251,19 +251,19 @@ Client::GroupRole Client::groupRole() const
 {
     if (!m_sync.ok)
         return Alone;
-    if (!m_sync.masterHost.isEmpty()) {
-        const QString master = QStringLiteral("%1:%2").arg(m_sync.masterHost).arg(m_sync.masterPort);
-        if (master != id() && master != m_sync.id)
+    if (!m_sync.primaryHost.isEmpty()) {
+        const QString primary = QStringLiteral("%1:%2").arg(m_sync.primaryHost).arg(m_sync.primaryPort);
+        if (primary != id() && primary != m_sync.id)
             return Secondary;
     }
-    return m_sync.slaves.isEmpty() ? Alone : Primary;
+    return m_sync.secondaries.isEmpty() ? Alone : Primary;
 }
 
 QString Client::primaryId() const
 {
     if (groupRole() != Secondary)
         return QString();
-    return QStringLiteral("%1:%2").arg(m_sync.masterHost).arg(m_sync.masterPort);
+    return QStringLiteral("%1:%2").arg(m_sync.primaryHost).arg(m_sync.primaryPort);
 }
 
 void Client::addSecondaries(const QStringList &ids)
@@ -289,7 +289,7 @@ void Client::nextGroupCommand()
     setGroupBusy(true);
     fetch(QStringLiteral("/AddSlave"), encoded(query), [this, target](const QByteArray &body) {
         m_groupCommandRunning = false;
-        const AddSlave answer = parseAddSlave(body);
+        const GroupAdd answer = parseGroupAdd(body);
         if (body.isEmpty())
             emit commandFailed(QStringLiteral("/AddSlave"), QStringLiteral("no answer"));
         else if (!answer.ok)

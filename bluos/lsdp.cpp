@@ -96,7 +96,7 @@ bool parseDelete(Reader &r, Delete *del)
 bool isPlayerClass(quint16 classId)
 {
     return classId == ClassPlayer || classId == ClassPlayerSecondary
-            || classId == ClassPlayerPairSlave || classId == ClassHub;
+            || classId == ClassPairSecondary || classId == ClassHub;
 }
 
 Packet parse(const QByteArray &datagram)

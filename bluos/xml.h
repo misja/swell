@@ -46,7 +46,9 @@ struct Status {
     bool isPlaying() const { return state == QLatin1String("play") || state == QLatin1String("stream"); }
 };
 
-// /SyncStatus (section 2.2).
+// /SyncStatus (section 2.2). The API names group members master and slave
+// (and zoneMaster, zoneSlave for fixed groups) in its XML and requests;
+// Swell's own names are primary and secondary.
 struct SyncStatus {
     bool ok = false;
     QString error;
@@ -66,24 +68,24 @@ struct SyncStatus {
     // On a secondary player in a group. The section 2.2 example also shows a
     // primary naming itself here, so Client::groupRole() compares it with the
     // player's own address.
-    QString masterHost;
-    int masterPort = 0;
-    bool masterReconnecting = false;
+    QString primaryHost;
+    int primaryPort = 0;
+    bool primaryReconnecting = false;
     // On the primary player of a group: "host:port" entries.
-    QStringList slaves;
+    QStringList secondaries;
     // A fixed group (stereo pair, surround set), configured in the player;
     // out of scope for grouping (section 8).
-    QString zone;
-    bool zoneMaster = false;
-    bool zoneSlave = false;
+    QString fixedGroup;
+    bool fixedPrimary = false;
+    bool fixedSecondary = false;
 
     // Not the same as being a secondary; see above.
-    bool hasMaster() const { return !masterHost.isEmpty(); }
+    bool namesPrimary() const { return !primaryHost.isEmpty(); }
 };
 
 // The answer to /AddSlave (section 8.1, 8.2): the players that were added.
 // A player that could not be added is only missing from it.
-struct AddSlave {
+struct GroupAdd {
     bool ok = false;
     QString error;
 
@@ -216,7 +218,7 @@ Playlist parsePlaylist(const QByteArray &xml);
 Presets parsePresets(const QByteArray &xml);
 Inputs parseCaptureInputs(const QByteArray &xml);
 SyncStatus parseSyncStatus(const QByteArray &xml);
-AddSlave parseAddSlave(const QByteArray &xml);
+GroupAdd parseGroupAdd(const QByteArray &xml);
 VolumeReply parseVolume(const QByteArray &xml);
 
 } // namespace BluOS

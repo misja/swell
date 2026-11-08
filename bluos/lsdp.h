@@ -19,7 +19,7 @@ const quint16 AllClasses = 0xFFFF;
 // Class IDs that identify a controllable player.
 const quint16 ClassPlayer = 0x0001;
 const quint16 ClassPlayerSecondary = 0x0003;
-const quint16 ClassPlayerPairSlave = 0x0006;
+const quint16 ClassPairSecondary = 0x0006;
 const quint16 ClassHub = 0x0008;
 
 bool isPlayerClass(quint16 classId);
