@@ -255,7 +255,7 @@
 <context>
     <name>NowPlayingPage</name>
     <message numerus="yes">
-        <location filename="../qml/pages/NowPlayingPage.qml" line="42"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="44"/>
         <source>Leading %n player(s)</source>
         <translation>
             <numerusform>Leading %n player</numerusform>
@@ -263,33 +263,33 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="45"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="47"/>
         <source>Reconnecting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="45"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="47"/>
         <source>In another player&apos;s group</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="236"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="246"/>
         <source>Group volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="276"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="299"/>
         <source>Per player</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="75"/>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="107"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="78"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="110"/>
         <source>Not reachable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="236"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="246"/>
         <source>Volume</source>
         <translation type="unfinished"></translation>
     </message>
