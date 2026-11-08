@@ -322,9 +322,9 @@ void TstBrowse::plainListGrowsThroughNextKey()
     QTRY_COMPARE(m->rowCount(), 45);
     QCOMPARE(text(m.data(), 44), QStringLiteral("L album 44"));
     // Only the actions Swell understands are offered.
-    const QVariantList actions = m->data(m->index(0), BrowseModel::ActionsRole).toList();
+    const auto actions = m->data(m->index(0), BrowseModel::ActionsRole).value<QList<BrowseAction>>();
     QCOMPARE(actions.size(), 1);
-    QCOMPARE(actions.first().toMap().value(QStringLiteral("type")).toString(), QStringLiteral("addAll-last"));
+    QCOMPARE(actions.first().type, QStringLiteral("addAll-last"));
 }
 
 void TstBrowse::lettersPointAtTheirFirstRows()
@@ -332,10 +332,10 @@ void TstBrowse::lettersPointAtTheirFirstRows()
     startClient();
     QScopedPointer<BrowseModel> m(open(QStringLiteral("Index")));
     QTRY_VERIFY(m->ready());
-    const QVariantList letters = m->letters();
+    const QList<BrowseModel::Letter> letters = m->letters();
     QCOMPARE(letters.size(), 4);
-    QCOMPARE(letters.at(2).toMap().value(QStringLiteral("text")).toString(), QStringLiteral("C"));
-    QCOMPARE(letters.at(2).toMap().value(QStringLiteral("row")).toInt(), 63);
+    QCOMPARE(letters.at(2).text, QStringLiteral("C"));
+    QCOMPARE(letters.at(2).row, 63);
 }
 
 void TstBrowse::errorReplyIsShown()
@@ -429,7 +429,7 @@ void TstBrowse::lettersFollowInsertedRows()
     text(m.data(), 63);   // C: announced 2, three arrive
     QTRY_COMPARE(m->rowCount(), 70);
     QVERIFY(changed.size() >= 1);
-    QCOMPARE(m->letters().at(3).toMap().value(QStringLiteral("row")).toInt(), 66);
+    QCOMPARE(m->letters().at(3).row, 66);
 }
 
 void TstBrowse::aFailedLetterIsAskedForAgain()
@@ -502,8 +502,7 @@ void TstBrowse::anArtistOpensOnItsAlbums()
     QCOMPARE(text(m, 0), QStringLiteral("X album 0"));
     QCOMPARE(m->listType(), QStringLiteral("albums"));
     QCOMPARE(m->moreLinks().size(), 1);
-    QCOMPARE(m->moreLinks().first().toMap().value(QStringLiteral("browseKey")).toString(),
-             QStringLiteral("Lib:Songs?artist=X"));
+    QCOMPARE(m->moreLinks().first().browseKey, QStringLiteral("Lib:Songs?artist=X"));
     delete m;
 }
 

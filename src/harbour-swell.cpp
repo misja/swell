@@ -7,7 +7,7 @@
 
 #include <sailfishapp.h>
 
-#include "playermodel.h"
+#include "qmlplayer.h"
 #include "registration.h"
 
 int main(int argc, char *argv[])
@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     app->setApplicationVersion(QStringLiteral(APP_VERSION));
 
     Swell::registerTypes();
-    BluOS::PlayerModel players;
+    Swell::QmlPlayerModel players;
 
     QScopedPointer<QQuickView> view(SailfishApp::createView());
     view->rootContext()->setContextProperty(QStringLiteral("players"), &players);

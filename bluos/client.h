@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 // One BluOS player over the control API (BluOS Custom Integration API v1.7):
 // a /Status long poll, /SyncStatus refreshed when its syncStat changes, and
-// transport and volume commands. Usable from C++ and, through its properties,
-// from QML.
+// transport and volume commands.
 #ifndef BLUOS_CLIENT_H
 #define BLUOS_CLIENT_H
 
@@ -15,7 +14,6 @@
 #include <QTimer>
 #include <QUrl>
 #include <QUrlQuery>
-#include <QVariantList>
 
 #include "xml.h"
 #include "queuemodel.h"
@@ -47,9 +45,7 @@ class Client : public QObject
     Q_PROPERTY(bool canBack READ canBack NOTIFY statusChanged)
     Q_PROPERTY(int duration READ duration NOTIFY statusChanged)
     Q_PROPERTY(int position READ position NOTIFY positionChanged)
-    Q_PROPERTY(QVariantList presets READ presets NOTIFY presetsChanged)
-    Q_PROPERTY(QVariantList inputs READ inputs NOTIFY inputsChanged)
-    Q_PROPERTY(QObject *queue READ queue CONSTANT)
+    Q_PROPERTY(BluOS::QueueModel *queue READ queue CONSTANT)
 
 public:
     enum Availability {
@@ -104,20 +100,23 @@ public:
     bool canBack() const { return m_status.ok && (!m_status.hasStreamUrl || !m_status.backActionUrl.isEmpty()); }
     int duration() const { return m_status.totlen; }
     int position() const;
-    // Each entry: id (int), name, image (resolved URL), inputId (the capture
-    // input it selects, or empty). Cached per player.
-    QVariantList presets() const { return m_presets; }
-    // Each entry: id, text, inputType, image (resolved URL), url (encoded, as given).
-    QVariantList inputs() const { return m_inputs; }
-    QObject *queue() const { return m_queue; }
-    QueueModel *queueModel() const { return m_queue; }
+    // As the player lists them; images as given, see resolveImage. Cached per
+    // player.
+    QList<Preset> presets() const { return m_presets; }
+    QList<Input> inputs() const { return m_inputs; }
+    QueueModel *queue() const { return m_queue; }
 
+    // The handlers of these reads run only while context exists, as with
+    // QTimer::singleShot(msec, context, functor), and never before the call
+    // returns. With a null context the answer is dropped.
     // One /Playlist window (section 5.1); the handler gets ok == false on failure.
-    void fetchQueueWindow(int start, int end, const std::function<void(const Playlist &)> &handler);
+    void fetchQueueWindow(int start, int end, QObject *context,
+                          const std::function<void(const Playlist &)> &handler);
     // One /Browse read (sections 7.1, 7.2): the top level for an empty key, a
     // search when q is set. Keys are sent byte for byte (encoded once). Not
     // paced by the one-second rule, which the API sets for status polling.
-    void fetchBrowse(const QString &key, const QString &q, const std::function<void(const Browse &)> &handler);
+    void fetchBrowse(const QString &key, const QString &q, QObject *context,
+                     const std::function<void(const Browse &)> &handler);
     // Splits a player path from a /Browse reply into path and encoded query.
     // False unless it starts with a single '/', has no fragment and survives
     // Qt's URL handling unchanged; the host is always this player.
@@ -224,8 +223,8 @@ private:
     QHash<QString, Gate> m_gates;       // keyed by path and parameter name
     QHash<QString, QElapsedTimer> m_lastSent;  // keyed by path
     QString m_syncRequestedFor;
-    QVariantList m_presets;
-    QVariantList m_inputs;
+    QList<Preset> m_presets;
+    QList<Input> m_inputs;
     QString m_presetsPrid;
     bool m_presetsLoading = false;
     bool m_inputsLoading = false;

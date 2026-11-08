@@ -4,7 +4,6 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QVariantMap>
 #include <QXmlStreamReader>
 
 namespace BluOS {
@@ -185,7 +184,7 @@ void Client::runAction(const QString &playerPath, const QString &type)
     });
 }
 
-void Client::fetchBrowse(const QString &key, const QString &q,
+void Client::fetchBrowse(const QString &key, const QString &q, QObject *context,
                          const std::function<void(const Browse &)> &handler)
 {
     // Encoded once with every reserved character, as in the section 7.1
@@ -196,7 +195,10 @@ void Client::fetchBrowse(const QString &key, const QString &q,
     if (!q.isEmpty())
         items << QStringLiteral("q=") + QString::fromLatin1(QUrl::toPercentEncoding(q));
     items << QStringLiteral("withContextMenuItems=1");
-    fetch(QStringLiteral("/Browse"), items.join(QLatin1Char('&')), [handler](const QByteArray &body) {
+    const QPointer<QObject> guard(context);
+    fetch(QStringLiteral("/Browse"), items.join(QLatin1Char('&')), [guard, handler](const QByteArray &body) {
+        if (!guard)
+            return;
         Browse b = parseBrowse(body);
         if (body.isEmpty()) {
             b.error = QStringLiteral("no answer");
@@ -255,18 +257,8 @@ void Client::refreshInputs()
         if (!inputs.ok)
             return;
         m_inputsFetched = true;
-        QVariantList list;
-        for (const Input &in : inputs.items) {
-            QVariantMap item;
-            item.insert(QStringLiteral("id"), in.id);
-            item.insert(QStringLiteral("text"), in.text);
-            item.insert(QStringLiteral("inputType"), in.inputType);
-            item.insert(QStringLiteral("image"), resolveImage(in.image));
-            item.insert(QStringLiteral("url"), in.url);
-            list.append(item);
-        }
-        if (list != m_inputs) {
-            m_inputs = list;
+        if (inputs.items != m_inputs) {
+            m_inputs = inputs.items;
             emit inputsChanged();
         }
     });
@@ -284,18 +276,8 @@ void Client::fetchPresets()
         if (!presets.ok)
             return;
         m_presetsFetched = true;
-        QVariantList list;
-        for (const Preset &p : presets.items) {
-            QVariantMap item;
-            item.insert(QStringLiteral("id"), p.id);
-            item.insert(QStringLiteral("name"), p.name);
-            item.insert(QStringLiteral("image"), resolveImage(p.image));
-            // A preset that selects an input; Home shows that input's own icon.
-            item.insert(QStringLiteral("inputId"), p.inputId());
-            list.append(item);
-        }
-        if (list != m_presets) {
-            m_presets = list;
+        if (presets.items != m_presets) {
+            m_presets = presets.items;
             emit presetsChanged();
         }
         // Remember the status prid this answer belongs to, so a /Presets prid
@@ -311,7 +293,9 @@ void Client::fetch(const QString &path, const QString &encodedQuery,
                    const std::function<void(const QByteArray &)> &handler, int deadlineMs, bool paced)
 {
     if (!m_running) {
-        handler(QByteArray());
+        // On the next turn of the event loop, so a handler that sends again
+        // does not re-enter this function.
+        QTimer::singleShot(0, this, [handler]() { handler(QByteArray()); });
         return;
     }
     const int wait = paced ? msUntilAllowed(path) : 0;
@@ -328,13 +312,16 @@ void Client::fetch(const QString &path, const QString &encodedQuery,
     });
 }
 
-void Client::fetchQueueWindow(int start, int end, const std::function<void(const Playlist &)> &handler)
+void Client::fetchQueueWindow(int start, int end, QObject *context,
+                              const std::function<void(const Playlist &)> &handler)
 {
     QUrlQuery query;
     query.addQueryItem(QStringLiteral("start"), QString::number(start));
     query.addQueryItem(QStringLiteral("end"), QString::number(end));
-    fetch(QStringLiteral("/Playlist"), encoded(query), [handler](const QByteArray &body) {
-        handler(parsePlaylist(body));
+    const QPointer<QObject> guard(context);
+    fetch(QStringLiteral("/Playlist"), encoded(query), [guard, handler](const QByteArray &body) {
+        if (guard)
+            handler(parsePlaylist(body));
     }, m_timing.readTimeoutMs);
 }
 
@@ -370,7 +357,7 @@ void Client::processRemovals()
     // the queue: ask the player what is at that position right now. The queue
     // must be the one the user saw, or that one changed only by Swell's own
     // deletes (the id changes on every modification, API section 5.1).
-    fetchQueueWindow(removal.position, removal.position, [this, removal, generation](const Playlist &now) {
+    fetchQueueWindow(removal.position, removal.position, this, [this, removal, generation](const Playlist &now) {
         const bool same = now.ok && m_queue->knowsPid(removal.pid) && now.id == m_queue->pid()
                 && now.songs.size() == 1 && now.songs.first().position == removal.position
                 && now.songs.first().identity() == removal.identity;
@@ -416,7 +403,7 @@ void Client::adoptQueueId(int position)
     const int length = m_queue->length();
     const int at = qMax(0, qMin(position, length - 1));
     const int generation = m_queue->generation();
-    fetchQueueWindow(at, at, [this, at, length, generation](const Playlist &now) {
+    fetchQueueWindow(at, at, this, [this, at, length, generation](const Playlist &now) {
         bool matches = now.ok && !now.id.isEmpty() && now.length == length
                 && m_queue->generation() == generation;
         if (matches && length > 0) {
@@ -665,17 +652,9 @@ void Client::onCommandReply(QNetworkReply *reply, const QString &path)
         emit commandFailed(path, describe(reply));
     } else {
         // A command can also fail with an <error> document (API 7.1).
-        QXmlStreamReader xml(reply->readAll());
-        if (xml.readNextStartElement() && xml.name() == QLatin1String("error")) {
-            QString message;
-            while (xml.readNextStartElement()) {
-                if (xml.name() == QLatin1String("message"))
-                    message = xml.readElementText();
-                else
-                    xml.skipCurrentElement();
-            }
-            emit commandFailed(path, message.isEmpty() ? QStringLiteral("error") : message);
-        }
+        const QString error = errorIn(reply->readAll());
+        if (!error.isEmpty())
+            emit commandFailed(path, error);
     }
 }
 

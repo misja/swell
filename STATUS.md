@@ -11,7 +11,12 @@ result, navigation, covers). Device check by Misja passed on 0.3.0-12
 (2026-11-08), including navigation (decision 12) and cover placeholders
 (decision 13). App icon (#3): Misja's sound-bar design, source
 icons/harbour-swell.svg, accepted on the device. 004 merged (PR #9, f48abda,
-2026-11-08); #7 and #3 closed. Next: issue #8 (typed bluos/ interfaces). Decisions: browse reads unpaced; no recently played
+2026-11-08); #7 and #3 closed. Now: issue #8 on branch 007-bluos-library,
+specs/007-bluos-library. API and C/C++ check done; scope/design review and
+re-check done (both approve with changes, applied); Misja chose option 3
+(typed library, QML shaping in src/). Built: runtime QML test, typed
+interfaces, A1-A3, C2; tests, RPM 0.3.0-13 and validator pass. Result review
+applied; Misja's device check passed (2026-11-08). PR open. Decisions: browse reads unpaced; no recently played
 and no extra state in Swell (published API only); no header per letter.
 Issue #8 (typed bluos/ interfaces) follows 004. Workspace principles 1.2.0
 (Sailfish UI check in reviews) merged (sailfish-workspace#19, 13985f2).

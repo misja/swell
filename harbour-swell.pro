@@ -12,8 +12,8 @@ DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 include(bluos/bluos.pri)
 
 INCLUDEPATH += src
-HEADERS += src/registration.h
-SOURCES += src/harbour-swell.cpp src/registration.cpp
+HEADERS += src/registration.h src/qmlplayer.h src/qmlbrowsemodel.h
+SOURCES += src/harbour-swell.cpp src/registration.cpp src/qmlplayer.cpp src/qmlbrowsemodel.cpp
 
 DISTFILES += qml/harbour-swell.qml \
     qml/cover/CoverPage.qml \

@@ -108,17 +108,12 @@ int BrowseModel::firstRow(int segment) const
     return row;
 }
 
-QVariant BrowseModel::actionsOf(const BrowseItem &item) const
+QList<BrowseAction> BrowseModel::actionsOf(const BrowseItem &item)
 {
-    QVariantList list;
+    QList<BrowseAction> list;
     for (const BrowseAction &a : item.actions) {
-        if (!knownAction(a.type))
-            continue;
-        QVariantMap m;
-        m.insert(QStringLiteral("type"), a.type);
-        m.insert(QStringLiteral("text"), a.text);
-        m.insert(QStringLiteral("url"), a.actionUrl);
-        list.append(m);
+        if (knownAction(a.type))
+            list.append(a);
     }
     return list;
 }
@@ -163,7 +158,7 @@ QVariant BrowseModel::data(const QModelIndex &index, int role) const
     case PlayUrlRole: return r.item.playUrl;
     case AutoplayUrlRole: return r.item.autoplayUrl;
     case DurationRole: return r.item.duration;
-    case ActionsRole: return r.loaded ? actionsOf(r.item) : QVariant(QVariantList());
+    case ActionsRole: return QVariant::fromValue(r.loaded ? actionsOf(r.item) : QList<BrowseAction>());
     case SectionRole: return s.title;
     case LoadedRole: return r.loaded;
     case FavouritesRole: return false;
@@ -198,18 +193,14 @@ QString BrowseModel::sectionAt(int row) const
     return segment < 0 ? QString() : m_segments.at(segment).title;
 }
 
-QVariantList BrowseModel::letters() const
+QList<BrowseModel::Letter> BrowseModel::letters() const
 {
-    QVariantList list;
+    QList<Letter> list;
     if (!m_sectioned)
         return list;
     for (int i = 0; i < m_segments.size(); ++i) {
-        if (m_segments.at(i).rows.isEmpty())
-            continue;
-        QVariantMap m;
-        m.insert(QStringLiteral("text"), m_segments.at(i).title);
-        m.insert(QStringLiteral("row"), firstRow(i));
-        list.append(m);
+        if (!m_segments.at(i).rows.isEmpty())
+            list.append({ m_segments.at(i).title, firstRow(i) });
     }
     return list;
 }
@@ -240,7 +231,7 @@ void BrowseModel::readFirst(const QString &key)
     emit loadingChanged();
     const int generation = m_generation;
     QPointer<BrowseModel> self(this);
-    m_client->fetchBrowse(key, m_expanded ? QString() : m_query, [self, generation](const Browse &reply) {
+    m_client->fetchBrowse(key, m_expanded ? QString() : m_query, this, [self, generation](const Browse &reply) {
         if (!self || generation != self->m_generation)
             return;  // the page went away, or it was read again
         self->m_inFlight = -1;
@@ -259,12 +250,8 @@ void BrowseModel::onFirst(const Browse &reply)
         m_expanded = true;
         for (int i = 1; i < reply.items.size(); ++i) {
             const BrowseItem &item = reply.items.at(i);
-            if (item.type != QLatin1String("link") || item.browseKey.isEmpty())
-                continue;
-            QVariantMap link;
-            link.insert(QStringLiteral("text"), item.text);
-            link.insert(QStringLiteral("browseKey"), item.browseKey);
-            m_moreLinks.append(link);
+            if (item.type == QLatin1String("link") && !item.browseKey.isEmpty())
+                m_moreLinks.append(item);
         }
         readFirst(reply.items.first().browseKey);
         return;
@@ -303,7 +290,7 @@ void BrowseModel::onFirst(const Browse &reply)
             QList<BrowseItem> items;
             for (const BrowseItem &item : reply.items) {
                 if (m_root && item.type != QLatin1String("link"))
-                    continue;  // inputs (on Home) and play-only hand-offs
+                    continue;  // inputs (see Client::inputs) and play-only hand-offs
                 items.append(item);
             }
             setRows(items);
@@ -334,7 +321,7 @@ void BrowseModel::findListFavourites(const QString &kind)
         return;
     const int generation = m_generation;
     QPointer<BrowseModel> self(this);
-    m_client->fetchBrowse(QStringLiteral("LocalMusic:"), QString(), [self, generation, kind](const Browse &menu) {
+    m_client->fetchBrowse(QStringLiteral("LocalMusic:"), QString(), this, [self, generation, kind](const Browse &menu) {
         if (!self || generation != self->m_generation || !menu.ok || !self->m_client)
             return;
         bool offered = false;
@@ -342,7 +329,7 @@ void BrowseModel::findListFavourites(const QString &kind)
             offered = offered || item.browseKey == QLatin1String(FavouritesKey);
         if (!offered)
             return;
-        self->m_client->fetchBrowse(QString::fromLatin1(FavouritesKey), QString(),
+        self->m_client->fetchBrowse(QString::fromLatin1(FavouritesKey), QString(), self,
                                     [self, generation, kind](const Browse &favourites) {
             if (!self || generation != self->m_generation || !favourites.ok)
                 return;
@@ -382,7 +369,7 @@ void BrowseModel::findFavourites()
         return;
     const int generation = m_generation;
     QPointer<BrowseModel> self(this);
-    m_client->fetchBrowse(QStringLiteral("LocalMusic:"), QString(), [self, generation](const Browse &menu) {
+    m_client->fetchBrowse(QStringLiteral("LocalMusic:"), QString(), this, [self, generation](const Browse &menu) {
         if (!self || generation != self->m_generation || !menu.ok || self->m_favourites)
             return;
         for (const BrowseItem &item : menu.items) {
@@ -432,7 +419,7 @@ void BrowseModel::request(int segment)
     const QString key = s.started ? s.nextKey : s.key;
     const int generation = m_generation;
     QPointer<BrowseModel> self(this);
-    m_client->fetchBrowse(key, QString(), [self, generation, segment, key](const Browse &reply) {
+    m_client->fetchBrowse(key, QString(), this, [self, generation, segment, key](const Browse &reply) {
         if (self)
             self->onPage(generation, segment, key, reply);
     });

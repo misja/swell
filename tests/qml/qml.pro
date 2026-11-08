@@ -6,5 +6,6 @@ CONFIG += testcase console
 CONFIG -= app_bundle
 include(../../bluos/bluos.pri)
 INCLUDEPATH += ../../src
-SOURCES += tst_qml.cpp ../../src/registration.cpp
+HEADERS += ../../src/qmlbrowsemodel.h
+SOURCES += tst_qml.cpp ../../src/registration.cpp ../../src/qmlbrowsemodel.cpp
 DEFINES += SWELL_SOURCE_DIR=\\\"$$PWD/../..\\\"

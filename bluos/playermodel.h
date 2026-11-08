@@ -20,10 +20,10 @@ class PlayerModel : public QAbstractListModel
     Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
     Q_PROPERTY(bool searching READ searching NOTIFY searchingChanged)
     Q_PROPERTY(QStringList manualHosts READ manualHosts NOTIFY manualHostsChanged)
-    // The player shown on Home, Now Playing and the cover.
+    // The player the app works with; with pollAll false, only it polls.
     Q_PROPERTY(QString currentId READ currentId WRITE setCurrentId NOTIFY currentChanged)
     Q_PROPERTY(QString currentNodeId READ currentNodeId NOTIFY currentChanged)
-    Q_PROPERTY(QObject *current READ current NOTIFY currentChanged)
+    Q_PROPERTY(BluOS::Client *current READ current NOTIFY currentChanged)
     // When false only the current player polls; set it while all players are on screen.
     Q_PROPERTY(bool pollAll READ pollAll WRITE setPollAll NOTIFY pollAllChanged)
 
@@ -54,7 +54,7 @@ public:
     QString currentId() const { return m_currentId; }
     void setCurrentId(const QString &id);
     QString currentNodeId() const;
-    QObject *current() const;
+    Client *current() const;
     bool pollAll() const { return m_pollAll; }
     void setPollAll(bool pollAll);
     // Makes a remembered player current at once, before discovery answers. With
@@ -68,7 +68,7 @@ public:
     Q_INVOKABLE int indexOf(const QString &id) const;
     Q_INVOKABLE bool isValidAddress(const QString &address) const;
     Q_INVOKABLE QString idAt(int row) const;
-    QObject *client(const QString &id) const;
+    Client *client(const QString &id) const;
 
     static bool parseAddress(const QString &address, QString *host, int *port);
 
@@ -78,6 +78,12 @@ signals:
     void manualHostsChanged();
     void currentChanged();
     void pollAllChanged();
+
+protected:
+    // Creates each player's client; a subclass may return a subclass of
+    // Client. Not called from the constructor.
+    virtual Client *newClient(QNetworkAccessManager *nam, const QString &host, int port,
+                              QObject *parent);
 
 private:
     struct Entry {
