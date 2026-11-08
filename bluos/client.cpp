@@ -296,8 +296,9 @@ void Client::removeSecondaries(const QStringList &ids)
     }
     QUrlQuery query;
     const bool one = ids.size() == 1;
-    query.addQueryItem(one ? QStringLiteral("slave") : QStringLiteral("slaves"), hosts.join(QLatin1Char(',')));
-    query.addQueryItem(one ? QStringLiteral("port") : QStringLiteral("ports"), ports.join(QLatin1Char(',')));
+    const QLatin1Char comma(',');
+    query.addQueryItem(one ? QStringLiteral("slave") : QStringLiteral("slaves"), hosts.join(comma));
+    query.addQueryItem(one ? QStringLiteral("port") : QStringLiteral("ports"), ports.join(comma));
     setGroupBusy(true);
     fetch(QStringLiteral("/RemoveSlave"), encoded(query), [this](const QByteArray &body) {
         // The answer is the primary's /SyncStatus (section 8.3).
