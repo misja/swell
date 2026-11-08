@@ -158,7 +158,7 @@ QString PlayerModel::idAt(int row) const
     return row >= 0 && row < m_entries.size() ? m_entries.at(row).client->id() : QString();
 }
 
-QObject *PlayerModel::client(const QString &id) const
+Client *PlayerModel::client(const QString &id) const
 {
     const int row = indexOf(id);
     return row < 0 ? nullptr : m_entries.at(row).client;
@@ -179,7 +179,7 @@ QString PlayerModel::currentNodeId() const
     return row < 0 ? QString() : m_entries.at(row).nodeId;
 }
 
-QObject *PlayerModel::current() const
+Client *PlayerModel::current() const
 {
     return client(m_currentId);
 }
@@ -274,9 +274,15 @@ void PlayerModel::onLost(const QString &nodeId)
     }
 }
 
+Client *PlayerModel::newClient(QNetworkAccessManager *nam, const QString &host, int port,
+                               QObject *parent)
+{
+    return new Client(nam, host, port, parent);
+}
+
 Client *PlayerModel::createClient(const QString &host, int port)
 {
-    Client *c = new Client(&m_nam, host, port, this);
+    Client *c = newClient(&m_nam, host, port, this);
     c->setTiming(m_timing);
     connect(c, &Client::availabilityChanged, this, &PlayerModel::clientChanged);
     connect(c, &Client::statusChanged, this, &PlayerModel::clientChanged);

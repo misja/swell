@@ -309,9 +309,10 @@ void TstClient::presetsFetchedAndRefetchedOnPrid()
                     "<presets prid=\"1\"><preset id=\"5\" name=\"North Sea FM\" image=\"/Artwork?id=5\"/></presets>");
     startClient();
     QTRY_COMPARE(m_client->presets().size(), 1);
-    const QVariantMap first = m_client->presets().first().toMap();
-    QCOMPARE(first.value(QStringLiteral("id")).toInt(), 5);
-    QCOMPARE(QUrlQuery(first.value(QStringLiteral("image")).toUrl()).queryItemValue(QStringLiteral("followRedirects")),
+    const Preset first = m_client->presets().first();
+    QCOMPARE(first.id, 5);
+    QCOMPARE(first.image, QStringLiteral("/Artwork?id=5"));
+    QCOMPARE(QUrlQuery(m_client->resolveImage(first.image)).queryItemValue(QStringLiteral("followRedirects")),
              QStringLiteral("1"));
     const int before = m_player->requests(QStringLiteral("/Presets")).size();
 
@@ -386,9 +387,9 @@ void TstClient::inputsFetched()
                     "<item text=\"Cloud\" id=\"c\" URL=\"Cloud%3Aplay\"/></radiotime>");
     startClient();
     QTRY_COMPARE(m_client->inputs().size(), 1);
-    const QVariantMap in = m_client->inputs().first().toMap();
-    QCOMPARE(in.value(QStringLiteral("text")).toString(), QStringLiteral("Optical Input"));
-    QCOMPARE(in.value(QStringLiteral("url")).toString(), QStringLiteral("Capture%3Ahw%3A1"));
+    const Input in = m_client->inputs().first();
+    QCOMPARE(in.text, QStringLiteral("Optical Input"));
+    QCOMPARE(in.url, QStringLiteral("Capture%3Ahw%3A1"));
     QCOMPARE(m_player->requests(QStringLiteral("/RadioBrowse")).first().target,
              QByteArray("/RadioBrowse?service=Capture"));
 }

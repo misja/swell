@@ -255,18 +255,8 @@ void Client::refreshInputs()
         if (!inputs.ok)
             return;
         m_inputsFetched = true;
-        QVariantList list;
-        for (const Input &in : inputs.items) {
-            QVariantMap item;
-            item.insert(QStringLiteral("id"), in.id);
-            item.insert(QStringLiteral("text"), in.text);
-            item.insert(QStringLiteral("inputType"), in.inputType);
-            item.insert(QStringLiteral("image"), resolveImage(in.image));
-            item.insert(QStringLiteral("url"), in.url);
-            list.append(item);
-        }
-        if (list != m_inputs) {
-            m_inputs = list;
+        if (inputs.items != m_inputs) {
+            m_inputs = inputs.items;
             emit inputsChanged();
         }
     });
@@ -284,18 +274,8 @@ void Client::fetchPresets()
         if (!presets.ok)
             return;
         m_presetsFetched = true;
-        QVariantList list;
-        for (const Preset &p : presets.items) {
-            QVariantMap item;
-            item.insert(QStringLiteral("id"), p.id);
-            item.insert(QStringLiteral("name"), p.name);
-            item.insert(QStringLiteral("image"), resolveImage(p.image));
-            // A preset that selects an input; Home shows that input's own icon.
-            item.insert(QStringLiteral("inputId"), p.inputId());
-            list.append(item);
-        }
-        if (list != m_presets) {
-            m_presets = list;
+        if (presets.items != m_presets) {
+            m_presets = presets.items;
             emit presetsChanged();
         }
         // Remember the status prid this answer belongs to, so a /Presets prid

@@ -12,6 +12,7 @@
 #include "client.h"
 #include "fakeplayer.h"
 #include "playermodel.h"
+#include "qmlplayer.h"
 #include "registration.h"
 
 using namespace BluOS;
@@ -101,7 +102,7 @@ void TstQmlRuntime::initTestCase()
     });
 
     Swell::registerTypes();
-    m_players = new PlayerModel(this);
+    m_players = new Swell::QmlPlayerModel(this);
     Client::Timing t;
     t.pollTimeoutSecs = 1;
     t.deadlineGraceMs = 2000;
@@ -127,7 +128,7 @@ void TstQmlRuntime::initTestCase()
     m_probe = component.create();
     QVERIFY2(m_probe, qPrintable(component.errorString()));
 
-    auto *client = qobject_cast<Client *>(m_players->client(id));
+    Client *client = m_players->client(id);
     QVERIFY(client);
     QTRY_VERIFY(client->online());
     QTRY_COMPARE(m_probe->property("presetCount").toInt(), 2);

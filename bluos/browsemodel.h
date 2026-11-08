@@ -11,7 +11,6 @@
 #include <QElapsedTimer>
 #include <QPointer>
 #include <QUrl>
-#include <QVariantList>
 #include <QVector>
 
 #include "client.h"
@@ -39,12 +38,9 @@ class BrowseModel : public QAbstractListModel
     Q_PROPERTY(QString searchKey READ searchKey NOTIFY readyChanged)
     Q_PROPERTY(QString playUrl READ playUrl NOTIFY readyChanged)
     Q_PROPERTY(bool sectioned READ sectioned NOTIFY readyChanged)
-    // For a letter index: [{ "text": "A", "row": 17 }, ...].
-    Q_PROPERTY(QVariantList letters READ letters NOTIFY lettersChanged)
     // Open a menu's first link straight away (an artist: its albums); the
-    // other links of that menu are in moreLinks: [{ "text", "browseKey" }].
+    // other links of that menu are in moreLinks().
     Q_PROPERTY(bool expandFirst READ expandFirst WRITE setExpandFirst NOTIFY keyChanged)
-    Q_PROPERTY(QVariantList moreLinks READ moreLinks NOTIFY readyChanged)
     // For a library letter list: the key of the matching favourites list
     // (favourite albums for Albums, …), once the library is seen to offer it.
     Q_PROPERTY(QString favouritesKey READ favouritesKey NOTIFY favouritesKeyChanged)
@@ -60,7 +56,7 @@ public:
         PlayUrlRole,
         AutoplayUrlRole,
         DurationRole,
-        ActionsRole,
+        ActionsRole,     // QList<BrowseAction>, known types only
         SectionRole,
         LoadedRole,
         FavouritesRole
@@ -69,6 +65,12 @@ public:
     // The library's favourites, as the Library menu names them (observed on
     // firmware in 2026; not a documented key). Only followed when offered.
     static const char *const FavouritesKey;
+
+    // A letter of a sectioned list and the row it starts at.
+    struct Letter {
+        QString text;
+        int row = 0;
+    };
 
     explicit BrowseModel(QObject *parent = nullptr);
 
@@ -94,12 +96,14 @@ public:
     QString searchKey() const { return m_reply.searchKey; }
     QString playUrl() const { return m_reply.playUrl; }
     bool sectioned() const { return m_sectioned; }
-    QVariantList letters() const;
+    // For a letter index; changes with lettersChanged.
+    QList<Letter> letters() const;
     // The letter of a row, without reading it (for the letter index).
     Q_INVOKABLE QString sectionAt(int row) const;
     bool expandFirst() const { return m_expandFirst; }
     void setExpandFirst(bool expand);
-    QVariantList moreLinks() const { return m_moreLinks; }
+    // The other links of an expanded menu; changes with readyChanged.
+    QList<BrowseItem> moreLinks() const { return m_moreLinks; }
     QString favouritesKey() const { return m_favouritesKey; }
     int count() const { return rowCount(); }
 
@@ -148,7 +152,7 @@ private:
     void readFirst(const QString &key);
     int segmentOf(int row, int *offset) const;
     int firstRow(int segment) const;
-    QVariant actionsOf(const BrowseItem &item) const;
+    static QList<BrowseAction> actionsOf(const BrowseItem &item);
 
     QPointer<Client> m_client;
     QString m_key;
@@ -163,7 +167,7 @@ private:
     QString m_favouritesName;
     bool m_expandFirst = false;
     bool m_expanded = false;
-    QVariantList m_moreLinks;
+    QList<BrowseItem> m_moreLinks;
     QString m_favouritesKey;
     QString m_error;
     bool m_playerError = false;

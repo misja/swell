@@ -8,6 +8,7 @@
 #include <QByteArray>
 #include <QString>
 #include <QList>
+#include <QMetaType>
 #include <QStringList>
 
 namespace BluOS {
@@ -79,6 +80,12 @@ struct Preset {
     QString url;            // what the preset loads, e.g. "Capture:…?id=<input id>"
     // The capture input this preset selects, from the id= in its url; empty otherwise.
     QString inputId() const;
+
+    bool operator==(const Preset &o) const
+    {
+        return id == o.id && name == o.name && image == o.image && url == o.url;
+    }
+    bool operator!=(const Preset &o) const { return !(*this == o); }
 };
 
 struct Presets {
@@ -98,6 +105,13 @@ struct Input {
     QString inputType;      // e.g. spdif, analog, arc, bluetooth
     QString image;
     QString url;            // as given: already percent-encoded, play with /Play?url=
+
+    bool operator==(const Input &o) const
+    {
+        return id == o.id && text == o.text && inputType == o.inputType && image == o.image
+                && url == o.url;
+    }
+    bool operator!=(const Input &o) const { return !(*this == o); }
 };
 
 struct Inputs {
@@ -177,5 +191,8 @@ Inputs parseCaptureInputs(const QByteArray &xml);
 SyncStatus parseSyncStatus(const QByteArray &xml);
 
 } // namespace BluOS
+
+// A browse model's ActionsRole holds a QList<BluOS::BrowseAction>.
+Q_DECLARE_METATYPE(BluOS::BrowseAction)
 
 #endif

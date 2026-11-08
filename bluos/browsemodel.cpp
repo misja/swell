@@ -108,17 +108,12 @@ int BrowseModel::firstRow(int segment) const
     return row;
 }
 
-QVariant BrowseModel::actionsOf(const BrowseItem &item) const
+QList<BrowseAction> BrowseModel::actionsOf(const BrowseItem &item)
 {
-    QVariantList list;
+    QList<BrowseAction> list;
     for (const BrowseAction &a : item.actions) {
-        if (!knownAction(a.type))
-            continue;
-        QVariantMap m;
-        m.insert(QStringLiteral("type"), a.type);
-        m.insert(QStringLiteral("text"), a.text);
-        m.insert(QStringLiteral("url"), a.actionUrl);
-        list.append(m);
+        if (knownAction(a.type))
+            list.append(a);
     }
     return list;
 }
@@ -163,7 +158,7 @@ QVariant BrowseModel::data(const QModelIndex &index, int role) const
     case PlayUrlRole: return r.item.playUrl;
     case AutoplayUrlRole: return r.item.autoplayUrl;
     case DurationRole: return r.item.duration;
-    case ActionsRole: return r.loaded ? actionsOf(r.item) : QVariant(QVariantList());
+    case ActionsRole: return QVariant::fromValue(r.loaded ? actionsOf(r.item) : QList<BrowseAction>());
     case SectionRole: return s.title;
     case LoadedRole: return r.loaded;
     case FavouritesRole: return false;
@@ -198,18 +193,14 @@ QString BrowseModel::sectionAt(int row) const
     return segment < 0 ? QString() : m_segments.at(segment).title;
 }
 
-QVariantList BrowseModel::letters() const
+QList<BrowseModel::Letter> BrowseModel::letters() const
 {
-    QVariantList list;
+    QList<Letter> list;
     if (!m_sectioned)
         return list;
     for (int i = 0; i < m_segments.size(); ++i) {
-        if (m_segments.at(i).rows.isEmpty())
-            continue;
-        QVariantMap m;
-        m.insert(QStringLiteral("text"), m_segments.at(i).title);
-        m.insert(QStringLiteral("row"), firstRow(i));
-        list.append(m);
+        if (!m_segments.at(i).rows.isEmpty())
+            list.append({ m_segments.at(i).title, firstRow(i) });
     }
     return list;
 }
@@ -259,12 +250,8 @@ void BrowseModel::onFirst(const Browse &reply)
         m_expanded = true;
         for (int i = 1; i < reply.items.size(); ++i) {
             const BrowseItem &item = reply.items.at(i);
-            if (item.type != QLatin1String("link") || item.browseKey.isEmpty())
-                continue;
-            QVariantMap link;
-            link.insert(QStringLiteral("text"), item.text);
-            link.insert(QStringLiteral("browseKey"), item.browseKey);
-            m_moreLinks.append(link);
+            if (item.type == QLatin1String("link") && !item.browseKey.isEmpty())
+                m_moreLinks.append(item);
         }
         readFirst(reply.items.first().browseKey);
         return;
@@ -303,7 +290,7 @@ void BrowseModel::onFirst(const Browse &reply)
             QList<BrowseItem> items;
             for (const BrowseItem &item : reply.items) {
                 if (m_root && item.type != QLatin1String("link"))
-                    continue;  // inputs (on Home) and play-only hand-offs
+                    continue;  // inputs (see Client::inputs) and play-only hand-offs
                 items.append(item);
             }
             setRows(items);

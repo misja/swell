@@ -229,7 +229,7 @@ void TstModel::restoredPlayerAppearsAtOnce()
     QCOMPARE(model.rowCount(), 1);
     QCOMPARE(model.currentId(), QStringLiteral("127.0.0.10:1"));
     QVERIFY(model.current());
-    QCOMPARE(qobject_cast<Client *>(model.current())->availability(), Client::Connecting);
+    QCOMPARE(model.current()->availability(), Client::Connecting);
     QVERIFY(current.size() >= 1);
     // Its announcement merges into the same row.
     model.discovery()->handleDatagram(announce('\x0A', 10, 0x0001, "1", "Den"));
@@ -240,13 +240,13 @@ void TstModel::currentFollowsAddressChange()
 {
     PlayerModel model;
     model.restoreCurrent(QStringLiteral("127.0.0.10:1"), QStringLiteral("02:00:00:00:00:0A"));
-    QObject *before = model.current();
+    Client *before = model.current();
     QSignalSpy current(&model, &PlayerModel::currentChanged);
     model.discovery()->handleDatagram(announce('\x0A', 20, 0x0001, "1", "Den"));
     QCOMPARE(model.rowCount(), 1);
     QCOMPARE(model.currentId(), QStringLiteral("127.0.0.20:1"));
     QVERIFY(model.current() != before);
-    QVERIFY(qobject_cast<Client *>(model.current())->running());
+    QVERIFY(model.current()->running());
     QCOMPARE(current.size(), 1);
     QCOMPARE(model.currentNodeId(), QStringLiteral("02:00:00:00:00:0A"));
 }
@@ -267,7 +267,7 @@ void TstModel::removingCurrentClearsIt()
     QSignalSpy current(&model, &PlayerModel::currentChanged);
     model.removeManual(QStringLiteral("127.0.0.10:1"));
     QCOMPARE(model.currentId(), QString());
-    QCOMPARE(model.current(), static_cast<QObject *>(nullptr));
+    QCOMPARE(model.current(), static_cast<Client *>(nullptr));
     QCOMPARE(current.size(), 1);
 }
 
