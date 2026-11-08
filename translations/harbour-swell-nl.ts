@@ -281,8 +281,8 @@
     </message>
     <message>
         <location filename="../qml/pages/HomePage.qml" line="92"/>
-        <source>Connecting…</source>
-        <translation>Verbinden…</translation>
+        <source>Connecting</source>
+        <translation>Verbinden</translation>
     </message>
     <message>
         <location filename="../qml/pages/HomePage.qml" line="101"/>
@@ -312,8 +312,8 @@
     </message>
     <message>
         <location filename="../qml/pages/NowPlayingPage.qml" line="33"/>
-        <source>Reconnecting…</source>
-        <translation>Opnieuw verbinden…</translation>
+        <source>Reconnecting</source>
+        <translation>Opnieuw verbinden</translation>
     </message>
     <message>
         <location filename="../qml/pages/NowPlayingPage.qml" line="33"/>
@@ -341,8 +341,8 @@
     <name>PlayersPage</name>
     <message>
         <location filename="../qml/pages/PlayersPage.qml" line="37"/>
-        <source>Connecting…</source>
-        <translation>Verbinden…</translation>
+        <source>Connecting</source>
+        <translation>Verbinden</translation>
     </message>
     <message>
         <location filename="../qml/pages/PlayersPage.qml" line="38"/>

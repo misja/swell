@@ -34,7 +34,7 @@ Page {
 
     function _availabilityText(availability) {
         switch (availability) {
-        case 0: return qsTr("Connecting…")
+        case 0: return qsTr("Connecting")
         case 2: return qsTr("Not reachable")
         case 3: return qsTr("Not a BluOS player")
         }

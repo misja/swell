@@ -89,7 +89,7 @@ Page {
                         return ""
                     }
                     if (_player.availability === 0) {
-                        return qsTr("Connecting…")
+                        return qsTr("Connecting")
                     }
                     if (_player.availability === 3) {
                         return qsTr("Not a BluOS player")

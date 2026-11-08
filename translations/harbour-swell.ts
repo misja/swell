@@ -280,7 +280,7 @@
     </message>
     <message>
         <location filename="../qml/pages/HomePage.qml" line="92"/>
-        <source>Connecting…</source>
+        <source>Connecting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -310,7 +310,7 @@
     </message>
     <message>
         <location filename="../qml/pages/NowPlayingPage.qml" line="33"/>
-        <source>Reconnecting…</source>
+        <source>Reconnecting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -339,7 +339,7 @@
     <name>PlayersPage</name>
     <message>
         <location filename="../qml/pages/PlayersPage.qml" line="37"/>
-        <source>Connecting…</source>
+        <source>Connecting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

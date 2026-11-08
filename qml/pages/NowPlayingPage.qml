@@ -30,7 +30,7 @@ Page {
             return qsTr("Leading %n player(s)", "", _player.secondaryIds.length)
         }
         if (_player.groupRole === Player.Secondary) {
-            return _player.primaryReconnecting ? qsTr("Reconnecting…") : qsTr("In another player's group")
+            return _player.primaryReconnecting ? qsTr("Reconnecting") : qsTr("In another player's group")
         }
         return ""
     }
