@@ -40,6 +40,7 @@ private slots:
     void aLonePlayersRequestsAreUnchanged();
     void aReconnectingSecondary();
     void groupAndMemberMute();
+    void groupMuteWithMembersNotShown();
     void pairHalvesHubsAndZonesCannotJoin();
 
 private:
@@ -463,6 +464,21 @@ void TstGroup::groupAndMemberMute()
     QVERIFY(model->client(m_house->id(2))->muted());
     QVERIFY(model->current()->muted());
     QVERIFY(!model->groupMuted(m_house->id(0)));   // no longer all of them
+}
+
+void TstGroup::groupMuteWithMembersNotShown()
+{
+    // Per player closed: members are not polled; the leader's state counts.
+    m_house->group(0, { 1 });
+    QScopedPointer<PlayerModel> model(household(m_house, nullptr));
+    model->setCurrentId(m_house->id(0));
+    QTRY_COMPARE(model->current()->groupRole(), Client::Primary);
+    model->current()->setGroupMuted(true);
+    QTRY_VERIFY(model->groupMuted(m_house->id(0)));
+    QCOMPARE(m_house->player(0)->requests(QStringLiteral("/Volume")).last().target,
+             QByteArray("/Volume?mute=1&tell_slaves=1"));
+    model->current()->setGroupMuted(false);
+    QTRY_VERIFY(!model->groupMuted(m_house->id(0)));
 }
 
 QTEST_GUILESS_MAIN(TstGroup)

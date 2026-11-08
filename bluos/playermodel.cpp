@@ -73,6 +73,7 @@ QVariant PlayerModel::data(const QModelIndex &index, int role) const
         // second half of a stereo pair or a Hub (LSDP classes 0x0006 and
         // 0x0008), nor a player in a fixed group (zoneSlave in /SyncStatus).
         return c->id() != m_currentId && c->online() && c->groupRole() == Client::Alone
+                && current() && current()->online() && current()->groupRole() != Client::Secondary
                 && e.classId != Lsdp::ClassPairSecondary && e.classId != Lsdp::ClassHub
                 && !c->syncStatus().fixedSecondary;
     case MutedRole:
@@ -347,8 +348,9 @@ bool PlayerModel::groupMuted(const QString &leaderId) const
     if (!lead || !lead->muted())
         return false;
     for (const QString &id : memberIds(leaderId)) {
+        // A stopped member's state is stale: only the ones kept current count.
         const Client *c = client(id);
-        if (c && !c->muted())
+        if (c && c->running() && !c->muted())
             return false;
     }
     return true;

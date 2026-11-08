@@ -117,15 +117,15 @@ not a human audit; nothing run by the reviewer). Option A was decided live
 by Misja (canvas "Grouping, round 2") and assessed by this review instead of
 a separate design review. Findings, not yet applied:
 
-- H1 Group mute sticks while Per player is closed: groupMuted() trusts
+- [applied] H1 Group mute sticks while Per player is closed: groupMuted() trusts
   stopped members. Fix: skip members whose client is not running; test with
   watchGroup false (mute, then unmute).
 - M1 Unknown-primary case dropped (was GroupPage "Add <primary>"): add a
   context item "Add %1" on a Secondary row with empty leaderId (needs a
   primaryId role), or record it as a decision.
-- M2 "Follow" offered while the current player is a secondary: require the
+- [applied] M2 "Follow" offered while the current player is a secondary: require the
   current player online and not Secondary in canJoin; test.
-- M3 Fixed-volume leader without groupVolume shows a 0 slider: show the
+- [applied] M3 Fixed-volume leader without groupVolume shows a 0 slider: show the
   group slider only if groupVolume >= 0 or the leader's volume is not fixed.
 - M4 Docs out of date: spec/plan/tasks/evidence still describe the group
   page and option B (also 001 spec :89, :276); record suite counts for this
@@ -145,3 +145,9 @@ a separate design review. Findings, not yet applied:
 - Tests to add: leave with explicit leaderId; groupMuted with watchGroup
   false; exact mute=1&tell_slaves=1 target; canJoin when current is a
   secondary; runtime QML keys muted/canJoin and players.groupMuted.
+
+Applied 2026-11-08: H1 (groupMuted counts only running members; test
+groupMuteWithMembersNotShown, also checks the mute=1&tell_slaves=1 target),
+M2 (canJoin needs an online current player that is not a secondary), M3
+(group slider hidden for a fixed-volume leader without a group level). All
+ten suites pass (group 26). The rest is still to apply.

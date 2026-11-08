@@ -225,7 +225,8 @@ Page {
                     width: parent.width - Theme.paddingMedium
                     // Hidden when the player reports a fixed volume (volume=-1),
                     // unless it leads a group.
-                    visible: _player && (!_player.fixedVolume || page._leads)
+                    visible: _player && (page._leads ? (_player.groupVolume >= 0 || !_player.fixedVolume)
+                                                     : !_player.fixedVolume)
 
                     IconButton {
                         id: mute
