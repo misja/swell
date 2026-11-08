@@ -98,3 +98,15 @@ Xperia 10 II (aarch64), Sailfish OS 5.2.0.20, Wi-Fi, a real BluOS player
     trademark notice.
   - The GitHub description is now "Sailfish OS controller for BluOS players".
   - All suites pass, the validator succeeded, and Dutch is complete.
+
+## Follow-up: binary fully stripped (2026-11-08)
+
+The Harbour validator warned "file is not stripped!" on every build since
+0.1.0. Its check (`rpmvalidation.sh:711`) reads `file`'s output. The
+platform's `brp-strip` (`/usr/lib/rpm/meego/brp-strip`) runs `strip -g`,
+which removes the debug info but keeps `.symtab`/`.strtab` (about 1100
+function names). `%install` now strips the binary fully with `%{__strip}`.
+Built on SailfishOS-5.1.0.11-aarch64:
+- `file` reports "stripped", and the binary is 332176 bytes instead of
+  422552;
+- the validator succeeds with no warnings.
