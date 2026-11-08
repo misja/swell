@@ -47,6 +47,12 @@ ApplicationWindow {
         }
     }
 
+    // The current player on the lock screen and the headset keys (spec 003).
+    Mpris {
+        player: players.current
+        onRaiseRequested: app.activate()
+    }
+
     // Players is the bottom page; with a remembered player the app opens on
     // its Home, one swipe above it.
     initialPage: Component { PlayersPage { } }

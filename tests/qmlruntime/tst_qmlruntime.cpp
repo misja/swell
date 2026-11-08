@@ -2,7 +2,8 @@
 // The values QML gets from the player and browse models, read with the
 // expressions the pages use (Probe.qml), against the in-process FakePlayer.
 // A key or list that does not reach JavaScript fails here instead of showing
-// as a blank tile (spec 007, scope item 4).
+// as a blank tile (spec 007, scope item 4). The MPRIS mapping is checked the
+// same way, without a session bus (spec 003, AC5).
 #include <QtTest>
 #include <QQmlComponent>
 #include <QQmlContext>
@@ -34,6 +35,11 @@ private slots:
     void letters();
     void moreLinks();
     void presetsFollowThePlayer();
+    void mprisFollowsTheStatus();
+    void mprisMetadataAndPosition();
+    void mprisRequestsReachThePlayer();
+    void mprisOffline();
+    void mprisWithoutAPlayer();
 
 private:
     QString call(const char *function, const QVariant &arg = QVariant());
@@ -229,11 +235,86 @@ void TstQmlRuntime::presetsFollowThePlayer()
     QCOMPARE(call("presetTile", 0), QStringLiteral("9|Dinner||"));
 }
 
+void TstQmlRuntime::mprisFollowsTheStatus()
+{
+    // status, canControl, canPlay, canPause, canGoNext, canGoPrevious, hasShuffle, hasLoopStatus
+    m_player->setStatus("<status etag=\"m1\"><state>play</state><title1>A</title1></status>");
+    QTRY_COMPARE(call("mprisState"), QStringLiteral("1 true true true true true false false"));
+    // A stream that offers skip only (API 4.8).
+    m_player->setStatus("<status etag=\"m2\"><state>stream</state><streamUrl>Svc:x</streamUrl>"
+                        "<actions><action name=\"skip\" url=\"/Action?service=Svc&amp;skip=1\"/></actions></status>");
+    QTRY_COMPARE(call("mprisState"), QStringLiteral("1 true true true true false false false"));
+    m_player->setStatus("<status etag=\"m3\"><state>stream</state><streamUrl>Radio:x</streamUrl></status>");
+    QTRY_COMPARE(call("mprisState"), QStringLiteral("1 true true true false false false false"));
+    m_player->setStatus("<status etag=\"m4\"><state>pause</state></status>");
+    QTRY_COMPARE(call("mprisState"), QStringLiteral("2 true true true true true false false"));
+    m_player->setStatus("<status etag=\"m5\"><state>stop</state></status>");
+    QTRY_COMPARE(call("mprisState"), QStringLiteral("0 true true true true true false false"));
+    m_player->setStatus("<status etag=\"m6\"><state>connecting</state></status>");
+    QTRY_COMPARE(call("mprisState"), QStringLiteral("0 true true true true true false false"));
+}
+
+void TstQmlRuntime::mprisMetadataAndPosition()
+{
+    m_player->setStatus("<status etag=\"p1\"><state>pause</state><title1>Track A</title1><title2>Nobody</title2>"
+                        "<title3>Invented</title3><image>/Artwork?id=1</image><secs>10</secs>"
+                        "<totlen>200</totlen></status>");
+    QTRY_COMPARE(call("mprisMeta"), QStringLiteral("Track A|Nobody|Invented|%1&followRedirects=1|200000")
+                 .arg(image(QStringLiteral("/Artwork?id=1"))));
+    QCOMPARE(call("mprisPosition"), QStringLiteral("10000"));
+    // No position and no length: 0, not -1000; amber drops a duration of 0.
+    m_player->setStatus("<status etag=\"p2\"><state>stop</state><title1>B</title1></status>");
+    QTRY_COMPARE(call("mprisMeta"), QStringLiteral("B||||"));
+    QCOMPARE(call("mprisPosition"), QStringLiteral("0"));
+}
+
+void TstQmlRuntime::mprisRequestsReachThePlayer()
+{
+    QObject *mpris = m_probe->findChild<QObject *>(QStringLiteral("mpris"));
+    QVERIFY(mpris);
+    m_player->setStatus("<status etag=\"r1\"><state>play</state></status>");
+    QTRY_COMPARE(call("mprisState").left(1), QStringLiteral("1"));
+    const int pauses = m_player->requests(QStringLiteral("/Pause")).size();
+    const int skips = m_player->requests(QStringLiteral("/Skip")).size();
+    const int backs = m_player->requests(QStringLiteral("/Back")).size();
+    QVERIFY(QMetaObject::invokeMethod(mpris, "playPauseRequested"));
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Pause")).size(), pauses + 1);
+    QVERIFY(QMetaObject::invokeMethod(mpris, "nextRequested"));
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Skip")).size(), skips + 1);
+    QVERIFY(QMetaObject::invokeMethod(mpris, "previousRequested"));
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Back")).size(), backs + 1);
+
+    m_player->setStatus("<status etag=\"r2\"><state>pause</state></status>");
+    QTRY_COMPARE(call("mprisState").left(1), QStringLiteral("2"));
+    const int plays = m_player->requests(QStringLiteral("/Play")).size();
+    QVERIFY(QMetaObject::invokeMethod(mpris, "playPauseRequested"));
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Play")).size(), plays + 1);
+}
+
+void TstQmlRuntime::mprisOffline()
+{
+    m_player->setStatus("<status etag=\"o1\"><state>play</state><title1>Gone</title1></status>");
+    QTRY_COMPARE(call("mprisMeta").left(4), QStringLiteral("Gone"));
+    m_player->close();
+    QTRY_COMPARE_WITH_TIMEOUT(call("mprisState"), QStringLiteral("0 true false false false false false false"),
+                              10000);
+    QCOMPARE(call("mprisMeta"), QStringLiteral("||||"));
+    QCOMPARE(call("mprisPosition"), QStringLiteral("0"));
+}
+
+void TstQmlRuntime::mprisWithoutAPlayer()
+{
+    // Stopped, nothing to do, nothing shown but the name.
+    QCOMPARE(call("mprisNone"), QStringLiteral("0 true false false false false false false:||||"));
+}
+
 int main(int argc, char *argv[])
 {
     // No display in the build engine.
     if (qEnvironmentVariableIsEmpty("QT_QPA_PLATFORM"))
         qputenv("QT_QPA_PLATFORM", "minimal");
+    // No session bus: the MPRIS player must never register on a real one.
+    qputenv("DBUS_SESSION_BUS_ADDRESS", "unix:path=/nonexistent");
     QGuiApplication app(argc, argv);
     TstQmlRuntime test;
     return QTest::qExec(&test, argc, argv);

@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 // The expressions HomePage, BrowsePage and LetterIndex use on the models,
-// each returned as one string so the test compares plain text.
+// and the app's Mpris component, each read as one string so the test
+// compares plain text.
 import QtQuick 2.0
 import Swell 1.0
+import "../../qml"
 import "../../qml/pages"
 
 Item {
@@ -152,6 +154,36 @@ Item {
         Item {
             readonly property string keys: modelData.text + " " + modelData.browseKey
         }
+    }
+
+    // Mpris.qml, as harbour-swell.qml creates it.
+    Mpris {
+        id: mpris
+        objectName: "mpris"
+        player: probe._player
+    }
+    function mprisState() {
+        return [mpris.playbackStatus, mpris.canControl, mpris.canPlay, mpris.canPause,
+                mpris.canGoNext, mpris.canGoPrevious, mpris.hasShuffle, mpris.hasLoopStatus].join(" ")
+    }
+    function mprisMeta() {
+        var m = mpris.metaData
+        return [m.title, m.contributingArtist, m.albumTitle, m.artUrl, m.duration].join("|")
+    }
+    function mprisPosition() {
+        return String(mpris.position)
+    }
+    // No current player at all (spec 003, AC3).
+    Mpris {
+        id: noPlayer
+        serviceName: "harbour-swell-test"
+        player: null
+    }
+    function mprisNone() {
+        var m = noPlayer.metaData
+        return [noPlayer.playbackStatus, noPlayer.canControl, noPlayer.canPlay, noPlayer.canPause,
+                noPlayer.canGoNext, noPlayer.canGoPrevious, noPlayer.hasShuffle, noPlayer.hasLoopStatus].join(" ")
+                + ":" + [m.title, m.contributingArtist, m.albumTitle, m.artUrl, m.duration].join("|")
     }
 
     readonly property bool ready: listModel.ready && rootModel.ready && indexModel.ready && artistModel.ready

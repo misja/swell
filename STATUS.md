@@ -1,8 +1,16 @@
 # Session handoff
 
-Updated: 2026-11-08 (feature 004, browse). Decision owner: Misja Hoebe (@misja).
+Updated: 2026-11-08 (feature 003, MPRIS). Decision owner: Misja Hoebe (@misja).
 
 Current owner / next owner / decision owner: root / root (next session) / Misja.
+
+Now (2026-11-08): feature 003 (MPRIS lock-screen controls, issue #13) on
+branch 003-mpris: specs/003-mpris/{spec,plan,tasks,evidence}.md. Scope/design
+review and result review done (approve with changes, applied). RPM 0.3.0-14
+built and validated; the branch also carries Misja's centred icon. Device
+check by Misja passed (2026-11-08). Next: the PR. Merged: #12 (LSDP seed,
+29a8e66) and #14 (binary fully stripped, d90f50e).
+007 (#8) merged in PR #11 (6ddda82).
 
 Objective and acceptance criteria: feature 004 (browse, issue #7) on branch
 004-browse: specs/004-browse/{spec,plan,tasks}.md. UI agreed on the canvas
@@ -34,7 +42,8 @@ Artifacts and evidence:
 - specs/<feature>/evidence.md holds each feature's results, reviews and
   device checks (001: 0.1.0-7, 002: 0.2.0-4, 004: 0.3.0-12). Raw build and
   test logs stay local in evidence/ (ignored by Git since 2026-11-08).
-- Device: the Xperia 10 II (Sailfish OS 5.2.0.20) runs 0.3.0-12, against a NAD
+- Device: the Xperia 10 II (Sailfish OS 5.2.0.22 since the OTA, 2026-11-08;
+  before that 5.2.0.20) runs 0.3.0-14, against a NAD
   C 379.
 - Device facts (2026-11-06): `/Play?id=` alone plays from a queue entry; the
   queue id changes on every modification, including a delete (as API
@@ -44,7 +53,9 @@ Decisions and authorization scope (Misja, 2026-11-06):
 - Name and licence: name Swell; MIT.
 - Targets: build target 5.1.0.11-aarch64 mapped to release target
   5.2.0.18-aarch64.
-- Sandbox: Sailjail OrganizationName io.github.misja, permission Internet only.
+- Sandbox: Sailjail OrganizationName io.github.misja, permission Internet;
+  Audio is added by 003 for the lock-screen controls (Misja, 2026-11-08,
+  Q2 in specs/003-mpris/spec.md, issue #13).
 - Planning: 001–006 as in the spec. Add-by-address is in the MVP; MPRIS is
   003; preset zapping is "later".
 - Branding: BluOS is mentioned descriptively only, with a trademark notice;
@@ -72,7 +83,7 @@ Three rounds of wave concepts were tried and the wave motif was rejected as a
 whole. Learnings and options are in issue #3. The template placeholder stays.
 
 Open items:
-- Release-target ID: the device runs 5.2.0.20, the registry names 5.2.0.18.
+- Release-target ID: the device runs 5.2.0.22, the registry names 5.2.0.18.
 - After an icon change, the launcher keeps the old icon until lipstick
   restarts (`systemctl --user restart lipstick`, with Misja's approval);
   the installed PNGs were already correct (2026-11-07).

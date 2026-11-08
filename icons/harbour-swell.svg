@@ -4,7 +4,7 @@
   <!-- Original Sailfish circular base geometry: cx=43, cy=43, r=42.7 -->
   <circle id="jolla-base" cx="43" cy="43" r="42.7" fill="#0057B3"/>
   <circle id="inner-disc" cx="43" cy="43" r="32.025" fill="#00B4E6"/>
-  <g id="sound-bars" fill="#4AE3EA">
+  <g id="sound-bars" fill="#4AE3EA" transform="translate(1.005 0)">
     <rect x="18.04" y="37.72" width="4.79" height="10.56" rx="2.395"/>
     <rect x="25.23" y="33.89" width="4.79" height="18.22" rx="2.395"/>
     <rect x="32.41" y="29.10" width="4.79" height="27.80" rx="2.395"/>

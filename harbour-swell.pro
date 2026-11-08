@@ -16,6 +16,7 @@ HEADERS += src/registration.h src/qmlplayer.h src/qmlbrowsemodel.h
 SOURCES += src/harbour-swell.cpp src/registration.cpp src/qmlplayer.cpp src/qmlbrowsemodel.cpp
 
 DISTFILES += qml/harbour-swell.qml \
+    qml/Mpris.qml \
     qml/cover/CoverPage.qml \
     qml/pages/PlayersPage.qml \
     qml/pages/AddPlayerDialog.qml \
