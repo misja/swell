@@ -29,7 +29,7 @@ Page {
                 wrapMode: Text.Wrap
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.secondaryHighlightColor
-                text: qsTr("A Sailfish OS controller for BluOS players on your local network.")
+                text: qsTr("A Sailfish OS controller for BluOS players.")
             }
 
             SectionHeader { text: qsTr("Privacy") }
@@ -38,7 +38,7 @@ Page {
                 width: parent.width
                 wrapMode: Text.Wrap
                 font.pixelSize: Theme.fontSizeSmall
-                text: qsTr("Swell talks only to players on your local network and to the image servers their artwork comes from. It has no account and collects, sends and shares no personal data. It stores only the player addresses you add and the player you last chose, on this device.")
+                text: qsTr("Swell connects only to your players and to the servers their artwork comes from. There is no account, and no data is collected or shared. Only the addresses you add and your last player are stored, on this device.")
             }
 
             SectionHeader { text: qsTr("License") }
@@ -55,7 +55,7 @@ Page {
                 wrapMode: Text.Wrap
                 font.pixelSize: Theme.fontSizeExtraSmall
                 color: Theme.secondaryColor
-                text: qsTr("Not affiliated with, endorsed by or supported by Lenbrook Industries. BluOS is a trademark of Lenbrook Industries Limited.")
+                text: qsTr("Not affiliated with or endorsed by Lenbrook Industries. BluOS is a trademark of Lenbrook Industries Limited.")
             }
         }
 

@@ -17,8 +17,8 @@ BuildRequires:  desktop-file-utils
 
 %description
 Swell finds BluOS players on the local network and controls playback and
-volume. Not affiliated with, endorsed by or supported by Lenbrook
-Industries. BluOS is a trademark of Lenbrook Industries Limited.
+volume. Not affiliated with or endorsed by Lenbrook Industries. BluOS is a
+trademark of Lenbrook Industries Limited.
 
 
 %prep

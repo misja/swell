@@ -84,6 +84,8 @@ whole. Learnings and options are in issue #3. The template placeholder stays.
 
 Open items:
 - Release-target ID: the device runs 5.2.0.22, the registry names 5.2.0.18.
+  Runtime evidence on 5.2: 0.3.0-14 works on 5.2.0.22, including MPRIS
+  (Misja, 2026-11-08; specs/003-mpris/evidence.md).
 - After an icon change, the launcher keeps the old icon until lipstick
   restarts (`systemctl --user restart lipstick`, with Misja's approval);
   the installed PNGs were already correct (2026-11-07).
