@@ -12,15 +12,8 @@ Page {
     // volumes folding out under it (spec 005, canvas A2).
     readonly property bool _leads: _player !== null && _player.groupRole === Player.Primary
     property bool _perPlayer: false
-    // Re-evaluated when any player changes.
-    property int _changes: 0
-    readonly property bool _groupMuted: (_changes, _leads && players.groupMuted(players.currentId))
-    Connections {
-        target: players
-        onDataChanged: page._changes++
-    }
-    // The members as the leader lists them (each row's own view may lag).
-    readonly property var _memberIds: _leads && _player.secondaryIds ? players.memberIds(players.currentId) : []
+    // Scroll along while Per player opens, until the user scrolls.
+    property bool _followGrowth: false
 
     // Members keep their own volume current only while it is shown.
     Binding {
@@ -68,6 +61,7 @@ Page {
     SilicaFlickable {
         id: flickable
         anchors.fill: parent
+        onMovementStarted: page._followGrowth = false
         contentHeight: Math.max(height, layout.height + Theme.paddingLarge)
 
         Flow {
@@ -231,13 +225,13 @@ Page {
                     IconButton {
                         id: mute
                         anchors.verticalCenter: parent.verticalCenter
-                        icon.source: (page._leads ? page._groupMuted : _player && _player.muted)
+                        icon.source: (page._leads ? players.currentGroupMuted : _player && _player.muted)
                                      ? "image://theme/icon-m-speaker-mute" : "image://theme/icon-m-speaker"
                         enabled: _player && _player.online
                         // A leader mutes the whole group, like its slider.
                         onClicked: {
                             if (page._leads) {
-                                _player.setGroupMuted(!page._groupMuted)
+                                _player.setGroupMuted(!players.currentGroupMuted)
                             } else {
                                 _player.setMuted(!_player.muted)
                             }
@@ -289,17 +283,14 @@ Page {
                     title: qsTr("Per player")
                     onExpandedChanged: {
                         page._perPlayer = expanded
-                        if (expanded) {
-                            // The members sit below the fold: bring them in.
-                            scrollDown.restart()
-                        }
+                        // The members sit below the fold: keep the bottom in
+                        // view while the section grows.
+                        page._followGrowth = expanded
                     }
-
-                    // After the section has grown.
-                    Timer {
-                        id: scrollDown
-                        interval: 300
-                        onTriggered: flickable.scrollToBottom()
+                    onHeightChanged: {
+                        if (page._followGrowth) {
+                            flickable.scrollToBottom()
+                        }
                     }
 
                     content.sourceComponent: Column {
@@ -308,7 +299,7 @@ Page {
                             model: players
                             delegate: Row {
                                 visible: model.playerId === players.currentId
-                                         || page._memberIds.indexOf(model.playerId) >= 0
+                                         || players.currentMemberIds.indexOf(model.playerId) >= 0
                                 x: Theme.paddingMedium
                                 width: parent.width - Theme.paddingMedium
 

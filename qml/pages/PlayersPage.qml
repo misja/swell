@@ -48,7 +48,11 @@ Page {
     SilicaListView {
         id: list
         anchors.fill: parent
-        model: players
+        // One row per lone player or group; members are drawn under their
+        // primary below.
+        model: PlayerList {
+            sourceModel: players
+        }
 
         header: PageHeader { title: qsTr("Players") }
 
@@ -69,21 +73,17 @@ Page {
         }
 
         // A group is a small tree: its primary, then its members indented
-        // (spec 005, canvas A1). Members' own rows are hidden; they are drawn
-        // under their primary instead.
+        // (spec 005, canvas A1).
         delegate: Column {
             id: entry
             readonly property string _id: model.playerId
-            readonly property bool _follower: model.leaderId !== ""
-            readonly property bool _leads: model.memberNames.length > 0
             readonly property var _members: model.memberIds
             readonly property var _names: model.memberNames
             width: list.width
-            visible: !_follower
 
             ListItem {
                 id: item
-                contentHeight: entry._follower ? 0 : Theme.itemSizeMedium
+                contentHeight: Theme.itemSizeMedium
                 // Long press: join the current player's group, or remove a
                 // player added by address.
                 readonly property bool _canJoin: model.canJoin && players.current !== null

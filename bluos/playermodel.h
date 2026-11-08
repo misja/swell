@@ -29,6 +29,10 @@ class PlayerModel : public QAbstractListModel
     // Set while the current player's members are shown with their own volume
     // (Now Playing): they keep /SyncStatus current with a long poll.
     Q_PROPERTY(bool watchGroup READ watchGroup WRITE setWatchGroup NOTIFY watchGroupChanged)
+    // The current player's group as the current player lists it.
+    Q_PROPERTY(QStringList currentMemberIds READ currentMemberIds NOTIFY currentGroupChanged)
+    // The current player and every polled member are muted (see groupMuted).
+    Q_PROPERTY(bool currentGroupMuted READ currentGroupMuted NOTIFY currentGroupChanged)
 
 public:
     enum Roles {
@@ -69,6 +73,8 @@ public:
     bool pollAll() const { return m_pollAll; }
     void setPollAll(bool pollAll);
     bool watchGroup() const { return m_watchGroup; }
+    QStringList currentMemberIds() const { return m_currentMemberIds; }
+    bool currentGroupMuted() const { return m_currentGroupMuted; }
     void setWatchGroup(bool watch);
 
     // Groups (spec 005). A group is one player: making a secondary current
@@ -114,6 +120,7 @@ signals:
     void currentChanged();
     void pollAllChanged();
     void watchGroupChanged();
+    void currentGroupChanged();
 
 protected:
     // Creates each player's client; a subclass may return a subclass of
@@ -137,6 +144,7 @@ private:
     void removeAt(int row);
     void clientChanged();
     void applyPolicy();
+    void updateCurrentGroup();
     // "IP:port" for /AddSlave and /RemoveSlave, which take IP addresses.
     QString addressOf(const QString &id) const;
 
@@ -147,6 +155,8 @@ private:
     QString m_currentId;
     bool m_pollAll = false;
     bool m_watchGroup = false;
+    QStringList m_currentMemberIds;
+    bool m_currentGroupMuted = false;
 };
 
 } // namespace BluOS

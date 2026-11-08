@@ -239,16 +239,20 @@ void Client::setVolume(int level)
     send(QStringLiteral("/Volume"), encoded(query));
 }
 
+// The group's volume and mute have gates of their own, so they never replace
+// (or are replaced by) the player's own volume and mute.
 void Client::setGroupVolume(int level)
 {
     send(QStringLiteral("/Volume"),
-         QStringLiteral("level=%1&tell_slaves=1").arg(qBound(0, level, 100)));
+         QStringLiteral("level=%1&tell_slaves=1").arg(qBound(0, level, 100)),
+         QStringLiteral("group-level"));
 }
 
 void Client::setGroupMuted(bool muted)
 {
     send(QStringLiteral("/Volume"),
-         muted ? QStringLiteral("mute=1&tell_slaves=1") : QStringLiteral("mute=0&tell_slaves=1"));
+         muted ? QStringLiteral("mute=1&tell_slaves=1") : QStringLiteral("mute=0&tell_slaves=1"),
+         QStringLiteral("group-mute"));
 }
 
 Client::GroupRole Client::groupRole() const
@@ -623,14 +627,11 @@ int Client::msUntilAllowed(const QString &path) const
 // Commands go through a gate. The rate limit is per path (API 2: one request
 // per resource per second). Collapsing is per path and parameter, so a burst of
 // volume changes ends at the last level, but a mute in between is not lost.
-void Client::send(const QString &path, const QString &encodedQuery)
+void Client::send(const QString &path, const QString &encodedQuery, const QString &gateName)
 {
-    // The group's volume and mute (tell_slaves=1) are kept apart from the
-    // player's own, so neither replaces the other.
-    const QString name = encodedQuery.section(QLatin1Char('='), 0, 0);
-    const bool group = encodedQuery.contains(QLatin1String("tell_slaves=1"));
-    const QString key = path + QLatin1Char('?') + name
-            + (group ? QStringLiteral("&group") : QString());
+    const QString name = gateName.isEmpty() ? encodedQuery.section(QLatin1Char('='), 0, 0)
+                                            : gateName;
+    const QString key = path + QLatin1Char('?') + name;
     Gate &gate = m_gates[key];
     gate.path = path;
     gate.pending = encodedQuery;

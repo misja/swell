@@ -5,6 +5,7 @@
 #include <QNetworkAccessManager>
 
 #include "client.h"
+#include "playerlistmodel.h"
 #include "playermodel.h"
 #include "fakehousehold.h"
 
@@ -43,6 +44,8 @@ private slots:
     void groupMuteWithMembersNotShown();
     void aFollowerOfAnUnknownLeaderOffersIt();
     void leaveWithoutALeaderUsesTheCurrentOnlyIfItListsTheMember();
+    void theCurrentGroupIsAProperty();
+    void thePlayerListShowsOneRowPerGroup();
     void pairHalvesHubsAndZonesCannotJoin();
 
 private:
@@ -513,6 +516,40 @@ void TstGroup::leaveWithoutALeaderUsesTheCurrentOnlyIfItListsTheMember()
     QTest::qWait(500);
     QCOMPARE(m_house->player(0)->requests(QStringLiteral("/RemoveSlave")).size(), 0);
     QCOMPARE(m_house->leaderOf(2), 1);
+}
+
+void TstGroup::theCurrentGroupIsAProperty()
+{
+    QScopedPointer<PlayerModel> model(household(m_house, nullptr));
+    QSignalSpy changed(model.data(), &PlayerModel::currentGroupChanged);
+    model->setCurrentId(m_house->id(0));
+    QTRY_VERIFY(model->current()->online());
+    QVERIFY(model->currentMemberIds().isEmpty());
+    m_house->group(0, { 1, 2 });
+    QTRY_COMPARE(model->currentMemberIds(), QStringList({ m_house->id(1), m_house->id(2) }));
+    QVERIFY(changed.size() >= 1);
+    QVERIFY(!model->currentGroupMuted());
+    model->current()->setGroupMuted(true);
+    QTRY_VERIFY(model->currentGroupMuted());
+    model->current()->setGroupMuted(false);
+    QTRY_VERIFY(!model->currentGroupMuted());
+}
+
+void TstGroup::thePlayerListShowsOneRowPerGroup()
+{
+    QScopedPointer<PlayerModel> model(household(m_house, nullptr));
+    model->setPollAll(true);
+    Swell::PlayerListModel list;
+    list.setSourceModel(model.data());
+    QTRY_VERIFY(model->client(m_house->id(2))->online());
+    QCOMPARE(list.rowCount(), 3);
+    m_house->group(0, { 1, 2 });
+    QTRY_COMPARE(list.rowCount(), 1);   // the group, as its primary
+    QCOMPARE(list.data(list.index(0, 0), PlayerModel::IdRole).toString(), m_house->id(0));
+    QCOMPARE(list.data(list.index(0, 0), PlayerModel::MemberIdsRole).toStringList(),
+             QStringList({ m_house->id(1), m_house->id(2) }));
+    model->leave(m_house->id(2), m_house->id(0));
+    QTRY_COMPARE(list.rowCount(), 2);
 }
 
 QTEST_GUILESS_MAIN(TstGroup)

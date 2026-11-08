@@ -170,3 +170,21 @@ the binding trick in Players). Accepted: L4 (Per player rows
 follow model order; members unknown to Swell are not listed there, they can
 be added from Players), L8
 (scrollToBottom with many members).
+
+Own solutions replaced by platform mechanisms (Misja, 2026-11-08: no
+tricks; reviewable, maintainable code):
+1. A counter re-evaluating groupMuted on every model change: replaced by
+   PlayerModel::currentGroupMuted, a property with currentGroupChanged.
+2. A binding trick for the current members on Now Playing: replaced by
+   PlayerModel::currentMemberIds (same signal).
+3. Invisible zero-height member rows in Players: replaced by
+   Swell::PlayerListModel, a QSortFilterProxyModel (sourceModel is a
+   property in the target's Qt 5.6, qabstractproxymodel.h:50) that leaves
+   secondaries out; registered as PlayerList.
+4. A 300 ms timer before scrolling Per player into view: replaced by
+   following the section's height while it opens, until the user scrolls
+   (SilicaFlickable movementStarted).
+5. Gate keys derived from "tell_slaves=1" in the query: replaced by an
+   explicit gateName parameter of Client::send (group-level, group-mute).
+Tests: theCurrentGroupIsAProperty, thePlayerListShowsOneRowPerGroup. All ten
+suites pass (group 30).

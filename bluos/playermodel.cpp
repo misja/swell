@@ -281,7 +281,19 @@ void PlayerModel::applyPolicy()
         e.client->setStatusPolling(status);
         e.client->setSyncWatch(watch);
         e.client->start();
-    }
+    }    // Running or not changes which members count (groupMuted).
+    updateCurrentGroup();
+}
+
+void PlayerModel::updateCurrentGroup()
+{
+    const QStringList members = memberIds(m_currentId);
+    const bool muted = groupMuted(m_currentId);
+    if (members == m_currentMemberIds && muted == m_currentGroupMuted)
+        return;
+    m_currentMemberIds = members;
+    m_currentGroupMuted = muted;
+    emit currentGroupChanged();
 }
 
 QString PlayerModel::memberId(const QString &ref) const
@@ -482,6 +494,7 @@ void PlayerModel::clientChanged()
     } else if (m_watchGroup && c && c->id() == m_currentId) {
         applyPolicy();   // the members may have changed
     }
+    updateCurrentGroup();
 }
 
 } // namespace BluOS
