@@ -1,7 +1,7 @@
 # Feature specification — 003 MPRIS lock-screen controls
 
 Status: revised 2026-11-08 after the scope/design review (approve with
-changes; findings applied below). Open: Misja's answers to Q1 and Q2. No
+changes; findings applied below). Q1 and Q2 answered by Misja (2026-11-08). No
 implementation yet.
 
 ## Owner and linked issue
@@ -128,9 +128,7 @@ the session bus.
    - `Permissions=Internet;Audio` in the desktop file;
    - `Requires: qml(Amber.Mpris)` in the spec, as gPodder and sailcast do.
      No BuildRequires: the tests run in the SDK target, not in `%check`.
-3. **Text:** one sentence on why Swell asks for Audio, in the RPM
-   description and the changelog. About stays as it is, unless Misja wants
-   it there too (Q2).
+3. **Text:** none. Misja chose no explanation of Audio (Q2).
 
 ## Out of scope
 
@@ -145,7 +143,8 @@ the session bus.
 
 ## Open questions for Misja
 
-- **Q1, Swell takes the lock screen and the headset buttons.** While the
+- **Q1, Swell takes the lock screen and the headset buttons.** Misja,
+  2026-11-08: agreed. While the
   BluOS player plays, Swell is "Playing" and owns the system media controls.
   - A local player that starts afterwards (Jolla Media, a podcast app) does
     not take them over.
@@ -155,12 +154,24 @@ the session bus.
 
   Is that acceptable? There is no cheap way around it, and none is proposed
   before you decide.
-- **Q2, the Audio permission.** On first start, and probably again on
-  upgrade for current users, the sandbox asks for "Play and record audio
-  (…and show audio controls on lockscreen)". Swell plays and records
-  nothing; the permission is only for the controls. Refusing it probably
-  stops Swell from starting. Both are inferred and checked on the device.
-  Acceptable? Should About also explain it? (The alternative is no 003.)
+- **Q2, the Audio permission.** Misja, 2026-11-08: agreed. No explanation in
+  the RPM, the changelog or About. Refusing must not stop Swell from
+  starting.
+  - What Sailjail does (source sailfishos/sailjail b64134d, checked
+    2026-11-08):
+    - The first-start prompt allows or denies launching the app as a whole
+      (`launch_allowed` = ALWAYS or NEVER). Denying stops the app with any
+      permission, Internet included, so that was already the case before
+      003.
+    - The desktop file has no optional permissions; the validator allows
+      only Permissions, OrganizationName, ApplicationName and ExecDBus.
+    - Once launching is allowed, the granted set can be changed per
+      permission (`SetGrantedPermissions`).
+  - So Swell behaves as Misja proposed: MPRIS is active only when Audio is
+    granted. Without it, owning the D-Bus name fails, and amber 1.2.9 then
+    does not register, while the object and the app keep working
+    (`registerService` returns false). No extra code is needed. The device
+    check covers this, if the Settings app offers revoking Audio alone.
 
 ## Acceptance criteria
 
@@ -189,5 +200,7 @@ the session bus.
    - the lock screen and the events view, including cover art over http;
    - playing from the official app while the screen is locked;
    - the first-start permission prompt and an upgrade from 0.3.0-13;
+   - if Settings allows it: Audio revoked, Swell starts and works without
+     lock-screen controls;
    - local audio started while BluOS plays, and headset play/pause (Q1).
 7. A separate result review before the PR.

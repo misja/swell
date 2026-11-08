@@ -1,7 +1,7 @@
 # Plan — 003 MPRIS lock-screen controls
 
-Status: revised 2026-11-08 after the scope/design review. Open: Q1 and Q2
-(spec.md).
+Status: revised 2026-11-08 after the scope/design review. Q1 and Q2
+answered (spec.md).
 
 ## Approach
 
@@ -18,8 +18,7 @@ Status: revised 2026-11-08 after the scope/design review. Open: Q1 and Q2
 ## Packaging
 
 - `harbour-swell.desktop`: `Permissions=Internet;Audio`.
-- `rpm/harbour-swell.spec`: `Requires: qml(Amber.Mpris)`, a Release bump,
-  and the Audio sentence in `%description` and the changelog.
+- `rpm/harbour-swell.spec`: `Requires: qml(Amber.Mpris)` and a Release bump.
 
 ## Tests
 
@@ -37,6 +36,7 @@ Status: revised 2026-11-08 after the scope/design review. Open: Q1 and Q2
 ## Risks
 
 - Q1: Swell owning the media controls and headset keys while BluOS plays.
-- The permission prompt on upgrade (Q2).
+- The permission prompt on upgrade (Q2). Denying it is Sailjail's launch
+  decision for the whole app, as with Internet today.
 - The lock-screen QML that was read is a community copy of unknown version;
   the device check is what counts.
