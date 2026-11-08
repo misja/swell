@@ -7,6 +7,29 @@ Updated: 2026-11-08 (feature 003, MPRIS). Decision owner: Misja Hoebe (@misja).
 
 Current owner / next owner / decision owner: root / root (next session) / Misja.
 
+Handoff (2026-11-08, evening), towards 0.5.0:
+- 005 merged (#23), names primary/secondary (#24), Chum metadata (#22).
+- Branch group-in-players (PR open; 0.4.0-15 on the phone): grouping moved to the player list (canvas option A, agreed):
+  a group is a tree in Players; long press: Follow <current> / Leave group;
+  Now Playing: group volume and group mute for a leader, Per player with
+  each member's volume and mute; group page and Now Playing pulley item
+  removed. Misja device-checked it with the emulated household; result
+  review applied (H1, M1–M4, L1–L8), own solutions replaced by platform
+  mechanisms (evidence.md), specs/005 revised for option A. The final
+  0.4.0-15 was installed but not group-checked again (Misja: fine for now).
+- Branch english-fallback: dropped (Misja, 2026-11-08). An own fallback
+  translator is an own solution; libsailfishapp has none and Swell follows
+  the platform. Not to be merged.
+- Wording applied (Favorites, Jolla's Dutch terms, remorse texts,
+  "nummer(s)"), rules in CONTRIBUTING.md; app icon in README.md.
+- Workspace principles 1.4.0 (sailfish-workspace#21, daf32fa): platform
+  mechanisms in code; libsailfishapp has no English fallback.
+- Decided: TuneIn stays as it is (no consolidated favourites across
+  services). Members' context: no ellipses in labels.
+- Then release 0.5.0 (version bump, tag, aarch64 + armv7hl, notes).
+- Chum: OBS account (message for Keto drafted), screenshots, changelog
+  approach; guide in ~/code/sailfish/CHUM.md. 006 to be discussed.
+
 Next (2026-11-08): feature 005 (grouping, issue #21) on branch 005-grouping,
 not pushed: specs/005-grouping/{spec,plan,tasks}.md. Scope/design review done
 (approve with changes, applied). Canvas page "Grouping (005)" G1–G3 agreed

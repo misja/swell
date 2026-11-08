@@ -57,7 +57,7 @@ Item {
         }
     }
 
-    // NowPlayingPage, PlayersPage and GroupPage: group values (spec 005).
+    // NowPlayingPage and PlayersPage: group values (spec 005).
     function group() {
         return [_player.groupRole === Player.Alone, _player.secondaryIds.length, _player.primaryReconnecting,
                 _player.groupVolume, _player.groupBusy].join(" ")
@@ -67,7 +67,8 @@ Item {
         model: players
         Item {
             readonly property string keys: [model.groupRole, model.leaderId === "", model.memberNames.length,
-                                            model.memberNames.join(","), model.volume].join(" ")
+                                            model.memberNames.join(","), model.volume, model.memberIds.length,
+                                            model.canJoin, model.muted].join(" ")
         }
     }
     function playerRow() {

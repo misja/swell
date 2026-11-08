@@ -4,6 +4,32 @@ Status: revised 2026-11-08 after the scope/design review (approve with
 changes; findings applied). Q1 and Q2 decided by Misja. No implementation and
 no UI yet; the UI is agreed on the design canvas before it is built.
 
+## Revision 2026-11-08: grouping in the player list (option A)
+
+After his device check of the first version, Misja found the navigation
+unintuitive: grouping went from Players to Now Playing and back. He chose
+option A (canvas "Grouping, round 2", refined live on the device). This
+supersedes the group page (G2), the Now Playing pulley item (G1) and the
+one-row group (G3, option B) below, and 001's "grouping on its own page from
+Now Playing" (specs/001-core-controller/spec.md).
+- **Players:** a group is a tree: its primary's row, then its members
+  indented with a line. Tapping a member chooses the primary. Long press:
+  "Follow <current player>" on a lone player (only when the current player
+  leads or is alone), "Leave group" on a member, "Add <address>" on a player
+  following a primary Swell does not know, "Remove" for players added by
+  address.
+- **Now Playing:** controls only. For a leader the slider is the group
+  volume and the big speaker mutes the whole group (shown muted only when
+  every polled member is); "Per player" folds out each member's own volume
+  and mute. No pulley item, no group page.
+- **Polling:** the player list polls everyone (pollAll); members are
+  watched (/SyncStatus) only while Per player is open (watchGroup). Group
+  volume and group mute have their own gate keys.
+- **Terms:** Follow / Volg, Leave group / Groep verlaten; no ellipses.
+- Assessed by a separate result review (evidence.md) instead of a design
+  review before building, since it was decided and refined with Misja on
+  the device.
+
 ## Owner and linked issue
 
 - Accountable owner: root (primary assistant session).

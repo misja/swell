@@ -86,7 +86,8 @@ own spec:
   come from the top-level `/Browse` is decided in 004. 001 keeps play actions
   generic ("send this play path"), so the source of the inputs can change
   later.
-- 005: grouping, as its own page opened from Now Playing.
+- 005: grouping, as its own page opened from Now Playing (superseded
+  2026-11-08: grouping happens in the player list; see specs/005-grouping).
 - 006: player settings and alarms (to be discussed).
 - Later: zapping through presets from the cover/Now Playing on plain radio
   (`/Preset?id=±1`; set aside 2026-11-06 as too much UI for its value),

@@ -196,6 +196,7 @@ public slots:
     void removeSecondaries(const QStringList &ids);
     // On a primary: sets every player in the group (tell_slaves=1).
     void setGroupVolume(int level);
+    void setGroupMuted(bool muted);
 
 signals:
     void availabilityChanged();
@@ -222,7 +223,10 @@ private:
 
     static QString encoded(const QUrlQuery &query);
     QUrl url(const QString &path, const QString &encodedQuery = QString()) const;
-    void send(const QString &path, const QString &encodedQuery);
+    // gateName names the gate within the path; by default the first parameter's
+    // name, so a burst of the same setting collapses to its last value.
+    void send(const QString &path, const QString &encodedQuery,
+              const QString &gateName = QString());
     void dispatch(const QString &path);
     int msUntilAllowed(const QString &path) const;
     QNetworkReply *get(const QString &path, const QString &encodedQuery, int deadlineMs);

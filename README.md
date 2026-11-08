@@ -1,3 +1,5 @@
+<img src="icons/harbour-swell.svg" alt="" width="96" align="right">
+
 # Swell
 
 A Sailfish OS controller for BluOS players.

@@ -25,6 +25,24 @@ Swell.
 - Run checks appropriate to the change; record failures and limitations. Never label unexecuted tests as passed.
 - Child repositories must contain this essential baseline themselves: a parent file outside their Git root is not assumed loaded. Copy changes with baseline version and reviewed diff.
 
+## Platform mechanisms in code
+
+Firm maintainer instruction, 2026-11-08; workspace principles 1.4.0
+(https://github.com/misja/sailfish-workspace/blob/main/docs/development/principles.md,
+"Platform mechanisms in code"). Code here is reviewed, maintained and
+learned from by people.
+- Before writing a component, model, loader or workaround, look up the
+  standard mechanism in the SDK target itself (the `qmldir` of
+  Sailfish.Silica, the target's Qt headers) and cite it.
+- Prefer Silica components, Qt model classes, properties with NOTIFY
+  signals, explicit parameters and reacting to the actual change. Avoid
+  look-alike components, hidden or zero-height rows, binding tricks or
+  counters, behaviour derived from string contents, and timers that guess.
+- If the platform has no mechanism and other apps do without, Swell does
+  without too. Otherwise state the gap and ask the maintainer before
+  building an own solution.
+- Name any remaining own solutions in the pull request, unprompted.
+
 ## Mandatory review gate (maintainer instruction, 2026-10-15)
 
 Apply the staged-role workflow before design/build work. Record a bounded scope,

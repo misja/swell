@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import Swell 1.0
 
 Page {
     id: page
@@ -29,7 +30,10 @@ Page {
     Binding {
         target: players
         property: "pollAll"
-        value: page.status === PageStatus.Active && Qt.application.active
+        // Also while the page comes in, so groups are known before it shows
+        // (members would otherwise flash as rows of their own).
+        value: (page.status === PageStatus.Active || page.status === PageStatus.Activating)
+               && Qt.application.active
     }
 
     function _availabilityText(availability) {
@@ -44,7 +48,11 @@ Page {
     SilicaListView {
         id: list
         anchors.fill: parent
-        model: players
+        // One row per lone player or group; members are drawn under their
+        // primary below.
+        model: PlayerList {
+            sourceModel: players
+        }
 
         header: PageHeader { title: qsTr("Players") }
 
@@ -64,60 +72,129 @@ Page {
             }
         }
 
-        delegate: ListItem {
-            id: item
-            // A group is one row, its primary's (spec 005, canvas G3).
-            readonly property bool _follower: model.leaderId !== ""
-            readonly property bool _leads: model.memberNames.length > 0
-            visible: !_follower
-            contentHeight: _follower ? 0 : (_leads ? Theme.itemSizeLarge : Theme.itemSizeMedium)
-            menu: model.manual ? removeMenu : null
-            highlighted: down || model.playerId === players.currentId
+        // A group is a small tree: its primary, then its members indented
+        // (spec 005, canvas A1).
+        delegate: Column {
+            id: entry
+            readonly property string _id: model.playerId
+            readonly property var _members: model.memberIds
+            readonly property var _names: model.memberNames
+            width: list.width
 
-            onClicked: {
-                players.currentId = model.playerId
-                page.openCurrent(false)
+            ListItem {
+                id: item
+                contentHeight: Theme.itemSizeMedium
+                // Long press: join the current player's group, or remove a
+                // player added by address.
+                readonly property bool _canJoin: model.canJoin && players.current !== null
+                                                 && !players.current.groupBusy
+                // Follows a primary Swell does not know: offer to add it.
+                readonly property bool _unknownLeader: model.groupRole === Player.Secondary
+                                                       && model.leaderId === "" && model.primaryId !== ""
+                menu: _canJoin || _unknownLeader || model.manual ? playerMenu : null
+                highlighted: down || model.playerId === players.currentId
+
+                onClicked: {
+                    players.currentId = model.playerId
+                    page.openCurrent(false)
+                }
+
+                Column {
+                    anchors {
+                        left: parent.left
+                        right: parent.right
+                        leftMargin: Theme.horizontalPageMargin
+                        rightMargin: Theme.horizontalPageMargin
+                        verticalCenter: parent.verticalCenter
+                    }
+                    Label {
+                        width: parent.width
+                        text: model.name
+                        truncationMode: TruncationMode.Fade
+                        color: item.highlighted ? Theme.highlightColor : Theme.primaryColor
+                    }
+                    Label {
+                        width: parent.width
+                        font.pixelSize: Theme.fontSizeExtraSmall
+                        truncationMode: TruncationMode.Fade
+                        color: item.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
+                        text: model.availability === 1
+                              ? (model.nowPlaying !== "" ? model.nowPlaying : model.modelName)
+                              : page._availabilityText(model.availability)
+                    }
+                }
+
+                Component {
+                    id: playerMenu
+                    ContextMenu {
+                        MenuItem {
+                            visible: item._canJoin
+                            text: qsTr("Follow %1").arg(!players.current ? ""
+                                                        : (players.current.name !== "" ? players.current.name : players.current.host))
+                            onClicked: players.join(entry._id)
+                        }
+                        MenuItem {
+                            visible: item._unknownLeader
+                            text: qsTr("Add %1").arg(model.primaryId)
+                            onClicked: players.addManual(model.primaryId)
+                        }
+                        MenuItem {
+                            visible: model.manual
+                            text: qsTr("Remove")
+                            onClicked: players.removeManual(entry._id)
+                        }
+                    }
+                }
             }
 
-            Column {
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    leftMargin: Theme.horizontalPageMargin
-                    rightMargin: Theme.horizontalPageMargin
-                    verticalCenter: parent.verticalCenter
-                }
-                Label {
-                    width: parent.width
-                    text: item._leads ? qsTr("%1 + %2").arg(model.name).arg(model.memberNames.length) : model.name
-                    truncationMode: TruncationMode.Fade
-                    color: item.highlighted ? Theme.highlightColor : Theme.primaryColor
-                }
-                Label {
-                    width: parent.width
-                    font.pixelSize: Theme.fontSizeExtraSmall
-                    truncationMode: TruncationMode.Fade
-                    color: item.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
-                    text: model.availability === 1
-                          ? (model.nowPlaying !== "" ? model.nowPlaying : model.modelName)
-                          : page._availabilityText(model.availability)
-                }
-                Label {
-                    visible: item._leads
-                    width: parent.width
-                    font.pixelSize: Theme.fontSizeExtraSmall
-                    truncationMode: TruncationMode.Fade
-                    color: item.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
-                    text: qsTr("With %1").arg(model.memberNames.join(", "))
-                }
-            }
+            Repeater {
+                model: entry._members
+                delegate: ListItem {
+                    id: member
+                    // In the same order as the ids, and updated with the model.
+                    readonly property string _name: entry._names.length > index ? entry._names[index] : modelData
+                    contentHeight: Theme.itemSizeSmall
+                    highlighted: down || entry._id === players.currentId
+                    menu: memberMenu
 
-            Component {
-                id: removeMenu
-                ContextMenu {
-                    MenuItem {
-                        text: qsTr("Remove")
-                        onClicked: players.removeManual(model.playerId)
+                    // A member plays its primary's source: choosing it
+                    // chooses the primary.
+                    onClicked: {
+                        players.currentId = entry._id
+                        page.openCurrent(false)
+                    }
+
+                    Rectangle {
+                        id: branch
+                        x: Theme.horizontalPageMargin + Theme.paddingLarge
+                        width: Theme.paddingSmall / 2
+                        height: parent.height - Theme.paddingSmall
+                        anchors.verticalCenter: parent.verticalCenter
+                        color: Theme.highlightColor
+                        opacity: Theme.opacityLow
+                    }
+                    Label {
+                        anchors {
+                            left: branch.right
+                            leftMargin: Theme.paddingLarge
+                            right: parent.right
+                            rightMargin: Theme.horizontalPageMargin
+                            verticalCenter: parent.verticalCenter
+                        }
+                        text: member._name
+                        truncationMode: TruncationMode.Fade
+                        color: member.highlighted ? Theme.highlightColor : Theme.primaryColor
+                    }
+
+                    Component {
+                        id: memberMenu
+                        ContextMenu {
+                            MenuItem {
+                                text: qsTr("Leave group")
+                                enabled: players.current === null || !players.current.groupBusy
+                                onClicked: players.leave(modelData, entry._id)
+                            }
+                        }
                     }
                 }
             }

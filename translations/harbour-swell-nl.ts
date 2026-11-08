@@ -92,29 +92,29 @@
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="51"/>
-        <source>Add to favourites</source>
-        <translation>Aan favorieten toevoegen</translation>
+        <source>Add to favorites</source>
+        <translation>Toevoegen aan favorieten</translation>
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="53"/>
-        <source>Remove from favourites</source>
-        <translation>Uit favorieten verwijderen</translation>
+        <source>Remove from favorites</source>
+        <translation>Verwijderen uit favorieten</translation>
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="70"/>
         <location filename="../qml/pages/BrowsePage.qml" line="230"/>
         <location filename="../qml/pages/BrowsePage.qml" line="395"/>
-        <source>Favourites</source>
+        <source>Favorites</source>
         <translation>Favorieten</translation>
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="129"/>
-        <source>Added to favourites</source>
+        <source>Added to favorites</source>
         <translation>Toegevoegd aan favorieten</translation>
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="129"/>
-        <source>Removed from favourites</source>
+        <source>Removed from favorites</source>
         <translation>Verwijderd uit favorieten</translation>
     </message>
     <message>
@@ -162,7 +162,7 @@
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="442"/>
-        <source>No favourites yet</source>
+        <source>No favorites yet</source>
         <translation>Nog geen favorieten</translation>
     </message>
     <message>
@@ -182,8 +182,8 @@
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="454"/>
-        <source>Long press an album, artist or track and choose Add to favourites</source>
-        <translation>Houd een album, artiest of nummer ingedrukt en kies Aan favorieten toevoegen</translation>
+        <source>Long press an album, artist or track and choose Add to favorites</source>
+        <translation>Houd een album, artiest of nummer ingedrukt en kies Toevoegen aan favorieten</translation>
     </message>
 </context>
 <context>
@@ -192,54 +192,6 @@
         <location filename="../qml/cover/CoverPage.qml" line="32"/>
         <source>Swell</source>
         <translation>Swell</translation>
-    </message>
-</context>
-<context>
-    <name>GroupPage</name>
-    <message>
-        <location filename="../qml/pages/GroupPage.qml" line="46"/>
-        <source>Group</source>
-        <translation>Groep</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/GroupPage.qml" line="47"/>
-        <source>%1 leads</source>
-        <translation>%1 leidt</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/GroupPage.qml" line="56"/>
-        <source>This player follows %1, which is not in your player list.</source>
-        <translation>Deze speler volgt %1, die niet in je spelerslijst staat.</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/GroupPage.qml" line="61"/>
-        <source>Add %1</source>
-        <translation>%1 toevoegen</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/GroupPage.qml" line="73"/>
-        <source>Group volume</source>
-        <translation>Groepsvolume</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/GroupPage.qml" line="93"/>
-        <source>In this group</source>
-        <translation>In deze groep</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/GroupPage.qml" line="106"/>
-        <source>Leads</source>
-        <translation>Leidt</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/GroupPage.qml" line="141"/>
-        <source>Not in your player list</source>
-        <translation>Niet in je spelerslijst</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/GroupPage.qml" line="151"/>
-        <source>Can join</source>
-        <translation>Kan meedoen</translation>
     </message>
 </context>
 <context>
@@ -303,7 +255,7 @@
 <context>
     <name>NowPlayingPage</name>
     <message numerus="yes">
-        <location filename="../qml/pages/NowPlayingPage.qml" line="30"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="44"/>
         <source>Leading %n player(s)</source>
         <translation>
             <numerusform>Leidt %n speler</numerusform>
@@ -311,28 +263,38 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="33"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="47"/>
         <source>Reconnecting</source>
         <translation>Opnieuw verbinden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="33"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="47"/>
         <source>In another player&apos;s group</source>
         <translation>In de groep van een andere speler</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="53"/>
-        <source>Group</source>
-        <translation>Groep</translation>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="249"/>
+        <source>Group volume</source>
+        <translation>Groepsvolume</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="71"/>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="103"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="283"/>
+        <source>Per player</source>
+        <translation>Per speler</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="322"/>
+        <source>%1: fixed volume</source>
+        <translation>%1: vast volume</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="79"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="111"/>
         <source>Not reachable</source>
         <translation>Niet bereikbaar</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="231"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="249"/>
         <source>Volume</source>
         <translation>Volume</translation>
     </message>
@@ -340,62 +302,67 @@
 <context>
     <name>PlayersPage</name>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="37"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="41"/>
         <source>Connecting</source>
         <translation>Verbinden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="38"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="42"/>
         <source>Not reachable</source>
         <translation>Niet bereikbaar</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="39"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="43"/>
         <source>Not a BluOS player</source>
         <translation>Geen BluOS-speler</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="49"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="57"/>
         <source>Players</source>
         <translation>Spelers</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="54"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="62"/>
         <source>About</source>
         <translation>Over</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="58"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="66"/>
         <source>Add player</source>
         <translation>Speler toevoegen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="62"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="70"/>
         <source>Search again</source>
         <translation>Opnieuw zoeken</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="92"/>
-        <source>%1 + %2</source>
-        <translation>%1 + %2</translation>
+        <location filename="../qml/pages/PlayersPage.qml" line="132"/>
+        <source>Follow %1</source>
+        <translation>Volg %1</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="111"/>
-        <source>With %1</source>
-        <translation>Met %1</translation>
+        <location filename="../qml/pages/PlayersPage.qml" line="138"/>
+        <source>Add %1</source>
+        <translation>%1 toevoegen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="119"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="143"/>
         <source>Remove</source>
         <translation>Verwijderen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="128"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="193"/>
+        <source>Leave group</source>
+        <translation>Groep verlaten</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayersPage.qml" line="205"/>
         <source>No players found</source>
         <translation>Geen spelers gevonden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="129"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="206"/>
         <source>Pull down to search again or to add a player by address</source>
         <translation>Trek omlaag om opnieuw te zoeken of een speler op adres toe te voegen</translation>
     </message>
@@ -438,12 +405,12 @@
     <message>
         <location filename="../qml/pages/QueuePage.qml" line="109"/>
         <source>Clearing queue</source>
-        <translation>Wachtrij wissen</translation>
+        <translation>Wachtrij wordt gewist</translation>
     </message>
     <message>
         <location filename="../qml/pages/QueuePage.qml" line="125"/>
         <source>Removing</source>
-        <translation>Verwijderen</translation>
+        <translation>Wordt verwijderd</translation>
     </message>
     <message>
         <location filename="../qml/pages/QueuePage.qml" line="197"/>

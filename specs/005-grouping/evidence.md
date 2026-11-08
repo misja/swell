@@ -109,3 +109,82 @@ Result review, 2026-11-08 (approve with changes):
 | L7 | UI lines not on the canvas | "With A, B" is G3; "In another player's group" only for the unknown-leader case. Context menus of hidden member rows: accepted (remove after ungrouping). |
 | L8 | dataChanged for all rows | Accepted; no extra requests. |
 | L9 | Style | New long lines are wrapped where they were added. |
+
+## Option A (grouping in the player list): result review, 2026-11-08 — TO APPLY
+
+Separate assistant review of branch group-in-players (approve with changes;
+not a human audit; nothing run by the reviewer). Option A was decided live
+by Misja (canvas "Grouping, round 2") and assessed by this review instead of
+a separate design review. Findings, not yet applied:
+
+- [applied] H1 Group mute sticks while Per player is closed: groupMuted() trusts
+  stopped members. Fix: skip members whose client is not running; test with
+  watchGroup false (mute, then unmute).
+- [applied] M1 Unknown-primary case dropped (was GroupPage "Add <primary>"): add a
+  context item "Add %1" on a Secondary row with empty leaderId (needs a
+  primaryId role), or record it as a decision.
+- [applied] M2 "Follow" offered while the current player is a secondary: require the
+  current player online and not Secondary in canJoin; test.
+- [applied] M3 Fixed-volume leader without groupVolume shows a 0 slider: show the
+  group slider only if groupVolume >= 0 or the leader's volume is not fixed.
+- M4 Docs out of date: spec/plan/tasks/evidence still describe the group
+  page and option B (also 001 spec :89, :276); record suite counts for this
+  branch, 0.4.0-10 build/validator, the 0.4.0-9 device check; "Not
+  verified": group mute with tell_slaves, a secondary's own mute.
+- L1 pollAll also while Players is Activating (flicker of member rows).
+- L2 watchGroup only while Qt.application.active.
+- L3 leave(id) without leader: fall back to current only if it lists id.
+- L4 Per player rows: follow memberIds order; unknown members missing.
+- L5 Fixed-volume member slider at 0: hide it or say "Fixed volume".
+- L6 Member IconButton height Theme.itemSizeSmall; check icon-system-volume
+  in 5.x themes (exists on 5.2.0.22: checked 2026-11-08); "Per player" in
+  primary colour; consider ExpandingSection.
+- L7 Follow %1 host fallback; playermodel.h:87 comment; MutedRole comment;
+  a memberIds role instead of the comma trick.
+- L8 scrollToBottom with many members: accepted.
+- Tests to add: leave with explicit leaderId; groupMuted with watchGroup
+  false; exact mute=1&tell_slaves=1 target; canJoin when current is a
+  secondary; runtime QML keys muted/canJoin and players.groupMuted.
+
+Applied 2026-11-08: H1 (groupMuted counts only running members; test
+groupMuteWithMembersNotShown, also checks the mute=1&tell_slaves=1 target),
+M2 (canJoin needs an online current player that is not a secondary), M3
+(group slider hidden for a fixed-volume leader without a group level). All
+ten suites pass (group 26). The rest is still to apply.
+
+Applied 2026-11-08: M1 (primaryId role; "Add <address>" on a secondary of an
+unknown primary; test aFollowerOfAnUnknownLeaderOffersIt) and M4 (spec
+revision for option A, 001 note, plan status, tasks). Wording rules applied
+(Favorites, Jolla Dutch terms, remorse texts). All ten suites pass
+(group 27); 0.4.0-12 built, Dutch complete.
+
+Low findings, 2026-11-08: L1 applied (pollAll also while Players is
+Activating); L2 applied (watchGroup only while the app is active); L3
+applied (leave falls back to the current player only if it lists the
+member; test); L5 applied ("<name>: fixed volume" instead of a 0 slider);
+L6 applied (member button height itemSizeSmall; icon-system-volume exists
+on 5.2.0.22; "Per player" is now Silica's ExpandingSection, exported in the
+target's Sailfish.Silica 1.0 qmldir:84, instead of a fold-out of our own); L7 applied
+(Follow falls back to the host; comments; a memberIds model role replaces
+the binding trick in Players). Accepted: L4 (Per player rows
+follow model order; members unknown to Swell are not listed there, they can
+be added from Players), L8
+(scrollToBottom with many members).
+
+Own solutions replaced by platform mechanisms (Misja, 2026-11-08: no
+tricks; reviewable, maintainable code):
+1. A counter re-evaluating groupMuted on every model change: replaced by
+   PlayerModel::currentGroupMuted, a property with currentGroupChanged.
+2. A binding trick for the current members on Now Playing: replaced by
+   PlayerModel::currentMemberIds (same signal).
+3. Invisible zero-height member rows in Players: replaced by
+   Swell::PlayerListModel, a QSortFilterProxyModel (sourceModel is a
+   property in the target's Qt 5.6, qabstractproxymodel.h:50) that leaves
+   secondaries out; registered as PlayerList.
+4. A 300 ms timer before scrolling Per player into view: replaced by
+   following the section's height while it opens, until the user scrolls
+   (SilicaFlickable movementStarted).
+5. Gate keys derived from "tell_slaves=1" in the query: replaced by an
+   explicit gateName parameter of Client::send (group-level, group-mute).
+Tests: theCurrentGroupIsAProperty, thePlayerListShowsOneRowPerGroup. All ten
+suites pass (group 30).

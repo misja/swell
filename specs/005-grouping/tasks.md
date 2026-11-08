@@ -12,4 +12,7 @@
 - [x] Tests, aarch64 build, validator, evidence.md (armv7hl at release).
 - [x] Device check with the emulated household and the NAD: passed (2026-11-08).
 - [x] Separate result review (approve with changes); findings applied.
-- [ ] PR.
+- [x] PR (#23, merged).
+- [x] Option A (Misja, 2026-11-08): grouping in the player list, tree, Now Playing controls only; device-checked on 0.4.0-9.
+- [x] Result review of option A; H1, M1–M3 applied (evidence.md).
+- [ ] Remaining low findings L1–L8; then a PR for branch group-in-players.

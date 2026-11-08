@@ -1,7 +1,8 @@
 # Plan — 005 grouping
 
-Status: revised 2026-11-08 after the scope/design review. Q1 and Q2
-decided (spec.md).
+Status: revised 2026-11-08; the UI parts are superseded by option A
+(spec.md, "Revision"): groupPage became watchGroup (members only, while
+Per player is open); leave(id, leaderId); canJoin and Follow in the list.
 
 ## Library
 

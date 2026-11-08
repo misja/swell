@@ -73,8 +73,15 @@ QVariant PlayerModel::data(const QModelIndex &index, int role) const
         // second half of a stereo pair or a Hub (LSDP classes 0x0006 and
         // 0x0008), nor a player in a fixed group (zoneSlave in /SyncStatus).
         return c->id() != m_currentId && c->online() && c->groupRole() == Client::Alone
+                && current() && current()->online() && current()->groupRole() != Client::Secondary
                 && e.classId != Lsdp::ClassPairSecondary && e.classId != Lsdp::ClassHub
                 && !c->syncStatus().fixedSecondary;
+    case MutedRole:
+        return c->muted();
+    case PrimaryIdRole:
+        return c->primaryId();
+    case MemberIdsRole:
+        return memberIds(c->id());
     }
     return QVariant();
 }
@@ -95,6 +102,9 @@ QHash<int, QByteArray> PlayerModel::roleNames() const
         { MemberNamesRole, "memberNames" },
         { VolumeRole, "volume" },
         { CanJoinRole, "canJoin" },
+        { MutedRole, "muted" },
+        { PrimaryIdRole, "primaryId" },
+        { MemberIdsRole, "memberIds" },
     };
 }
 
@@ -184,6 +194,11 @@ QString PlayerModel::idAt(int row) const
     return row >= 0 && row < m_entries.size() ? m_entries.at(row).client->id() : QString();
 }
 
+QString PlayerModel::nameAt(int row) const
+{
+    return data(index(row), NameRole).toString();
+}
+
 Client *PlayerModel::client(const QString &id) const
 {
     const int row = indexOf(id);
@@ -240,24 +255,25 @@ void PlayerModel::restoreCurrent(const QString &id, const QString &nodeId)
     applyPolicy();
 }
 
-void PlayerModel::setGroupPage(bool groupPage)
+void PlayerModel::setWatchGroup(bool watch)
 {
-    if (m_groupPage == groupPage)
+    if (m_watchGroup == watch)
         return;
-    m_groupPage = groupPage;
+    m_watchGroup = watch;
     applyPolicy();
-    emit groupPageChanged();
+    emit watchGroupChanged();
 }
 
 void PlayerModel::applyPolicy()
 {
+    const QStringList members = m_watchGroup ? memberIds(m_currentId) : QStringList();
     for (const Entry &e : m_entries) {
         const bool current = e.client->id() == m_currentId;
-        // The group page shows every other player's group and volume: they
-        // keep only /SyncStatus current (a secondary's /Status is its
-        // primary's copy anyway).
+        // Members shown with their own volume keep only /SyncStatus current
+        // (a secondary's /Status is its primary's copy anyway). The player
+        // list polls everyone with pollAll.
         const bool status = m_pollAll || current;
-        const bool watch = m_groupPage && !current;
+        const bool watch = members.contains(e.client->id());
         if (!status && !watch) {
             e.client->stop();
             continue;
@@ -265,7 +281,19 @@ void PlayerModel::applyPolicy()
         e.client->setStatusPolling(status);
         e.client->setSyncWatch(watch);
         e.client->start();
-    }
+    }    // Running or not changes which members count (groupMuted).
+    updateCurrentGroup();
+}
+
+void PlayerModel::updateCurrentGroup()
+{
+    const QStringList members = memberIds(m_currentId);
+    const bool muted = groupMuted(m_currentId);
+    if (members == m_currentMemberIds && muted == m_currentGroupMuted)
+        return;
+    m_currentMemberIds = members;
+    m_currentGroupMuted = muted;
+    emit currentGroupChanged();
 }
 
 QString PlayerModel::memberId(const QString &ref) const
@@ -318,9 +346,14 @@ void PlayerModel::join(const QString &id)
         lead->addSecondaries({ addressOf(id) });
 }
 
-void PlayerModel::leave(const QString &id)
+void PlayerModel::leave(const QString &id, const QString &leaderId)
 {
-    if (Client *lead = current())
+    // The member's own primary, which may not be the current player; the
+    // current player only if it lists this member.
+    QString leader = leaderId.isEmpty() ? leaderOf(id) : leaderId;
+    if (leader.isEmpty() && memberIds(m_currentId).contains(id))
+        leader = m_currentId;
+    if (Client *lead = client(leader))
         lead->removeSecondaries({ addressOf(id) });
 }
 
@@ -328,6 +361,26 @@ void PlayerModel::setPlayerVolume(const QString &id, int level)
 {
     if (Client *c = client(id))
         c->setVolume(level);
+}
+
+bool PlayerModel::groupMuted(const QString &leaderId) const
+{
+    const Client *lead = client(leaderId);
+    if (!lead || !lead->muted())
+        return false;
+    for (const QString &id : memberIds(leaderId)) {
+        // A stopped member's state is stale: only the ones kept current count.
+        const Client *c = client(id);
+        if (c && c->running() && !c->muted())
+            return false;
+    }
+    return true;
+}
+
+void PlayerModel::setPlayerMuted(const QString &id, bool muted)
+{
+    if (Client *c = client(id))
+        c->setMuted(muted);
 }
 
 void PlayerModel::onFound(const Discovery::Found &player)
@@ -438,7 +491,10 @@ void PlayerModel::clientChanged()
         const QString leader = memberId(c->primaryId());
         if (!leader.isEmpty())
             setCurrentId(leader);
+    } else if (m_watchGroup && c && c->id() == m_currentId) {
+        applyPolicy();   // the members may have changed
     }
+    updateCurrentGroup();
 }
 
 } // namespace BluOS

@@ -26,9 +26,13 @@ class PlayerModel : public QAbstractListModel
     Q_PROPERTY(BluOS::Client *current READ current NOTIFY currentChanged)
     // When false only the current player polls; set it while all players are on screen.
     Q_PROPERTY(bool pollAll READ pollAll WRITE setPollAll NOTIFY pollAllChanged)
-    // Set while the current player's group is being edited: its members poll
-    // too, with a /SyncStatus long poll for their own volume.
-    Q_PROPERTY(bool groupPage READ groupPage WRITE setGroupPage NOTIFY groupPageChanged)
+    // Set while the current player's members are shown with their own volume
+    // (Now Playing): they keep /SyncStatus current with a long poll.
+    Q_PROPERTY(bool watchGroup READ watchGroup WRITE setWatchGroup NOTIFY watchGroupChanged)
+    // The current player's group as the current player lists it.
+    Q_PROPERTY(QStringList currentMemberIds READ currentMemberIds NOTIFY currentGroupChanged)
+    // The current player and every polled member are muted (see groupMuted).
+    Q_PROPERTY(bool currentGroupMuted READ currentGroupMuted NOTIFY currentGroupChanged)
 
 public:
     enum Roles {
@@ -44,7 +48,10 @@ public:
         LeaderIdRole,       // the primary's id while a secondary it knows; else empty
         MemberNamesRole,    // a primary's secondaries, by name
         VolumeRole,         // the player's own volume, -1 if fixed or unknown
-        CanJoinRole         // can be added to the current player's group
+        CanJoinRole,        // can be added to the current player's group
+        MutedRole,          // the player's own mute
+        PrimaryIdRole,      // a secondary's primary as it reports it, also when not in the model
+        MemberIdsRole       // a primary's secondaries (memberIds), same order as MemberNamesRole
     };
 
     explicit PlayerModel(QObject *parent = nullptr);
@@ -65,8 +72,10 @@ public:
     Client *current() const;
     bool pollAll() const { return m_pollAll; }
     void setPollAll(bool pollAll);
-    bool groupPage() const { return m_groupPage; }
-    void setGroupPage(bool groupPage);
+    bool watchGroup() const { return m_watchGroup; }
+    QStringList currentMemberIds() const { return m_currentMemberIds; }
+    bool currentGroupMuted() const { return m_currentGroupMuted; }
+    void setWatchGroup(bool watch);
 
     // Groups (spec 005). A group is one player: making a secondary current
     // makes its primary current, and the current player follows its primary
@@ -78,11 +87,16 @@ public:
     Q_INVOKABLE QString leaderOf(const QString &id) const;
     // A primary's secondaries: model ids, or the reference when not known.
     Q_INVOKABLE QStringList memberIds(const QString &leaderId) const;
-    // Adds a player to the current player's group, or takes one out of it.
+    // Adds a player to the current player's group.
     Q_INVOKABLE void join(const QString &id);
-    Q_INVOKABLE void leave(const QString &id);
-    // A player's own volume, for the group page.
+    // Takes a secondary out of its group, through its primary (leaderId when
+    // given, for a member Swell does not know).
+    Q_INVOKABLE void leave(const QString &id, const QString &leaderId = QString());
+    // A player's own volume and mute (Now Playing, Per player).
     Q_INVOKABLE void setPlayerVolume(const QString &id, int level);
+    Q_INVOKABLE void setPlayerMuted(const QString &id, bool muted);
+    // Whether a primary and all its secondaries are muted.
+    Q_INVOKABLE bool groupMuted(const QString &leaderId) const;
     // Makes a remembered player current at once, before discovery answers. With
     // its node id, a later announcement at a new address moves it there.
     Q_INVOKABLE void restoreCurrent(const QString &id, const QString &nodeId);
@@ -94,6 +108,7 @@ public:
     Q_INVOKABLE int indexOf(const QString &id) const;
     Q_INVOKABLE bool isValidAddress(const QString &address) const;
     Q_INVOKABLE QString idAt(int row) const;
+    Q_INVOKABLE QString nameAt(int row) const;
     Client *client(const QString &id) const;
 
     static bool parseAddress(const QString &address, QString *host, int *port);
@@ -104,7 +119,8 @@ signals:
     void manualHostsChanged();
     void currentChanged();
     void pollAllChanged();
-    void groupPageChanged();
+    void watchGroupChanged();
+    void currentGroupChanged();
 
 protected:
     // Creates each player's client; a subclass may return a subclass of
@@ -128,6 +144,7 @@ private:
     void removeAt(int row);
     void clientChanged();
     void applyPolicy();
+    void updateCurrentGroup();
     // "IP:port" for /AddSlave and /RemoveSlave, which take IP addresses.
     QString addressOf(const QString &id) const;
 
@@ -137,7 +154,9 @@ private:
     QVector<Entry> m_entries;
     QString m_currentId;
     bool m_pollAll = false;
-    bool m_groupPage = false;
+    bool m_watchGroup = false;
+    QStringList m_currentMemberIds;
+    bool m_currentGroupMuted = false;
 };
 
 } // namespace BluOS

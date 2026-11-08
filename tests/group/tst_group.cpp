@@ -5,6 +5,7 @@
 #include <QNetworkAccessManager>
 
 #include "client.h"
+#include "playerlistmodel.h"
 #include "playermodel.h"
 #include "fakehousehold.h"
 
@@ -32,13 +33,19 @@ private slots:
     void aLonePlayerHasNoSyncLongPoll();
     void theCurrentPlayerFollowsItsPrimary();
     void choosingAMemberChoosesItsPrimary();
-    void theGroupPageWatchesTheMembers();
+    void watchingTheGroupKeepsMembersCurrent();
     void joinAndLeaveThroughTheModel();
     void aStaleGroupLoopDoesNotRecurse();
-    void theGroupPageKeepsCandidatesCurrent();
+    void thePlayerListShowsWhoCanJoin();
     void aMembershipChangeElsewhereShows();
     void aLonePlayersRequestsAreUnchanged();
     void aReconnectingSecondary();
+    void groupAndMemberMute();
+    void groupMuteWithMembersNotShown();
+    void aFollowerOfAnUnknownLeaderOffersIt();
+    void leaveWithoutALeaderUsesTheCurrentOnlyIfItListsTheMember();
+    void theCurrentGroupIsAProperty();
+    void thePlayerListShowsOneRowPerGroup();
     void pairHalvesHubsAndZonesCannotJoin();
 
 private:
@@ -206,7 +213,7 @@ void TstGroup::groupVolumeIsKeptApartFromOwnVolume()
     lead->setVolume(12);   // same path, other key: neither replaces the other
     QTRY_COMPARE(m_house->player(0)->requests(QStringLiteral("/Volume")).size(), 2);
     const auto requests = m_house->player(0)->requests(QStringLiteral("/Volume"));
-    QCOMPARE(requests.at(0).target, QByteArray("/Volume?tell_slaves=1&level=40"));
+    QCOMPARE(requests.at(0).target, QByteArray("/Volume?level=40&tell_slaves=1"));
     QCOMPARE(requests.at(1).target, QByteArray("/Volume?level=12"));
     QCOMPARE(m_house->volume(1), 40);
     QCOMPARE(m_house->volume(2), 40);
@@ -287,20 +294,21 @@ void TstGroup::choosingAMemberChoosesItsPrimary()
              m_house->id(0));
 }
 
-void TstGroup::theGroupPageWatchesTheMembers()
+void TstGroup::watchingTheGroupKeepsMembersCurrent()
 {
     m_house->group(0, { 1 });
     QScopedPointer<PlayerModel> model(household(m_house, nullptr));
     model->setCurrentId(m_house->id(0));
     QTRY_COMPARE(model->current()->groupRole(), Client::Primary);
-    // Without the group page only the current player polls.
+    // Without the watch only the current player polls.
     QTest::qWait(500);
     QVERIFY(!model->client(m_house->id(1))->running());
-    model->setGroupPage(true);
+    model->setWatchGroup(true);
     QTRY_VERIFY(model->client(m_house->id(1))->running());
     m_house->setVolume(1, 64);
     QTRY_COMPARE(model->client(m_house->id(1))->volume(), 64);
-    model->setGroupPage(false);
+    QVERIFY(!model->client(m_house->id(2))->running());   // not a member
+    model->setWatchGroup(false);
     QVERIFY(!model->client(m_house->id(1))->running());
     QVERIFY(!model->client(m_house->id(2))->running());
 }
@@ -336,18 +344,25 @@ void TstGroup::aStaleGroupLoopDoesNotRecurse()
     QVERIFY(!model->currentId().isEmpty());
 }
 
-void TstGroup::theGroupPageKeepsCandidatesCurrent()
+void TstGroup::thePlayerListShowsWhoCanJoin()
 {
+    // The player list polls everyone (pollAll); canJoin follows from that.
+    m_house->group(1, { 2 });
     QScopedPointer<PlayerModel> model(household(m_house, nullptr));
     model->setCurrentId(m_house->id(0));
-    QTRY_VERIFY(model->current()->online());
-    model->setGroupPage(true);
-    // The others watch /SyncStatus only, and come online from it.
-    QTRY_VERIFY(model->client(m_house->id(1))->online());
-    QTRY_VERIFY(model->client(m_house->id(2))->online());
-    QCOMPARE(model->client(m_house->id(1))->groupRole(), Client::Alone);
-    QTest::qWait(500);
-    QCOMPARE(m_house->player(1)->requests(QStringLiteral("/Status")).size(), 0);
+    model->setPollAll(true);
+    auto canJoin = [&model](const QString &id) {
+        return model->data(model->index(model->indexOf(id)), PlayerModel::CanJoinRole).toBool();
+    };
+    QTRY_COMPARE(model->client(m_house->id(2))->groupRole(), Client::Secondary);
+    QTRY_COMPARE(model->client(m_house->id(1))->groupRole(), Client::Primary);
+    QVERIFY(!canJoin(m_house->id(0)));   // the current player
+    QVERIFY(!canJoin(m_house->id(1)));   // leads its own group
+    QVERIFY(!canJoin(m_house->id(2)));   // in a group
+    model->leave(m_house->id(2));        // through its own primary, not the current player
+    QTRY_COMPARE(m_house->leaderOf(2), -1);
+    QTRY_VERIFY(canJoin(m_house->id(2)));
+    QCOMPARE(m_house->player(0)->requests(QStringLiteral("/RemoveSlave")).size(), 0);
 }
 
 void TstGroup::aMembershipChangeElsewhereShows()
@@ -355,8 +370,7 @@ void TstGroup::aMembershipChangeElsewhereShows()
     QScopedPointer<PlayerModel> model(household(m_house, nullptr));
     model->setCurrentId(m_house->id(0));
     QTRY_VERIFY(model->current()->online());
-    model->setGroupPage(true);
-    QTRY_VERIFY(model->client(m_house->id(2))->online());
+    model->setWatchGroup(true);
     m_house->group(0, { 2 });   // the official app groups Studio
     QTRY_COMPARE(model->memberIds(m_house->id(0)), QStringList({ m_house->id(2) }));
     QTRY_COMPARE(model->client(m_house->id(2))->groupRole(), Client::Secondary);
@@ -417,7 +431,7 @@ void TstGroup::pairHalvesHubsAndZonesCannotJoin()
     model.discovery()->handleDatagram(announce('\x04', 0x0008, house->port(4)));   // Hub
     QCOMPARE(model.rowCount(), 5);
     model.setCurrentId(house->id(0));
-    model.setGroupPage(true);
+    model.setPollAll(true);
     auto canJoin = [&model](const QString &id) {
         return model.data(model.index(model.indexOf(id)), PlayerModel::CanJoinRole).toBool();
     };
@@ -429,8 +443,113 @@ void TstGroup::pairHalvesHubsAndZonesCannotJoin()
     QVERIFY(!canJoin(house->id(2)));   // in a fixed group
     QVERIFY(!canJoin(house->id(3)));   // the second half of a stereo pair
     QVERIFY(!canJoin(house->id(4)));   // a Hub
-    model.setGroupPage(false);
+    model.setPollAll(false);
     delete house;
+}
+
+void TstGroup::groupAndMemberMute()
+{
+    m_house->group(0, { 1, 2 });
+    QScopedPointer<PlayerModel> model(household(m_house, nullptr));
+    model->setCurrentId(m_house->id(0));
+    QTRY_COMPARE(model->current()->groupRole(), Client::Primary);
+    // Group mute and group volume in one burst: different keys, both sent.
+    model->current()->setGroupMuted(true);
+    model->current()->setGroupVolume(20);
+    QTRY_COMPARE(m_house->player(0)->requests(QStringLiteral("/Volume")).size(), 2);
+    QTRY_COMPARE(m_house->volume(2), 20);
+    model->setWatchGroup(true);
+    QTRY_VERIFY(model->client(m_house->id(1))->muted());
+    QTRY_VERIFY(model->client(m_house->id(2))->muted());
+    QTRY_VERIFY(model->groupMuted(m_house->id(0)));
+    // One member alone.
+    model->setPlayerMuted(m_house->id(1), false);
+    QTRY_VERIFY(!model->client(m_house->id(1))->muted());
+    QTest::qWait(300);
+    QVERIFY(model->client(m_house->id(2))->muted());
+    QVERIFY(model->current()->muted());
+    QVERIFY(!model->groupMuted(m_house->id(0)));   // no longer all of them
+}
+
+void TstGroup::groupMuteWithMembersNotShown()
+{
+    // Per player closed: members are not polled; the leader's state counts.
+    m_house->group(0, { 1 });
+    QScopedPointer<PlayerModel> model(household(m_house, nullptr));
+    model->setCurrentId(m_house->id(0));
+    QTRY_COMPARE(model->current()->groupRole(), Client::Primary);
+    model->current()->setGroupMuted(true);
+    QTRY_VERIFY(model->groupMuted(m_house->id(0)));
+    QCOMPARE(m_house->player(0)->requests(QStringLiteral("/Volume")).last().target,
+             QByteArray("/Volume?mute=1&tell_slaves=1"));
+    model->current()->setGroupMuted(false);
+    QTRY_VERIFY(!model->groupMuted(m_house->id(0)));
+}
+
+void TstGroup::aFollowerOfAnUnknownLeaderOffersIt()
+{
+    // Kitchen follows Living Room, which Swell has not found or been given.
+    m_house->group(0, { 1 });
+    PlayerModel model;
+    model.setClientTiming(fast());
+    model.addManual(m_house->id(1));
+    model.setPollAll(true);
+    const QModelIndex row = model.index(model.indexOf(m_house->id(1)));
+    QTRY_COMPARE(model.data(row, PlayerModel::GroupRoleRole).toInt(), int(Client::Secondary));
+    QCOMPARE(model.data(row, PlayerModel::LeaderIdRole).toString(), QString());
+    QCOMPARE(model.data(row, PlayerModel::PrimaryIdRole).toString(), m_house->id(0));
+    // Adding it makes the group known.
+    QVERIFY(model.addManual(model.data(row, PlayerModel::PrimaryIdRole).toString()));
+    QTRY_COMPARE(model.data(model.index(model.indexOf(m_house->id(1))), PlayerModel::LeaderIdRole).toString(),
+                 m_house->id(0));
+}
+
+void TstGroup::leaveWithoutALeaderUsesTheCurrentOnlyIfItListsTheMember()
+{
+    m_house->group(1, { 2 });
+    QScopedPointer<PlayerModel> model(household(m_house, nullptr));
+    model->setCurrentId(m_house->id(0));
+    QTRY_VERIFY(model->current()->online());
+    // Studio is not in the current player's group and its own leader is not
+    // polled: nothing is sent.
+    model->leave(m_house->id(2));
+    QTest::qWait(500);
+    QCOMPARE(m_house->player(0)->requests(QStringLiteral("/RemoveSlave")).size(), 0);
+    QCOMPARE(m_house->leaderOf(2), 1);
+}
+
+void TstGroup::theCurrentGroupIsAProperty()
+{
+    QScopedPointer<PlayerModel> model(household(m_house, nullptr));
+    QSignalSpy changed(model.data(), &PlayerModel::currentGroupChanged);
+    model->setCurrentId(m_house->id(0));
+    QTRY_VERIFY(model->current()->online());
+    QVERIFY(model->currentMemberIds().isEmpty());
+    m_house->group(0, { 1, 2 });
+    QTRY_COMPARE(model->currentMemberIds(), QStringList({ m_house->id(1), m_house->id(2) }));
+    QVERIFY(changed.size() >= 1);
+    QVERIFY(!model->currentGroupMuted());
+    model->current()->setGroupMuted(true);
+    QTRY_VERIFY(model->currentGroupMuted());
+    model->current()->setGroupMuted(false);
+    QTRY_VERIFY(!model->currentGroupMuted());
+}
+
+void TstGroup::thePlayerListShowsOneRowPerGroup()
+{
+    QScopedPointer<PlayerModel> model(household(m_house, nullptr));
+    model->setPollAll(true);
+    Swell::PlayerListModel list;
+    list.setSourceModel(model.data());
+    QTRY_VERIFY(model->client(m_house->id(2))->online());
+    QCOMPARE(list.rowCount(), 3);
+    m_house->group(0, { 1, 2 });
+    QTRY_COMPARE(list.rowCount(), 1);   // the group, as its primary
+    QCOMPARE(list.data(list.index(0, 0), PlayerModel::IdRole).toString(), m_house->id(0));
+    QCOMPARE(list.data(list.index(0, 0), PlayerModel::MemberIdsRole).toStringList(),
+             QStringList({ m_house->id(1), m_house->id(2) }));
+    model->leave(m_house->id(2), m_house->id(0));
+    QTRY_COMPARE(list.rowCount(), 2);
 }
 
 QTEST_GUILESS_MAIN(TstGroup)
