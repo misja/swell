@@ -13,6 +13,8 @@ no UI yet; the UI is agreed on the design canvas before it is built.
   from Now Playing.
 - Review: a separate agent reviews scope and design before implementation,
   and the result before the PR.
+- UI: design canvas page "Grouping (005)", boards G1–G4 (proposed
+  2026-11-08, to be agreed); the canvas is linked in issue #1.
 - Scope agreed by Misja (2026-11-08): show groups, group and ungroup players,
   and group volume. Fixed groups are out of scope.
 
