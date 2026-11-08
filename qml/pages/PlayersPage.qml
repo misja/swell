@@ -71,7 +71,13 @@ Page {
             readonly property bool _leads: model.memberNames.length > 0
             visible: !_follower
             contentHeight: _follower ? 0 : (_leads ? Theme.itemSizeLarge : Theme.itemSizeMedium)
-            menu: model.manual ? removeMenu : null
+            // Long press (spec 005, canvas A1): join the current player's
+            // group, take a member out of this group, or remove a player
+            // added by address.
+            readonly property string _id: model.playerId
+            readonly property bool _canJoin: model.canJoin && players.current !== null
+                                             && !players.current.groupBusy
+            menu: _canJoin || _leads || model.manual ? playerMenu : null
             highlighted: down || model.playerId === players.currentId
 
             onClicked: {
@@ -113,9 +119,23 @@ Page {
             }
 
             Component {
-                id: removeMenu
+                id: playerMenu
                 ContextMenu {
                     MenuItem {
+                        visible: item._canJoin
+                        text: qsTr("Join %1").arg(players.current ? players.current.name : "")
+                        onClicked: players.join(model.playerId)
+                    }
+                    Repeater {
+                        model: item._leads ? players.memberIds(item._id) : []
+                        MenuItem {
+                            readonly property int _row: players.indexOf(modelData)
+                            text: qsTr("Ungroup %1").arg(_row >= 0 ? players.nameAt(_row) : modelData)
+                            onClicked: players.leave(modelData)
+                        }
+                    }
+                    MenuItem {
+                        visible: model.manual
                         text: qsTr("Remove")
                         onClicked: players.removeManual(model.playerId)
                     }

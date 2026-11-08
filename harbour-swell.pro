@@ -25,7 +25,6 @@ DISTFILES += qml/harbour-swell.qml \
     qml/pages/QueuePage.qml \
     qml/pages/BrowsePage.qml \
     qml/pages/LetterIndex.qml \
-    qml/pages/GroupPage.qml \
     qml/pages/CoverImage.qml \
     qml/pages/SearchPage.qml \
     qml/pages/AboutPage.qml \

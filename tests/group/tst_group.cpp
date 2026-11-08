@@ -32,10 +32,10 @@ private slots:
     void aLonePlayerHasNoSyncLongPoll();
     void theCurrentPlayerFollowsItsPrimary();
     void choosingAMemberChoosesItsPrimary();
-    void theGroupPageWatchesTheMembers();
+    void watchingTheGroupKeepsMembersCurrent();
     void joinAndLeaveThroughTheModel();
     void aStaleGroupLoopDoesNotRecurse();
-    void theGroupPageKeepsCandidatesCurrent();
+    void thePlayerListShowsWhoCanJoin();
     void aMembershipChangeElsewhereShows();
     void aLonePlayersRequestsAreUnchanged();
     void aReconnectingSecondary();
@@ -287,20 +287,21 @@ void TstGroup::choosingAMemberChoosesItsPrimary()
              m_house->id(0));
 }
 
-void TstGroup::theGroupPageWatchesTheMembers()
+void TstGroup::watchingTheGroupKeepsMembersCurrent()
 {
     m_house->group(0, { 1 });
     QScopedPointer<PlayerModel> model(household(m_house, nullptr));
     model->setCurrentId(m_house->id(0));
     QTRY_COMPARE(model->current()->groupRole(), Client::Primary);
-    // Without the group page only the current player polls.
+    // Without the watch only the current player polls.
     QTest::qWait(500);
     QVERIFY(!model->client(m_house->id(1))->running());
-    model->setGroupPage(true);
+    model->setWatchGroup(true);
     QTRY_VERIFY(model->client(m_house->id(1))->running());
     m_house->setVolume(1, 64);
     QTRY_COMPARE(model->client(m_house->id(1))->volume(), 64);
-    model->setGroupPage(false);
+    QVERIFY(!model->client(m_house->id(2))->running());   // not a member
+    model->setWatchGroup(false);
     QVERIFY(!model->client(m_house->id(1))->running());
     QVERIFY(!model->client(m_house->id(2))->running());
 }
@@ -336,18 +337,25 @@ void TstGroup::aStaleGroupLoopDoesNotRecurse()
     QVERIFY(!model->currentId().isEmpty());
 }
 
-void TstGroup::theGroupPageKeepsCandidatesCurrent()
+void TstGroup::thePlayerListShowsWhoCanJoin()
 {
+    // The player list polls everyone (pollAll); canJoin follows from that.
+    m_house->group(1, { 2 });
     QScopedPointer<PlayerModel> model(household(m_house, nullptr));
     model->setCurrentId(m_house->id(0));
-    QTRY_VERIFY(model->current()->online());
-    model->setGroupPage(true);
-    // The others watch /SyncStatus only, and come online from it.
-    QTRY_VERIFY(model->client(m_house->id(1))->online());
-    QTRY_VERIFY(model->client(m_house->id(2))->online());
-    QCOMPARE(model->client(m_house->id(1))->groupRole(), Client::Alone);
-    QTest::qWait(500);
-    QCOMPARE(m_house->player(1)->requests(QStringLiteral("/Status")).size(), 0);
+    model->setPollAll(true);
+    auto canJoin = [&model](const QString &id) {
+        return model->data(model->index(model->indexOf(id)), PlayerModel::CanJoinRole).toBool();
+    };
+    QTRY_COMPARE(model->client(m_house->id(2))->groupRole(), Client::Secondary);
+    QTRY_COMPARE(model->client(m_house->id(1))->groupRole(), Client::Primary);
+    QVERIFY(!canJoin(m_house->id(0)));   // the current player
+    QVERIFY(!canJoin(m_house->id(1)));   // leads its own group
+    QVERIFY(!canJoin(m_house->id(2)));   // in a group
+    model->leave(m_house->id(2));        // through its own primary, not the current player
+    QTRY_COMPARE(m_house->leaderOf(2), -1);
+    QTRY_VERIFY(canJoin(m_house->id(2)));
+    QCOMPARE(m_house->player(0)->requests(QStringLiteral("/RemoveSlave")).size(), 0);
 }
 
 void TstGroup::aMembershipChangeElsewhereShows()
@@ -355,8 +363,7 @@ void TstGroup::aMembershipChangeElsewhereShows()
     QScopedPointer<PlayerModel> model(household(m_house, nullptr));
     model->setCurrentId(m_house->id(0));
     QTRY_VERIFY(model->current()->online());
-    model->setGroupPage(true);
-    QTRY_VERIFY(model->client(m_house->id(2))->online());
+    model->setWatchGroup(true);
     m_house->group(0, { 2 });   // the official app groups Studio
     QTRY_COMPARE(model->memberIds(m_house->id(0)), QStringList({ m_house->id(2) }));
     QTRY_COMPARE(model->client(m_house->id(2))->groupRole(), Client::Secondary);
@@ -417,7 +424,7 @@ void TstGroup::pairHalvesHubsAndZonesCannotJoin()
     model.discovery()->handleDatagram(announce('\x04', 0x0008, house->port(4)));   // Hub
     QCOMPARE(model.rowCount(), 5);
     model.setCurrentId(house->id(0));
-    model.setGroupPage(true);
+    model.setPollAll(true);
     auto canJoin = [&model](const QString &id) {
         return model.data(model.index(model.indexOf(id)), PlayerModel::CanJoinRole).toBool();
     };
@@ -429,7 +436,7 @@ void TstGroup::pairHalvesHubsAndZonesCannotJoin()
     QVERIFY(!canJoin(house->id(2)));   // in a fixed group
     QVERIFY(!canJoin(house->id(3)));   // the second half of a stereo pair
     QVERIFY(!canJoin(house->id(4)));   // a Hub
-    model.setGroupPage(false);
+    model.setPollAll(false);
     delete house;
 }
 

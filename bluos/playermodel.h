@@ -26,9 +26,9 @@ class PlayerModel : public QAbstractListModel
     Q_PROPERTY(BluOS::Client *current READ current NOTIFY currentChanged)
     // When false only the current player polls; set it while all players are on screen.
     Q_PROPERTY(bool pollAll READ pollAll WRITE setPollAll NOTIFY pollAllChanged)
-    // Set while the current player's group is being edited: its members poll
-    // too, with a /SyncStatus long poll for their own volume.
-    Q_PROPERTY(bool groupPage READ groupPage WRITE setGroupPage NOTIFY groupPageChanged)
+    // Set while the current player's members are shown with their own volume
+    // (Now Playing): they keep /SyncStatus current with a long poll.
+    Q_PROPERTY(bool watchGroup READ watchGroup WRITE setWatchGroup NOTIFY watchGroupChanged)
 
 public:
     enum Roles {
@@ -65,8 +65,8 @@ public:
     Client *current() const;
     bool pollAll() const { return m_pollAll; }
     void setPollAll(bool pollAll);
-    bool groupPage() const { return m_groupPage; }
-    void setGroupPage(bool groupPage);
+    bool watchGroup() const { return m_watchGroup; }
+    void setWatchGroup(bool watch);
 
     // Groups (spec 005). A group is one player: making a secondary current
     // makes its primary current, and the current player follows its primary
@@ -78,8 +78,9 @@ public:
     Q_INVOKABLE QString leaderOf(const QString &id) const;
     // A primary's secondaries: model ids, or the reference when not known.
     Q_INVOKABLE QStringList memberIds(const QString &leaderId) const;
-    // Adds a player to the current player's group, or takes one out of it.
+    // Adds a player to the current player's group.
     Q_INVOKABLE void join(const QString &id);
+    // Takes a secondary out of its group, through its primary.
     Q_INVOKABLE void leave(const QString &id);
     // A player's own volume, for the group page.
     Q_INVOKABLE void setPlayerVolume(const QString &id, int level);
@@ -94,6 +95,7 @@ public:
     Q_INVOKABLE int indexOf(const QString &id) const;
     Q_INVOKABLE bool isValidAddress(const QString &address) const;
     Q_INVOKABLE QString idAt(int row) const;
+    Q_INVOKABLE QString nameAt(int row) const;
     Client *client(const QString &id) const;
 
     static bool parseAddress(const QString &address, QString *host, int *port);
@@ -104,7 +106,7 @@ signals:
     void manualHostsChanged();
     void currentChanged();
     void pollAllChanged();
-    void groupPageChanged();
+    void watchGroupChanged();
 
 protected:
     // Creates each player's client; a subclass may return a subclass of
@@ -137,7 +139,7 @@ private:
     QVector<Entry> m_entries;
     QString m_currentId;
     bool m_pollAll = false;
-    bool m_groupPage = false;
+    bool m_watchGroup = false;
 };
 
 } // namespace BluOS

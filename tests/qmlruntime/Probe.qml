@@ -57,7 +57,7 @@ Item {
         }
     }
 
-    // NowPlayingPage, PlayersPage and GroupPage: group values (spec 005).
+    // NowPlayingPage and PlayersPage: group values (spec 005).
     function group() {
         return [_player.groupRole === Player.Alone, _player.secondaryIds.length, _player.primaryReconnecting,
                 _player.groupVolume, _player.groupBusy].join(" ")

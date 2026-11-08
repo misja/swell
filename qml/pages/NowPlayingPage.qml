@@ -8,6 +8,18 @@ Page {
     objectName: "nowPlaying"
 
     readonly property QtObject _player: players.current
+    // A leader: the slider is the group volume, with the members' own
+    // volumes folding out under it (spec 005, canvas A2).
+    readonly property bool _leads: _player !== null && _player.groupRole === Player.Primary
+    property bool _perPlayer: false
+
+    // Members keep their own volume current only while it is shown.
+    Binding {
+        target: players
+        property: "watchGroup"
+        value: page.status === PageStatus.Active && page._leads && page._perPlayer
+    }
+    Component.onDestruction: players.watchGroup = false
     // Artwork edge: the short side of the page, flush with the page edges
     // (Silica pitfalls); beside the controls in landscape.
     readonly property real _artSize: isLandscape ? height : width
@@ -47,14 +59,6 @@ Page {
     SilicaFlickable {
         anchors.fill: parent
         contentHeight: Math.max(height, layout.height + Theme.paddingLarge)
-
-        PullDownMenu {
-            MenuItem {
-                text: qsTr("Group")
-                enabled: _player !== null && _player.online
-                onClicked: pageStack.push(Qt.resolvedUrl("GroupPage.qml"))
-            }
-        }
 
         Flow {
             id: layout
@@ -209,8 +213,9 @@ Page {
                 Row {
                     x: Theme.paddingMedium
                     width: parent.width - Theme.paddingMedium
-                    // Hidden when the player reports a fixed volume (volume=-1).
-                    visible: _player && !_player.fixedVolume
+                    // Hidden when the player reports a fixed volume (volume=-1),
+                    // unless it leads a group.
+                    visible: _player && (!_player.fixedVolume || page._leads)
 
                     IconButton {
                         id: mute
@@ -228,19 +233,82 @@ Page {
                         maximumValue: 100
                         stepSize: 1
                         enabled: _player && _player.online
-                        label: qsTr("Volume")
+                        label: page._leads ? qsTr("Group volume") : qsTr("Volume")
                         valueText: Math.round(value)
 
                         // Follow the player, except while the user drags.
                         Binding {
                             target: volume
                             property: "value"
-                            value: _player && _player.volume >= 0 ? _player.volume : 0
+                            value: {
+                                if (!_player) {
+                                    return 0
+                                }
+                                if (page._leads && _player.groupVolume >= 0) {
+                                    return _player.groupVolume
+                                }
+                                return Math.max(0, _player.volume)
+                            }
                             when: !volume.down
                         }
                         onValueChanged: {
                             if (down && _player) {
-                                _player.setVolume(Math.round(value))
+                                if (page._leads) {
+                                    _player.setGroupVolume(Math.round(value))
+                                } else {
+                                    _player.setVolume(Math.round(value))
+                                }
+                            }
+                        }
+                    }
+                }
+
+                BackgroundItem {
+                    visible: page._leads
+                    width: parent.width
+                    onClicked: page._perPlayer = !page._perPlayer
+
+                    Label {
+                        anchors {
+                            right: arrow.left
+                            verticalCenter: parent.verticalCenter
+                        }
+                        text: qsTr("Per player")
+                        color: parent.highlighted ? Theme.highlightColor : Theme.secondaryColor
+                    }
+                    Icon {
+                        id: arrow
+                        anchors {
+                            right: parent.right
+                            rightMargin: Theme.horizontalPageMargin
+                            verticalCenter: parent.verticalCenter
+                        }
+                        source: page._perPlayer ? "image://theme/icon-m-up" : "image://theme/icon-m-down"
+                    }
+                }
+
+                Repeater {
+                    model: page._leads && page._perPlayer ? players : null
+                    delegate: Slider {
+                        id: member
+                        visible: model.playerId === players.currentId || model.leaderId === players.currentId
+                        width: parent.width
+                        enabled: model.online && model.volume >= 0
+                        minimumValue: 0
+                        maximumValue: 100
+                        stepSize: 1
+                        label: model.name
+                        valueText: Math.round(value)
+
+                        Binding {
+                            target: member
+                            property: "value"
+                            value: Math.max(0, model.volume)
+                            when: !member.down
+                        }
+                        onValueChanged: {
+                            if (down) {
+                                players.setPlayerVolume(model.playerId, Math.round(value))
                             }
                         }
                     }
