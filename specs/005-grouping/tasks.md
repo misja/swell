@@ -5,7 +5,7 @@
 - [x] Draft spec and plan.
 - [x] Scope/design review by a separate agent (approve with changes); findings H1–H3, M1–M5, L1–L6 applied.
 - [x] Misja: Q1 (Home follows the primary), Q2 (emulation on the LAN, not on the phone).
-- [ ] Misja: approve opening the issue.
+- [x] Misja: approve opening the issue: #21.
 - [ ] UI on the design canvas, agreed with Misja.
 - [ ] Household fixture and tests first.
 - [ ] Library, model, src/ shaping, QML.

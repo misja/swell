@@ -8,9 +8,9 @@ no UI yet; the UI is agreed on the design canvas before it is built.
 
 - Accountable owner: root (primary assistant session).
 - Decision owner: Misja Hoebe (@misja).
-- Issue: opened once Misja approves the spec. 001 lists 005 in its "Agreed
-  structure for later features": grouping on its own page, opened from Now
-  Playing.
+- Issue: https://github.com/misja/swell/issues/21. 001 lists 005 in its
+  "Agreed structure for later features": grouping on its own page, opened
+  from Now Playing.
 - Review: a separate agent reviews scope and design before implementation,
   and the result before the PR.
 - Scope agreed by Misja (2026-11-08): show groups, group and ungroup players,
