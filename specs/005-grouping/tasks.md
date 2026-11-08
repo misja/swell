@@ -7,8 +7,8 @@
 - [x] Misja: Q1 (Home follows the primary), Q2 (emulation on the LAN, not on the phone).
 - [x] Misja: approve opening the issue: #21.
 - [x] UI on the design canvas, agreed with Misja (G1–G3, option B; mini-player and cover unchanged).
-- [ ] Household fixture and tests first.
-- [ ] Library, model, src/ shaping, QML.
-- [ ] Tests, builds (aarch64, armv7hl), validator, evidence.md.
+- [x] Household fixture and tests first.
+- [x] Library, model, QML (no src/ shaping needed: typed properties and model roles).
+- [x] Tests, aarch64 build, validator, evidence.md (armv7hl at release).
 - [ ] Device check with the emulated household (Python on the host LAN; approval each time it runs) and the NAD.
 - [ ] Separate result review, then a PR.
