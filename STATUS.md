@@ -17,8 +17,9 @@ Handoff (2026-11-08, evening), towards 0.5.0:
   removed. Misja device-checked it with the emulated household. A separate
   result review was started; apply its findings, update specs/005 docs
   (they still describe the group page and option B), then PR.
-- Branch english-fallback (local): English catalog as fallback for
-  locales without a translation (plurals); checked in the SDK. PR pending.
+- Branch english-fallback: dropped (Misja, 2026-11-08). An own fallback
+  translator is an own solution; libsailfishapp has none and Swell follows
+  the platform. Not to be merged.
 - Wording check done (Jolla Media player and home catalogs on the phone):
   proposed Favorites (US, as the platform), "Toevoegen aan/Verwijderen uit
   favorieten", remorse texts "Wachtrij wordt gewist" / "Wordt verwijderd";
