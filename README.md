@@ -1,4 +1,4 @@
-<img src="icons/harbour-swell.svg" alt="" width="96" align="right">
+<p><img src="icons/harbour-swell.svg" alt="" width="96"></p>
 
 # Swell
 
