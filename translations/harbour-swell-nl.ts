@@ -255,7 +255,7 @@
 <context>
     <name>NowPlayingPage</name>
     <message numerus="yes">
-        <location filename="../qml/pages/NowPlayingPage.qml" line="44"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="51"/>
         <source>Leading %n player(s)</source>
         <translation>
             <numerusform>Leidt %n speler</numerusform>
@@ -263,33 +263,33 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="47"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="54"/>
         <source>Reconnecting</source>
         <translation>Opnieuw verbinden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="47"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="54"/>
         <source>In another player&apos;s group</source>
         <translation>In de groep van een andere speler</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="246"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="254"/>
         <source>Group volume</source>
         <translation>Groepsvolume</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="299"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="307"/>
         <source>Per player</source>
         <translation>Per speler</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="78"/>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="110"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="85"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="117"/>
         <source>Not reachable</source>
         <translation>Niet bereikbaar</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="246"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="254"/>
         <source>Volume</source>
         <translation>Volume</translation>
     </message>
@@ -332,27 +332,27 @@
         <translation>Opnieuw zoeken</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="125"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="126"/>
         <source>Join %1</source>
         <translation>Meedoen met %1</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="130"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="131"/>
         <source>Remove</source>
         <translation>Verwijderen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="179"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="181"/>
         <source>Leave group</source>
         <translation>Groep verlaten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="191"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="193"/>
         <source>No players found</source>
         <translation>Geen spelers gevonden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="192"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="194"/>
         <source>Pull down to search again or to add a player by address</source>
         <translation>Trek omlaag om opnieuw te zoeken of een speler op adres toe te voegen</translation>
     </message>

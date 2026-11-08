@@ -455,12 +455,14 @@ void TstGroup::groupAndMemberMute()
     model->setWatchGroup(true);
     QTRY_VERIFY(model->client(m_house->id(1))->muted());
     QTRY_VERIFY(model->client(m_house->id(2))->muted());
+    QTRY_VERIFY(model->groupMuted(m_house->id(0)));
     // One member alone.
     model->setPlayerMuted(m_house->id(1), false);
     QTRY_VERIFY(!model->client(m_house->id(1))->muted());
     QTest::qWait(300);
     QVERIFY(model->client(m_house->id(2))->muted());
     QVERIFY(model->current()->muted());
+    QVERIFY(!model->groupMuted(m_house->id(0)));   // no longer all of them
 }
 
 QTEST_GUILESS_MAIN(TstGroup)

@@ -12,6 +12,13 @@ Page {
     // volumes folding out under it (spec 005, canvas A2).
     readonly property bool _leads: _player !== null && _player.groupRole === Player.Primary
     property bool _perPlayer: false
+    // Re-evaluated when any player changes.
+    property int _changes: 0
+    readonly property bool _groupMuted: (_changes, _leads && players.groupMuted(players.currentId))
+    Connections {
+        target: players
+        onDataChanged: page._changes++
+    }
     // The members as the leader lists them (each row's own view may lag).
     readonly property var _memberIds: _leads && _player.secondaryIds ? players.memberIds(players.currentId) : []
 
@@ -223,12 +230,13 @@ Page {
                     IconButton {
                         id: mute
                         anchors.verticalCenter: parent.verticalCenter
-                        icon.source: _player && _player.muted ? "image://theme/icon-m-speaker-mute" : "image://theme/icon-m-speaker"
+                        icon.source: (page._leads ? page._groupMuted : _player && _player.muted)
+                                     ? "image://theme/icon-m-speaker-mute" : "image://theme/icon-m-speaker"
                         enabled: _player && _player.online
                         // A leader mutes the whole group, like its slider.
                         onClicked: {
                             if (page._leads) {
-                                _player.setGroupMuted(!_player.muted)
+                                _player.setGroupMuted(!page._groupMuted)
                             } else {
                                 _player.setMuted(!_player.muted)
                             }
@@ -325,9 +333,8 @@ Page {
                         IconButton {
                             width: mute.width
                             anchors.verticalCenter: parent.verticalCenter
-                            icon.width: Theme.iconSizeSmall
-                            icon.height: Theme.iconSizeSmall
-                            icon.source: model.muted ? "image://theme/icon-m-speaker-mute" : "image://theme/icon-m-speaker"
+                            // The theme's small volume icons, drawn for this size.
+                            icon.source: model.muted ? "image://theme/icon-system-volume-mute" : "image://theme/icon-system-volume"
                             enabled: model.online
                             onClicked: players.setPlayerMuted(model.playerId, !model.muted)
                         }

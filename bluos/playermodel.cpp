@@ -341,6 +341,19 @@ void PlayerModel::setPlayerVolume(const QString &id, int level)
         c->setVolume(level);
 }
 
+bool PlayerModel::groupMuted(const QString &leaderId) const
+{
+    const Client *lead = client(leaderId);
+    if (!lead || !lead->muted())
+        return false;
+    for (const QString &id : memberIds(leaderId)) {
+        const Client *c = client(id);
+        if (c && !c->muted())
+            return false;
+    }
+    return true;
+}
+
 void PlayerModel::setPlayerMuted(const QString &id, bool muted)
 {
     if (Client *c = client(id))

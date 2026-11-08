@@ -87,6 +87,8 @@ public:
     // A player's own volume, for the group page.
     Q_INVOKABLE void setPlayerVolume(const QString &id, int level);
     Q_INVOKABLE void setPlayerMuted(const QString &id, bool muted);
+    // Whether a primary and all its secondaries are muted.
+    Q_INVOKABLE bool groupMuted(const QString &leaderId) const;
     // Makes a remembered player current at once, before discovery answers. With
     // its node id, a later announcement at a new address moves it there.
     Q_INVOKABLE void restoreCurrent(const QString &id, const QString &nodeId);

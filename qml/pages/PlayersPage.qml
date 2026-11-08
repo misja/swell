@@ -74,6 +74,7 @@ Page {
             readonly property bool _leads: model.memberNames.length > 0
             // Re-read when the member names change.
             readonly property var _members: _leads ? (model.memberNames, players.memberIds(_id)) : []
+            readonly property var _names: model.memberNames
             width: list.width
             visible: !_follower
 
@@ -138,7 +139,8 @@ Page {
                 model: entry._members
                 delegate: ListItem {
                     id: member
-                    readonly property int _row: players.indexOf(modelData)
+                    // In the same order as the ids, and updated with the model.
+                    readonly property string _name: entry._names.length > index ? entry._names[index] : modelData
                     contentHeight: Theme.itemSizeSmall
                     highlighted: down || entry._id === players.currentId
                     menu: memberMenu
@@ -167,7 +169,7 @@ Page {
                             rightMargin: Theme.horizontalPageMargin
                             verticalCenter: parent.verticalCenter
                         }
-                        text: member._row >= 0 ? players.nameAt(member._row) : modelData
+                        text: member._name
                         truncationMode: TruncationMode.Fade
                         color: member.highlighted ? Theme.highlightColor : Theme.primaryColor
                     }
