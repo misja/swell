@@ -29,6 +29,7 @@ private slots:
     void presets();
     void inputs();
     void queue();
+    void groupValues();
     void rowActions();
     void parentActionsArePassedOn();
     void favouritesAndUnreadRows();
@@ -189,6 +190,13 @@ void TstQmlRuntime::inputs()
 void TstQmlRuntime::queue()
 {
     QCOMPARE(call("queue"), QStringLiteral("true boolean number string boolean number"));
+}
+
+void TstQmlRuntime::groupValues()
+{
+    // A lone player: what the pages read for a group reaches JavaScript.
+    QCOMPARE(call("group"), QStringLiteral("true 0 false -1 false"));
+    QTRY_COMPARE(call("playerRow"), QStringLiteral("0 true 0  20"));
 }
 
 void TstQmlRuntime::rowActions()

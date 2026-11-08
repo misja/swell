@@ -49,6 +49,7 @@ class Client : public QObject
     Q_PROPERTY(GroupRole groupRole READ groupRole NOTIFY syncStatusChanged)
     Q_PROPERTY(QString groupName READ groupName NOTIFY syncStatusChanged)
     Q_PROPERTY(bool primaryReconnecting READ primaryReconnecting NOTIFY syncStatusChanged)
+    Q_PROPERTY(QStringList secondaryIds READ secondaryIds NOTIFY syncStatusChanged)
     Q_PROPERTY(int groupVolume READ groupVolume NOTIFY statusChanged)
     Q_PROPERTY(bool groupBusy READ groupBusy NOTIFY groupBusyChanged)
 

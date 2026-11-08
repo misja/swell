@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import Swell 1.0
 
 Page {
     id: page
@@ -20,6 +21,20 @@ Page {
         }
     }
 
+    // The player's place in a group (spec 005, canvas G1), worded as azzurro does.
+    function _groupText() {
+        if (!_player) {
+            return ""
+        }
+        if (_player.groupRole === Player.Primary) {
+            return qsTr("Leading %n player(s)", "", _player.secondaryIds.length)
+        }
+        if (_player.groupRole === Player.Secondary) {
+            return _player.primaryReconnecting ? qsTr("Reconnecting…") : qsTr("In another player's group")
+        }
+        return ""
+    }
+
     function _formatTime(secs) {
         if (secs < 0) {
             return ""
@@ -33,6 +48,14 @@ Page {
         anchors.fill: parent
         contentHeight: Math.max(height, layout.height + Theme.paddingLarge)
 
+        PullDownMenu {
+            MenuItem {
+                text: qsTr("Group…")
+                enabled: _player !== null && _player.online
+                onClicked: pageStack.push(Qt.resolvedUrl("GroupPage.qml"))
+            }
+        }
+
         Flow {
             id: layout
             width: parent.width
@@ -45,7 +68,7 @@ Page {
                 PageHeader {
                     visible: !page.isLandscape
                     title: _player ? (_player.name !== "" ? _player.name : _player.host) : ""
-                    description: _player && !_player.online ? qsTr("Not reachable") : ""
+                    description: _player && !_player.online ? qsTr("Not reachable") : page._groupText()
                 }
 
                 Item {
@@ -77,7 +100,7 @@ Page {
                     id: sideHeader
                     visible: page.isLandscape
                     title: _player ? (_player.name !== "" ? _player.name : _player.host) : ""
-                    description: _player && !_player.online ? qsTr("Not reachable") : ""
+                    description: _player && !_player.online ? qsTr("Not reachable") : page._groupText()
                 }
 
                 // Centres the controls in the space left beside (landscape) or

@@ -66,6 +66,8 @@ QVariant PlayerModel::data(const QModelIndex &index, int role) const
         }
         return names;
     }
+    case VolumeRole:
+        return c->volume();
     }
     return QVariant();
 }
@@ -84,6 +86,7 @@ QHash<int, QByteArray> PlayerModel::roleNames() const
         { GroupRoleRole, "groupRole" },
         { LeaderIdRole, "leaderId" },
         { MemberNamesRole, "memberNames" },
+        { VolumeRole, "volume" },
     };
 }
 
@@ -303,6 +306,12 @@ void PlayerModel::leave(const QString &id)
 {
     if (Client *lead = current())
         lead->removeSecondaries({ addressOf(id) });
+}
+
+void PlayerModel::setPlayerVolume(const QString &id, int level)
+{
+    if (Client *c = client(id))
+        c->setVolume(level);
 }
 
 void PlayerModel::onFound(const Discovery::Found &player)

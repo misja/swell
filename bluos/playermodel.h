@@ -42,7 +42,8 @@ public:
         NowPlayingRole,
         GroupRoleRole,      // Client::GroupRole
         LeaderIdRole,       // the primary's id while a secondary it knows; else empty
-        MemberNamesRole     // a primary's secondaries, by name
+        MemberNamesRole,    // a primary's secondaries, by name
+        VolumeRole          // the player's own volume, -1 if fixed or unknown
     };
 
     explicit PlayerModel(QObject *parent = nullptr);
@@ -79,6 +80,8 @@ public:
     // Adds a player to the current player's group, or takes one out of it.
     Q_INVOKABLE void join(const QString &id);
     Q_INVOKABLE void leave(const QString &id);
+    // A player's own volume, for the group page.
+    Q_INVOKABLE void setPlayerVolume(const QString &id, int level);
     // Makes a remembered player current at once, before discovery answers. With
     // its node id, a later announcement at a new address moves it there.
     Q_INVOKABLE void restoreCurrent(const QString &id, const QString &nodeId);

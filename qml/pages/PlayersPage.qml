@@ -66,7 +66,11 @@ Page {
 
         delegate: ListItem {
             id: item
-            contentHeight: Theme.itemSizeMedium
+            // A group is one row, its primary's (spec 005, canvas G3).
+            readonly property bool _follower: model.leaderId !== ""
+            readonly property bool _leads: model.memberNames.length > 0
+            visible: !_follower
+            contentHeight: _follower ? 0 : (_leads ? Theme.itemSizeLarge : Theme.itemSizeMedium)
             menu: model.manual ? removeMenu : null
             highlighted: down || model.playerId === players.currentId
 
@@ -85,7 +89,7 @@ Page {
                 }
                 Label {
                     width: parent.width
-                    text: model.name
+                    text: item._leads ? qsTr("%1 + %2").arg(model.name).arg(model.memberNames.length) : model.name
                     truncationMode: TruncationMode.Fade
                     color: item.highlighted ? Theme.highlightColor : Theme.primaryColor
                 }
@@ -97,6 +101,14 @@ Page {
                     text: model.availability === 1
                           ? (model.nowPlaying !== "" ? model.nowPlaying : model.modelName)
                           : page._availabilityText(model.availability)
+                }
+                Label {
+                    visible: item._leads
+                    width: parent.width
+                    font.pixelSize: Theme.fontSizeExtraSmall
+                    truncationMode: TruncationMode.Fade
+                    color: item.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
+                    text: qsTr("With %1").arg(model.memberNames.join(", "))
                 }
             }
 
