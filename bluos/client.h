@@ -196,6 +196,7 @@ public slots:
     void removeSecondaries(const QStringList &ids);
     // On a primary: sets every player in the group (tell_slaves=1).
     void setGroupVolume(int level);
+    void setGroupMuted(bool muted);
 
 signals:
     void availabilityChanged();

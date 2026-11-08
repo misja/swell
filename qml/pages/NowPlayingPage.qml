@@ -225,7 +225,14 @@ Page {
                         anchors.verticalCenter: parent.verticalCenter
                         icon.source: _player && _player.muted ? "image://theme/icon-m-speaker-mute" : "image://theme/icon-m-speaker"
                         enabled: _player && _player.online
-                        onClicked: _player.setMuted(!_player.muted)
+                        // A leader mutes the whole group, like its slider.
+                        onClicked: {
+                            if (page._leads) {
+                                _player.setGroupMuted(!_player.muted)
+                            } else {
+                                _player.setMuted(!_player.muted)
+                            }
+                        }
                     }
 
                     Slider {
@@ -314,16 +321,15 @@ Page {
                         x: Theme.paddingMedium
                         width: parent.width - Theme.paddingMedium
 
-                        Item {
+                        // This member's own mute.
+                        IconButton {
                             width: mute.width
-                            height: member.height
-                            Icon {
-                                anchors.centerIn: parent
-                                width: Theme.iconSizeSmall
-                                height: width
-                                source: "image://theme/icon-m-speaker"
-                                opacity: Theme.opacityHigh
-                            }
+                            anchors.verticalCenter: parent.verticalCenter
+                            icon.width: Theme.iconSizeSmall
+                            icon.height: Theme.iconSizeSmall
+                            icon.source: model.muted ? "image://theme/icon-m-speaker-mute" : "image://theme/icon-m-speaker"
+                            enabled: model.online
+                            onClicked: players.setPlayerMuted(model.playerId, !model.muted)
                         }
 
                         Slider {

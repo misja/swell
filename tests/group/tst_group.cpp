@@ -39,6 +39,7 @@ private slots:
     void aMembershipChangeElsewhereShows();
     void aLonePlayersRequestsAreUnchanged();
     void aReconnectingSecondary();
+    void groupAndMemberMute();
     void pairHalvesHubsAndZonesCannotJoin();
 
 private:
@@ -206,7 +207,7 @@ void TstGroup::groupVolumeIsKeptApartFromOwnVolume()
     lead->setVolume(12);   // same path, other key: neither replaces the other
     QTRY_COMPARE(m_house->player(0)->requests(QStringLiteral("/Volume")).size(), 2);
     const auto requests = m_house->player(0)->requests(QStringLiteral("/Volume"));
-    QCOMPARE(requests.at(0).target, QByteArray("/Volume?tell_slaves=1&level=40"));
+    QCOMPARE(requests.at(0).target, QByteArray("/Volume?level=40&tell_slaves=1"));
     QCOMPARE(requests.at(1).target, QByteArray("/Volume?level=12"));
     QCOMPARE(m_house->volume(1), 40);
     QCOMPARE(m_house->volume(2), 40);
@@ -438,6 +439,28 @@ void TstGroup::pairHalvesHubsAndZonesCannotJoin()
     QVERIFY(!canJoin(house->id(4)));   // a Hub
     model.setPollAll(false);
     delete house;
+}
+
+void TstGroup::groupAndMemberMute()
+{
+    m_house->group(0, { 1, 2 });
+    QScopedPointer<PlayerModel> model(household(m_house, nullptr));
+    model->setCurrentId(m_house->id(0));
+    QTRY_COMPARE(model->current()->groupRole(), Client::Primary);
+    // Group mute and group volume in one burst: different keys, both sent.
+    model->current()->setGroupMuted(true);
+    model->current()->setGroupVolume(20);
+    QTRY_COMPARE(m_house->player(0)->requests(QStringLiteral("/Volume")).size(), 2);
+    QTRY_COMPARE(m_house->volume(2), 20);
+    model->setWatchGroup(true);
+    QTRY_VERIFY(model->client(m_house->id(1))->muted());
+    QTRY_VERIFY(model->client(m_house->id(2))->muted());
+    // One member alone.
+    model->setPlayerMuted(m_house->id(1), false);
+    QTRY_VERIFY(!model->client(m_house->id(1))->muted());
+    QTest::qWait(300);
+    QVERIFY(model->client(m_house->id(2))->muted());
+    QVERIFY(model->current()->muted());
 }
 
 QTEST_GUILESS_MAIN(TstGroup)

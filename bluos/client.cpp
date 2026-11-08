@@ -241,10 +241,14 @@ void Client::setVolume(int level)
 
 void Client::setGroupVolume(int level)
 {
-    // tell_slaves first: the gate key is the first parameter, so this does
-    // not replace (or get replaced by) the player's own volume.
     send(QStringLiteral("/Volume"),
-         QStringLiteral("tell_slaves=1&level=%1").arg(qBound(0, level, 100)));
+         QStringLiteral("level=%1&tell_slaves=1").arg(qBound(0, level, 100)));
+}
+
+void Client::setGroupMuted(bool muted)
+{
+    send(QStringLiteral("/Volume"),
+         muted ? QStringLiteral("mute=1&tell_slaves=1") : QStringLiteral("mute=0&tell_slaves=1"));
 }
 
 Client::GroupRole Client::groupRole() const
@@ -621,8 +625,12 @@ int Client::msUntilAllowed(const QString &path) const
 // volume changes ends at the last level, but a mute in between is not lost.
 void Client::send(const QString &path, const QString &encodedQuery)
 {
+    // The group's volume and mute (tell_slaves=1) are kept apart from the
+    // player's own, so neither replaces the other.
     const QString name = encodedQuery.section(QLatin1Char('='), 0, 0);
-    const QString key = path + QLatin1Char('?') + name;
+    const bool group = encodedQuery.contains(QLatin1String("tell_slaves=1"));
+    const QString key = path + QLatin1Char('?') + name
+            + (group ? QStringLiteral("&group") : QString());
     Gate &gate = m_gates[key];
     gate.path = path;
     gate.pending = encodedQuery;

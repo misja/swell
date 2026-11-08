@@ -75,6 +75,8 @@ QVariant PlayerModel::data(const QModelIndex &index, int role) const
         return c->id() != m_currentId && c->online() && c->groupRole() == Client::Alone
                 && e.classId != Lsdp::ClassPairSecondary && e.classId != Lsdp::ClassHub
                 && !c->syncStatus().fixedSecondary;
+    case MutedRole:
+        return c->muted();
     }
     return QVariant();
 }
@@ -95,6 +97,7 @@ QHash<int, QByteArray> PlayerModel::roleNames() const
         { MemberNamesRole, "memberNames" },
         { VolumeRole, "volume" },
         { CanJoinRole, "canJoin" },
+        { MutedRole, "muted" },
     };
 }
 
@@ -336,6 +339,12 @@ void PlayerModel::setPlayerVolume(const QString &id, int level)
 {
     if (Client *c = client(id))
         c->setVolume(level);
+}
+
+void PlayerModel::setPlayerMuted(const QString &id, bool muted)
+{
+    if (Client *c = client(id))
+        c->setMuted(muted);
 }
 
 void PlayerModel::onFound(const Discovery::Found &player)

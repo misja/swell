@@ -44,7 +44,8 @@ public:
         LeaderIdRole,       // the primary's id while a secondary it knows; else empty
         MemberNamesRole,    // a primary's secondaries, by name
         VolumeRole,         // the player's own volume, -1 if fixed or unknown
-        CanJoinRole         // can be added to the current player's group
+        CanJoinRole,        // can be added to the current player's group
+        MutedRole
     };
 
     explicit PlayerModel(QObject *parent = nullptr);
@@ -85,6 +86,7 @@ public:
     Q_INVOKABLE void leave(const QString &id, const QString &leaderId = QString());
     // A player's own volume, for the group page.
     Q_INVOKABLE void setPlayerVolume(const QString &id, int level);
+    Q_INVOKABLE void setPlayerMuted(const QString &id, bool muted);
     // Makes a remembered player current at once, before discovery answers. With
     // its node id, a later announcement at a new address moves it there.
     Q_INVOKABLE void restoreCurrent(const QString &id, const QString &nodeId);
