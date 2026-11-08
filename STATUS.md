@@ -22,7 +22,7 @@ Handoff (2026-11-08, evening), towards 0.5.0:
 - Wording check done (Jolla Media player and home catalogs on the phone):
   proposed Favorites (US, as the platform), "Toevoegen aan/Verwijderen uit
   favorieten", remorse texts "Wachtrij wordt gewist" / "Wordt verwijderd";
-  open: Misja chooses "nummer" (proposed) or "liedje". Record the wording
+  Misja chose "nummer(s)" (2026-11-08). Record the wording
   rules in CONTRIBUTING.md. Also add the app icon to README.md.
 - Decided: TuneIn stays as it is (no consolidated favourites across
   services). Members' context: no ellipses in labels.
