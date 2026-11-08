@@ -116,8 +116,8 @@ public:
     // The primary's "host:port" while this player is a secondary.
     QString primaryId() const;
     // The secondaries' "host:port" while this player is a primary.
-    QStringList secondaryIds() const { return groupRole() == Primary ? m_sync.slaves : QStringList(); }
-    bool primaryReconnecting() const { return groupRole() == Secondary && m_sync.masterReconnecting; }
+    QStringList secondaryIds() const { return groupRole() == Primary ? m_sync.secondaries : QStringList(); }
+    bool primaryReconnecting() const { return groupRole() == Secondary && m_sync.primaryReconnecting; }
     // The group's volume on a primary (from /Status), -1 if unknown.
     int groupVolume() const { return m_status.groupVolume; }
     // A group command is being sent; controls for it wait.

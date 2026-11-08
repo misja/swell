@@ -116,9 +116,9 @@ SyncStatus parseSyncStatus(const QByteArray &xml)
     s.mac = a.value(QLatin1String("mac")).toString();
     s.syncStat = a.value(QLatin1String("syncStat")).toString();
     s.group = a.value(QLatin1String("group")).toString();
-    s.zone = a.value(QLatin1String("zone")).toString();
-    s.zoneMaster = toBool(a.value(QLatin1String("zoneMaster")).toString());
-    s.zoneSlave = toBool(a.value(QLatin1String("zoneSlave")).toString());
+    s.fixedGroup = a.value(QLatin1String("zone")).toString();
+    s.fixedPrimary = toBool(a.value(QLatin1String("zoneMaster")).toString());
+    s.fixedSecondary = toBool(a.value(QLatin1String("zoneSlave")).toString());
     s.volume = toInt(a.value(QLatin1String("volume")).toString(), -1);
     s.mute = toBool(a.value(QLatin1String("mute")).toString());
     if (a.hasAttribute(QLatin1String("initialized")))
@@ -128,15 +128,15 @@ SyncStatus parseSyncStatus(const QByteArray &xml)
         const QStringRef n = reader.name();
         if (n == QLatin1String("master")) {
             const QXmlStreamAttributes ma = reader.attributes();
-            s.masterPort = toInt(ma.value(QLatin1String("port")).toString(), 11000);
-            s.masterReconnecting = toBool(ma.value(QLatin1String("reconnecting")).toString());
-            s.masterHost = reader.readElementText().trimmed();
+            s.primaryPort = toInt(ma.value(QLatin1String("port")).toString(), 11000);
+            s.primaryReconnecting = toBool(ma.value(QLatin1String("reconnecting")).toString());
+            s.primaryHost = reader.readElementText().trimmed();
         } else if (n == QLatin1String("slave")) {
             const QXmlStreamAttributes sa = reader.attributes();
             const QString host = sa.value(QLatin1String("id")).toString();
             const int port = toInt(sa.value(QLatin1String("port")).toString(), 11000);
             if (!host.isEmpty())
-                s.slaves.append(QStringLiteral("%1:%2").arg(host).arg(port));
+                s.secondaries.append(QStringLiteral("%1:%2").arg(host).arg(port));
             reader.skipCurrentElement();
         } else {
             reader.skipCurrentElement();
@@ -343,9 +343,9 @@ Inputs parseCaptureInputs(const QByteArray &xml)
 }
 
 
-AddSlave parseAddSlave(const QByteArray &xml)
+GroupAdd parseGroupAdd(const QByteArray &xml)
 {
-    AddSlave s;
+    GroupAdd s;
     QXmlStreamReader reader(xml);
     if (!enterRoot(reader, "addSlave", &s.error))
         return s;

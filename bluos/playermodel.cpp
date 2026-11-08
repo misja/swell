@@ -71,10 +71,10 @@ QVariant PlayerModel::data(const QModelIndex &index, int role) const
     case CanJoinRole:
         // A lone, reachable player other than the current one. Not the
         // second half of a stereo pair or a Hub (LSDP classes 0x0006 and
-        // 0x0008), nor a player in a fixed group (zoneSlave, API 2.2).
+        // 0x0008), nor a player in a fixed group (zoneSlave in /SyncStatus).
         return c->id() != m_currentId && c->online() && c->groupRole() == Client::Alone
-                && e.classId != Lsdp::ClassPlayerPairSlave && e.classId != Lsdp::ClassHub
-                && !c->syncStatus().zoneSlave;
+                && e.classId != Lsdp::ClassPairSecondary && e.classId != Lsdp::ClassHub
+                && !c->syncStatus().fixedSecondary;
     }
     return QVariant();
 }

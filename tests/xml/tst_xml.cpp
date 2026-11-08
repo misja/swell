@@ -22,7 +22,7 @@ private slots:
     void syncStatusSecondary();
     void syncStatusWrongRoot();
     void groupVolumeInStatus();
-    void addSlaveAnswer();
+    void groupAddAnswer();
     void volumeAnswer();
     void fixedGroupFields();
     void statusPrid();
@@ -126,8 +126,8 @@ void TstXml::syncStatusPrimary()
     QCOMPARE(s.volume, 30);
     QCOMPARE(s.syncStat, QStringLiteral("9"));
     QVERIFY(s.initialized);
-    QVERIFY(!s.hasMaster());
-    QCOMPARE(s.slaves, QStringList({ QStringLiteral("192.0.2.11:11000") }));
+    QVERIFY(!s.namesPrimary());
+    QCOMPARE(s.secondaries, QStringList({ QStringLiteral("192.0.2.11:11000") }));
 }
 
 void TstXml::syncStatusSecondary()
@@ -137,10 +137,10 @@ void TstXml::syncStatusSecondary()
         "id=\"192.0.2.11:11000\" initialized=\"false\">"
         "<master port=\"11010\" reconnecting=\"true\">192.0.2.10</master></SyncStatus>");
     QVERIFY2(s.ok, qPrintable(s.error));
-    QVERIFY(s.hasMaster());
-    QCOMPARE(s.masterHost, QStringLiteral("192.0.2.10"));
-    QCOMPARE(s.masterPort, 11010);
-    QVERIFY(s.masterReconnecting);
+    QVERIFY(s.namesPrimary());
+    QCOMPARE(s.primaryHost, QStringLiteral("192.0.2.10"));
+    QCOMPARE(s.primaryPort, 11010);
+    QVERIFY(s.primaryReconnecting);
     QVERIFY(s.mute);
     QCOMPARE(s.volume, 12);
     QVERIFY(!s.initialized);
@@ -383,14 +383,14 @@ void TstXml::groupVolumeInStatus()
     QCOMPARE(parseStatus("<status etag=\"1\"><state>play</state></status>").groupVolume, -1);
 }
 
-void TstXml::addSlaveAnswer()
+void TstXml::groupAddAnswer()
 {
-    const AddSlave a = parseAddSlave("<addSlave><slave port=\"11000\" id=\"192.0.2.11\"/>"
+    const GroupAdd a = parseGroupAdd("<addSlave><slave port=\"11000\" id=\"192.0.2.11\"/>"
                                      "<slave port=\"11010\" id=\"192.0.2.12\"/></addSlave>");
     QVERIFY2(a.ok, qPrintable(a.error));
     QCOMPARE(a.added, QStringList({ QStringLiteral("192.0.2.11:11000"), QStringLiteral("192.0.2.12:11010") }));
-    QVERIFY(parseAddSlave("<addSlave/>").added.isEmpty());
-    QVERIFY(!parseAddSlave("<error><message>x</message></error>").ok);
+    QVERIFY(parseGroupAdd("<addSlave/>").added.isEmpty());
+    QVERIFY(!parseGroupAdd("<error><message>x</message></error>").ok);
 }
 
 void TstXml::volumeAnswer()
@@ -407,9 +407,9 @@ void TstXml::fixedGroupFields()
     const SyncStatus s = parseSyncStatus("<SyncStatus etag=\"1\" name=\"Right\" zone=\"Lounge\" "
                                          "zoneSlave=\"true\" id=\"192.0.2.12:11000\"/>");
     QVERIFY2(s.ok, qPrintable(s.error));
-    QCOMPARE(s.zone, QStringLiteral("Lounge"));
-    QVERIFY(s.zoneSlave);
-    QVERIFY(!s.zoneMaster);
+    QCOMPARE(s.fixedGroup, QStringLiteral("Lounge"));
+    QVERIFY(s.fixedSecondary);
+    QVERIFY(!s.fixedPrimary);
 }
 
 QTEST_GUILESS_MAIN(TstXml)
