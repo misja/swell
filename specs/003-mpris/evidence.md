@@ -5,7 +5,8 @@
 Branch 003-mpris, SDK target SailfishOS-5.1.0.11-aarch64.
 
 - **`make check`:** all nine suites pass: spike 5, lsdp 18, xml 30,
-  client 29, model 26, qml 17 (`qml/Mpris.qml` compiles), qmlruntime 15,
+  client 29, model 26, qml 17 (`qml/Mpris.qml` compiles), qmlruntime 16 (15 before
+  `mprisWithoutAPlayer` from the result review),
   queue 28, browse 26. No compiler warnings.
 - **qmlruntime, four MPRIS tests** (spec AC5): `mprisFollowsTheStatus`,
   `mprisMetadataAndPosition`, `mprisRequestsReachThePlayer` and
@@ -16,8 +17,12 @@ Branch 003-mpris, SDK target SailfishOS-5.1.0.11-aarch64.
 - **Negative control:** `canControl: false` in the SDK copy only. Two tests
   then failed (`mprisFollowsTheStatus` and `mprisOffline`: all can* read
   false). The copy was restored and compared identical to the source.
+  - Only two failed because the request tests emit the signals directly.
+    They bypass amber's own D-Bus checks on canControl and can*
+    (mprisplayer.cpp:132-230); the device check covers that path.
 - **RPM:** harbour-swell-0.3.0-14.aarch64.rpm, sha256
-  4b948e9eca42a7813014b3ce2e8fb47b81e74ad2fc2cccf5bdf14a0283ec47ad.
+  bfe483191c5bfd1da22445170fed12fa8f63bf51955838705ca31af01d0af9d9 (rebuilt
+  after the result review; the first build was 4b948e9e…).
   - Requires `qml(Amber.Mpris)`.
   - Its desktop file has `Permissions=Internet;Audio`.
 - **`sfdk check -s harbour`:** validation succeeded. Its one warning, "file
@@ -45,3 +50,14 @@ Scope/design review, 2026-11-08 (approve with changes):
 | L2 | canRaise needs no separate check | Kept, no separate check. |
 | L3 | Q3 to a device check | AC6. |
 | L4 | "connecting" maps to Stopped | As specified; tested. |
+
+Result review, 2026-11-08 (approve with changes; no High findings):
+
+| ID | Finding | Disposition |
+|---|---|---|
+| M1 | STATUS.md stale (permission decision, no 003 handoff) | Updated. |
+| M2 | Spec status and Q1/Q2 wording stale | Updated; "Decisions (Q1, Q2)". |
+| L1 | No-player case (AC3) and metadata guards untested | `mprisWithoutAPlayer`, a second Mpris with no player. |
+| L2 | Absolute request counts depend on test order | Baselines taken before each request. |
+| L3 | Why the negative control failed only two tests | Noted above. |
+| L4 | No row for this review | This table. |

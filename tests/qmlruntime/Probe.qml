@@ -173,6 +173,18 @@ Item {
     function mprisPosition() {
         return String(mpris.position)
     }
+    // No current player at all (spec 003, AC3).
+    Mpris {
+        id: noPlayer
+        serviceName: "harbour-swell-test"
+        player: null
+    }
+    function mprisNone() {
+        var m = noPlayer.metaData
+        return [noPlayer.playbackStatus, noPlayer.canControl, noPlayer.canPlay, noPlayer.canPause,
+                noPlayer.canGoNext, noPlayer.canGoPrevious, noPlayer.hasShuffle, noPlayer.hasLoopStatus].join(" ")
+                + ":" + [m.title, m.contributingArtist, m.albumTitle, m.artUrl, m.duration].join("|")
+    }
 
     readonly property bool ready: listModel.ready && rootModel.ready && indexModel.ready && artistModel.ready
     function loadAll() {

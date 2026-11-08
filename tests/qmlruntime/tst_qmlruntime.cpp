@@ -39,6 +39,7 @@ private slots:
     void mprisMetadataAndPosition();
     void mprisRequestsReachThePlayer();
     void mprisOffline();
+    void mprisWithoutAPlayer();
 
 private:
     QString call(const char *function, const QVariant &arg = QVariant());
@@ -273,12 +274,15 @@ void TstQmlRuntime::mprisRequestsReachThePlayer()
     QVERIFY(mpris);
     m_player->setStatus("<status etag=\"r1\"><state>play</state></status>");
     QTRY_COMPARE(call("mprisState").left(1), QStringLiteral("1"));
+    const int pauses = m_player->requests(QStringLiteral("/Pause")).size();
+    const int skips = m_player->requests(QStringLiteral("/Skip")).size();
+    const int backs = m_player->requests(QStringLiteral("/Back")).size();
     QVERIFY(QMetaObject::invokeMethod(mpris, "playPauseRequested"));
-    QTRY_COMPARE(m_player->requests(QStringLiteral("/Pause")).size(), 1);
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Pause")).size(), pauses + 1);
     QVERIFY(QMetaObject::invokeMethod(mpris, "nextRequested"));
-    QTRY_COMPARE(m_player->requests(QStringLiteral("/Skip")).size(), 1);
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Skip")).size(), skips + 1);
     QVERIFY(QMetaObject::invokeMethod(mpris, "previousRequested"));
-    QTRY_COMPARE(m_player->requests(QStringLiteral("/Back")).size(), 1);
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Back")).size(), backs + 1);
 
     m_player->setStatus("<status etag=\"r2\"><state>pause</state></status>");
     QTRY_COMPARE(call("mprisState").left(1), QStringLiteral("2"));
@@ -296,6 +300,12 @@ void TstQmlRuntime::mprisOffline()
                               10000);
     QCOMPARE(call("mprisMeta"), QStringLiteral("||||"));
     QCOMPARE(call("mprisPosition"), QStringLiteral("0"));
+}
+
+void TstQmlRuntime::mprisWithoutAPlayer()
+{
+    // Stopped, nothing to do, nothing shown but the name.
+    QCOMPARE(call("mprisNone"), QStringLiteral("0 true false false false false false false:||||"));
 }
 
 int main(int argc, char *argv[])

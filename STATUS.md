@@ -1,8 +1,16 @@
 # Session handoff
 
-Updated: 2026-11-08 (feature 004, browse). Decision owner: Misja Hoebe (@misja).
+Updated: 2026-11-08 (feature 003, MPRIS). Decision owner: Misja Hoebe (@misja).
 
 Current owner / next owner / decision owner: root / root (next session) / Misja.
+
+Now (2026-11-08): feature 003 (MPRIS lock-screen controls, issue #13) on
+branch 003-mpris: specs/003-mpris/{spec,plan,tasks,evidence}.md. Scope/design
+review and result review done (approve with changes, applied). RPM 0.3.0-14
+built and validated; the branch also carries Misja's centred icon. Next:
+device check by Misja, then the PR. Separate open PRs: #12 (LSDP seed);
+branch fix-strip (validator "not stripped" warning), not pushed yet.
+007 (#8) merged in PR #11 (6ddda82).
 
 Objective and acceptance criteria: feature 004 (browse, issue #7) on branch
 004-browse: specs/004-browse/{spec,plan,tasks}.md. UI agreed on the canvas
@@ -44,7 +52,9 @@ Decisions and authorization scope (Misja, 2026-11-06):
 - Name and licence: name Swell; MIT.
 - Targets: build target 5.1.0.11-aarch64 mapped to release target
   5.2.0.18-aarch64.
-- Sandbox: Sailjail OrganizationName io.github.misja, permission Internet only.
+- Sandbox: Sailjail OrganizationName io.github.misja, permission Internet;
+  Audio is added by 003 for the lock-screen controls (Misja, 2026-11-08,
+  Q2 in specs/003-mpris/spec.md, issue #13).
 - Planning: 001–006 as in the spec. Add-by-address is in the MVP; MPRIS is
   003; preset zapping is "later".
 - Branding: BluOS is mentioned descriptively only, with a trademark notice;

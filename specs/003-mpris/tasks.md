@@ -7,4 +7,5 @@
 - [x] Mpris.qml, harbour-swell.qml, packaging.
 - [x] Tests, build, validator, evidence.md.
 - [ ] Device check with Misja.
-- [ ] Separate result review, then a PR.
+- [x] Separate result review (approve with changes); findings applied (evidence.md).
+- [ ] PR.

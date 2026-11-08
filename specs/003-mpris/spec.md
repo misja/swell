@@ -1,8 +1,8 @@
 # Feature specification — 003 MPRIS lock-screen controls
 
-Status: revised 2026-11-08 after the scope/design review (approve with
-changes; findings applied below). Q1 and Q2 answered by Misja (2026-11-08). No
-implementation yet.
+Status: implemented 2026-11-08 (evidence.md); device check pending. Scope
+and design review and result review both approved with changes, applied.
+Q1 and Q2 decided by Misja (2026-11-08).
 
 ## Owner and linked issue
 
@@ -13,7 +13,7 @@ implementation yet.
   and the result before the PR. The permission change makes this
   release-relevant.
 - UI: no page changes. The controls are the system's own lock-screen and
-  events-view media controls, so no canvas is needed (see open question Q1).
+  events-view media controls, so no canvas is needed.
 
 ## Problem
 
@@ -140,19 +140,16 @@ the session bus.
 - Anything that keeps Swell running in the background beyond what it does
   today.
 
-## Open questions for Misja
+## Decisions (Q1, Q2)
 
 - **Q1, Swell takes the lock screen and the headset buttons.** Misja,
-  2026-11-08: agreed. While the
-  BluOS player plays, Swell is "Playing" and owns the system media controls.
+  2026-11-08: agreed. While the BluOS player plays, Swell is "Playing" and
+  owns the system media controls.
   - A local player that starts afterwards (Jolla Media, a podcast app) does
     not take them over.
   - Headset and Bluetooth play/pause/next then control the living-room
     player, not the phone.
   - The controls show only while Swell runs; there is no setting.
-
-  Is that acceptable? There is no cheap way around it, and none is proposed
-  before you decide.
 - **Q2, the Audio permission.** Misja, 2026-11-08: agreed. No explanation in
   the RPM, the changelog or About. Refusing must not stop Swell from
   starting.
