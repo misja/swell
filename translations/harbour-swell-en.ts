@@ -92,29 +92,29 @@
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="51"/>
-        <source>Add to favourites</source>
+        <source>Add to favorites</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="53"/>
-        <source>Remove from favourites</source>
+        <source>Remove from favorites</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="70"/>
         <location filename="../qml/pages/BrowsePage.qml" line="230"/>
         <location filename="../qml/pages/BrowsePage.qml" line="395"/>
-        <source>Favourites</source>
+        <source>Favorites</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="129"/>
-        <source>Added to favourites</source>
+        <source>Added to favorites</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="129"/>
-        <source>Removed from favourites</source>
+        <source>Removed from favorites</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -162,7 +162,7 @@
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="442"/>
-        <source>No favourites yet</source>
+        <source>No favorites yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -182,7 +182,7 @@
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="454"/>
-        <source>Long press an album, artist or track and choose Add to favourites</source>
+        <source>Long press an album, artist or track and choose Add to favorites</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -273,12 +273,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="254"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="255"/>
         <source>Group volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="307"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="308"/>
         <source>Per player</source>
         <translation type="unfinished"></translation>
     </message>
@@ -289,7 +289,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="254"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="255"/>
         <source>Volume</source>
         <translation type="unfinished"></translation>
     </message>

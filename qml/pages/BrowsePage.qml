@@ -48,9 +48,9 @@ Page {
         case "addAll-last":
             return qsTr("Add last")
         case "favourite-add":
-            return qsTr("Add to favourites")
+            return qsTr("Add to favorites")
         case "favourite-delete":
-            return qsTr("Remove from favourites")
+            return qsTr("Remove from favorites")
         }
         return ""
     }
@@ -67,7 +67,7 @@ Page {
     function _open(row) {
         pageStack.push(Qt.resolvedUrl("BrowsePage.qml"), {
             key: row.browseKey,
-            title: row.favourites ? qsTr("Favourites") : row.text,
+            title: row.favourites ? qsTr("Favorites") : row.text,
             headerImage: row.image,
             headerSubtitle: row.text2,
             parentActions: row.actions,
@@ -126,7 +126,7 @@ Page {
         target: page.status === PageStatus.Active ? page._player : null
         onActionDone: {
             if (type.indexOf("favourite") === 0) {
-                app.notify(type === "favourite-add" ? qsTr("Added to favourites") : qsTr("Removed from favourites"))
+                app.notify(type === "favourite-add" ? qsTr("Added to favorites") : qsTr("Removed from favorites"))
                 browseModel.load()   // the menu label, and the Favourites list, change
                 if (favouritesModel.key !== "") {
                     favouritesModel.load()
@@ -227,7 +227,7 @@ Page {
                 visible: page._hasFavourites
 
                 SectionHeader {
-                    text: qsTr("Favourites")
+                    text: qsTr("Favorites")
                 }
 
                 Grid {
@@ -392,7 +392,7 @@ Page {
                     width: parent.width
                     truncationMode: TruncationMode.Fade
                     color: item.highlighted ? Theme.highlightColor : Theme.primaryColor
-                    text: model.favourites ? qsTr("Favourites") : (model.loaded ? model.text : "…")
+                    text: model.favourites ? qsTr("Favorites") : (model.loaded ? model.text : "…")
                 }
                 Label {
                     width: parent.width
@@ -439,7 +439,7 @@ Page {
                 if (browseModel.error !== "") {
                     return qsTr("The player could not show this")
                 }
-                return page.key === "LocalMusic:MG/LocalMusic-Favourites" ? qsTr("No favourites yet")
+                return page.key === "LocalMusic:MG/LocalMusic-Favourites" ? qsTr("No favorites yet")
                                                                          : qsTr("Nothing here")
             }
             hintText: {
@@ -451,7 +451,7 @@ Page {
                     return browseModel.playerError ? browseModel.error : qsTr("No usable answer from the player")
                 }
                 return page.key === "LocalMusic:MG/LocalMusic-Favourites"
-                        ? qsTr("Long press an album, artist or track and choose Add to favourites") : ""
+                        ? qsTr("Long press an album, artist or track and choose Add to favorites") : ""
             }
         }
 

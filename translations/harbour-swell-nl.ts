@@ -92,29 +92,29 @@
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="51"/>
-        <source>Add to favourites</source>
-        <translation>Aan favorieten toevoegen</translation>
+        <source>Add to favorites</source>
+        <translation>Toevoegen aan favorieten</translation>
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="53"/>
-        <source>Remove from favourites</source>
-        <translation>Uit favorieten verwijderen</translation>
+        <source>Remove from favorites</source>
+        <translation>Verwijderen uit favorieten</translation>
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="70"/>
         <location filename="../qml/pages/BrowsePage.qml" line="230"/>
         <location filename="../qml/pages/BrowsePage.qml" line="395"/>
-        <source>Favourites</source>
+        <source>Favorites</source>
         <translation>Favorieten</translation>
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="129"/>
-        <source>Added to favourites</source>
+        <source>Added to favorites</source>
         <translation>Toegevoegd aan favorieten</translation>
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="129"/>
-        <source>Removed from favourites</source>
+        <source>Removed from favorites</source>
         <translation>Verwijderd uit favorieten</translation>
     </message>
     <message>
@@ -162,7 +162,7 @@
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="442"/>
-        <source>No favourites yet</source>
+        <source>No favorites yet</source>
         <translation>Nog geen favorieten</translation>
     </message>
     <message>
@@ -182,8 +182,8 @@
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="454"/>
-        <source>Long press an album, artist or track and choose Add to favourites</source>
-        <translation>Houd een album, artiest of nummer ingedrukt en kies Aan favorieten toevoegen</translation>
+        <source>Long press an album, artist or track and choose Add to favorites</source>
+        <translation>Houd een album, artiest of nummer ingedrukt en kies Toevoegen aan favorieten</translation>
     </message>
 </context>
 <context>
@@ -273,12 +273,12 @@
         <translation>In de groep van een andere speler</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="254"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="255"/>
         <source>Group volume</source>
         <translation>Groepsvolume</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="307"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="308"/>
         <source>Per player</source>
         <translation>Per speler</translation>
     </message>
@@ -289,7 +289,7 @@
         <translation>Niet bereikbaar</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="254"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="255"/>
         <source>Volume</source>
         <translation>Volume</translation>
     </message>
@@ -395,12 +395,12 @@
     <message>
         <location filename="../qml/pages/QueuePage.qml" line="109"/>
         <source>Clearing queue</source>
-        <translation>Wachtrij wissen</translation>
+        <translation>Wachtrij wordt gewist</translation>
     </message>
     <message>
         <location filename="../qml/pages/QueuePage.qml" line="125"/>
         <source>Removing</source>
-        <translation>Verwijderen</translation>
+        <translation>Wordt verwijderd</translation>
     </message>
     <message>
         <location filename="../qml/pages/QueuePage.qml" line="197"/>

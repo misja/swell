@@ -43,6 +43,18 @@ The existing specs are worked examples.
 - Code, comments and documents are in English. User-visible text goes
   through `qsTr`; translations are in `translations/`.
 
+## Wording
+
+- English follows the platform: US spelling ("Favorites"), short labels.
+- Dutch uses the terms of Jolla's own apps where they exist ("Wachtrij",
+  "Toevoegen aan favorieten", "Verwijderen"), and "nummer(s)" for tracks.
+- No ellipsis in menu items, buttons or status texts ("Add player",
+  "Connecting").
+- Remorse texts say what is happening ("Wachtrij wordt gewist",
+  "Wordt verwijderd").
+- Group members are primary and secondary in Swell's own words; the API's
+  master and slave names stay only where the player needs them.
+
 ## Building and testing
 
 Use the [Sailfish SDK](https://docs.sailfishos.org/Tools/Sailfish_SDK/). From
