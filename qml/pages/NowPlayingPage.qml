@@ -305,27 +305,47 @@ Page {
 
                 Repeater {
                     model: page._leads && page._perPlayer ? players : null
-                    delegate: Slider {
-                        id: member
+                    // Each member's own volume: a small speaker where the
+                    // group's mute button is, so the sliders line up under
+                    // the group volume.
+                    delegate: Row {
                         visible: model.playerId === players.currentId
                                  || page._memberIds.indexOf(model.playerId) >= 0
-                        width: parent.width
-                        enabled: model.online && model.volume >= 0
-                        minimumValue: 0
-                        maximumValue: 100
-                        stepSize: 1
-                        label: model.name
-                        valueText: Math.round(value)
+                        x: Theme.paddingMedium
+                        width: parent.width - Theme.paddingMedium
 
-                        Binding {
-                            target: member
-                            property: "value"
-                            value: Math.max(0, model.volume)
-                            when: !member.down
+                        Item {
+                            width: mute.width
+                            height: member.height
+                            Icon {
+                                anchors.centerIn: parent
+                                width: Theme.iconSizeSmall
+                                height: width
+                                source: "image://theme/icon-m-speaker"
+                                opacity: Theme.opacityHigh
+                            }
                         }
-                        onValueChanged: {
-                            if (down) {
-                                players.setPlayerVolume(model.playerId, Math.round(value))
+
+                        Slider {
+                            id: member
+                            width: parent.width - mute.width
+                            enabled: model.online && model.volume >= 0
+                            minimumValue: 0
+                            maximumValue: 100
+                            stepSize: 1
+                            label: model.name
+                            valueText: Math.round(value)
+
+                            Binding {
+                                target: member
+                                property: "value"
+                                value: Math.max(0, model.volume)
+                                when: !member.down
+                            }
+                            onValueChanged: {
+                                if (down) {
+                                    players.setPlayerVolume(model.playerId, Math.round(value))
+                                }
                             }
                         }
                     }
