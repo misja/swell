@@ -78,7 +78,7 @@ Result review, 2026-11-08 (approve with changes):
 | M4 | groupPage flag robustness | Set for Activating or Active, cleared otherwise and on destruction. The mini-player is not shown on the group page, so `openNowPlaying` needs no case. |
 | M5 | The Python household lacked two behaviours | `--refuse=N` and `--self-master`. |
 | M6 | Test gaps | Added: membership change elsewhere, a lone player's request paths and counts, reconnecting, the XML answers. Runtime QML for a grouped player is not added (the QML test has one fake player); device check. |
-| L1 | Persistence of a followed leader | Open: Misja to decide. |
+| L1 | Persistence of a followed leader | Misja (2026-11-08): following the leader, also after the group ends, is the intended behaviour. |
 | L2 | A timing margin in a test | Delay 1000 ms, wait 300 ms. |
 | L3 | Ordering between the two SyncStatus reads | Accepted; heals within a second. |
 | L4 | Group volume with a fixed-volume primary | The slider is hidden unless a level is known. |
