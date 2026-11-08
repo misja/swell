@@ -9,6 +9,6 @@
 - [x] Typed presets, inputs, letters, moreLinks, actions; QML shaping in src/ (option 3).
 - [x] A1, A2, A3 with tests; C2.
 - [x] Tests, build, validator, evidence.md.
-- [ ] Device check with Misja.
+- [x] Device check with Misja: 0.3.0-13 works (2026-11-08).
 - [x] Separate result review (approve with changes); findings applied (evidence.md).
 - [ ] PR.
