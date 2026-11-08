@@ -6,6 +6,13 @@ These are operational instructions for coding assistants. Contributors should
 start with CONTRIBUTING.md. Misja Hoebe (@misja) is the human maintainer and
 retains responsibility for merge and release decisions.
 
+For Swell: this file is the Sailfish workspace baseline
+(https://github.com/misja/sailfish-workspace), copied as the workspace asks.
+CONTRIBUTING.md describes how Swell is built, tested and changed. Swell has
+no ADRs; its decisions are in specs/. STATUS.md is the maintainer's working
+handoff. The rules on OBS, runtime isolation and crypto do not apply to
+Swell.
+
 - Read STATUS.md and the relevant accepted ADR before project work. Project artifacts are English; use the maintainer’s language for discussion.
 - AI tools may propose changes and run authorized checks. The maintainer reviews changes before merge. Identify automated checks, assistant review and human review accurately; assistant agreement is not a human audit. AI tools cannot approve their own work, waive acceptance criteria or authorize deployment/publication.
 - Work autonomously on routine reversible local work within approved scope. Software installation, remote repository creation/push, OBS writes/publication, device/system/destructive changes and security exceptions require explicit scoped human approval. Architecture approval does not grant these permissions.
@@ -32,9 +39,9 @@ do not substitute for the separate assessment. Resolve findings first; report an
 unavailable required reviewer rather than silently proceeding. Stay autonomous
 within the reviewed scope; do not add speculative infrastructure or duplicate
 process artifacts. Separate assistant review is not a human security audit or
-release approval. Shared role details: sailfish-workspace/docs/development/agent-governance.md
-(resolve from the workspace parent); child repositories retain this gate even
-when cloned alone.
+release approval. Shared role details:
+https://github.com/misja/sailfish-workspace/blob/main/docs/development/agent-governance.md;
+child repositories retain this gate even when cloned alone.
 
 ## Research upstream and platform practice before design
 

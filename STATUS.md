@@ -1,5 +1,8 @@
 # Session handoff
 
+The maintainer's working handoff between sessions. Contributors: see
+CONTRIBUTING.md.
+
 Updated: 2026-11-08 (feature 003, MPRIS). Decision owner: Misja Hoebe (@misja).
 
 Current owner / next owner / decision owner: root / root (next session) / Misja.
