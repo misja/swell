@@ -139,3 +139,15 @@ Checked in the SDK container on 127.0.0.1:
   Settings step.
 - Leaving the update page asks again (`PlayerWebPage.player`).
 - `make check` passes again on all eleven suites (8e0a7be).
+
+## A fault on main, fixed here (Misja: part of the PR, 2026-11-09)
+
+- **The fault:** after `setStatusPolling(false)`, /Status went on being
+  read. The aborted poll failed, `failed()` rescheduled it, and
+  `pollStatus()` did not check `m_statusPolling`. The result review found
+  it on main and on the branch alike (L-B).
+- **The fix:**
+  - `pollStatus()` returns while status polling is off;
+  - an aborted poll's reply and an in-flight probe no longer change
+    availability, which then comes from the sync watch.
+- **Test:** `tst_client` `statusPollingOffStopsStatusReads`.

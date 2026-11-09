@@ -695,7 +695,7 @@ void Client::schedulePoll(int delayMs)
 
 void Client::pollStatus()
 {
-    if (!m_running || m_statusReply || m_probing)
+    if (!m_running || !m_statusPolling || m_statusReply || m_probing)
         return;
     if (m_availability == Updating) {
         probeSyncStatus(Updating);
@@ -724,8 +724,9 @@ void Client::onStatusReply(QNetworkReply *reply)
     reply->deleteLater();
     if (m_statusReply == reply)
         m_statusReply = nullptr;
-    // While the player updates, /SyncStatus decides (probeSyncStatus).
-    if (!m_running || m_availability == Updating)
+    // While the player updates, /SyncStatus decides (probeSyncStatus). A poll
+    // aborted by setStatusPolling(false) says nothing about the player.
+    if (!m_running || !m_statusPolling || m_availability == Updating)
         return;
 
     if (reply->error() != QNetworkReply::NoError) {
@@ -892,7 +893,8 @@ void Client::probeSyncStatus(Availability otherwise)
     m_probing = true;
     fetch(QStringLiteral("/SyncStatus"), QString(), [this, otherwise](const QByteArray &body) {
         m_probing = false;
-        if (!m_running)
+        // Without status polling, the sync watch decides availability.
+        if (!m_running || !m_statusPolling)
             return;
         const SyncStatus sync = parseSyncStatus(body);
         if (sync.upgradeStage > 0 || (m_availability == Updating && !sync.ok)) {
