@@ -5,7 +5,7 @@ TARGET = harbour-swell
 
 CONFIG += sailfishapp
 QT += network
-# Sailfish WebView: apps link against qtmozembed (its documentation, spec 006).
+# Sailfish WebView < 1.8 asks apps to link against qtmozembed; see issue #32.
 PKGCONFIG += qt5embedwidget
 
 VERSION = 0.6.0
