@@ -60,11 +60,22 @@ they are out of this spec (see "Out of scope").
    for the current player at start and now and then, never during playback
    control. When `available="true"`, Swell shows a notice with the offered
    version where the player sends one.
-2. **Update through the player's own page.** The notice opens
-   `http://<player>/upgrade` with `Qt.openUrlExternally`, so the Sailfish
-   browser shows the player's page and the player runs the update. Swell
-   never sends `upgrade=this`. This is what the official app does, and the
-   page is the player's own.
+2. **Update through the player's own page, in the app.** The notice opens
+   `http://<player>/upgrade` in a page with Sailfish WebView
+   (`Sailfish.WebView 1.0`), so the player's page shows inside Swell, as in
+   the official app's web view, and the player runs the update. Swell never
+   sends `upgrade=this`.
+   - Misja prefers staying in the app (2026-11-09).
+   - Harbour allows it: `allowed_qmlimports.conf:13` (`Sailfish.WebView
+     1.0`), `allowed_libraries.conf:25` (`libsailfishwebengine`),
+     `allowed_permissions.conf:13` (`WebView`), and
+     `allowed_requires.conf:36` (`sailfish-components-webview-qt5`).
+   - It costs one more Sailjail permission (`WebView`, asked at first start)
+     and a dependency.
+   - The alternative, the Sailfish browser through `Qt.openUrlExternally`,
+     needs neither.
+   - The same web view could later show the player's own pages listed in
+     the settings tree (WiFi, network shares).
 3. While `inProgress="true"`, Swell says the player is updating and does not
    count the silence as a fault.
 
