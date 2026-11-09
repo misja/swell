@@ -3,9 +3,9 @@
 The maintainer's working handoff between sessions. Contributors: see
 CONTRIBUTING.md.
 
-Updated: 2026-11-09 (released 0.6.0). Decision owner: Misja Hoebe (@misja).
+Updated: 2026-11-09 (released 0.6.0). Decision owner: the maintainer.
 
-Current owner / next owner / decision owner: root / root (next session) / Misja.
+Current owner / next owner / decision owner: root / root (next session) / the maintainer.
 
 Released 0.6.0 (2026-11-09): annotated tag v0.6.0 on 5295b73, GitHub
 release https://github.com/misja/swell/releases/tag/v0.6.0, built from a
@@ -17,8 +17,8 @@ updates (006, #28/#29): a notice on Home and the player's own update page in
 the app (Sailfish WebView, new `WebView` permission and webview
 requirements); Settings for the current player; /Status polling now stops
 when switched off. Q0 (player settings such as "Hide source" per input,
-only through the undocumented settings tree) is Misja's open decision.
-Chum waits for an OBS account (Misja, 2026-11-09);
+only through the undocumented settings tree) is the maintainer's open decision.
+Chum waits for an OBS account (the maintainer, 2026-11-09);
 then screenshots and the changelog approach (guide in ~/code/sailfish/CHUM.md).
 
 Released 0.5.0 (2026-11-08): annotated tag v0.5.0 on 3fdd246, GitHub
@@ -40,7 +40,7 @@ not pushed: specs/005-grouping/{spec,plan,tasks}.md. Scope/design review done
 (option B: a group is one player; no Group all; azzurro's role lines).
 Mini-player and cover unchanged. Built: library, model, QML,
 tests (group suite), RPM 0.4.0-2 installed. Result review applied
-(H1 recursion, H2 candidates, M1–M6). Next: Misja's device check with the
+(H1 recursion, H2 candidates, M1–M6). Next: the maintainer's device check with the
 Python household on the host LAN (approval each run), then the PR. Chum: metadata merged
 (#22); OBS account, screenshots and the changelog approach still open; the
 route is in ~/code/sailfish/CHUM.md (not in a repo).
@@ -48,24 +48,24 @@ route is in ~/code/sailfish/CHUM.md (not in a repo).
 Now (2026-11-08): feature 003 (MPRIS lock-screen controls, issue #13) on
 branch 003-mpris: specs/003-mpris/{spec,plan,tasks,evidence}.md. Scope/design
 review and result review done (approve with changes, applied). RPM 0.3.0-14
-built and validated; the branch also carries Misja's centred icon. Device
-check by Misja passed (2026-11-08). Next: the PR. Merged: #12 (LSDP seed,
+built and validated; the branch also carries the maintainer's centred icon. Device
+check by the maintainer passed (2026-11-08). Next: the PR. Merged: #12 (LSDP seed,
 29a8e66) and #14 (binary fully stripped, d90f50e).
 007 (#8) merged in PR #11 (6ddda82).
 
 Objective and acceptance criteria: feature 004 (browse, issue #7) on branch
 004-browse: specs/004-browse/{spec,plan,tasks}.md. UI agreed on the canvas
 (B1–B9, N1–N5). Separate reviews done and findings fixed (scope/design,
-result, navigation, covers). Device check by Misja passed on 0.3.0-12
+result, navigation, covers). Device check by the maintainer passed on 0.3.0-12
 (2026-11-08), including navigation (decision 12) and cover placeholders
-(decision 13). App icon (#3): Misja's sound-bar design, source
+(decision 13). App icon (#3): the maintainer's sound-bar design, source
 icons/harbour-swell.svg, accepted on the device. 004 merged (PR #9, f48abda,
 2026-11-08); #7 and #3 closed. Now: issue #8 on branch 007-bluos-library,
 specs/007-bluos-library. API and C/C++ check done; scope/design review and
-re-check done (both approve with changes, applied); Misja chose option 3
+re-check done (both approve with changes, applied); the maintainer chose option 3
 (typed library, QML shaping in src/). Built: runtime QML test, typed
 interfaces, A1-A3, C2; tests, RPM 0.3.0-13 and validator pass. Result review
-applied; Misja's device check passed (2026-11-08). PR open. Decisions: browse reads unpaced; no recently played
+applied; the maintainer's device check passed (2026-11-08). PR open. Decisions: browse reads unpaced; no recently played
 and no extra state in Swell (published API only); no header per letter.
 Issue #8 (typed bluos/ interfaces) follows 004. Workspace principles 1.2.0
 (Sailfish UI check in reviews) merged (sailfish-workspace#19, 13985f2).
@@ -90,7 +90,7 @@ Artifacts and evidence:
   queue id changes on every modification, including a delete (as API
   §2.1/§5.1 say; azzurro's note was wrong).
 
-Releases (Misja, 2026-11-08):
+Releases (the maintainer, 2026-11-08):
 - 0.4.0 published 2026-11-08: tag v0.4.0 (annotated) on 533e61a, GitHub
   release https://github.com/misja/swell/releases/tag/v0.4.0. Built from a
   clean checkout of the tag on SailfishOS-5.1.0.11; both RPMs validated;
@@ -110,12 +110,12 @@ Releases (Misja, 2026-11-08):
   directory, and leftover objects from another architecture break
   `%install`.
 
-Decisions and authorization scope (Misja, 2026-11-06):
+Decisions and authorization scope (the maintainer, 2026-11-06):
 - Name and licence: name Swell; MIT.
 - Targets: build target 5.1.0.11-aarch64 mapped to release target
   5.2.0.18-aarch64.
 - Sandbox: Sailjail OrganizationName io.github.misja, permission Internet;
-  Audio is added by 003 for the lock-screen controls (Misja, 2026-11-08,
+  Audio is added by 003 for the lock-screen controls (the maintainer, 2026-11-08,
   Q2 in specs/003-mpris/spec.md, issue #13).
 - Planning: 001–006 as in the spec. Add-by-address is in the MVP; MPRIS is
   003; preset zapping is "later".
@@ -124,10 +124,10 @@ Decisions and authorization scope (Misja, 2026-11-06):
 - Languages: English is the source; Dutch is maintained; `qsTr` through
   `sailfishapp_i18n`.
 - Approved:
-  - the private GitHub repo;
+  - the GitHub repo (private at first, public since 2026-11-08);
   - pushes and PRs for swell and for sailfish-workspace#18 (both merged 2026-11-06);
-  - the 002 PRs (#5, #6), merged on Misja's instruction 2026-11-06;
-  - device installs through the SDK-registered device, which Misja confirms on
+  - the 002 PRs (#5, #6), merged on the maintainer's instruction 2026-11-06;
+  - device installs through the SDK-registered device, which the maintainer confirms on
     the phone.
 - Not approved: publication (Harbour, Chum, OBS).
 
@@ -139,23 +139,23 @@ Reviews (separate assistant agents; not a human audit):
   review of the queue-id adoption and two checks of its implementation; all
   findings resolved (details in specs/002-queue/evidence.md).
 
-App icon: parked by Misja on 2026-11-06 (issue #3, on the board as Todo).
+App icon: parked by the maintainer on 2026-11-06 (issue #3, on the board as Todo).
 Three rounds of wave concepts were tried and the wave motif was rejected as a
 whole. Learnings and options are in issue #3. The template placeholder stays.
 
 Open items:
 - Release-target ID: the device runs 5.2.0.22, the registry names 5.2.0.18.
   Runtime evidence on 5.2: 0.3.0-14 works on 5.2.0.22, including MPRIS
-  (Misja, 2026-11-08; specs/003-mpris/evidence.md).
+  (the maintainer, 2026-11-08; specs/003-mpris/evidence.md).
 - After an icon change, the launcher keeps the old icon until lipstick
-  restarts (`systemctl --user restart lipstick`, with Misja's approval);
+  restarts (`systemctl --user restart lipstick`, with the maintainer's approval);
   the installed PNGs were already correct (2026-11-07).
 - `sfdk deploy --sdk` fails on the device (no D-Bus session bus over SSH). Use
   the deploy steps below.
 - Connections to the player: 8 seen at once (expected from Qt pools). Watch
   over time.
 - Feature 006 is firmware updates (specs/006-firmware); player settings are Q0.
-- Input for 004 (Misja, 2026-11-06): the official app's main sections are
+- Input for 004 (the maintainer, 2026-11-06): the official app's main sections are
   Home, Favourites, Music, Players and Search. Consider them, especially
   Favourites, when designing browse/search.
 - Accepted: the validator warning "binary not stripped".
@@ -171,6 +171,7 @@ rpm/harbour-swell.spec for each device install.
 
 Deploy: `sfdk -c target=… -c device="Xperia 10 II - Dual SIM (ARM 64bit)"
 deploy --manual`, then over SSH with the SDK key
-(~/SailfishOS/vmshare/ssh/private_keys/sdk) to defaultuser@192.168.1.44:
+(~/SailfishOS/vmshare/ssh/private_keys/sdk) to `defaultuser@<phone>` (real values: the local values file outside
+the repository):
 `DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/dbus/user_bus_socket sdk-deploy-rpm ~/RPMS/<rpm>`.
-Misja confirms the install on the phone.
+The maintainer confirms the install on the phone.

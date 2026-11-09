@@ -2,12 +2,12 @@
 
 Status: implemented 2026-11-08 (evidence.md); device check pending. Scope
 and design review and result review both approved with changes, applied.
-Q1 and Q2 decided by Misja (2026-11-08).
+Q1 and Q2 decided by the maintainer (2026-11-08).
 
 ## Owner and linked issue
 
 - Accountable owner: root (primary assistant session).
-- Decision owner: Misja Hoebe (@misja).
+- Decision owner: the maintainer.
 - Issue: https://github.com/misja/swell/issues/13.
 - Review: a separate agent reviews scope and design before implementation,
   and the result before the PR. The permission change makes this
@@ -127,7 +127,7 @@ the session bus.
    - `Permissions=Internet;Audio` in the desktop file;
    - `Requires: qml(Amber.Mpris)` in the spec, as gPodder and sailcast do.
      No BuildRequires: the tests run in the SDK target, not in `%check`.
-3. **Text:** none. Misja chose no explanation of Audio (Q2).
+3. **Text:** none. The maintainer chose no explanation of Audio (Q2).
 
 ## Out of scope
 
@@ -142,7 +142,7 @@ the session bus.
 
 ## Decisions (Q1, Q2)
 
-- **Q1, Swell takes the lock screen and the headset buttons.** Misja,
+- **Q1, Swell takes the lock screen and the headset buttons.** the maintainer,
   2026-11-08: agreed. While the BluOS player plays, Swell is "Playing" and
   owns the system media controls.
   - A local player that starts afterwards (Jolla Media, a podcast app) does
@@ -150,7 +150,7 @@ the session bus.
   - Headset and Bluetooth play/pause/next then control the living-room
     player, not the phone.
   - The controls show only while Swell runs; there is no setting.
-- **Q2, the Audio permission.** Misja, 2026-11-08: agreed. No explanation in
+- **Q2, the Audio permission.** the maintainer, 2026-11-08: agreed. No explanation in
   the RPM, the changelog or About. Refusing must not stop Swell from
   starting.
   - What Sailjail does (source sailfishos/sailjail b64134d, checked
@@ -163,7 +163,7 @@ the session bus.
       only Permissions, OrganizationName, ApplicationName and ExecDBus.
     - Once launching is allowed, the granted set can be changed per
       permission (`SetGrantedPermissions`).
-  - So Swell behaves as Misja proposed: MPRIS is active only when Audio is
+  - So Swell behaves as the maintainer proposed: MPRIS is active only when Audio is
     granted. Without it, owning the D-Bus name fails, and amber 1.2.9 then
     does not register, while the object and the app keep working
     (`registerService` returns false). No extra code is needed. The device
@@ -192,7 +192,7 @@ the session bus.
    - requests: playPause, next and previous reach `/Pause` or `/Play`,
      `/Skip` and `/Back`;
    - offline: canPlay and canPause are false, and the metadata is cleared.
-6. A device check by Misja covers:
+6. A device check by the maintainer covers:
    - the lock screen and the events view, including cover art over http;
    - playing from the official app while the screen is locked;
    - the first-start permission prompt and an upgrade from 0.3.0-13;

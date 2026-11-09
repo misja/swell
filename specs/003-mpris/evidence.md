@@ -30,17 +30,17 @@ Branch 003-mpris, SDK target SailfishOS-5.1.0.11-aarch64.
 - **`sfdk check -s harbour`:** validation succeeded. Its one warning, "file
   is not stripped", was already in the 001, 002 and 004 validator logs.
 - Translations unchanged.
-- **Same branch:** Misja's corrected icon (the sound bars centred, a
+- **Same branch:** the maintainer's corrected icon (the sound bars centred, a
   translate of 1.005). The PNGs were rendered again with QSvgRenderer at
   86, 108, 128 and 172 px.
 
 ## Device check (2026-11-08)
 
-Misja checked 0.3.0-14 on the Xperia 10 II (amber-qml-plugin-mpris
+The maintainer checked 0.3.0-14 on the Xperia 10 II (amber-qml-plugin-mpris
 1.2.10). The phone was on Sailfish OS 5.2.0.20 at install and reported
-5.2.0.22 after an OTA the same day. Misja confirmed that MPRIS also works
-on 5.2.0.22 (2026-11-08) and reported "werkt" (works). He was given
-the AC6 list before the check:
+5.2.0.22 after an OTA the same day. The maintainer confirmed that MPRIS also works
+on 5.2.0.22 (2026-11-08) and reported "werkt" (works). The AC6 list was
+given before the check:
 - the permission prompt;
 - the lock screen and the events view;
 - controls while locked, and changes from the official app;
@@ -55,7 +55,7 @@ Scope/design review, 2026-11-08 (approve with changes):
 
 | ID | Finding | Disposition |
 |---|---|---|
-| H1 | Swell takes the lock screen and headset keys while BluOS plays | Q1, agreed by Misja; device check AC6. |
+| H1 | Swell takes the lock screen and headset keys while BluOS plays | Q1, agreed by the maintainer; device check AC6. |
 | H2 | canControl, hasShuffle, hasLoopStatus lock after the first GetAll | Literals in Mpris.qml, with a comment. |
 | H3 | Service name gets `.instance<pid>`; empty-name trap | Spec facts corrected; serviceName is a literal. |
 | M1 | Position as a binding; -1 when unknown | Set in `onPositionRequested`, clamped to 0. |

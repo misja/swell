@@ -7,9 +7,9 @@ may start.
 ## Owner and linked issue
 
 - Accountable owner: root (primary assistant session).
-- Decision owner: Misja Hoebe (@misja).
+- Decision owner: the maintainer.
 - Issue: https://github.com/misja/swell/issues/7.
-- UI: design canvas page "Browse (004)", boards B1–B7, agreed by Misja on
+- UI: design canvas page "Browse (004)", boards B1–B7, agreed by the maintainer on
   2026-11-06.
 - Review: a separate agent reviews scope and design together before
   implementation, and the result before the PR.
@@ -20,9 +20,9 @@ After 002, a user can play presets and inputs and manage the queue, but
 cannot pick an album from the local library, find a radio station or search.
 The official app offers this, but mixes inputs, services and hand-offs in one
 "Music sources" page and shows favourites per service through a dropdown,
-which Misja finds unclear.
+which the maintainer finds unclear.
 
-## Decisions (Misja, 2026-11-06)
+## Decisions (the maintainer, 2026-11-06)
 
 1. Entry: a pulley item "Browse" on Home.
 2. One "Favourites" entry at the top of Browse.
@@ -31,28 +31,28 @@ which Misja finds unclear.
    the Spotify app, is left out. Inputs stay on Home.
 4. The undocumented `/ui/` screens, which the official app uses and azzurro
    reproduces (azzurro docs/protocol.md, "The server-driven UI", commit
-   9375da6), are not used. Any exception goes to Misja as a separate decision.
+   9375da6), are not used. Any exception goes to the maintainer as a separate decision.
 5. A clean, Sailfish-native design; the official app's structure is not
    copied.
 6. UI (canvas): Browse sits nearest the content in Home's pulley (About,
    Players, Browse). Rows have no chevrons, and category rows such as search
    results have no icons.
 7. Letter lists work like the People app: one list with a letter index on the
-   side. There is no header per letter (Misja, 2026-11-06: it clutters the
+   side. There is no header per letter (the maintainer, 2026-11-06: it clutters the
    list); the index lights the letter of the part in view. The player's `#`
    section (titles starting with a digit or sign) is left out of the index
-   (Misja, 2026-11-07); those rows stay at the top of the list.
+   (the maintainer, 2026-11-07); those rows stay at the top of the list.
 8. The album page shows the cover beside the title. Tapping a track plays the
    album from that track (`autoplayURL`). The API calls the choice between
-   `playURL` and `autoplayURL` a user preference; Misja chose this behaviour.
-9. Device feedback on 0.3.0-1 (Misja, 2026-11-06; canvas B3, B4, B8, B9):
+   `playURL` and `autoplayURL` a user preference; the maintainer chose this behaviour.
+9. Device feedback on 0.3.0-1 (the maintainer, 2026-11-06; canvas B3, B4, B8, B9):
     - **Letter index:** it runs over the full height, as in the People app, with
       a star above A that jumps to the favourites at the top of the list.
     - **Favourites on top:** favourite albums show as a cover grid at the top of
       Albums; favourite artists as rows at the top of Artists. They come from
       the Library favourites (`category=FAVOURITES`), only when the Library
       menu offers them.
-    - **No "recently played":** the documented API has none, and Misja keeps to
+    - **No "recently played":** the documented API has none, and the maintainer keeps to
       the published API. The undocumented `/ui/` screens are not used.
     - **Artist page:** an artist opens straight on its albums (the first link of
       the artist's menu). The other links (Songs) are in the pulley. Tapping an
@@ -60,7 +60,7 @@ which Misja finds unclear.
     - **Covers per track:** song lists outside an album (an artist's songs,
       Library songs, search results) show each track's cover. An album's own
       page keeps track numbers and the cover in its header.
-11. No extra state in Swell (Misja, 2026-11-06): favourites and everything
+11. No extra state in Swell (the maintainer, 2026-11-06): favourites and everything
     else browsed live on the player. Swell stores on the phone only what it
     already did (manual players, the current player).
 10. Request pacing: the one-second rule stays where the API sets it, on status
@@ -68,7 +68,7 @@ which Misja finds unclear.
    the same resource less than one second apart"). Browse reads are not
    interval-limited; each page has at most one request in flight. Commands
    (volume, play, …) keep their current gate; changing that is outside 004.
-12. The way back (Misja, 2026-11-07; canvas N1–N5). Going in stays as it is;
+12. The way back (the maintainer, 2026-11-07; canvas N1–N5). Going in stays as it is;
     the return gets two shortcuts made from existing parts:
     - **Play returns to Home:** Play album, Play now, Shuffle, and tapping a
       track or station start playback and pop the stack to Home in one step
@@ -77,17 +77,17 @@ which Misja finds unclear.
     - **Mini-player on Browse and Search:** the docked mini-player, already on
       Home and Players, also shows on every Browse and Search page; a tap pops
       to Home and goes on to Now Playing. It stays open between Browse pages.
-    - **Mini-player on Queue and About too** (Misja, 2026-11-07): the original
+    - **Mini-player on Queue and About too** (the maintainer, 2026-11-07): the original
       map (canvas board 6) put it on every page except Now Playing; 001 and
       002 had left it at Home and Players. From the Queue a tap goes back to
       Now Playing; from About via the page About was opened from.
     - Library stays one entry in Browse (not flattened).
-13. Covers while they load (Misja, 2026-11-07, after seeing gaps when
+13. Covers while they load (the maintainer, 2026-11-07, after seeing gaps when
     scrolling through all albums): the placeholder of Jolla's Media player
     (`AlbumArt.qml`: a faint gradient with `icon-m-media-albums`; artists,
     playlists and stations get the theme's artists, playlists and radio
     icons) until a cover is ready or when there is none, then a short fade.
-    Misja (2026-11-08): everywhere images load from the player or the
+    The maintainer (2026-11-08): everywhere images load from the player or the
     internet. Radio Paradise's stations (`audio` rows, 512 px covers from
     img.radioparadise.com) get the radio icon; TuneIn's menu icons a bare
     tile; Home's preset tiles the radio icon; the mini-player the songs icon.
@@ -239,7 +239,7 @@ that are not seen through `/Browse`.
    - an error is reported.
 3. **QML compile test** covers the new pages.
 4. **RPM:** it builds and passes the Harbour validator, and Dutch is complete.
-5. **Device check by Misja:** browse the library, play an album, add next and
+5. **Device check by the maintainer:** browse the library, play an album, add next and
    last, favourite, search, and radio.
 6. **A separate result review** before the PR.
 
@@ -261,12 +261,12 @@ that are not seen through `/Browse`.
 - **Songs:** 15724; a letter is paged at 50 per reply with a `nextKey` (T: 1912
   songs).
 - **The letter index** (the counts) is 4.6 KB, in 0.01 s.
-- Misja's device check watches scrolling and letter jumps in Albums and Songs.
+- The maintainer's device check watches scrolling and letter jumps in Albums and Songs.
 
 ## Open questions
 
 - The Favourites key: Swell shows Favourites only when the Library menu has an
-  item with `browseKey` `LocalMusic:MG/LocalMusic-Favourites`. Misja's device
+  item with `browseKey` `LocalMusic:MG/LocalMusic-Favourites`. The maintainer's device
   check includes another player language, to confirm that the key does not
   depend on the language.
 - Whether other services return favourites through `/Browse` (TuneIn when

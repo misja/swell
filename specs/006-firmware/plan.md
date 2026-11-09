@@ -1,7 +1,7 @@
 # Plan — 006 firmware updates
 
 Status: revised 2026-11-09 after the scope/design review; the spec's scope
-and findings H1, M1–M7, L1–L5 apply. Open: Misja's approvals listed in tasks.md.
+and findings H1, M1–M7, L1–L5 apply. Open: the maintainer's approvals listed in tasks.md.
 
 ## Library (`bluos/`)
 

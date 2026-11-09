@@ -7,19 +7,19 @@ design canvas, page "Firmware (006)".
 ## Owner and linked issue
 
 - Accountable owner: root (primary assistant session).
-- Decision owner: Misja Hoebe (@misja).
+- Decision owner: the maintainer.
 - Issue: misja/swell#28.
 - Review: a separate agent reviews scope and design before implementation,
   and the result before the PR. A firmware update is release-relevant for
   the user's device, so the result review is required.
-- Scope agreed by Misja (2026-11-09):
+- Scope agreed by the maintainer (2026-11-09):
   - firmware updates only;
   - the read-only `upgrade=check` is acceptable (Q1);
   - the update runs in the app, in a web view (2026-11-09).
 
 ## Problem
 
-Firmware updates are one of the things that keep Misja on the official BluOS
+Firmware updates are one of the things that keep the maintainer on the official BluOS
 Android app. Swell should tell the user when a player has an update and let
 them install it, without leaving the app and without Swell itself driving
 the update.
@@ -46,11 +46,11 @@ the update.
     265 s. The official app holds no long poll then and reads /SyncStatus
     every 5 s. azzurro saw a `version` attribute on SyncStatus afterwards
     (not in the API).
-- **On Misja's NAD C 379** (firmware 4.18.18; read-only, with his approval):
+- **On a NAD C 379** (firmware 4.18.18; read-only, with the maintainer's approval):
   - `GET :11000/upgrade?upgrade=check` →
     `<upgrade inProgress="false" available="false">check</upgrade>`. There is
     no `version` attribute when nothing is offered.
-  - `GET http://192.168.1.72/upgrade` is an HTML page titled "Upgrade" that
+  - `GET http://<player>/upgrade` is an HTML page titled "Upgrade" that
     says "No update available."
 - **Harbour** (validator in the SDK target 5.1.0.11):
   - `allowed_qmlimports.conf:13` allows `Sailfish.WebView 1.0`;
@@ -95,16 +95,16 @@ the update.
    - The current player only: the player list polls every player's
      status, but PlayerModel switches the checks off for all others.
    - No notice for a secondary in a fixed group.
-2. **Notice and entry point** (canvas "Firmware (006)", agreed by Misja
+2. **Notice and entry point** (canvas "Firmware (006)", agreed by the maintainer
    2026-11-09):
    - When the current player has an update, Home shows one line under the
      presets with the version when known. Home only, not Now Playing.
    - Home is the player, so Home's pulley gets "Settings": the current
      player's settings page, with model, firmware version and a "Firmware"
      section (the check's answer, a "Start update" button only while an
-     update is on offer, or "Updating"; Misja, 2026-11-09). Later player
+     update is on offer, or "Updating"; the maintainer, 2026-11-09). Later player
      settings join it as further sections.
-   - The notice opens the player's update page directly (Misja, 2026-11-09,
+   - The notice opens the player's update page directly (the maintainer, 2026-11-09,
      after the device check: the extra step through Settings is not wanted).
    - The update page has the player's name as header.
 3. **Update in the app:**
@@ -133,13 +133,13 @@ the update.
    - Updating ends only when /SyncStatus answers with a `SyncStatus` root.
      The check then runs again, so the notice clears.
 
-## WebView version (decided by Misja, 2026-11-09)
+## WebView version (decided by the maintainer, 2026-11-09)
 
 Swell links against qt5embedwidget, as WebView 1.6.9 in the SDK target asks,
 and accepts the validator's rpath WARNING. Dropping the link from WebView 1.8
 onwards is tracked in issue #32.
 
-## Room to grow (Misja, 2026-11-09)
+## Room to grow (the maintainer, 2026-11-09)
 
 Player settings are expected to follow (Q0). This design should leave room
 for them without building anything for them now:
@@ -181,7 +181,7 @@ for them without building anything for them now:
    `/upgrade` page.
 4. The SDK build and the Harbour validator pass with the new import,
    requirement and permission, for aarch64 and armv7hl.
-5. A device check by Misja covers:
+5. A device check by the maintainer covers:
    - the notice and the web view against the NAD, showing "No update
      available" today;
    - the permission prompt on first start after the upgrade of Swell.

@@ -1,6 +1,6 @@
 # Plan — 007 bluos library
 
-Status: revised 2026-11-08 after the scope/design review. Misja chose
+Status: revised 2026-11-08 after the scope/design review. The maintainer chose
 option 3 (2026-11-08); re-check of option 3 applied.
 
 ## How QML reads typed values
@@ -74,7 +74,7 @@ and not tested; it is enough to not build on it.
 - **For it:** what the issue asked for. A desktop or command-line app sees
   only typed C++.
 
-Decision (Misja, 2026-11-08): option 3. It is the result the issue and Misja's original
+Decision (the maintainer, 2026-11-08): option 3. It is the result the issue and the maintainer's original
 question ("a pure C/C++ implementation others can reuse") ask for, at a small
 cost. The runtime QML test (scope item 4) covers the risk of a page losing a
 key.
@@ -122,7 +122,7 @@ key.
     the player sends new presets. This catches a wrong signal forward.
 - **A2 test:** the handler is not called before `fetch` returns.
 - **Build:** SDK build and Harbour validator.
-- **Device check by Misja.**
+- **Device check by the maintainer.**
 
 ## Review triggers
 

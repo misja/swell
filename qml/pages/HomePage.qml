@@ -192,7 +192,7 @@ Page {
                 visible: _player !== null && _player.upgradeAvailable
                 // The page is the player's own: only while it answers.
                 enabled: _player !== null && _player.online
-                // Straight to the player's own update page (Misja, 2026-11-09).
+                // Straight to the player's own update page (the maintainer, 2026-11-09).
                 onClicked: pageStack.push(Qt.resolvedUrl("PlayerWebPage.qml"), {
                     player: _player,
                     url: _player.upgradePage(),

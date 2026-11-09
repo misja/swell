@@ -18,7 +18,7 @@ Dutch translation: 0 unfinished.
 
 The table below is the history. Entries for builds 0.1.0-2…5 record results
 observed at that time; their logs were overwritten by later runs. Device
-results come from Misja's observation on the device and are not logs.
+results come from the maintainer's observation on the device and are not logs.
 
 
 | Date | Check | Result | Log |
@@ -33,7 +33,7 @@ Build tree: `/home/ubuntu/swell-001` in the `sailfish-sdk` container.
 
 `qt5-qttest-devel` was already present in the build snapshot
 (`SailfishOS-5.1.0.11-aarch64.default`); `zypper in` reported "Nothing to do",
-so no package was installed (approval granted by Misja 2026-11-06).
+so no package was installed (approval granted by the maintainer 2026-11-06).
 | 2026-11-06 | Unit tests `tests/` (spike, lsdp, xml) via `make check`, aarch64 | spike 5/5, lsdp 18/18, xml 14/14 passed | unit-aarch64.log |
 | 2026-11-06 | + client tests (`tests/client`, in-process FakePlayer), aarch64 | spike 5/5, lsdp 18/18, xml 14/14, client 14/14 passed | unit-aarch64.log |
 | 2026-11-06 | + model tests (`tests/model`, injected LSDP packets), aarch64 | spike 5/5, lsdp 18/18, xml 14/14, client 14/14, model 20/20 passed; no compiler warnings | unit-aarch64.log |
@@ -44,10 +44,10 @@ so no package was installed (approval granted by Misja 2026-11-06).
 | 2026-11-06 | UI part 1 (Players, Add player, Home with presets/inputs, About, persistence, start state): all suites pass (qml 10/10 compiles every app QML file); sfdk build exit 0; Harbour validator succeeded, 1 warning (not stripped). RPM sha256 35044141c62f2a7819cb61145918fa2b970e58ff320336ed726864e2e6d4e825 | unit-aarch64.log, sdk-build-aarch64.log, harbour-validator.log |
 | 2026-11-06 | UI part 2 (Now Playing attached to Home with landscape layout, docked mini-player, cover with 2 actions): all suites pass (qml 11/11); sfdk build exit 0; Harbour validator succeeded, 1 warning (not stripped). RPM sha256 7393c181904a7948fe4fc8c92241ec21e2a7bb3910a0a53abd1316720ac7c57b. Limitation: the compile test does not catch runtime ReferenceErrors (one, isLandscape on the window, found by reading and fixed) | unit-aarch64.log, sdk-build-aarch64.log, harbour-validator.log |
 
-## Device check, 2026-11-06 (manual, with Misja)
+## Device check, 2026-11-06 (manual, with the maintainer)
 
 Xperia 10 II (aarch64), Sailfish OS 5.2.0.20, Wi-Fi, a real BluOS player
-("Woonkamer", 192.168.1.72). RPM sha256 7393c181… installed through
+(`<player>`). RPM sha256 7393c181… installed through
 `sfdk deploy --manual` + `sdk-deploy-rpm` (confirmed on the device).
 
 - LSDP discovery works under Sailjail with only the `Internet` permission: the
@@ -55,7 +55,7 @@ Xperia 10 II (aarch64), Sailfish OS 5.2.0.20, Wi-Fi, a real BluOS player
 - Players, Home (6 presets, 9 inputs), Now Playing (portrait and landscape),
   the docked mini-player: rendered as designed (screenshots reviewed in the
   session; not committed because they show third-party station logos).
-- Controls work (Misja): presets, inputs, play/pause, volume. Prev/next are
+- Controls work (the maintainer): presets, inputs, play/pause, volume. Prev/next are
   disabled for a radio stream, as the API requires (`streamUrl`).
 - Observed: preset artwork appears after a short delay; 8 TCP connections to
   the player while running (Qt keep-alive pool plus the QML image loader;
@@ -73,7 +73,7 @@ Xperia 10 II (aarch64), Sailfish OS 5.2.0.20, Wi-Fi, a real BluOS player
   - all suites pass, the validator succeeded, installed on the device.
 - Inputs: hiding a source in the official app ("Hide source", a player
   setting) removes it from `/RadioBrowse?service=Capture`. Verified after
-  Misja changed it: 4 inputs remain. Swell follows the player; no local
+  the maintainer changed it: 4 inputs remain. Swell follows the player; no local
   hide list.
 - Build 0.1.0-3 (sha256 3b64393d165101af0a93379eca197dd89140f06c6027cbd23e9f1626e5c60200):
   - Home is attached to Players (swipe left), on one horizontal axis with
@@ -82,7 +82,7 @@ Xperia 10 II (aarch64), Sailfish OS 5.2.0.20, Wi-Fi, a real BluOS player
   - cover titles wrap to two lines;
   - all suites pass, the validator succeeded, installed on the device.
 - Build 0.1.0-4 (sha256 c2e351adbf94c84169dcc521b7910fb6e43397d1c72dad5ac2189886b587e8c4): previous/next follow the source (queue /Skip+/Back, stream actions per API 4.8, otherwise hidden; the cover shows play/pause only); all suites pass (xml 20, client 23); validator succeeded.
-- 0.1.0-4 on the device (Misja, 2026-11-06): on plain radio, Now Playing shows only play/pause and the cover play/pause only; confirmed working.
+- 0.1.0-4 on the device (the maintainer, 2026-11-06): on plain radio, Now Playing shows only play/pause and the cover play/pause only; confirmed working.
 - Build 0.1.0-5 (sha256 e8c3627c28f15b072eeb72440959cc23717a27d7b6cbc3955c102701ba86e645): Now Playing centres its controls in the remaining space (portrait and landscape); Dutch translation of all 33 strings; all suites pass; validator succeeded.
 - Result review re-check (2026-11-06): all findings resolved; verdict "ready
   for maintainer review". Follow-ups done:
@@ -92,7 +92,7 @@ Xperia 10 II (aarch64), Sailfish OS 5.2.0.20, Wi-Fi, a real BluOS player
   default coarse timers may fire up to 5% early. Fixed with precise timers,
   plus a recheck before every `/Status` poll and gated command. The rate tests
   passed 3/3 reruns, and the full suite passes (see the current logs).
-- 0.1.0-7: the wording of the marks changed (Misja).
+- 0.1.0-7: the wording of the marks changed (the maintainer).
   - The "(works with BluOS)" suffix is dropped.
   - About says "A Sailfish OS controller for BluOS players…", plus the
     trademark notice.

@@ -30,7 +30,7 @@ specs/002-queue/spec.md; builds on 001, merged as 69bd6b1.
 - **qml:** the compile test covers the new page.
 - **Build, validator, Dutch complete** (including the plural form); results in
   specs/002-queue/evidence.md.
-- **Device check by Misja:**
+- **Device check by the maintainer:**
   - rows, durations and scrolling to the current entry;
   - play from an entry, trying `/Play?id=` and `seek=0&id=` while the queue
     plays and while an input plays;

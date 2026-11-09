@@ -46,7 +46,7 @@ sha256 9da4a081b929dc681fc7d425359fb84283ceca0bd58f705e46a488ab281cfcae.
   makes `foreignChangeAfterOwnDeleteReloads` fail. The queue suite passed 3
   runs in a row.
 
-## Device check (Misja, Xperia 10 II, NAD C 379), 0.2.0-1, 2026-11-06
+## Device check (the maintainer, Xperia 10 II, NAD C 379), 0.2.0-1, 2026-11-06
 
 - Rows, play from an entry (`/Play?id=`), the input line and clear work.
 - A delete changed the queue id 3 -> 4 (read from `/Playlist` and `/Status`
@@ -67,7 +67,7 @@ sha256 9da4a081b929dc681fc7d425359fb84283ceca0bd58f705e46a488ab281cfcae.
   of a reload already has a newer id than the status poll, one more reload
   follows until the poll catches up.
 
-## Device check (Misja), 0.2.0-4, 2026-11-06
+## Device check (the maintainer), 0.2.0-4, 2026-11-06
 
 - One remove while scrolled: only that row goes, the list keeps its place.
 - Two quick removes (the second started during the first remorse): both go,
@@ -76,7 +76,7 @@ sha256 9da4a081b929dc681fc7d425359fb84283ceca0bd58f705e46a488ab281cfcae.
   track plays the queue again.
 - Player state afterwards (read-only `/Playlist`, `/Status`): 14 -> 11
   tracks, queue id 6 -> 9 (one step per delete), playback undisturbed.
-  Misja confirmed the remaining tracks are the intended ones.
+  the maintainer confirmed the remaining tracks are the intended ones.
 
 ## Not yet done
 
@@ -85,7 +85,7 @@ sha256 9da4a081b929dc681fc7d425359fb84283ceca0bd58f705e46a488ab281cfcae.
 
 ## Fix after merge: the queue flashed on every open (0.2.0-5, 2026-11-06)
 
-- Misja's report: going from the player to the queue, the list visibly
+- The maintainer's report: going from the player to the queue, the list visibly
   refreshes. Cause: leaving the page marked the model stale, so each open
   reset and re-read it. Since the queue id changes on every modification,
   rows now stay while the id is unchanged; loading starts while the page is
@@ -101,6 +101,6 @@ sha256 9da4a081b929dc681fc7d425359fb84283ceca0bd58f705e46a488ab281cfcae.
   so reopening now also reloads while the length is unknown (mutation check:
   the old rule fails the new test). Residual, accepted: after a resume or a
   player switch, the old rows show for about one status round trip.
-- Device check (Misja, 0.2.0-6): swiping between Now Playing and the queue
+- Device check (the maintainer, 0.2.0-6): swiping between Now Playing and the queue
   no longer flashes; after a new album (the official app replaces the queue)
   the list loads once with a smooth transition.
