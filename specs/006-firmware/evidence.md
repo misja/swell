@@ -167,7 +167,8 @@ Checked in the SDK container on 127.0.0.1:
   browse 26, group 31, firmware 17. No compiler warnings.
 - **On the phone:** harbour-swell-0.5.0-4 (Release 4 set only in the SDK
   clone), installed with Misja's approval. Misja accepts the result.
-- **Not run at 012ae64:** the armv7hl build. It was last built at ea43753.
+- **At 2a8620f:** all eleven suites pass (client 30); aarch64 and armv7hl
+  build and validate (rpath WARNING only).
 
 ## Review of the changes after the device check (2026-11-09; separate agent, approve with changes)
 
