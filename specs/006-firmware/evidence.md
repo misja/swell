@@ -91,7 +91,15 @@ The new tests:
 
 ## Device check (AC5)
 
-Not done yet. It needs Misja's approval to install, and covers:
+Installed with Misja's approval (2026-11-09):
+- Phone: SFOS 5.2.0.22, Sailfish WebView 1.7.4.1 (with -popups and -pickers).
+  That is also before 1.8, so the link advice still holds there.
+- Build: harbour-swell-0.5.0-2, from ea43753. Release 2 was set only in the
+  SDK clone for the device. Permissions `Internet;Audio;WebView`.
+- Test player: `household.py 192.168.1.18 --firmware`, run in the SDK
+  container as root (port 80), approved.
+
+To check:
 - the notice and the Settings page;
 - the web view against the NAD;
 - the WebView permission prompt;
