@@ -1,14 +1,14 @@
 # Feature specification — 006 firmware updates
 
-Status: revised 2026-11-09 after the scope/design review (approve with
-changes; findings applied). No implementation and
-no UI yet; the UI is agreed on the design canvas before it is built.
+Status: implemented 2026-11-09 on branch 006-firmware; the scope/design review
+and the result review (both approve with changes) are applied. UI agreed on the
+design canvas, page "Firmware (006)".
 
 ## Owner and linked issue
 
 - Accountable owner: root (primary assistant session).
 - Decision owner: Misja Hoebe (@misja).
-- Issue: opened after the scope/design review.
+- Issue: misja/swell#28.
 - Review: a separate agent reviews scope and design before implementation,
   and the result before the PR. A firmware update is release-relevant for
   the user's device, so the result review is required.
@@ -67,7 +67,10 @@ the update.
   - `WebEngine` initialises itself in QML; there is no `main()` change.
   - Apps link against qtmozembed: `PKGCONFIG += qt5embedwidget`, with
     `BuildRequires: pkgconfig(qt5embedwidget)` (qtmozembed-qt5-devel).
-  - Gecko (libxul) runs in the app's process when the page opens.
+  - Gecko (libxul) runs in the app's process when the page opens. Because
+    the binary links qtmozembed, libxul (about 109 MB) is also mapped and
+    relocated at every app start (result review, verified with readelf). The
+    effect on start-up time and memory is measured in the device check.
 - **The WebView permission** (`/etc/sailjail/permissions/WebView.permission`):
   "Web content" / "Viewing web content". It also opens a few paths
   (/usr/share/mozilla, /var/tmp, ~/Desktop, …) and D-Bus to pacrunner and
@@ -87,7 +90,10 @@ the update.
    - It exposes, typed, whether an update is available, the offered version
      when sent, and whether one is in progress.
    - No answer, 404 or a malformed document keep the previous value and do
-     not touch availability.
+     not touch availability. So a failed check after an update keeps the
+     notice until the next check.
+   - The current player only: the player list polls every player's
+     status, but PlayerModel switches the checks off for all others.
    - No notice for a secondary in a fixed group.
 2. **Notice and entry point** (canvas "Firmware (006)", agreed by Misja
    2026-11-09):
@@ -95,23 +101,32 @@ the update.
      presets with the version when known. Home only, not Now Playing.
    - Home is the player, so Home's pulley gets "Settings": the current
      player's settings page, with model, firmware version and a "Firmware"
-     section ("Up to date", "Update to …", "Updating"). The notice opens
+     section (the check's answer, an "Update" button, or "Updating"). The notice opens
      this page. Later player settings join it as further sections.
    - The update page has the player's name as header.
 3. **Update in the app:**
-   - The notice opens a `WebViewPage` with a `WebView` on
+   - The Settings page's button opens a `WebViewPage` with a `WebView` on
      `http://<player>/upgrade?noheader=1`, the player's own page. The user
      starts and follows the update there, as in the official app.
-   - The page is only loaded when pushed, so Gecko is not loaded at start.
+   - The page is only loaded when pushed, so the engine starts only then.
+     The library itself is linked (see the Facts above).
+   - Links on the player's page can lead elsewhere; the view keeps no
+     history (`privateMode`).
    - The app adds the `WebView` permission, requires
      `sailfish-components-webview-qt5`, and builds with qt5embedwidget.
 4. **While updating** (an `Updating` availability, not a separate flag):
    - The player enters Updating on `inProgress="true"` or on an
      `UpgradeStatusStage*` root from any /SyncStatus read.
    - When /Status fails or answers another root, a plain /SyncStatus read
-     classifies the player before it is marked Offline or NotAPlayer.
-   - While Updating, no long poll is held. /SyncStatus is read plainly on
-     the existing backoff, and silence is expected.
+     classifies the player before it is marked Offline or NotAPlayer. That is
+     one paced read per backoff step (at most every 30 s); an unreachable
+     player is marked Offline up to `commandTimeoutMs` (10 s) later.
+   - Entered through `inProgress="true"` (the update downloads, the player
+     still answers as one), it stays Updating until a check no longer says
+     so, or no longer answers.
+   - While Updating, no long poll is held, neither on /Status nor on the
+     /SyncStatus watch. /SyncStatus is read plainly on the existing backoff,
+     and silence is expected.
    - Updating ends only when /SyncStatus answers with a `SyncStatus` root.
      The check then runs again, so the notice clears.
 
@@ -166,7 +181,8 @@ for them without building anything for them now:
    the player as updating, not as NotAPlayer. After the update it is online
    again. A test drives this sequence on the fake player.
 3. With an update available, the app shows the notice where agreed on the
-   canvas. The notice opens the in-app web view on the player's
+   canvas. The notice opens the player's Settings page, whose button opens
+   the in-app web view on the player's
    `/upgrade` page.
 4. The SDK build and the Harbour validator pass with the new import,
    requirement and permission, for aarch64 and armv7hl.

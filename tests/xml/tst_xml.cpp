@@ -406,7 +406,7 @@ void TstXml::volumeAnswer()
 
 void TstXml::upgradeCheck()
 {
-    // As azzurro captured it, and as Misja's player answered (2026-11-08).
+    // As azzurro captured it; then as Misja's player answered (2026-11-08).
     UpgradeCheck u = parseUpgradeCheck("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
                                        "<upgrade inProgress=\"false\" version=\"4.16.22\" available=\"true\">check</upgrade>");
     QVERIFY2(u.ok, qPrintable(u.error));

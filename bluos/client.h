@@ -56,6 +56,7 @@ class Client : public QObject
     Q_PROPERTY(QString firmwareVersion READ firmwareVersion NOTIFY syncStatusChanged)
     Q_PROPERTY(bool upgradeAvailable READ upgradeAvailable NOTIFY upgradeChanged)
     Q_PROPERTY(QString upgradeVersion READ upgradeVersion NOTIFY upgradeChanged)
+    Q_PROPERTY(bool upgradeChecked READ upgradeChecked NOTIFY upgradeChanged)
 
 public:
     enum Availability {
@@ -145,6 +146,10 @@ public:
     // Not for a secondary of a fixed group, which its primary updates.
     bool upgradeAvailable() const { return m_upgrade.available && !m_sync.fixedSecondary; }
     QString upgradeVersion() const { return upgradeAvailable() ? m_upgrade.version : QString(); }
+    // The player has answered a check at least once.
+    bool upgradeChecked() const { return m_upgrade.ok; }
+    // On by default; PlayerModel keeps it on for the current player only.
+    void setUpgradeChecks(bool checks);
     // The player's own update page (port 80), where the user runs the update.
     Q_INVOKABLE QUrl upgradePage() const;
 
@@ -273,7 +278,9 @@ private:
     void onSyncWatchReply(QNetworkReply *reply);
     void takeSyncStatus(const SyncStatus &sync);
     void probeSyncStatus(Availability otherwise);
+    void leaveUpdating(const SyncStatus &sync);
     void enterUpdating();
+    void fetchUpgradeCheck(const std::function<void(const UpgradeCheck &)> &done);
     void nextGroupCommand();
     void setGroupBusy(bool busy);
     void onCommandReply(QNetworkReply *reply, const QString &path);
@@ -327,6 +334,7 @@ private:
     UpgradeCheck m_upgrade;
     QTimer m_upgradeTimer;
     bool m_upgradeChecking = false;
+    bool m_upgradeChecks = true;
     bool m_probing = false;
 };
 

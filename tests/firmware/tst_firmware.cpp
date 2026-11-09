@@ -68,6 +68,9 @@ private slots:
     void anUpdateRunsThroughToTheNewVersion();
     void aStageRootIsNotNotAPlayer();
     void stopDuringACheck();
+    void stillAPlayerWhileDownloading();
+    void noLongPollOnTheWatchWhileUpdating();
+    void checksCanBeSwitchedOff();
 
 private:
     void startClient(const Client::Timing &timing = fast());
@@ -120,7 +123,8 @@ void TstFirmware::notAvailable()
 {
     startClient();
     QTRY_VERIFY(m_client->online());
-    QTRY_COMPARE(m_player->requests(QStringLiteral("/upgrade")).size(), 1);
+    QTRY_VERIFY(m_client->upgradeChecked());
+    QCOMPARE(m_player->requests(QStringLiteral("/upgrade")).size(), 1);
     QVERIFY(!m_client->upgradeAvailable());
     QVERIFY(m_client->upgradeVersion().isEmpty());
 }
@@ -296,6 +300,65 @@ void TstFirmware::stopDuringACheck()
     QTest::qWait(1000);
     QVERIFY(!m_client->upgradeAvailable());
     QCOMPARE(m_client->availability(), Client::Online);
+}
+
+void TstFirmware::stillAPlayerWhileDownloading()
+{
+    // While the update downloads, /SyncStatus still answers as a player, but
+    // the check says it is in progress: the player stays Updating, and the
+    // check is asked at most once per probe, on the backoff.
+    startClient();
+    QTRY_VERIFY(m_client->online());
+    m_player->serve(QStringLiteral("/upgrade"), check(false, true));
+    m_client->checkUpgrade();
+    QTRY_COMPARE(m_client->availability(), Client::Updating);
+    QSignalSpy availability(m_client, &Client::availabilityChanged);
+    const int checks = m_player->requests(QStringLiteral("/upgrade")).size();
+    QTest::qWait(3000);
+    QCOMPARE(m_client->availability(), Client::Updating);
+    QCOMPARE(availability.count(), 0);
+    // Backoff of at most 400 ms, plus the paced reads: well under one per 200 ms.
+    QVERIFY(m_player->requests(QStringLiteral("/upgrade")).size() - checks <= 15);
+
+    // Done: the check no longer says so, and the player is back.
+    m_player->serve(QStringLiteral("/upgrade"), check(false));
+    QTRY_COMPARE_WITH_TIMEOUT(m_client->availability(), Client::Online, 5000);
+}
+
+void TstFirmware::noLongPollOnTheWatchWhileUpdating()
+{
+    Client::Timing t = fast();
+    t.syncPollTimeoutSecs = 1;
+    startClient(t);
+    m_client->setSyncWatch(true);
+    QTRY_VERIFY(m_client->online());
+    QTRY_VERIFY(!m_player->requests(QStringLiteral("/SyncStatus")).isEmpty());
+    m_player->serve(QStringLiteral("/upgrade"), check(false, true));
+    m_player->serve(QStringLiteral("/SyncStatus"), "<UpgradeStatusStage1 name=\"Living Room\"/>");
+    m_client->checkUpgrade();
+    QTRY_COMPARE(m_client->availability(), Client::Updating);
+    const int before = m_player->requests(QStringLiteral("/SyncStatus")).size();
+    QTest::qWait(2500);
+    const QList<FakePlayer::Request> reads = m_player->requests(QStringLiteral("/SyncStatus"));
+    QVERIFY(reads.size() > before);
+    for (int i = before; i < reads.size(); ++i)
+        QVERIFY2(!reads.at(i).query.hasQueryItem(QStringLiteral("timeout")), reads.at(i).target.constData());
+}
+
+void TstFirmware::checksCanBeSwitchedOff()
+{
+    m_client = new Client(m_nam, QStringLiteral("127.0.0.1"), m_player->port());
+    m_client->setTiming(fast());
+    m_client->setUpgradeChecks(false);
+    m_client->start();
+    QTRY_VERIFY(m_client->online());
+    m_client->checkUpgrade();
+    QTest::qWait(800);
+    QVERIFY(m_player->requests(QStringLiteral("/upgrade")).isEmpty());
+    QVERIFY(!m_client->upgradeChecked());
+    m_client->setUpgradeChecks(true);
+    QTRY_VERIFY(m_client->upgradeChecked());
+    QCOMPARE(m_player->requests(QStringLiteral("/upgrade")).size(), 1);
 }
 
 QTEST_MAIN(TstFirmware)

@@ -818,7 +818,8 @@ void Client::watchSyncStatus()
     }
     QUrlQuery query;
     int deadline = m_timing.commandTimeoutMs;
-    if (m_sync.ok && !m_sync.etag.isEmpty()) {
+    // No long poll across a firmware update's restart.
+    if (m_sync.ok && !m_sync.etag.isEmpty() && m_availability != Updating) {
         query.addQueryItem(QStringLiteral("timeout"), QString::number(m_timing.syncPollTimeoutSecs));
         query.addQueryItem(QStringLiteral("etag"), m_sync.etag);
         deadline = m_timing.syncPollTimeoutSecs * 1000 + m_timing.deadlineGraceMs;
@@ -896,15 +897,33 @@ void Client::probeSyncStatus(Availability otherwise)
         const SyncStatus sync = parseSyncStatus(body);
         if (sync.upgradeStage > 0 || (m_availability == Updating && !sync.ok)) {
             failed(Updating);
-        } else if (m_availability == Updating) {
-            // Back as a player, with its new firmware.
-            takeSyncStatus(sync);
-            succeeded();
-            schedulePoll(0);
-        } else {
+        } else if (m_availability != Updating) {
             failed(otherwise);
+        } else if (!m_upgrade.inProgress) {
+            leaveUpdating(sync);
+        } else {
+            // While the update downloads, the player still answers as a
+            // player: it is back only once the check no longer says so.
+            m_probing = true;
+            fetchUpgradeCheck([this, sync](const UpgradeCheck &check) {
+                m_probing = false;
+                if (check.ok && check.inProgress) {
+                    failed(Updating);
+                } else {
+                    m_upgrade.inProgress = false;  // or no answer: the player is back
+                    leaveUpdating(sync);
+                }
+            });
         }
     });
+}
+
+// Back as a player, with its new firmware.
+void Client::leaveUpdating(const SyncStatus &sync)
+{
+    takeSyncStatus(sync);
+    succeeded();
+    schedulePoll(0);
 }
 
 void Client::enterUpdating()
@@ -914,6 +933,16 @@ void Client::enterUpdating()
     failed(Updating);
     if (m_statusReply)
         m_statusReply->abort();
+    if (m_syncWatchReply)
+        m_syncWatchReply->abort();
+}
+
+void Client::setUpgradeChecks(bool checks)
+{
+    if (m_upgradeChecks == checks)
+        return;
+    m_upgradeChecks = checks;
+    checkUpgrade();
 }
 
 QUrl Client::upgradePage() const
@@ -929,23 +958,33 @@ QUrl Client::upgradePage() const
 
 void Client::checkUpgrade()
 {
-    if (!m_running || !m_statusPolling || !online() || m_upgradeChecking || m_sync.fixedSecondary)
+    if (!m_running || !m_statusPolling || !m_upgradeChecks || !online() || m_upgradeChecking
+            || m_sync.fixedSecondary)
         return;
+    fetchUpgradeCheck([this](const UpgradeCheck &check) {
+        if (check.ok && check.inProgress)
+            enterUpdating();
+    });
+}
+
+// The one request to /upgrade. Only ever "check": "this" or "all" would
+// start an update. No answer, or not one, keeps what was known.
+void Client::fetchUpgradeCheck(const std::function<void(const UpgradeCheck &)> &done)
+{
     m_upgradeChecking = true;
-    // Only ever "check": "this" or "all" would start an update.
-    fetch(QStringLiteral("/upgrade"), QStringLiteral("upgrade=check"), [this](const QByteArray &body) {
+    fetch(QStringLiteral("/upgrade"), QStringLiteral("upgrade=check"), [this, done](const QByteArray &body) {
         m_upgradeChecking = false;
         if (!m_running)
             return;
         const UpgradeCheck check = parseUpgradeCheck(body);
-        if (!check.ok)
-            return;  // no answer, or not one: keep what was known
-        const bool changed = check.available != m_upgrade.available || check.version != m_upgrade.version;
-        m_upgrade = check;
-        if (changed)
-            emit upgradeChanged();
-        if (check.inProgress)
-            enterUpdating();
+        if (check.ok) {
+            const bool changed = !m_upgrade.ok || check.available != m_upgrade.available
+                    || check.version != m_upgrade.version;
+            m_upgrade = check;
+            if (changed)
+                emit upgradeChanged();
+        }
+        done(check);
     }, m_timing.upgradeTimeoutMs);
 }
 

@@ -3,13 +3,15 @@
 The maintainer's working handoff between sessions. Contributors: see
 CONTRIBUTING.md.
 
-Updated: 2026-11-08 (feature 003, MPRIS). Decision owner: Misja Hoebe (@misja).
+Updated: 2026-11-09 (feature 006, firmware). Decision owner: Misja Hoebe (@misja).
 
 Current owner / next owner / decision owner: root / root (next session) / Misja.
 
 Next (2026-11-09): feature 006 firmware updates, branch 006-firmware (local):
-specs/006-firmware/{spec,plan,tasks}.md drafted; next the scope/design
-review. Note: Sailfish WebView 1.6.9 in the 5.1 target needs the qt5embedwidget
+implemented (issue #28); design and result reviews applied; next the
+device check with Misja, then the PR. Found on main, not 006:
+setStatusPolling(false) keeps /Status polling (failed() reschedules and
+pollStatus() does not check m_statusPolling); to be reported separately. Note: Sailfish WebView 1.6.9 in the 5.1 target needs the qt5embedwidget
 link (rpath WARNING accepted); drop it with WebView 1.8+ (specs/006-firmware).
 Q0 (player settings such as "Hide source" per input, only through the
 undocumented settings tree on port 11001 / writes on 11000, read on the NAD

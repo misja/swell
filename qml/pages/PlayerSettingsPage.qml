@@ -40,7 +40,7 @@ Page {
                 visible: value !== ""
             }
             DetailItem {
-                label: qsTr("Firmware")
+                label: qsTr("Firmware version")
                 value: _player ? _player.firmwareVersion : ""
                 visible: value !== ""
             }
@@ -61,8 +61,10 @@ Page {
                                 ? qsTr("Firmware %1 is available.").arg(_player.upgradeVersion)
                                 : qsTr("A firmware update is available.")
                     }
-                    return qsTr("No update found.")
+                    // Only once the player has answered a check.
+                    return _player && _player.upgradeChecked ? qsTr("No update found.") : ""
                 }
+                visible: text !== ""
             }
 
             Item { width: 1; height: Theme.paddingLarge }

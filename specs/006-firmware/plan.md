@@ -18,7 +18,8 @@ and findings H1, M1–M7, L1–L5 apply. Open: Misja's approvals listed in tasks
     - by an `UpgradeStatusStage*` answer;
     - while a player that was updating does not answer.
 
-    It is cleared when `/Status` answers normally.
+    It is cleared only when `/SyncStatus` answers with a `SyncStatus` root, and,
+    if it came from `inProgress`, a check no longer says so (result review H-A).
   - A non-status `/Status` while updating does not make the player
     NotAPlayer.
   - `Client::Timing` gets `upgradeCheckIntervalMs` (default one hour), so

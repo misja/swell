@@ -280,6 +280,8 @@ void PlayerModel::applyPolicy()
         }
         e.client->setStatusPolling(status);
         e.client->setSyncWatch(watch);
+        // Firmware checks for the current player only (spec 006).
+        e.client->setUpgradeChecks(current);
         e.client->start();
     }    // Running or not changes which members count (groupMuted).
     updateCurrentGroup();
