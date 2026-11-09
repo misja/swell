@@ -14,13 +14,39 @@ Branch 006-firmware, built from a clone of the branch in the SDK.
   - The binary does not need libxul itself; `NEEDED` has only
     `libqt5embedwidget.so.1`, which carries its own rpath to xulrunner. The
     extra rpath points nowhere on the device.
-  - Not yet resolved. It needs a decision on upstream practice (open point).
+  - **Upstream practice** (researched 2026-11-09, at Misja's request):
+    - The validator (sailfishos/sdk-harbour-rpmvalidator `rpmvalidation.sh`,
+      master 7dd7dd5, l. 1221–1244) allows only `/usr/share/<name>/lib` and
+      `$ORIGIN/../share/<name>/lib`. Any other rpath is a WARNING. It is an
+      ERROR only when the RPM ships its own shared libraries, which Swell
+      does not.
+    - Harbour apps with a C++ binary and the WebView all link it the same
+      way, with no rpath handling: harbour-piepmatz, harbour-hafenschau,
+      harbour-present, harbour-webviewtest, harbour-sailslack and
+      harbour-quartermaster (GitHub code search for `qt5embedwidget`). That
+      they get the same warning is inferred, not seen.
+    - The linking advice is for WebView 1.6.9, the version in the 5.1 SDK
+      target. Upstream changed it on 2026-09-30 (sailfish-components-webview
+      e4e86f1b3e, WebView 1.8.0, Gecko ESR153): apps that use the WebView
+      only from QML, as Swell does, then need no link, and the warning would
+      go away. 1.8 is not in the target Swell builds for.
+  - **Conclusion:** keep the documented link for 1.6.9 and accept the
+    warning. Drop the link once Swell targets WebView 1.8 or newer. No own
+    workaround.
 
-## Tests
+## Tests (2026-11-09, aarch64)
 
-Not run: the SDK snapshots no longer have qt5-qttest-devel. A
-`build-requires reset` on 2026-11-09, run after installing the WebView
-packages, removed it. Written, not yet run:
+- **`make check`:** all eleven suites pass: spike 5, lsdp 18, xml 36,
+  client 29, model 26, qml 19, qmlruntime 17, queue 28, browse 26,
+  group 30, firmware 14. No compiler warnings.
+- **qt5-qttest-devel:** reinstalled in both SDK targets with Misja's
+  approval. A `build-requires reset` had removed it.
+- **The QML compile test found a missing dependency:** WebView.qml (1.6.9)
+  imports `Sailfish.WebView.Pickers`, but `sailfish-components-webview-qt5`
+  does not require `-pickers`. Swell now requires it, as Harbour allows
+  (`allowed_requires.conf`).
+
+The new tests:
 - `tests/xml`: `upgradeCheck` and `syncStatusDuringUpgrade`.
 - `tests/firmware` (new, 12 tests), against `FakePlayer`, for AC1 and AC2:
   - available, not available and in progress;
