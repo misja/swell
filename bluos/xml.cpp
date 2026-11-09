@@ -104,8 +104,13 @@ SyncStatus parseSyncStatus(const QByteArray &xml)
 {
     SyncStatus s;
     QXmlStreamReader reader(xml);
-    if (!enterRoot(reader, "SyncStatus", &s.error))
+    if (!enterRoot(reader, "SyncStatus", &s.error)) {
+        if (reader.name() == QLatin1String("UpgradeStatusStage1"))
+            s.upgradeStage = 1;
+        else if (reader.name() == QLatin1String("UpgradeStatusStage2"))
+            s.upgradeStage = 2;
         return s;
+    }
     const QXmlStreamAttributes a = reader.attributes();
     s.etag = a.value(QLatin1String("etag")).toString();
     s.id = a.value(QLatin1String("id")).toString();
@@ -121,6 +126,7 @@ SyncStatus parseSyncStatus(const QByteArray &xml)
     s.fixedSecondary = toBool(a.value(QLatin1String("zoneSlave")).toString());
     s.volume = toInt(a.value(QLatin1String("volume")).toString(), -1);
     s.mute = toBool(a.value(QLatin1String("mute")).toString());
+    s.version = a.value(QLatin1String("version")).toString();
     if (a.hasAttribute(QLatin1String("initialized")))
         s.initialized = toBool(a.value(QLatin1String("initialized")).toString());
 
@@ -373,6 +379,20 @@ VolumeReply parseVolume(const QByteArray &xml)
     v.level = toInt(reader.readElementText(), -1);
     v.ok = finish(reader, &v.error) && v.level >= 0;
     return v;
+}
+
+UpgradeCheck parseUpgradeCheck(const QByteArray &xml)
+{
+    UpgradeCheck u;
+    QXmlStreamReader reader(xml);
+    if (!enterRoot(reader, "upgrade", &u.error))
+        return u;
+    const QXmlStreamAttributes a = reader.attributes();
+    u.available = toBool(a.value(QLatin1String("available")).toString());
+    u.inProgress = toBool(a.value(QLatin1String("inProgress")).toString());
+    u.version = a.value(QLatin1String("version")).toString();
+    u.ok = finish(reader, &u.error);
+    return u;
 }
 
 } // namespace BluOS

@@ -8,12 +8,17 @@ URL:        https://github.com/misja/swell
 Source0:    %{name}-%{version}.tar.bz2
 Requires:   sailfishsilica-qt5 >= 0.10.9
 Requires:   qml(Amber.Mpris)
+# The player's own pages in the app (spec 006); the package names, as Harbour allows.
+Requires:   sailfish-components-webview-qt5
+Requires:   sailfish-components-webview-qt5-popups
 BuildRequires:  pkgconfig(sailfishapp) >= 1.0.2
 BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5Qml)
 BuildRequires:  pkgconfig(Qt5Quick)
 BuildRequires:  pkgconfig(Qt5Network)
 BuildRequires:  desktop-file-utils
+# Sailfish WebView: apps link against qtmozembed (its documentation).
+BuildRequires:  pkgconfig(qt5embedwidget)
 
 %description
 Swell finds BluOS players on the local network and controls playback and

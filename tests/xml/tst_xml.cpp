@@ -25,6 +25,8 @@ private slots:
     void groupAddAnswer();
     void volumeAnswer();
     void fixedGroupFields();
+    void upgradeCheck();
+    void syncStatusDuringUpgrade();
     void statusPrid();
     void statusStreamActions();
     void statusQueuePosition();
@@ -400,6 +402,45 @@ void TstXml::volumeAnswer()
     QCOMPARE(v.level, 15);
     QVERIFY(v.mute);
     QVERIFY(!parseVolume("<volume>x</volume>").ok);
+}
+
+void TstXml::upgradeCheck()
+{
+    // As azzurro captured it, and as Misja's player answered (2026-11-08).
+    UpgradeCheck u = parseUpgradeCheck("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                       "<upgrade inProgress=\"false\" version=\"4.16.22\" available=\"true\">check</upgrade>");
+    QVERIFY2(u.ok, qPrintable(u.error));
+    QVERIFY(u.available);
+    QVERIFY(!u.inProgress);
+    QCOMPARE(u.version, QStringLiteral("4.16.22"));
+
+    u = parseUpgradeCheck("<upgrade inProgress=\"false\" available=\"false\">check</upgrade>");
+    QVERIFY2(u.ok, qPrintable(u.error));
+    QVERIFY(!u.available);
+    QVERIFY(u.version.isEmpty());
+
+    u = parseUpgradeCheck("<upgrade inProgress=\"true\" available=\"false\">check</upgrade>");
+    QVERIFY(u.ok && u.inProgress);
+
+    QVERIFY(!parseUpgradeCheck("<html><body>Not found</body></html>").ok);
+    QVERIFY(!parseUpgradeCheck("<upgrade available=\"true\">").ok);
+    QVERIFY(!parseUpgradeCheck(QByteArray()).ok);
+}
+
+void TstXml::syncStatusDuringUpgrade()
+{
+    SyncStatus s = parseSyncStatus("<UpgradeStatusStage1 name=\"Powernode\" model=\"N330\"/>");
+    QVERIFY(!s.ok);
+    QCOMPARE(s.upgradeStage, 1);
+    s = parseSyncStatus("<UpgradeStatusStage2 name=\"Powernode\" model=\"N330\"/>");
+    QVERIFY(!s.ok);
+    QCOMPARE(s.upgradeStage, 2);
+    s = parseSyncStatus("<html/>");
+    QCOMPARE(s.upgradeStage, 0);
+    s = parseSyncStatus("<SyncStatus etag=\"1\" name=\"Powernode\" version=\"4.16.22\"/>");
+    QVERIFY2(s.ok, qPrintable(s.error));
+    QCOMPARE(s.upgradeStage, 0);
+    QCOMPARE(s.version, QStringLiteral("4.16.22"));
 }
 
 void TstXml::fixedGroupFields()

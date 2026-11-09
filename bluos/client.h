@@ -53,13 +53,17 @@ class Client : public QObject
     Q_PROPERTY(QString primaryId READ primaryId NOTIFY syncStatusChanged)
     Q_PROPERTY(int groupVolume READ groupVolume NOTIFY statusChanged)
     Q_PROPERTY(bool groupBusy READ groupBusy NOTIFY groupBusyChanged)
+    Q_PROPERTY(QString firmwareVersion READ firmwareVersion NOTIFY syncStatusChanged)
+    Q_PROPERTY(bool upgradeAvailable READ upgradeAvailable NOTIFY upgradeChanged)
+    Q_PROPERTY(QString upgradeVersion READ upgradeVersion NOTIFY upgradeChanged)
 
 public:
     enum Availability {
         Connecting,   // no answer yet
         Online,
         Offline,      // was reachable, or could not be reached; retrying
-        NotAPlayer    // answered, but not with BluOS documents; retrying slowly
+        NotAPlayer,   // answered, but not with BluOS documents; retrying slowly
+        Updating      // a firmware update runs; /SyncStatus is read until it is back
     };
     Q_ENUM(Availability)
 
@@ -81,6 +85,8 @@ public:
         int backoffInitialMs = 1000;
         int backoffMaxMs = 30000;
         int syncPollTimeoutSecs = 180;   // API 2.2: recommended 180 s
+        int upgradeCheckIntervalMs = 3600000;  // how often a polled player is asked
+        int upgradeTimeoutMs = 60000;    // the official app's deadline (azzurro)
     };
 
     Client(QNetworkAccessManager *nam, const QString &host, int port = 11000,
@@ -129,6 +135,18 @@ public:
     // Off: a running client polls only /SyncStatus (with the watch), and its
     // availability comes from that; for players shown beside the current one.
     void setStatusPolling(bool polling);
+
+    // Firmware updates are not in the API. What follows is how the official
+    // app does it, as observed by azzurro: it asks /upgrade?upgrade=check, and
+    // the update itself runs on the player's own web page (upgradePage()).
+    // This client only ever asks; it never starts an update.
+    // The firmware version from /SyncStatus; empty when the player sends none.
+    QString firmwareVersion() const { return m_sync.version; }
+    // Not for a secondary of a fixed group, which its primary updates.
+    bool upgradeAvailable() const { return m_upgrade.available && !m_sync.fixedSecondary; }
+    QString upgradeVersion() const { return upgradeAvailable() ? m_upgrade.version : QString(); }
+    // The player's own update page (port 80), where the user runs the update.
+    Q_INVOKABLE QUrl upgradePage() const;
 
     // The queue can always skip; a stream only when it offers the action (4.8).
     bool canSkip() const { return m_status.ok && (!m_status.hasStreamUrl || !m_status.skipActionUrl.isEmpty()); }
@@ -197,6 +215,10 @@ public slots:
     // On a primary: sets every player in the group (tell_slaves=1).
     void setGroupVolume(int level);
     void setGroupMuted(bool muted);
+    // Asks the player whether it has a firmware update, while its status is
+    // polled and it is online. Also done on coming online and hourly; the app
+    // asks again when the update page closes.
+    void checkUpgrade();
 
 signals:
     void availabilityChanged();
@@ -204,6 +226,7 @@ signals:
     void syncStatusChanged();
     void positionChanged();
     void groupBusyChanged();
+    void upgradeChanged();
     void presetsChanged();
     void inputsChanged();
     // A command request failed; the poll keeps running.
@@ -249,6 +272,8 @@ private:
     void watchSyncStatus();
     void onSyncWatchReply(QNetworkReply *reply);
     void takeSyncStatus(const SyncStatus &sync);
+    void probeSyncStatus(Availability otherwise);
+    void enterUpdating();
     void nextGroupCommand();
     void setGroupBusy(bool busy);
     void onCommandReply(QNetworkReply *reply, const QString &path);
@@ -299,6 +324,10 @@ private:
     bool m_removing = false;
     bool m_presetsFetched = false;
     bool m_inputsFetched = false;
+    UpgradeCheck m_upgrade;
+    QTimer m_upgradeTimer;
+    bool m_upgradeChecking = false;
+    bool m_probing = false;
 };
 
 } // namespace BluOS

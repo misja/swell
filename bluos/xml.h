@@ -79,8 +79,26 @@ struct SyncStatus {
     bool fixedPrimary = false;
     bool fixedSecondary = false;
 
+    // Not in the API: the firmware version, as azzurro observed it.
+    QString version;
+    // Not in the API: while a firmware update runs, the player answers
+    // /SyncStatus with <UpgradeStatusStage1> or <UpgradeStatusStage2>
+    // (observed by azzurro). Then ok is false and this is 1 or 2.
+    int upgradeStage = 0;
+
     // Not the same as being a secondary; see above.
     bool namesPrimary() const { return !primaryHost.isEmpty(); }
+};
+
+// The answer to /upgrade?upgrade=check on port 11000. Not in the API; the
+// official app reads it (observed by azzurro). Asking does not start anything.
+struct UpgradeCheck {
+    bool ok = false;
+    QString error;
+
+    bool available = false;
+    bool inProgress = false;
+    QString version;        // the offered release, when the player names one
 };
 
 // The answer to /AddSlave (section 8.1, 8.2): the players that were added.
@@ -220,6 +238,7 @@ Inputs parseCaptureInputs(const QByteArray &xml);
 SyncStatus parseSyncStatus(const QByteArray &xml);
 GroupAdd parseGroupAdd(const QByteArray &xml);
 VolumeReply parseVolume(const QByteArray &xml);
+UpgradeCheck parseUpgradeCheck(const QByteArray &xml);
 
 } // namespace BluOS
 

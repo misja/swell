@@ -386,7 +386,8 @@ void TstGroup::aLonePlayersRequestsAreUnchanged()
         paths.insert(r.path);
     const QSet<QString> expected{ QStringLiteral("/Status"), QStringLiteral("/SyncStatus"),
                                   QStringLiteral("/Presets"), QStringLiteral("/RadioBrowse"),
-                                  QStringLiteral("/Playlist") };
+                                  QStringLiteral("/Playlist"),
+                                  QStringLiteral("/upgrade") };  // 006: the firmware check
     const QSet<QString> extra = paths - expected;
     QVERIFY2(extra.isEmpty(), qPrintable(QStringList(extra.values()).join(QLatin1Char(','))));
     // As before 005: one read at start, before /Status gives a syncStat, and
