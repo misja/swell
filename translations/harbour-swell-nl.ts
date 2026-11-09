@@ -259,7 +259,7 @@
     <message>
         <location filename="../qml/pages/HomePage.qml" line="198"/>
         <source>Firmware update</source>
-        <translation type="unfinished">Firmware-update</translation>
+        <translation>Firmware-update</translation>
     </message>
     <message>
         <location filename="../qml/pages/HomePage.qml" line="210"/>
