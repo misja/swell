@@ -10,8 +10,7 @@ A Sailfish OS controller for BluOS players.
 - Browse your library, radio and streaming services, and search
 - Group players, with group volume and each player's own volume
 - Control playback from the cover and the lock screen
-- See when a player has a firmware update, and install it on the player's
-  own update page
+- Update a player's firmware
 
 Players are found automatically, or added by their address.
 
