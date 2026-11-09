@@ -89,8 +89,15 @@ the update.
    - No answer, 404 or a malformed document keep the previous value and do
      not touch availability.
    - No notice for a secondary in a fixed group.
-2. **Notice:** when the current player has an update, the app says so, with
-   the version when known. Where it shows is agreed on the canvas.
+2. **Notice and entry point** (canvas "Firmware (006)", agreed by Misja
+   2026-11-09):
+   - When the current player has an update, Home shows one line under the
+     presets with the version when known. Home only, not Now Playing.
+   - Home is the player, so Home's pulley gets "Settings": the current
+     player's settings page, with model, firmware version and a "Firmware"
+     section ("Up to date", "Update to …", "Updating"). The notice opens
+     this page. Later player settings join it as further sections.
+   - The update page has the player's name as header.
 3. **Update in the app:**
    - The notice opens a `WebViewPage` with a `WebView` on
      `http://<player>/upgrade?noheader=1`, the player's own page. The user

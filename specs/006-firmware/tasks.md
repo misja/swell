@@ -7,7 +7,7 @@
 - [x] `http://<NAD>/upgrade?noheader=1`: 200, the same page without the header, "No update available." (2026-11-09).
 - [x] Misja: require sailfish-components-webview-qt5-popups too (2026-11-09).
 - [ ] Issue.
-- [ ] UI on the design canvas (notice placement, web page), agreed with Misja.
+- [x] UI on the design canvas, agreed with Misja (2026-11-09): notice on Home only; Home pulley "Settings" for the player's settings, firmware first; update page with the player's name.
 - [ ] Check upstream WebView practice (permission, requirement, initialisation) in the target.
 - [ ] Tests first (fake player: check answers, upgrade stages), then library, app, packaging.
 - [ ] Builds (aarch64, armv7hl), validator, evidence.md.

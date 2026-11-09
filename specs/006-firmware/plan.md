@@ -28,8 +28,8 @@ and findings H1, M1–M7, L1–L5 apply. Open: Misja's approvals listed in tasks
 
 ## App
 
-- **Notice:** placement agreed on the canvas first, for example a line on
-  Home and on Now Playing, and an indicator in Players.
+- **Notice:** one line on Home under the presets (canvas F1); a "Settings" pulley item on Home opens
+  `qml/pages/PlayerSettingsPage.qml` (F2), which pushes `PlayerWebPage.qml` (F3).
 - **`qml/pages/PlayerWebPage.qml`:** a Silica page with a `WebView` from
   `Sailfish.WebView 1.0` on `http://<host>/upgrade`, and a PageHeader with
   the player's name.
