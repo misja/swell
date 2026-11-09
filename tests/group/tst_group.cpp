@@ -47,6 +47,7 @@ private slots:
     void theCurrentGroupIsAProperty();
     void thePlayerListShowsOneRowPerGroup();
     void pairHalvesHubsAndZonesCannotJoin();
+    void onlyTheCurrentPlayerIsAskedForFirmware();
 
 private:
     Client *client(int i);
@@ -386,7 +387,8 @@ void TstGroup::aLonePlayersRequestsAreUnchanged()
         paths.insert(r.path);
     const QSet<QString> expected{ QStringLiteral("/Status"), QStringLiteral("/SyncStatus"),
                                   QStringLiteral("/Presets"), QStringLiteral("/RadioBrowse"),
-                                  QStringLiteral("/Playlist") };
+                                  QStringLiteral("/Playlist"),
+                                  QStringLiteral("/upgrade") };  // 006: the firmware check
     const QSet<QString> extra = paths - expected;
     QVERIFY2(extra.isEmpty(), qPrintable(QStringList(extra.values()).join(QLatin1Char(','))));
     // As before 005: one read at start, before /Status gives a syncStat, and
@@ -550,6 +552,24 @@ void TstGroup::thePlayerListShowsOneRowPerGroup()
              QStringList({ m_house->id(1), m_house->id(2) }));
     model->leave(m_house->id(2), m_house->id(0));
     QTRY_COMPARE(list.rowCount(), 2);
+}
+
+void TstGroup::onlyTheCurrentPlayerIsAskedForFirmware()
+{
+    // 006: the player list polls everyone, but only the current player is
+    // asked about firmware.
+    QScopedPointer<PlayerModel> model(household(m_house, nullptr));
+    model->setCurrentId(m_house->id(1));
+    model->setPollAll(true);
+    for (int i = 0; i < m_house->size(); ++i)
+        QTRY_VERIFY(model->client(m_house->id(i))->online());
+    QTRY_COMPARE(m_house->player(1)->requests(QStringLiteral("/upgrade")).size(), 1);
+    QTest::qWait(800);
+    QVERIFY(m_house->player(0)->requests(QStringLiteral("/upgrade")).isEmpty());
+    QVERIFY(m_house->player(2)->requests(QStringLiteral("/upgrade")).isEmpty());
+
+    model->setCurrentId(m_house->id(2));
+    QTRY_COMPARE(m_house->player(2)->requests(QStringLiteral("/upgrade")).size(), 1);
 }
 
 QTEST_GUILESS_MAIN(TstGroup)

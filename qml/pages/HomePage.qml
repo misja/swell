@@ -65,6 +65,11 @@ Page {
                 onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
             }
             MenuItem {
+                text: qsTr("Settings")
+                enabled: _player !== null
+                onClicked: pageStack.push(Qt.resolvedUrl("PlayerSettingsPage.qml"))
+            }
+            MenuItem {
                 text: qsTr("Players")
                 onClicked: pageStack.navigateBack()
             }
@@ -93,6 +98,9 @@ Page {
                     }
                     if (_player.availability === 3) {
                         return qsTr("Not a BluOS player")
+                    }
+                    if (_player.availability === 4) {
+                        return qsTr("Updating firmware")
                     }
                     return qsTr("Not reachable. Pull down to pick another player.")
                 }
@@ -174,6 +182,45 @@ Page {
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.secondaryHighlightColor
                 text: qsTr("No presets on this player. Presets are created in the official app.")
+            }
+
+            // Only while the player offers a firmware update.
+            BackgroundItem {
+                id: updateNotice
+                width: parent.width
+                height: Theme.itemSizeMedium
+                visible: _player !== null && _player.upgradeAvailable
+                // The page is the player's own: only while it answers.
+                enabled: _player !== null && _player.online
+                // Straight to the player's own update page (Misja, 2026-11-09).
+                onClicked: pageStack.push(Qt.resolvedUrl("PlayerWebPage.qml"), {
+                    player: _player,
+                    url: _player.upgradePage(),
+                    title: _player.name !== "" ? _player.name : _player.host,
+                    description: qsTr("Firmware update")
+                })
+
+                Column {
+                    x: Theme.horizontalPageMargin
+                    width: parent.width - 2 * Theme.horizontalPageMargin
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    Label {
+                        width: parent.width
+                        truncationMode: TruncationMode.Fade
+                        color: updateNotice.highlighted ? Theme.highlightColor : Theme.primaryColor
+                        text: qsTr("Update available")
+                    }
+                    Label {
+                        width: parent.width
+                        truncationMode: TruncationMode.Fade
+                        font.pixelSize: Theme.fontSizeSmall
+                        color: Theme.secondaryColor
+                        visible: text !== ""
+                        text: _player && _player.upgradeVersion !== ""
+                              ? qsTr("Firmware %1").arg(_player.upgradeVersion) : ""
+                    }
+                }
             }
 
             SectionHeader {

@@ -207,46 +207,71 @@
     </message>
     <message>
         <location filename="../qml/pages/HomePage.qml" line="68"/>
+        <source>Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="73"/>
         <source>Players</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="72"/>
+        <location filename="../qml/pages/HomePage.qml" line="77"/>
         <source>Browse</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="86"/>
+        <location filename="../qml/pages/HomePage.qml" line="91"/>
         <source>No player chosen. Pull down to pick one.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="95"/>
+        <location filename="../qml/pages/HomePage.qml" line="100"/>
         <source>Not a BluOS player</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="97"/>
+        <location filename="../qml/pages/HomePage.qml" line="103"/>
+        <source>Updating firmware</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="105"/>
         <source>Not reachable. Pull down to pick another player.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="92"/>
+        <location filename="../qml/pages/HomePage.qml" line="97"/>
         <source>Connecting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="101"/>
+        <location filename="../qml/pages/HomePage.qml" line="109"/>
         <source>Presets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="176"/>
+        <location filename="../qml/pages/HomePage.qml" line="184"/>
         <source>No presets on this player. Presets are created in the official app.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="180"/>
+        <location filename="../qml/pages/HomePage.qml" line="200"/>
+        <source>Firmware update</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="212"/>
+        <source>Update available</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="221"/>
+        <source>Firmware %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="227"/>
         <source>Inputs</source>
         <translation type="unfinished"></translation>
     </message>
@@ -298,6 +323,64 @@
     </message>
 </context>
 <context>
+    <name>PlayerSettingsPage</name>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="32"/>
+        <source>Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="35"/>
+        <source>Player</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="38"/>
+        <source>Model</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="43"/>
+        <source>Firmware version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="48"/>
+        <source>Firmware</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="57"/>
+        <source>The player is updating. This takes a few minutes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="61"/>
+        <source>Firmware %1 is available.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="62"/>
+        <source>A firmware update is available.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="65"/>
+        <source>No update found.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="78"/>
+        <source>Start update</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="83"/>
+        <source>Firmware update</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>PlayersPage</name>
     <message>
         <location filename="../qml/pages/PlayersPage.qml" line="41"/>
@@ -315,52 +398,57 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="57"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="44"/>
+        <source>Updating firmware</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayersPage.qml" line="58"/>
         <source>Players</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="62"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="63"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="66"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="67"/>
         <source>Add player</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="70"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="71"/>
         <source>Search again</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="132"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="133"/>
         <source>Follow %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="138"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="139"/>
         <source>Add %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="143"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="144"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="193"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="194"/>
         <source>Leave group</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="205"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="206"/>
         <source>No players found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="206"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="207"/>
         <source>Pull down to search again or to add a player by address</source>
         <translation type="unfinished"></translation>
     </message>

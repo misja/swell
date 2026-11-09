@@ -77,6 +77,7 @@ private slots:
     void muteIsNotLostInAVolumeBurst();
     void presetsRefetchIsBounded();
     void serverErrorIsOfflineNot404();
+    void statusPollingOffStopsStatusReads();
 
 private:
     void startClient(const Client::Timing &timing = fast());
@@ -530,6 +531,28 @@ void TstClient::serverErrorIsOfflineNot404()
     m_player->failWith(QStringLiteral("/Status"), 404);
     startClient();
     QTRY_COMPARE(m_client->availability(), Client::NotAPlayer);
+}
+
+void TstClient::statusPollingOffStopsStatusReads()
+{
+    // Found in the 006 result review: the aborted poll used to reschedule
+    // itself, so /Status went on being read.
+    startClient();
+    m_client->setSyncWatch(true);
+    QTRY_VERIFY(m_client->online());
+    QTRY_VERIFY(m_player->requests(QStringLiteral("/Status")).size() >= 2);  // the long poll is held
+    m_client->setStatusPolling(false);
+    QTest::qWait(300);
+    const int before = m_player->requests(QStringLiteral("/Status")).size();
+    QTest::qWait(2000);
+    QCOMPARE(m_player->requests(QStringLiteral("/Status")).size(), before);
+    // The watch keeps the player online.
+    QCOMPARE(m_client->availability(), Client::Online);
+
+    // Switched on again, /Status is read again.
+    m_client->setStatusPolling(true);
+    QTRY_VERIFY(m_player->requests(QStringLiteral("/Status")).size() > before);
+    QCOMPARE(m_client->availability(), Client::Online);
 }
 
 QTEST_GUILESS_MAIN(TstClient)

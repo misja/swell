@@ -41,6 +41,7 @@ Page {
         case 0: return qsTr("Connecting")
         case 2: return qsTr("Not reachable")
         case 3: return qsTr("Not a BluOS player")
+        case 4: return qsTr("Updating firmware")
         }
         return ""
     }

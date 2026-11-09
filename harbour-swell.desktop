@@ -8,4 +8,4 @@ Name=Swell
 [X-Sailjail]
 OrganizationName=io.github.misja
 ApplicationName=swell
-Permissions=Internet;Audio
+Permissions=Internet;Audio;WebView

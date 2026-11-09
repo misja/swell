@@ -36,6 +36,7 @@ Client::Client(QNetworkAccessManager *nam, const QString &host, int port, QObjec
     connect(&m_pollTimer, &QTimer::timeout, this, &Client::pollStatus);
     m_positionTimer.setInterval(1000);
     connect(&m_positionTimer, &QTimer::timeout, this, &Client::positionChanged);
+    connect(&m_upgradeTimer, &QTimer::timeout, this, &Client::checkUpgrade);
 }
 
 Client::~Client()
@@ -93,6 +94,7 @@ void Client::start()
     if (m_statusPolling) {
         fetchSyncStatus();
         schedulePoll(0);
+        m_upgradeTimer.start(m_timing.upgradeCheckIntervalMs);
     }
     watchSyncStatus();
 }
@@ -106,8 +108,11 @@ void Client::setStatusPolling(bool polling)
         return;
     if (polling) {
         schedulePoll(0);
+        m_upgradeTimer.start(m_timing.upgradeCheckIntervalMs);
+        checkUpgrade();
     } else {
         m_pollTimer.stop();
+        m_upgradeTimer.stop();
         if (m_statusReply)
             m_statusReply->abort();
     }
@@ -118,6 +123,7 @@ void Client::stop()
     m_running = false;
     m_pollTimer.stop();
     m_positionTimer.stop();
+    m_upgradeTimer.stop();
     if (m_statusReply)
         m_statusReply->abort();
     if (m_syncReply)
@@ -689,8 +695,12 @@ void Client::schedulePoll(int delayMs)
 
 void Client::pollStatus()
 {
-    if (!m_running || m_statusReply)
+    if (!m_running || !m_statusPolling || m_statusReply || m_probing)
         return;
+    if (m_availability == Updating) {
+        probeSyncStatus(Updating);
+        return;
+    }
     const int wait = msUntilAllowed(QStringLiteral("/Status"));
     if (wait > 0) {
         m_pollTimer.start(wait);
@@ -714,19 +724,21 @@ void Client::onStatusReply(QNetworkReply *reply)
     reply->deleteLater();
     if (m_statusReply == reply)
         m_statusReply = nullptr;
-    if (!m_running)
+    // While the player updates, /SyncStatus decides (probeSyncStatus). A poll
+    // aborted by setStatusPolling(false) says nothing about the player.
+    if (!m_running || !m_statusPolling || m_availability == Updating)
         return;
 
     if (reply->error() != QNetworkReply::NoError) {
-        // A 404 means no control API here; other HTTP errors (a player busy
-        // upgrading, a proxy) and network errors are transient.
+        // A 404 means no control API here; other HTTP errors (a proxy) and
+        // network errors are transient.
         const int http = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-        failed(http == 404 ? NotAPlayer : Offline);
+        probeSyncStatus(http == 404 ? NotAPlayer : Offline);
         return;
     }
     const Status status = parseStatus(reply->readAll());
     if (!status.ok) {
-        failed(NotAPlayer);
+        probeSyncStatus(NotAPlayer);
         return;
     }
     succeeded();
@@ -778,8 +790,11 @@ void Client::onSyncStatusReply(QNetworkReply *reply)
     if (!m_running || reply->error() != QNetworkReply::NoError)
         return;  // the status poll owns availability and retries
     const SyncStatus sync = parseSyncStatus(reply->readAll());
-    if (!sync.ok)
+    if (!sync.ok) {
+        if (sync.upgradeStage > 0)
+            enterUpdating();
         return;
+    }
     takeSyncStatus(sync);
     // The status may have moved on while this was in flight; compare with what
     // was asked for, not with the answer, which need not echo it.
@@ -804,7 +819,8 @@ void Client::watchSyncStatus()
     }
     QUrlQuery query;
     int deadline = m_timing.commandTimeoutMs;
-    if (m_sync.ok && !m_sync.etag.isEmpty()) {
+    // No long poll across a firmware update's restart.
+    if (m_sync.ok && !m_sync.etag.isEmpty() && m_availability != Updating) {
         query.addQueryItem(QStringLiteral("timeout"), QString::number(m_timing.syncPollTimeoutSecs));
         query.addQueryItem(QStringLiteral("etag"), m_sync.etag);
         deadline = m_timing.syncPollTimeoutSecs * 1000 + m_timing.deadlineGraceMs;
@@ -826,7 +842,9 @@ void Client::onSyncWatchReply(QNetworkReply *reply)
     if (!sync.ok) {
         // Without a status poll, this read decides availability.
         if (!m_statusPolling)
-            setAvailability(Offline);
+            setAvailability(sync.upgradeStage > 0 ? Updating : Offline);
+        else if (sync.upgradeStage > 0)
+            enterUpdating();
         m_syncBackoffMs = m_syncBackoffMs ? qMin(m_syncBackoffMs * 2, m_timing.backoffMaxMs)
                                           : m_timing.backoffInitialMs;
         QTimer::singleShot(m_syncBackoffMs, this, &Client::watchSyncStatus);
@@ -865,12 +883,124 @@ void Client::onCommandReply(QNetworkReply *reply, const QString &path)
     }
 }
 
+// Not in the API: an updating player answers /SyncStatus with an
+// UpgradeStatusStage root, and is silent while it restarts (observed by
+// azzurro; /Status is not observed then). So a plain /SyncStatus read decides
+// before a failed /Status counts as `otherwise`, and while the player updates;
+// no long poll is held across the restart, as in the official app.
+void Client::probeSyncStatus(Availability otherwise)
+{
+    m_probing = true;
+    fetch(QStringLiteral("/SyncStatus"), QString(), [this, otherwise](const QByteArray &body) {
+        m_probing = false;
+        // Without status polling, the sync watch decides availability.
+        if (!m_running || !m_statusPolling)
+            return;
+        const SyncStatus sync = parseSyncStatus(body);
+        if (sync.upgradeStage > 0 || (m_availability == Updating && !sync.ok)) {
+            failed(Updating);
+        } else if (m_availability != Updating) {
+            failed(otherwise);
+        } else if (!m_upgrade.inProgress) {
+            leaveUpdating(sync);
+        } else {
+            // While the update downloads, the player still answers as a
+            // player: it is back only once the check no longer says so.
+            m_probing = true;
+            fetchUpgradeCheck([this, sync](const UpgradeCheck &check) {
+                m_probing = false;
+                if (!m_statusPolling)
+                    return;
+                if (check.ok && check.inProgress) {
+                    failed(Updating);
+                } else {
+                    m_upgrade.inProgress = false;  // or no answer: the player is back
+                    leaveUpdating(sync);
+                }
+            });
+        }
+    });
+}
+
+// Back as a player, with its new firmware.
+void Client::leaveUpdating(const SyncStatus &sync)
+{
+    takeSyncStatus(sync);
+    succeeded();
+    schedulePoll(0);
+}
+
+void Client::enterUpdating()
+{
+    if (m_availability == Updating)
+        return;
+    failed(Updating);
+    if (m_statusReply)
+        m_statusReply->abort();
+    if (m_syncWatchReply)
+        m_syncWatchReply->abort();
+}
+
+void Client::setUpgradeChecks(bool checks)
+{
+    if (m_upgradeChecks == checks)
+        return;
+    m_upgradeChecks = checks;
+    checkUpgrade();
+}
+
+QUrl Client::upgradePage() const
+{
+    QUrl u;
+    u.setScheme(QStringLiteral("http"));
+    u.setHost(m_host);
+    u.setPath(QStringLiteral("/upgrade"));
+    // Without the player's own header, as the official app shows it (azzurro).
+    u.setQuery(QStringLiteral("noheader=1"));
+    return u;
+}
+
+void Client::checkUpgrade()
+{
+    if (!m_running || !m_statusPolling || !m_upgradeChecks || !online() || m_upgradeChecking
+            || m_sync.fixedSecondary)
+        return;
+    fetchUpgradeCheck([this](const UpgradeCheck &check) {
+        if (check.ok && check.inProgress)
+            enterUpdating();
+    });
+}
+
+// The one request to /upgrade. Only ever "check": "this" or "all" would
+// start an update. No answer, or not one, keeps what was known.
+void Client::fetchUpgradeCheck(const std::function<void(const UpgradeCheck &)> &done)
+{
+    m_upgradeChecking = true;
+    fetch(QStringLiteral("/upgrade"), QStringLiteral("upgrade=check"), [this, done](const QByteArray &body) {
+        m_upgradeChecking = false;
+        if (!m_running)
+            return;
+        const UpgradeCheck check = parseUpgradeCheck(body);
+        if (check.ok) {
+            const bool changed = !m_upgrade.ok || check.available != m_upgrade.available
+                    || check.version != m_upgrade.version;
+            m_upgrade = check;
+            if (changed)
+                emit upgradeChanged();
+        }
+        done(check);
+    }, m_timing.upgradeTimeoutMs);
+}
+
 void Client::succeeded()
 {
+    const bool wasOnline = online();
     m_backoffMs = 0;
     setAvailability(Online);
     if (!m_sync.ok)
         fetchSyncStatus();
+    if (!wasOnline)
+        checkUpgrade();
 }
 
 void Client::failed(Availability availability)

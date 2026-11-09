@@ -41,6 +41,7 @@ private slots:
     void mprisRequestsReachThePlayer();
     void mprisOffline();
     void mprisWithoutAPlayer();
+    void firmwareValues();
 
 private:
     QString call(const char *function, const QVariant &arg = QVariant());
@@ -71,7 +72,10 @@ void TstQmlRuntime::initTestCase()
 {
     m_player = new FakePlayer(this);
     QVERIFY(m_player->listen());
-    m_player->serve(QStringLiteral("/SyncStatus"), "<SyncStatus etag=\"s\" syncStat=\"s\" name=\"Den\" volume=\"20\"/>");
+    m_player->serve(QStringLiteral("/SyncStatus"),
+                    "<SyncStatus etag=\"s\" syncStat=\"s\" name=\"Den\" volume=\"20\" version=\"4.18.18\"/>");
+    m_player->serve(QStringLiteral("/upgrade"),
+                    "<upgrade inProgress=\"false\" version=\"4.18.20\" available=\"true\">check</upgrade>");
     m_player->setStatus("<status etag=\"e1\"><state>stop</state><prid>1</prid></status>");
     m_player->serve(QStringLiteral("/Presets"),
                     "<presets prid=\"1\">"
@@ -190,6 +194,14 @@ void TstQmlRuntime::inputs()
 void TstQmlRuntime::queue()
 {
     QCOMPARE(call("queue"), QStringLiteral("true boolean number string boolean number"));
+}
+
+void TstQmlRuntime::firmwareValues()
+{
+    // What HomePage and PlayerSettingsPage read for firmware (spec 006). An
+    // earlier test takes the player offline; the values stay as last checked.
+    QTRY_COMPARE(call("firmware"),
+                 QStringLiteral("true 4.18.20 true 4.18.18 http://127.0.0.1/upgrade?noheader=1 number"));
 }
 
 void TstQmlRuntime::groupValues()
