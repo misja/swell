@@ -256,17 +256,22 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="204"/>
+        <location filename="../qml/pages/HomePage.qml" line="198"/>
+        <source>Firmware update</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="210"/>
         <source>Update available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="213"/>
+        <location filename="../qml/pages/HomePage.qml" line="219"/>
         <source>Firmware %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="219"/>
+        <location filename="../qml/pages/HomePage.qml" line="225"/>
         <source>Inputs</source>
         <translation type="unfinished"></translation>
     </message>
@@ -365,17 +370,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayerSettingsPage.qml" line="76"/>
-        <source>Update</source>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="78"/>
+        <source>Start update</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayerSettingsPage.qml" line="76"/>
-        <source>Open the player&apos;s page</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/PlayerSettingsPage.qml" line="80"/>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="83"/>
         <source>Firmware update</source>
         <translation type="unfinished"></translation>
     </message>
