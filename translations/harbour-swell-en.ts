@@ -338,6 +338,10 @@
     </message>
     <message>
         <location filename="../qml/pages/PlayerSettingsPage.qml" line="43"/>
+        <source>Firmware version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../qml/pages/PlayerSettingsPage.qml" line="48"/>
         <source>Firmware</source>
         <translation type="unfinished"></translation>
@@ -358,22 +362,22 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayerSettingsPage.qml" line="64"/>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="65"/>
         <source>No update found.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayerSettingsPage.qml" line="74"/>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="76"/>
         <source>Update</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayerSettingsPage.qml" line="74"/>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="76"/>
         <source>Open the player&apos;s page</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayerSettingsPage.qml" line="78"/>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="80"/>
         <source>Firmware update</source>
         <translation type="unfinished"></translation>
     </message>

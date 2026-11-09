@@ -338,6 +338,10 @@
     </message>
     <message>
         <location filename="../qml/pages/PlayerSettingsPage.qml" line="43"/>
+        <source>Firmware version</source>
+        <translation>Firmwareversie</translation>
+    </message>
+    <message>
         <location filename="../qml/pages/PlayerSettingsPage.qml" line="48"/>
         <source>Firmware</source>
         <translation>Firmware</translation>
@@ -358,22 +362,22 @@
         <translation>Er is een firmware-update beschikbaar.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayerSettingsPage.qml" line="64"/>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="65"/>
         <source>No update found.</source>
         <translation>Geen update gevonden.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayerSettingsPage.qml" line="74"/>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="76"/>
         <source>Update</source>
         <translation>Bijwerken</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayerSettingsPage.qml" line="74"/>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="76"/>
         <source>Open the player&apos;s page</source>
         <translation>Pagina van de speler openen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayerSettingsPage.qml" line="78"/>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="80"/>
         <source>Firmware update</source>
         <translation>Firmware-update</translation>
     </message>
