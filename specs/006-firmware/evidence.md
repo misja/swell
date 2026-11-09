@@ -1,20 +1,20 @@
 # Evidence — 006 firmware updates
 
-## Build (2026-11-09, commit c7ad3c5)
+## Build (2026-11-09, commit ea43753)
 
 Branch 006-firmware, built from a clone of the branch in the SDK.
 
 - **RPMs:** aarch64 and armv7hl build with no compiler warnings.
   - sha256 aarch64:
-    34527197566949eaa742370e394411d292a233e9457cd5bdee44e0074f14909b
+    b6b51f941a4a62cc6e70e455fd93b76a77936a9f4fce8a704b6afe8645e7034a
   - sha256 armv7hl:
-    4e5cf328410b8cd3ef7ce736dc12c18402605e5d53a3c4a5104567794ed4e6f0
+    528bcdfeada666dc2d11eb557ee294af920330d25f509c9a6ece04ccda271b94
 - **Requires** (both): sailfish-components-webview-qt5, -popups and -pickers.
 - **Installed in both SDK targets with Misja's approval (2026-11-09):**
   - qtmozembed-qt5-devel 1.55.10;
   - sailfish-components-webview-qt5, -popups and -pickers 1.6.9;
   - qt5-qttest-devel 5.6.3, reinstalled.
-- **Harbour validator:** passes on both, rebuilt from c7ad3c5. Each has one WARNING: the binary's
+- **Harbour validator:** passes on both, rebuilt from ea43753. Each has one WARNING: the binary's
   rpath includes the SDK's target path to xulrunner, for example
   `/home/ubuntu/SailfishOS/mersdk/targets/SailfishOS-5.1.0.11-aarch64.default/usr/lib64/xulrunner-qt5-91.13.1`.
   - It comes from `libxul.pc`, which qt5embedwidget requires: its `Libs`
@@ -80,7 +80,7 @@ The new tests:
 | M-B: every polled player was checked | `setUpgradeChecks`, current player only; tests `checksCanBeSwitchedOff`, group `onlyTheCurrentPlayerIsAskedForFirmware` |
 | M-C: libxul is mapped at every start | Spec corrected; start-up and memory go into the device check |
 | M-D: docs out of line with the code | Spec, plan, tasks and STATUS corrected; runtime QML test `firmwareValues` added |
-| M-E: build evidence predated `-pickers` | Rebuilt and revalidated from c7ad3c5 (above) |
+| M-E: build evidence predated `-pickers` | Rebuilt and revalidated from ea43753 (above) |
 | M-F: issue | #28 exists since the scope review; tasks.md updated |
 | L-A, L-F, L-H | Recorded in the spec |
 | L-B: `setStatusPolling(false)` keeps /Status polling, also on main | Not 006; in STATUS.md, to report separately |

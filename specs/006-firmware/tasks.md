@@ -12,7 +12,7 @@
 - [x] Tests, library, app and packaging; make check passes (11 suites).
 - [x] Validator rpath WARNING researched (evidence.md): documented link for WebView 1.6.9, warning accepted by Misja (2026-11-09); drop the link with WebView 1.8.
 - [x] Dutch translations of the new strings.
-- [x] Builds (aarch64, armv7hl), validator, evidence.md (c7ad3c5).
+- [x] Builds (aarch64, armv7hl), validator, evidence.md (ea43753).
 - [ ] Device check with Misja.
 - [x] Separate result review (approve with changes); findings resolved (evidence.md).
 - [ ] PR.
