@@ -7,6 +7,12 @@ Updated: 2026-11-08 (feature 003, MPRIS). Decision owner: Misja Hoebe (@misja).
 
 Current owner / next owner / decision owner: root / root (next session) / Misja.
 
+Next (2026-11-09): feature 006 firmware updates, branch 006-firmware (local):
+specs/006-firmware/{spec,plan,tasks}.md drafted; next the scope/design
+review. Q0 (player settings such as "Hide source" per input, only through the
+undocumented settings tree on port 11001 / writes on 11000, read on the NAD
+2026-11-08) is Misja's open decision, outside 006.
+
 Released 0.5.0 (2026-11-08): annotated tag v0.5.0 on 3fdd246, GitHub
 release https://github.com/misja/swell/releases/tag/v0.5.0, built from a
 clean checkout of the tag; both RPMs validated; all ten suites pass on
