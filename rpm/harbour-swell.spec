@@ -23,9 +23,8 @@ BuildRequires:  desktop-file-utils
 BuildRequires:  pkgconfig(qt5embedwidget)
 
 %description
-A Sailfish OS controller for BluOS players: playback and volume, presets
-and inputs, the play queue, browsing and search, grouping and firmware
-updates. Not affiliated with or endorsed by Lenbrook Industries. BluOS is a
+Controls BluOS players: playback and volume, presets and inputs, the play
+queue, browsing and search, grouping and firmware updates. Not affiliated with or endorsed by Lenbrook Industries. BluOS is a
 trademark of Lenbrook Industries Limited.
 
 %if 0%{?_chum}
@@ -43,7 +42,7 @@ Links:
   Homepage: https://github.com/misja/swell
   Bugtracker: https://github.com/misja/swell/issues
 AIRating: V
-AINote: Written mostly by AI coding agents; the maintainer specifies, reviews and tests every change on a device.
+AINote: Written mostly by AI coding agents; the maintainer specifies and reviews every change and tests each feature on a device.
 %endif
 
 

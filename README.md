@@ -14,6 +14,12 @@ A Sailfish OS controller for BluOS players.
 
 Players are found automatically, or added by their address.
 
+## Installing
+
+Download the RPM for your phone from
+[Releases](https://github.com/misja/swell/releases): aarch64 for most current
+devices, armv7hl for older 32-bit ones.
+
 ## Building
 
 Use the [Sailfish SDK](https://docs.sailfishos.org/Tools/Sailfish_SDK/):
@@ -28,7 +34,7 @@ from. There is no account, and no data is collected or shared.
 ## Translations
 
 Swell is available in English and Dutch. Translations are in
-`translations/`; contributions are welcome.
+`translations/`.
 
 ## License
 

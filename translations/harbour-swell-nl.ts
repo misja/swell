@@ -16,7 +16,7 @@
     <message>
         <location filename="../qml/pages/AboutPage.qml" line="32"/>
         <source>A Sailfish OS controller for BluOS players.</source>
-        <translation>Een Sailfish OS-bediening voor BluOS-spelers.</translation>
+        <translation>Een Sailfish OS-app voor het bedienen van BluOS-spelers.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AboutPage.qml" line="35"/>
@@ -63,8 +63,8 @@
     </message>
     <message>
         <location filename="../qml/pages/AddPlayerDialog.qml" line="37"/>
-        <source>Use this when the player is not found automatically, for example on another network segment.</source>
-        <translation>Gebruik dit als de speler niet automatisch gevonden wordt, bijvoorbeeld op een ander netwerksegment.</translation>
+        <source>Use this when the player is not found automatically, for example on another network.</source>
+        <translation>Gebruik dit als de speler niet automatisch gevonden wordt, bijvoorbeeld op een ander netwerk.</translation>
     </message>
 </context>
 <context>
@@ -152,13 +152,13 @@
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="437"/>
-        <source>Player offline</source>
-        <translation>Speler offline</translation>
+        <source>Player not reachable</source>
+        <translation>Speler niet bereikbaar</translation>
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="440"/>
-        <source>The player could not show this</source>
-        <translation>De speler kon dit niet tonen</translation>
+        <source>The player could not load this</source>
+        <translation>De speler kon dit niet laden</translation>
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="442"/>
@@ -253,8 +253,8 @@
     </message>
     <message>
         <location filename="../qml/pages/HomePage.qml" line="184"/>
-        <source>No presets on this player. Presets are created in the official app.</source>
-        <translation>Geen presets op deze speler. Presets maak je in de officiële app.</translation>
+        <source>No presets on this player. Presets are made in the BluOS Controller app.</source>
+        <translation>Geen presets op deze speler. Presets maak je in de BluOS Controller-app.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HomePage.qml" line="200"/>
@@ -427,7 +427,7 @@
     <message>
         <location filename="../qml/pages/PlayersPage.qml" line="133"/>
         <source>Follow %1</source>
-        <translation>Volg %1</translation>
+        <translation>%1 volgen</translation>
     </message>
     <message>
         <location filename="../qml/pages/PlayersPage.qml" line="139"/>
@@ -483,7 +483,7 @@
     <message>
         <location filename="../qml/pages/QueuePage.qml" line="94"/>
         <source>Now playing %1. Tap a track to play the queue again.</source>
-        <translation>Nu speelt %1. Tik op een nummer om de wachtrij weer te spelen.</translation>
+        <translation>Nu speelt %1. Tik op een nummer om de wachtrij weer af te spelen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/QueuePage.qml" line="108"/>
@@ -512,8 +512,8 @@
     </message>
     <message>
         <location filename="../qml/pages/QueuePage.qml" line="207"/>
-        <source>Play a preset or an input from Home</source>
-        <translation>Speel een preset of ingang af vanaf Home</translation>
+        <source>Play a preset or an input, or add music from Browse</source>
+        <translation>Speel een preset of ingang af, of voeg muziek toe vanuit Bladeren</translation>
     </message>
 </context>
 <context>

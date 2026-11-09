@@ -63,7 +63,7 @@
     </message>
     <message>
         <location filename="../qml/pages/AddPlayerDialog.qml" line="37"/>
-        <source>Use this when the player is not found automatically, for example on another network segment.</source>
+        <source>Use this when the player is not found automatically, for example on another network.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -151,12 +151,12 @@
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="437"/>
-        <source>Player offline</source>
+        <source>Player not reachable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="440"/>
-        <source>The player could not show this</source>
+        <source>The player could not load this</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -252,7 +252,7 @@
     </message>
     <message>
         <location filename="../qml/pages/HomePage.qml" line="184"/>
-        <source>No presets on this player. Presets are created in the official app.</source>
+        <source>No presets on this player. Presets are made in the BluOS Controller app.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -509,7 +509,7 @@
     </message>
     <message>
         <location filename="../qml/pages/QueuePage.qml" line="207"/>
-        <source>Play a preset or an input from Home</source>
+        <source>Play a preset or an input, or add music from Browse</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

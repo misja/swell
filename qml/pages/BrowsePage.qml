@@ -434,10 +434,10 @@ Page {
             enabled: (browseModel.ready && list.count === 0) || page._offline
             text: {
                 if (page._offline) {
-                    return qsTr("Player offline")
+                    return qsTr("Player not reachable")
                 }
                 if (browseModel.error !== "") {
-                    return qsTr("The player could not show this")
+                    return qsTr("The player could not load this")
                 }
                 return page.key === "LocalMusic:MG/LocalMusic-Favourites" ? qsTr("No favorites yet")
                                                                          : qsTr("Nothing here")

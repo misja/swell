@@ -21,7 +21,7 @@ Dialog {
             width: parent.width
             focus: true
             label: qsTr("Address, optionally with :port")
-            placeholderText: "192.168.1.20"
+            placeholderText: "192.0.2.10"
             inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText | Qt.ImhUrlCharactersOnly
             EnterKey.enabled: players.isValidAddress(text)
             EnterKey.iconSource: "image://theme/icon-m-enter-accept"
@@ -34,7 +34,7 @@ Dialog {
             wrapMode: Text.Wrap
             font.pixelSize: Theme.fontSizeSmall
             color: Theme.secondaryHighlightColor
-            text: qsTr("Use this when the player is not found automatically, for example on another network segment.")
+            text: qsTr("Use this when the player is not found automatically, for example on another network.")
         }
     }
 }
