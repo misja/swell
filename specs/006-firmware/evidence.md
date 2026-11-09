@@ -153,3 +153,17 @@ Checked in the SDK container on 127.0.0.1:
 - **Test:** `tst_client` `statusPollingOffStopsStatusReads`. Without the
   three guards it fails: 5 /Status reads where 2 are expected. With them it
   passes.
+
+## Final state (2026-11-09, 12ae647)
+
+- **Settings:** "Start update" shows only while an update is on offer, and
+  it opens the player's page. With no update there is no button (Misja,
+  after the device check).
+- **Translations:** Dutch for "Start update" and "Firmware update" (the
+  latter is now also used on Home).
+- **`make check`:** all eleven suites pass on aarch64 at 12ae647: spike 5,
+  lsdp 18, xml 36, client 30, model 26, qml 19, qmlruntime 18, queue 28,
+  browse 26, group 31, firmware 17. No compiler warnings.
+- **On the phone:** harbour-swell-0.5.0-4 (Release 4 set only in the SDK
+  clone), installed with Misja's approval. Misja accepts the result.
+- **Not run at 12ae647:** the armv7hl build. It was last built at ea43753.
