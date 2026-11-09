@@ -18,7 +18,7 @@ the app (Sailfish WebView, new `WebView` permission and webview
 requirements); Settings for the current player; /Status polling now stops
 when switched off. Q0 (player settings such as "Hide source" per input,
 only through the undocumented settings tree) is Misja's open decision.
-Chum waits for a reply from Keto about the OBS account (Misja, 2026-11-09);
+Chum waits for an OBS account (Misja, 2026-11-09);
 then screenshots and the changelog approach (guide in ~/code/sailfish/CHUM.md).
 
 Released 0.5.0 (2026-11-08): annotated tag v0.5.0 on 3fdd246, GitHub
