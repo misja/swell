@@ -190,7 +190,13 @@ Page {
                 width: parent.width
                 height: Theme.itemSizeMedium
                 visible: _player !== null && _player.upgradeAvailable
-                onClicked: pageStack.push(Qt.resolvedUrl("PlayerSettingsPage.qml"))
+                // Straight to the player's own update page (Misja, 2026-11-09).
+                onClicked: pageStack.push(Qt.resolvedUrl("PlayerWebPage.qml"), {
+                    player: _player,
+                    url: _player.upgradePage(),
+                    title: _player.name !== "" ? _player.name : _player.host,
+                    description: qsTr("Firmware update")
+                })
 
                 Column {
                     x: Theme.horizontalPageMargin

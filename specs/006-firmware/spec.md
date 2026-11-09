@@ -101,8 +101,10 @@ the update.
      presets with the version when known. Home only, not Now Playing.
    - Home is the player, so Home's pulley gets "Settings": the current
      player's settings page, with model, firmware version and a "Firmware"
-     section (the check's answer, an "Update" button, or "Updating"). The notice opens
-     this page. Later player settings join it as further sections.
+     section (the check's answer, an "Update" button, or "Updating"). Later player
+     settings join it as further sections.
+   - The notice opens the player's update page directly (Misja, 2026-11-09,
+     after the device check: the extra step through Settings is not wanted).
    - The update page has the player's name as header.
 3. **Update in the app:**
    - The Settings page's button opens a `WebViewPage` with a `WebView` on
@@ -181,8 +183,7 @@ for them without building anything for them now:
    the player as updating, not as NotAPlayer. After the update it is online
    again. A test drives this sequence on the fake player.
 3. With an update available, the app shows the notice where agreed on the
-   canvas. The notice opens the player's Settings page, whose button opens
-   the in-app web view on the player's
+   canvas. The notice opens the in-app web view on the player's
    `/upgrade` page.
 4. The SDK build and the Harbour validator pass with the new import,
    requirement and permission, for aarch64 and armv7hl.

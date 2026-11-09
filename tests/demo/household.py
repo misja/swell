@@ -18,14 +18,18 @@ where that is harmless, e.g. in the SDK container:
     sudo python3 -I tests/demo/household.py 192.168.1.18 --firmware
 
 The update follows azzurro's observations (spec 006, Facts): the check says
-inProgress while the player still answers, then the player is silent, then
-/SyncStatus answers UpgradeStatusStage1 and 2, then it is back with the new
-version. The page is our own and looks nothing like a player's. Any /upgrade
+inProgress while the player still answers, then the player is silent (requests
+are held until the phase ends, then dropped), then /SyncStatus answers
+UpgradeStatusStage1 and 2, then it is back with the new version. Invented, as
+nothing is observed there: 503 on other paths and inProgress on the check
+during the stages. After binding port 80 the script drops root to the sudo
+user. The page is our own and looks nothing like a player's. Any /upgrade
 request other than upgrade=check is answered 400 and logged as REFUSED, since
 Swell must never send one.
 Not packaged; for device checks only.
 """
 
+import os
 import sys
 import threading
 import time
@@ -137,7 +141,7 @@ class House:
 def handler_for(house, i):
     class Player(BaseHTTPRequestHandler):
         def log_message(self, fmt, *args):
-            sys.stderr.write("%s %s\n" % (NAMES[i], fmt % args))
+            sys.stderr.write("%s %r\n" % (NAMES[i], fmt % args))
 
         def reply(self, body, code=200):
             data = body.encode()
@@ -152,6 +156,13 @@ def handler_for(house, i):
             ports = q.get("ports", q.get("port", ["11000"]))[0].split(",")
             return [house.index(h, int(p)) for h, p in zip(hosts, ports) if p.isdigit()]
 
+        def refuse(self):
+            sys.stderr.write("%s REFUSED %s %r\n" % (NAMES[i], self.command, self.path))
+            self.reply("<error>refused by the test player</error>", 400)
+
+        def do_POST(self):
+            self.refuse()
+
         def updating(self):
             return house.phase if i == STUDIO else None
 
@@ -161,7 +172,10 @@ def handler_for(house, i):
             if phase in (None, "download"):
                 return False
             if phase == "silent":
-                self.close_connection = True   # restarting: no answer at all
+                # Restarting: no answer at all, until the restart is over.
+                with house.lock:
+                    house.lock.wait_for(lambda: house.phase != "silent")
+                self.close_connection = True
             elif path == "/SyncStatus":
                 self.reply('<UpgradeStatusStage%s name="%s" model="DEMO"/>' % (phase[-1], NAMES[i]))
             else:
@@ -172,7 +186,8 @@ def handler_for(house, i):
             """A long poll: wait while the etag is unchanged, up to the timeout,
             or until Studio's update moves past the download."""
             etag = query.get("etag", [None])[0]
-            timeout = min(int(query.get("timeout", ["0"])[0] or 0), 300)
+            raw = query.get("timeout", ["0"])[0]
+            timeout = min(int(raw), 300) if raw.isdigit() else 0
             with house.lock:
                 if etag:
                     house.lock.wait_for(lambda: ('etag="%s"' % etag) not in doc()
@@ -183,10 +198,9 @@ def handler_for(house, i):
             url = urlsplit(self.path)
             q = parse_qs(url.query)
             path = url.path
+            if path == "/upgrade" and (q.get("upgrade") != ["check"] or len(q) != 1):
+                return self.refuse()
             if path == "/upgrade" and self.updating() != "silent":
-                if q.get("upgrade") != ["check"] or len(q) != 1:
-                    sys.stderr.write("%s REFUSED /upgrade?%s\n" % (NAMES[i], url.query))
-                    return self.reply("<error>refused by the test player</error>", 400)
                 with house.lock:
                     return self.reply(house.upgrade_check(i))
             if self.while_updating(path):
@@ -250,14 +264,18 @@ def page_handler(house):
     """The test update page on port 80, which the app opens in its web view."""
     class Page(BaseHTTPRequestHandler):
         def log_message(self, fmt, *args):
-            sys.stderr.write("page %s\n" % (fmt % args))
+            sys.stderr.write("page %r\n" % (fmt % args))
 
         def do_GET(self):
             url = urlsplit(self.path)
             if url.path == "/upgrade/start":
                 with house.lock:
                     start = house.offered and house.phase is None
-                if start:
+                    if start:
+                        house.phase = "download"   # one update only, however often tapped
+                if not start:
+                    sys.stderr.write("page REFUSED a second start\n")
+                else:
                     threading.Thread(target=house.run_update, daemon=True).start()
                 self.send_response(303)
                 self.send_header("Location", "/upgrade?noheader=1")
@@ -310,6 +328,10 @@ def main():
         threading.Thread(target=page.serve_forever, daemon=True).start()
         servers.append(page)
         print("Update page on http://%s/upgrade" % rest[0])
+    # Port 80 is bound; nothing else needs root.
+    if os.getuid() == 0 and "SUDO_UID" in os.environ:
+        os.setgid(int(os.environ["SUDO_GID"]))
+        os.setuid(int(os.environ["SUDO_UID"]))
     for i, port in enumerate(PORTS):
         server = ThreadingHTTPServer((rest[0], port), handler_for(house, i))
         server.daemon_threads = True

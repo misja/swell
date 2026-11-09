@@ -12,7 +12,7 @@ Page {
 
     allowedOrientations: Orientation.All
 
-    // Opening the page, or coming back from the update page, asks again.
+    // Opening the page asks again; so does leaving the update page.
     onStatusChanged: {
         if (status === PageStatus.Active && _player) {
             _player.checkUpgrade()
@@ -75,6 +75,7 @@ Page {
                 enabled: _player !== null && _player.online
                 text: _player && _player.upgradeAvailable ? qsTr("Update") : qsTr("Open the player's page")
                 onClicked: pageStack.push(Qt.resolvedUrl("PlayerWebPage.qml"), {
+                    player: _player,
                     url: _player.upgradePage(),
                     title: _player.name !== "" ? _player.name : _player.host,
                     description: qsTr("Firmware update")

@@ -8,11 +8,19 @@ import Sailfish.WebView 1.0
 WebViewPage {
     id: page
 
+    // The player whose page this is: asked again about firmware on leaving.
+    property QtObject player
     property url url
     property string title
     property string description
 
     allowedOrientations: Orientation.All
+
+    onStatusChanged: {
+        if (status === PageStatus.Deactivating && player) {
+            player.checkUpgrade()
+        }
+    }
 
     WebViewFlickable {
         anchors.fill: parent
