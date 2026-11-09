@@ -84,8 +84,8 @@ the update.
 
 1. **Check (current player only):**
    - The library reads `upgrade=check` (60 s deadline) while status polling
-     is on: when the player comes online, hourly, and when the update page
-     is closed.
+     is on: when the player comes online, hourly, when Settings opens, and
+     when the update page is left or covered.
    - It never sends `upgrade=this` or `all`, nor `slave`/`port` parameters.
    - It exposes, typed, whether an update is available, the offered version
      when sent, and whether one is in progress.
@@ -108,7 +108,7 @@ the update.
      after the device check: the extra step through Settings is not wanted).
    - The update page has the player's name as header.
 3. **Update in the app:**
-   - The Settings page's button opens a `WebViewPage` with a `WebView` on
+   - The Home notice and the Settings button open a `WebViewPage` with a `WebView` on
      `http://<player>/upgrade?noheader=1`, the player's own page. The user
      starts and follows the update there, as in the official app.
    - The page is only loaded when pushed, so the engine starts only then.

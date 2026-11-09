@@ -8,8 +8,8 @@ Updated: 2026-11-09 (feature 006, firmware). Decision owner: Misja Hoebe (@misja
 Current owner / next owner / decision owner: root / root (next session) / Misja.
 
 Next (2026-11-09): feature 006 firmware updates, branch 006-firmware (local):
-implemented (issue #28); design and result reviews applied; next the
-device check with Misja, then the PR. Also fixed in 006 (Misja: part of the PR):
+implemented (issue #28); design, result and follow-up reviews applied;
+device check passed (Misja, 2026-11-09); next the PR. Also fixed in 006 (Misja: part of the PR):
 setStatusPolling(false) kept /Status polling, a fault on main. Note: Sailfish WebView 1.6.9 in the 5.1 target needs the qt5embedwidget
 link (rpath WARNING accepted); drop it with WebView 1.8+ (specs/006-firmware).
 Q0 (player settings such as "Hide source" per input, only through the

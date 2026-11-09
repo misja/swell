@@ -909,6 +909,8 @@ void Client::probeSyncStatus(Availability otherwise)
             m_probing = true;
             fetchUpgradeCheck([this, sync](const UpgradeCheck &check) {
                 m_probing = false;
+                if (!m_statusPolling)
+                    return;
                 if (check.ok && check.inProgress) {
                     failed(Updating);
                 } else {

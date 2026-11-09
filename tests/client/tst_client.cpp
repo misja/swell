@@ -548,6 +548,11 @@ void TstClient::statusPollingOffStopsStatusReads()
     QCOMPARE(m_player->requests(QStringLiteral("/Status")).size(), before);
     // The watch keeps the player online.
     QCOMPARE(m_client->availability(), Client::Online);
+
+    // Switched on again, /Status is read again.
+    m_client->setStatusPolling(true);
+    QTRY_VERIFY(m_player->requests(QStringLiteral("/Status")).size() > before);
+    QCOMPARE(m_client->availability(), Client::Online);
 }
 
 QTEST_GUILESS_MAIN(TstClient)

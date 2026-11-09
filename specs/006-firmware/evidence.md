@@ -99,7 +99,8 @@ Installed with Misja's approval (2026-11-09):
 - Test player: `household.py 192.168.1.18 --firmware`, run in the SDK
   container as root (port 80), approved.
 
-Result: Misja, 2026-11-09: "werkt allemaal". This was the whole list below,
+Result: Misja, 2026-11-09: "werkt allemaal" (build ea43753; since then the
+NAD page cannot be reached without an update on offer, by design). This was the whole list below,
 against the test player; the real NAD page opened in the web view. The test
 player was stopped afterwards.
 
@@ -154,16 +155,29 @@ Checked in the SDK container on 127.0.0.1:
   three guards it fails: 5 /Status reads where 2 are expected. With them it
   passes.
 
-## Final state (2026-11-09, 12ae647)
+## Final state (2026-11-09, 012ae64)
 
 - **Settings:** "Start update" shows only while an update is on offer, and
   it opens the player's page. With no update there is no button (Misja,
   after the device check).
 - **Translations:** Dutch for "Start update" and "Firmware update" (the
   latter is now also used on Home).
-- **`make check`:** all eleven suites pass on aarch64 at 12ae647: spike 5,
+- **`make check`:** all eleven suites pass on aarch64 at 012ae64: spike 5,
   lsdp 18, xml 36, client 30, model 26, qml 19, qmlruntime 18, queue 28,
   browse 26, group 31, firmware 17. No compiler warnings.
 - **On the phone:** harbour-swell-0.5.0-4 (Release 4 set only in the SDK
   clone), installed with Misja's approval. Misja accepts the result.
-- **Not run at 12ae647:** the armv7hl build. It was last built at ea43753.
+- **Not run at 012ae64:** the armv7hl build. It was last built at ea43753.
+
+## Review of the changes after the device check (2026-11-09; separate agent, approve with changes)
+
+| Finding | Resolution |
+| --- | --- |
+| M1: a `.pyc` file was committed (from a local `py_compile`) | Removed; `__pycache__/` in .gitignore |
+| M2: the Home notice could open the page of a player that does not answer | `enabled` only while the player is online |
+| L1: Settings button visible while updating | Hidden while updating |
+| L2: no test for switching polling back on | Added to `statusPollingOffStopsStatusReads` |
+| L3: the probe's check callback had no polling guard | Guard added |
+| L4: spec wording (check triggers, who opens the page, AC5) | Spec and evidence corrected |
+| L5: hash | 012ae64 |
+| L6: STATUS.md stale | Updated |

@@ -73,7 +73,7 @@ Page {
             // page, as in the official app.
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
-                visible: _player !== null && _player.upgradeAvailable
+                visible: _player !== null && _player.upgradeAvailable && !_updating
                 enabled: _player !== null && _player.online
                 text: qsTr("Start update")
                 onClicked: pageStack.push(Qt.resolvedUrl("PlayerWebPage.qml"), {
