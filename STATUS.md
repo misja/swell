@@ -9,7 +9,9 @@ Current owner / next owner / decision owner: root / root (next session) / Misja.
 
 Next (2026-11-09): feature 006 firmware updates, branch 006-firmware (local):
 specs/006-firmware/{spec,plan,tasks}.md drafted; next the scope/design
-review. Q0 (player settings such as "Hide source" per input, only through the
+review. Note: Sailfish WebView 1.6.9 in the 5.1 target needs the qt5embedwidget
+link (rpath WARNING accepted); drop it with WebView 1.8+ (specs/006-firmware).
+Q0 (player settings such as "Hide source" per input, only through the
 undocumented settings tree on port 11001 / writes on 11000, read on the NAD
 2026-11-08) is Misja's open decision, outside 006.
 

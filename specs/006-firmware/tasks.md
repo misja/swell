@@ -11,7 +11,7 @@
 - [x] Check upstream WebView practice in the target: documented WebViewPage pattern, no main() change, qt5embedwidget link, package-name requirements.
 - [x] Tests, library, app and packaging; make check passes (11 suites).
 - [x] Validator rpath WARNING researched (evidence.md): documented link for WebView 1.6.9, warning accepted pending Misja; drop the link with WebView 1.8.
-- [ ] Dutch translations of the new strings.
+- [x] Dutch translations of the new strings.
 - [ ] Builds (aarch64, armv7hl), validator, evidence.md.
 - [ ] Device check with Misja.
 - [ ] Separate result review, then a PR.

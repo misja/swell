@@ -208,46 +208,66 @@
     </message>
     <message>
         <location filename="../qml/pages/HomePage.qml" line="68"/>
+        <source>Settings</source>
+        <translation>Instellingen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="73"/>
         <source>Players</source>
         <translation>Spelers</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="72"/>
+        <location filename="../qml/pages/HomePage.qml" line="77"/>
         <source>Browse</source>
         <translation>Bladeren</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="86"/>
+        <location filename="../qml/pages/HomePage.qml" line="91"/>
         <source>No player chosen. Pull down to pick one.</source>
         <translation>Geen speler gekozen. Trek omlaag om er een te kiezen.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="95"/>
+        <location filename="../qml/pages/HomePage.qml" line="100"/>
         <source>Not a BluOS player</source>
         <translation>Geen BluOS-speler</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="97"/>
+        <location filename="../qml/pages/HomePage.qml" line="103"/>
+        <source>Updating firmware</source>
+        <translation>Firmware wordt bijgewerkt</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="105"/>
         <source>Not reachable. Pull down to pick another player.</source>
         <translation>Niet bereikbaar. Trek omlaag om een andere speler te kiezen.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="92"/>
+        <location filename="../qml/pages/HomePage.qml" line="97"/>
         <source>Connecting</source>
         <translation>Verbinden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="101"/>
+        <location filename="../qml/pages/HomePage.qml" line="109"/>
         <source>Presets</source>
         <translation>Presets</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="176"/>
+        <location filename="../qml/pages/HomePage.qml" line="184"/>
         <source>No presets on this player. Presets are created in the official app.</source>
         <translation>Geen presets op deze speler. Presets maak je in de officiële app.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="180"/>
+        <location filename="../qml/pages/HomePage.qml" line="204"/>
+        <source>Update available</source>
+        <translation>Update beschikbaar</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="213"/>
+        <source>Firmware %1</source>
+        <translation>Firmware %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="219"/>
         <source>Inputs</source>
         <translation>Ingangen</translation>
     </message>
@@ -300,6 +320,65 @@
     </message>
 </context>
 <context>
+    <name>PlayerSettingsPage</name>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="32"/>
+        <source>Settings</source>
+        <translation>Instellingen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="35"/>
+        <source>Player</source>
+        <translation>Speler</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="38"/>
+        <source>Model</source>
+        <translation>Model</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="43"/>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="48"/>
+        <source>Firmware</source>
+        <translation>Firmware</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="57"/>
+        <source>The player is updating. This takes a few minutes.</source>
+        <translation>De speler wordt bijgewerkt. Dat duurt een paar minuten.</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="61"/>
+        <source>Firmware %1 is available.</source>
+        <translation>Firmware %1 is beschikbaar.</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="62"/>
+        <source>A firmware update is available.</source>
+        <translation>Er is een firmware-update beschikbaar.</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="64"/>
+        <source>No update found.</source>
+        <translation>Geen update gevonden.</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="74"/>
+        <source>Update</source>
+        <translation>Bijwerken</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="74"/>
+        <source>Open the player&apos;s page</source>
+        <translation>Pagina van de speler openen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="78"/>
+        <source>Firmware update</source>
+        <translation>Firmware-update</translation>
+    </message>
+</context>
+<context>
     <name>PlayersPage</name>
     <message>
         <location filename="../qml/pages/PlayersPage.qml" line="41"/>
@@ -317,52 +396,57 @@
         <translation>Geen BluOS-speler</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="57"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="44"/>
+        <source>Updating firmware</source>
+        <translation>Firmware wordt bijgewerkt</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayersPage.qml" line="58"/>
         <source>Players</source>
         <translation>Spelers</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="62"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="63"/>
         <source>About</source>
         <translation>Over</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="66"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="67"/>
         <source>Add player</source>
         <translation>Speler toevoegen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="70"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="71"/>
         <source>Search again</source>
         <translation>Opnieuw zoeken</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="132"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="133"/>
         <source>Follow %1</source>
         <translation>Volg %1</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="138"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="139"/>
         <source>Add %1</source>
         <translation>%1 toevoegen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="143"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="144"/>
         <source>Remove</source>
         <translation>Verwijderen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="193"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="194"/>
         <source>Leave group</source>
         <translation>Groep verlaten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="205"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="206"/>
         <source>No players found</source>
         <translation>Geen spelers gevonden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="206"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="207"/>
         <source>Pull down to search again or to add a player by address</source>
         <translation>Trek omlaag om opnieuw te zoeken of een speler op adres toe te voegen</translation>
     </message>
