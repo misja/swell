@@ -11,7 +11,10 @@ from your phone:
 - Play presets and switch inputs
 - View and edit the play queue
 - Browse your library, radio and streaming services, and search
+- Group players, with group volume and each player's own volume
 - Control playback from the cover and the lock screen
+- See when a player has a firmware update, and install it on the player's
+  own update page
 
 Swell works with any player that runs BluOS. You can also add a player by
 its address.
@@ -30,7 +33,8 @@ repository.
 ## Privacy
 
 Swell connects only to your players and to the servers their artwork comes
-from. There is no account, and no data is collected or shared.
+from. A player's update page is the player's own, and loads what the player
+puts on it. There is no account, and no data is collected or shared.
 
 ## Translations
 

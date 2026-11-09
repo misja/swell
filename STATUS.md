@@ -3,18 +3,20 @@
 The maintainer's working handoff between sessions. Contributors: see
 CONTRIBUTING.md.
 
-Updated: 2026-11-09 (feature 006, firmware). Decision owner: Misja Hoebe (@misja).
+Updated: 2026-11-09 (release 0.6.0). Decision owner: Misja Hoebe (@misja).
 
 Current owner / next owner / decision owner: root / root (next session) / Misja.
 
-Next (2026-11-09): feature 006 firmware updates, branch 006-firmware (local):
-implemented (issue #28); design, result and follow-up reviews applied;
-device check passed (Misja, 2026-11-09); next the PR. Also fixed in 006 (Misja: part of the PR):
-setStatusPolling(false) kept /Status polling, a fault on main. Note: Sailfish WebView 1.6.9 in the 5.1 target needs the qt5embedwidget
-link (rpath WARNING accepted); drop it with WebView 1.8+ (specs/006-firmware).
-Q0 (player settings such as "Hide source" per input, only through the
-undocumented settings tree on port 11001 / writes on 11000, read on the NAD
-2026-11-08) is Misja's open decision, outside 006.
+Now (2026-11-09): release 0.6.0 prepared (PR). Since 0.5.0: firmware
+updates (006, #28/#29): a notice on Home and the player's own update page in
+the app (Sailfish WebView, new `WebView` permission and webview
+requirements); Settings for the current player; /Status polling now stops
+when switched off. Note: Sailfish WebView 1.6.9 in the 5.1 target needs the
+qt5embedwidget link (rpath WARNING accepted); drop it with WebView 1.8+
+(specs/006-firmware). Q0 (player settings such as "Hide source" per input,
+only through the undocumented settings tree) is Misja's open decision.
+After the release: Chum (OBS account, screenshots, changelog approach;
+guide in ~/code/sailfish/CHUM.md).
 
 Released 0.5.0 (2026-11-08): annotated tag v0.5.0 on 3fdd246, GitHub
 release https://github.com/misja/swell/releases/tag/v0.5.0, built from a
