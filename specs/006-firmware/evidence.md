@@ -99,10 +99,15 @@ Installed with Misja's approval (2026-11-09):
 - Test player: `household.py 192.168.1.18 --firmware`, run in the SDK
   container as root (port 80), approved.
 
-To check:
+Result: Misja, 2026-11-09: "werkt allemaal". This was the whole list below,
+against the test player; the real NAD page opened in the web view. The test
+player was stopped afterwards.
+
+Checked:
 - the notice and the Settings page;
 - the web view against the NAD;
 - the WebView permission prompt;
 - start-up time and memory compared with 0.5.0.
 
 A real firmware update is not verified until the NAD is offered one.
+The start-up time was judged by Misja on the device, not measured.
