@@ -150,4 +150,6 @@ Checked in the SDK container on 127.0.0.1:
   - `pollStatus()` returns while status polling is off;
   - an aborted poll's reply and an in-flight probe no longer change
     availability, which then comes from the sync watch.
-- **Test:** `tst_client` `statusPollingOffStopsStatusReads`.
+- **Test:** `tst_client` `statusPollingOffStopsStatusReads`. Without the
+  three guards it fails: 5 /Status reads where 2 are expected. With them it
+  passes.
