@@ -15,5 +15,5 @@
 - [x] Builds (aarch64, armv7hl), validator, evidence.md (ea43753).
 - [x] Device check with Misja (2026-11-09): passes, against the test player and the NAD page.
 - [x] Separate result review (approve with changes); findings resolved (evidence.md).
-- [x] Changes after the device check (direct update page, "Start update", the polling fix) — separate review of these changes.
+- [ ] Separate review of the changes after the device check (direct update page, "Start update", the polling fix).
 - [ ] PR.
