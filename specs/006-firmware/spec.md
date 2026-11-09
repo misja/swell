@@ -101,7 +101,8 @@ the update.
      presets with the version when known. Home only, not Now Playing.
    - Home is the player, so Home's pulley gets "Settings": the current
      player's settings page, with model, firmware version and a "Firmware"
-     section (the check's answer, an "Update" button, or "Updating"). Later player
+     section (the check's answer, a "Start update" button only while an
+     update is on offer, or "Updating"; Misja, 2026-11-09). Later player
      settings join it as further sections.
    - The notice opens the player's update page directly (Misja, 2026-11-09,
      after the device check: the extra step through Settings is not wanted).

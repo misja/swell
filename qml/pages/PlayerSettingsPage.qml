@@ -69,11 +69,13 @@ Page {
 
             Item { width: 1; height: Theme.paddingLarge }
 
-            // The player runs the update from its own page, as in the official app.
+            // Only with an update on offer. The player runs it from its own
+            // page, as in the official app.
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
+                visible: _player !== null && _player.upgradeAvailable
                 enabled: _player !== null && _player.online
-                text: _player && _player.upgradeAvailable ? qsTr("Update") : qsTr("Open the player's page")
+                text: qsTr("Start update")
                 onClicked: pageStack.push(Qt.resolvedUrl("PlayerWebPage.qml"), {
                     player: _player,
                     url: _player.upgradePage(),
