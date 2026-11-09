@@ -4,9 +4,6 @@
 
 A Sailfish OS controller for BluOS players.
 
-Swell finds the BluOS players on your network and lets you control them
-from your phone:
-
 - See what's playing, with cover art, and control playback and volume
 - Play presets and switch inputs
 - View and edit the play queue
@@ -16,8 +13,7 @@ from your phone:
 - See when a player has a firmware update, and install it on the player's
   own update page
 
-Swell works with any player that runs BluOS. You can also add a player by
-its address.
+Players are found automatically, or added by their address.
 
 ## Building
 
