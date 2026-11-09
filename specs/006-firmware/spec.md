@@ -135,16 +135,9 @@ the update.
 
 ## WebView version (decided by Misja, 2026-11-09)
 
-- The SDK target 5.1.0.11 has Sailfish WebView 1.6.9. Its documentation
-  requires linking against qt5embedwidget.
-- That link gives a Harbour validator WARNING about the rpath. It is a
-  warning, not an error, and Misja accepts it (evidence.md).
-- From WebView 1.8.0 (upstream e4e86f1b3e, 2026-09-30), an app that uses
-  the WebView only from QML needs no link. When Swell targets 1.8 or newer:
-  - drop the link and its BuildRequires;
-  - check again whether the `-pickers` requirement is still needed.
-- In 1.6.9, WebView.qml imports Sailfish.WebView.Pickers but the package
-  does not require it, so Swell requires `-pickers` itself.
+Swell links against qt5embedwidget, as WebView 1.6.9 in the SDK target asks,
+and accepts the validator's rpath WARNING. Dropping the link from WebView 1.8
+onwards is tracked in issue #32.
 
 ## Room to grow (Misja, 2026-11-09)
 
