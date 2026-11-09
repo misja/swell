@@ -19,7 +19,7 @@ sha256 993837d2b47ef6e6baf865723e3b186d0e0702ebc2c9c483570bd4c1b090c6f5.
 ## Separate assistant review
 
 - Scope/design review (review_004): approve with changes; findings applied
-  to spec and plan before implementation. Pacing decided by Misja (option 1).
+  to spec and plan before implementation. Pacing decided by the maintainer (option 1).
 - Result review: approve with changes (B1 visible letters could stay "…";
   S1 letter index stale after inserted rows; S2 no retry of a failed page;
   S3 every page on the stack reloaded on a favourite change; S4 offline and
@@ -30,11 +30,11 @@ sha256 993837d2b47ef6e6baf865723e3b186d0e0702ebc2c9c483570bd4c1b090c6f5.
   Open: N4 (covers in letter lists), N5 (unused parsed fields, kept for the
   reusable library).
 
-## Device check (Misja, 0.3.0-1, 2026-11-06), first impressions
+## Device check (the maintainer, 0.3.0-1, 2026-11-06), first impressions
 
 - The letter index (quick jump) works well. Letters are too close together
   for Artists and Albums: use the full screen height, as the People app does
-  (Misja's screenshot).
+  (the maintainer's screenshot).
 - Artist page: shows "Albums" and "Tracks" links. Wish: show the albums
   directly, with Tracks as a further view.
 - Tracks list: album art per track wished.
@@ -42,7 +42,7 @@ sha256 993837d2b47ef6e6baf865723e3b186d0e0702ebc2c9c483570bd4c1b090c6f5.
 
 Agreed on the canvas (B3, B4, B8, B9) and built into 0.3.0-2: a full-height
 letter index with a star; favourites on top of Albums (cover grid) and Artists
-(rows); no "recently played" (Misja keeps to the published API); an artist
+(rows); no "recently played" (the maintainer keeps to the published API); an artist
 opens on its albums with Songs in the pulley; covers per track outside an
 album's own page. New tests: `anArtistOpensOnItsAlbums`,
 `aLetterListFindsItsFavourites`, `noFavouritesWhenTheLibraryHasNone`.
@@ -67,14 +67,14 @@ The reviewer read principles 1.1.0, because its local `origin/main` predated
 the 1.2.0 merge (13985f2); it applied the UI-check items as listed in its
 brief.
 
-Misja's feedback on 0.3.0-2 (screenshot 2026-11-06 23:39), fixed in 0.3.0-4:
+The maintainer's feedback on 0.3.0-2 (screenshot 2026-11-06 23:39), fixed in 0.3.0-4:
 - The Favourites row on Browse showed "NaN:NaN" as a duration. Fixed: the
   row now has no duration, and a missing duration formats as nothing.
 - The letter index lit a letter only while it was touched. It now keeps the
   letter of the part in view lit, as in People (`BrowseModel::sectionAt`, which
   does not read the row).
 
-- The header per letter is removed in 0.3.0-5 (Misja: confusing and
+- The header per letter is removed in 0.3.0-5 (the maintainer: confusing and
   cluttered). The index alone shows where the list is (spec decision 7).
 
 - TuneIn's menu images (sent by the player per item) showed at cover size
@@ -82,7 +82,7 @@ Misja's feedback on 0.3.0-2 (screenshot 2026-11-06 23:39), fixed in 0.3.0-4:
   icon-sized image on a normal row; covers stay for albums, tracks, stations.
 - TuneIn has its own Favourites link (seen in that menu). Not wired into
   Swell's Favourites entry (v1: Library only).
-- Navigation (Misja, 2026-11-07, spec decision 12, canvas N1–N5): a play
+- Navigation (the maintainer, 2026-11-07, spec decision 12, canvas N1–N5): a play
   action pops to Home; the mini-player shows on every page except Now
   Playing; the player's `#` section is left out of the letter index (the
   player sends it first, checked read-only 2026-11-07). Result review
@@ -91,7 +91,7 @@ Misja's feedback on 0.3.0-2 (screenshot 2026-11-06 23:39), fixed in 0.3.0-4:
   openNowPlaying flag cannot stay set). Re-check of the Queue/About
   follow-up: approve; H1 applied (About's tap goes on only after a
   successful pop).
-- App icon (#3): 0.3.0-7 to -10 tried Misja's designs; the sound-bar icon
+- App icon (#3): 0.3.0-7 to -10 tried the maintainer's designs; the sound-bar icon
   (`icons/harbour-swell.svg`) was accepted in the launcher (2026-11-07). The
   launcher shows a changed icon only after lipstick restarts.
 - Covers (decision 13): the Media player's placeholder while a cover loads,
@@ -102,7 +102,7 @@ Misja's feedback on 0.3.0-2 (screenshot 2026-11-06 23:39), fixed in 0.3.0-4:
   applied: no extra cacheBuffer, the placeholder stays until the fade ends,
   icons per row kind, Icon `highlighted`.
 
-## Device check (Misja, Xperia 10 II, NAD C 379)
+## Device check (the maintainer, Xperia 10 II, NAD C 379)
 
 - 0.3.0-6: library scrolling and letter jumps, favourites on top, artist
   pages, covers per track, TuneIn icons, actions (2026-11-07: "alles werkt

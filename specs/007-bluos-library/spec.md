@@ -1,13 +1,13 @@
 # Feature specification — 007 bluos library
 
 Status: revised 2026-11-08 after the scope/design review (approve with
-changes; findings applied below). Misja chose option 3 (plan.md) on
+changes; findings applied below). The maintainer chose option 3 (plan.md) on
 2026-11-08. Built 2026-11-08 (evidence.md).
 
 ## Owner and linked issue
 
 - Accountable owner: root (primary assistant session).
-- Decision owner: Misja Hoebe (@misja).
+- Decision owner: the maintainer.
 - Issue: https://github.com/misja/swell/issues/8.
 - Review: a separate agent reviews scope and design before implementation,
   and the result before the PR. No UI change, so no canvas.
@@ -16,7 +16,7 @@ changes; findings applied below). Misja chose option 3 (plan.md) on
 
 `bluos/` is meant to be a reusable Qt Core/Network library for BluOS
 players: other Qt applications (desktop, command line) should be able to use
-it. Some of its interfaces are still shaped for QML. Misja also asked
+it. Some of its interfaces are still shaped for QML. The maintainer also asked
 (2026-11-08) to check whether the API interaction follows tried and tested
 patterns, and whether the code follows C/C++ conventions. That check is
 recorded below. It decides what is in scope.
@@ -161,7 +161,7 @@ Dropped after review:
    dropped when its context goes away).
 4. The runtime QML test passes, along with the compile test.
 5. The SDK build and Harbour validator pass.
-6. A device check by Misja shows these unchanged:
+6. A device check by the maintainer shows these unchanged:
    - Home: presets and inputs;
    - Now Playing;
    - Queue;

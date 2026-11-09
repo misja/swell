@@ -6,9 +6,9 @@ approve with changes; all findings applied). Implementation may start.
 ## Owner and linked issue
 
 - Accountable owner: root (primary assistant session).
-- Decision owner: Misja Hoebe (@misja).
+- Decision owner: the maintainer.
 - Issue: https://github.com/misja/swell/issues/4.
-- UI: design canvas page "Queue (002)", agreed by Misja on 2026-11-06.
+- UI: design canvas page "Queue (002)", agreed by the maintainer on 2026-11-06.
 - Review: a separate agent reviews scope and design together before
   implementation, and the result before the PR.
 
@@ -20,11 +20,11 @@ Spotify Connect or another controller has filled.
 
 ## Scope and exclusions
 
-Agreed with Misja on 2026-11-06:
+Agreed with the maintainer on 2026-11-06:
 1. A **Queue page** attached to Now Playing (swipe left; swipe right returns).
    The header is "Queue", with "<n> tracks · <player>" as description.
 2. Rows show artwork, title, "artist · album" and the duration when the player
-   gives one. The duration may be dropped after the device check (Misja: "see
+   gives one. The duration may be dropped after the device check (the maintainer: "see
    how it works").
 3. The playing entry is marked, and the list scrolls to it when the page opens,
    even in a long queue. While an input or stream plays, the marker is dimmed,
@@ -62,7 +62,7 @@ repeat.
 - **Refresh:** a `pid` change in `/Status` that Swell did not cause (a new,
   changed or cleared queue) resets the list. Reopening the page keeps the
   rows when the id is unchanged, because the id changes on every
-  modification (fix after Misja's device report of a flash on every open,
+  modification (fix after the maintainer's device report of a flash on every open,
   2026-11-06).
   `/Clear` replies with the new empty queue.
 - **Current entry:** `/Status` `song` is the current position, and `pid` the
@@ -127,7 +127,7 @@ repeat.
 3. **QML compile test** covers the new page.
 4. **RPM:** builds and passes the Harbour validator; the Dutch translation is
    complete.
-5. **Device check by Misja on the real player:** view a queue, play from an
+5. **Device check by the maintainer on the real player:** view a queue, play from an
    entry, remove, clear, and the input/stream line.
 6. **A separate result review** before the PR.
 

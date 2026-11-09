@@ -30,7 +30,7 @@ Inspected 2026-11-06 unless stated otherwise:
 
 ## Design and repository ownership
 
-Single repository `swell` (owner: Misja), app id `harbour-swell`,
+Single repository `swell` (owner: the maintainer), app id `harbour-swell`,
 organization/application names for Sailjail decided at scaffold time.
 
 C++/QML split. Each part records why it is in C++, as the spec requires:
@@ -54,11 +54,11 @@ C++/QML split. Each part records why it is in C++, as the spec requires:
 | Cover page and cover actions | QML/Silica | `CoverActionList`: play/pause and next. |
 | Persistence (manual hosts, current player) | QML `Nemo.Configuration` (`ConfigurationValue`) | Existing allowed platform facility; no own storage code. |
 | Cover art | C++ helper `artworkUrl()` + QML `Image` | The helper resolves relative image paths against the player and adds `followRedirects=1` (API v1.7 image attributes). `Image` loads through the shared NAM, which also follows redirects as a fallback. |
-| Translations | `qsTr()` + `translations/*.ts`, `CONFIG += sailfishapp_i18n` | As in the SDK template. `lupdate` runs at build time and merges new strings without losing translations (checked 2026-11-06: only line references changed). Release check: no `type="unfinished"` left in a maintained language. The platform's `sailfishapp_i18n.prf` (libsailfishapp, read in the target 2026-11-06) does the work: `lupdate -noobsolete`, `lrelease -nounfinished`, install in `/usr/share/harbour-swell/translations`, loaded by libsailfishapp for the system locale at start. Misja 2026-11-06: keep `qsTr` (the SDK default), with `//:` translator comments where needed. `qsTrId` (`sailfishapp_i18n_idbased`, as in Jolla's own apps) stays an option. |
+| Translations | `qsTr()` + `translations/*.ts`, `CONFIG += sailfishapp_i18n` | As in the SDK template. `lupdate` runs at build time and merges new strings without losing translations (checked 2026-11-06: only line references changed). Release check: no `type="unfinished"` left in a maintained language. The platform's `sailfishapp_i18n.prf` (libsailfishapp, read in the target 2026-11-06) does the work: `lupdate -noobsolete`, `lrelease -nounfinished`, install in `/usr/share/harbour-swell/translations`, loaded by libsailfishapp for the system locale at start. The maintainer 2026-11-06: keep `qsTr` (the SDK default), with `//:` translator comments where needed. `qsTrId` (`sailfishapp_i18n_idbased`, as in Jolla's own apps) stays an option. |
 
 No threads besides Qt's own network handling; everything runs on the event loop.
 
-Library (Misja, 2026-11-06: "a robust and current C/C++/QML lib"): the
+Library (the maintainer, 2026-11-06: "a robust and current C/C++/QML lib"): the
 protocol layer is a UI-free module `bluos/` inside this repository, with its
 own `bluos.pri`, namespace `bluos` and tests. It depends only on Qt Core and
 Network and targets API v1.7. A separate repository follows only after reuse
@@ -155,7 +155,7 @@ SDK build engine for the aarch64 target (sb2/qemu; see the spike above):
   deterministically. The configurable fake-player library is only usable from
   Rust test code.
 
-**B. Removed (Misja, 2026-11-06).** The optional check against azzurro's Rust
+**B. Removed (the maintainer, 2026-11-06).** The optional check against azzurro's Rust
 `demo-player` would add a foreign toolchain and container for little gain. The
 independent check is a manual test against a real player once a device
 installation is approved; until then it is recorded as not performed. LSDP end
@@ -189,7 +189,8 @@ RPM. No full rebuild of SDK components is needed.
   elements.
 - Risk: QtTest timing under qemu emulation. Mitigated by the step 1 spike and
   injectable timeouts.
-- Decided: private GitHub repository misja/swell, issue #1.
+- Decided: GitHub repository misja/swell (private at first, public since
+  2026-11-08), issue #1.
 - Risk: Silica may not load on the `minimal` platform (AC4 spike decides).
 - Known limitation: during the attached-page swipe the docked panel hides as
   the swipe starts; any remaining overlap is recorded after a device check.

@@ -7,7 +7,7 @@ maintainer review.
 ## Owner and linked issue
 
 - Accountable owner: root (primary assistant session).
-- Decision owner: Misja Hoebe (@misja).
+- Decision owner: the maintainer.
 - Scope reviewers: separate agents `scope_review` (first scope) and
   `scope_review_2` (MVP revision), both 2026-11-06, verdict "approve with
   changes". Their findings are addressed below (see STATUS.md).
@@ -121,7 +121,7 @@ installation need separate approval.
 - No accounts, credentials, telemetry or analytics. Local state is limited to
   manual hosts and the current player. The About page shows a short privacy
   statement saying so, as the API Use Policy requires.
-- Lenbrook marks (Misja, 2026-11-06): no BluOS name or logo in the app name or
+- Lenbrook marks (the maintainer, 2026-11-06): no BluOS name or logo in the app name or
   icon. BluOS appears only descriptively ("Sailfish OS controller for BluOS
   players"). About and the package description carry the notice "Not
   affiliated with, endorsed by or supported by Lenbrook Industries. BluOS is a
@@ -143,7 +143,7 @@ installation need separate approval.
   refreshed.
 - A failed preset or input play is an HTTP or network error, or an `<error>`
   body. Success is a `<loaded>` or `<state>` response (API §6.2, §11.1).
-- Languages (Misja, 2026-11-06): English is the source language and the
+- Languages (the maintainer, 2026-11-06): English is the source language and the
   fallback. Every UI string goes through `qsTr()`, with no text in C++ that
   reaches the UI untranslated. Translations live in
   `translations/harbour-swell-<lang>.ts` and are kept complete when strings
@@ -206,7 +206,7 @@ target SailfishOS-5.1.0.11-aarch64):
 - sdk-harbour-rpmvalidator 1.110; OpenSSL 3.5.6.
 
 Release target `sailfishos-5.2.0.18-aarch64` (the workspace registry's only
-target). The build target is SailfishOS-5.1.0.11-aarch64, approved by Misja on
+target). The build target is SailfishOS-5.1.0.11-aarch64, approved by the maintainer on
 2026-11-06 as the mapping for that release. The workspace manifest still lists
 `sdk_build_target: null`; that is the workspace's own release record and is
 not changed by this project. Evidence that the app runs on 5.2 is a separate
@@ -258,20 +258,21 @@ API Use Policy (in the v1.7 document), points needing maintainer judgement:
 - It mentions application approval before listing on Lenbrook's sites. Whether
   any registration is needed for an unlisted app is unknown.
 
-Decisions (Misja, 2026-11-06):
+Decisions (the maintainer, 2026-11-06):
 - Build mapping: SailfishOS-5.1.0.11-aarch64 for release target
   sailfishos-5.2.0.18-aarch64.
 - License: MIT (SPDX `MIT`; no copyleft, so linking Silica raises no license
   conflict).
 - Test endpoint: an in-process C++ fixture in the test suite. The optional
-  azzurro demo-player check was removed by Misja on 2026-11-06.
+  azzurro demo-player check was removed by the maintainer on 2026-11-06.
 
-- API Use Policy "compete" clause: Misja's judgement is that Swell fills a
+- API Use Policy "compete" clause: the maintainer's judgement is that Swell fills a
   gap, a native Sailfish OS controller, and does not compete with Lenbrook's
   service. azzurro faces the same clause.
 - An LXC container for the fake-player and other test work is approved.
 
-- Remote: private GitHub repository misja/swell; issue #1 is on the Sailfish
+- Remote: GitHub repository misja/swell (private at first, public since
+  2026-11-08); issue #1 is on the Sailfish
   project board.
 - UI (2026-11-06): start on Home of the last chosen player; source and quality
   are not shown on Now Playing (a details view later); grouping goes on its own

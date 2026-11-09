@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 """Three invented BluOS players on one address, for checking grouping on a device.
 
-    python3 -I tests/demo/household.py 192.168.1.2
+    python3 -I tests/demo/household.py <host>
 
 Serves Living Room, Kitchen and Studio on ports 11010, 11020 and 11030 of the
 given address until Ctrl-C. Add them in Swell as "address:port". Everything is
@@ -15,7 +15,7 @@ With --firmware (spec 006), Studio offers an invented firmware update, and a
 test page on port 80 of the address starts it. Port 80 needs root, so run it
 where that is harmless, e.g. in the SDK container:
 
-    sudo python3 -I tests/demo/household.py 192.168.1.18 --firmware
+    sudo python3 -I tests/demo/household.py <sdk-container> --firmware
 
 The update follows azzurro's observations (spec 006, Facts): the check says
 inProgress while the player still answers, then the player is silent (requests

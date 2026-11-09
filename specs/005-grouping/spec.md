@@ -1,13 +1,13 @@
 # Feature specification — 005 grouping
 
 Status: revised 2026-11-08 after the scope/design review (approve with
-changes; findings applied). Q1 and Q2 decided by Misja. No implementation and
+changes; findings applied). Q1 and Q2 decided by the maintainer. No implementation and
 no UI yet; the UI is agreed on the design canvas before it is built.
 
 ## Revision 2026-11-08: grouping in the player list (option A)
 
-After his device check of the first version, Misja found the navigation
-unintuitive: grouping went from Players to Now Playing and back. He chose
+After the device check of the first version, the maintainer found the navigation
+unintuitive: grouping went from Players to Now Playing and back, and chose
 option A (canvas "Grouping, round 2", refined live on the device). This
 supersedes the group page (G2), the Now Playing pulley item (G1) and the
 one-row group (G3, option B) below, and 001's "grouping on its own page from
@@ -27,19 +27,19 @@ Now Playing" (specs/001-core-controller/spec.md).
   volume and group mute have their own gate keys.
 - **Terms:** Follow / Volg, Leave group / Groep verlaten; no ellipses.
 - Assessed by a separate result review (evidence.md) instead of a design
-  review before building, since it was decided and refined with Misja on
+  review before building, since it was decided and refined with the maintainer on
   the device.
 
 ## Owner and linked issue
 
 - Accountable owner: root (primary assistant session).
-- Decision owner: Misja Hoebe (@misja).
+- Decision owner: the maintainer.
 - Issue: https://github.com/misja/swell/issues/21. 001 lists 005 in its
   "Agreed structure for later features": grouping on its own page, opened
   from Now Playing.
 - Review: a separate agent reviews scope and design before implementation,
   and the result before the PR.
-- UI: design canvas page "Grouping (005)", boards G1–G3, agreed by Misja
+- UI: design canvas page "Grouping (005)", boards G1–G3, agreed by the maintainer
   on 2026-11-08 (the canvas is linked in issue #1):
   - **G1:** "Group…" in the Now Playing pulley, with the leader's role
     under its name, worded as azzurro does ("Leading 2 players",
@@ -50,8 +50,8 @@ Now Playing" (specs/001-core-controller/spec.md).
   - **G3:** a group is one player (option B): one row "Living Room + 2" in
     Players. Tapping it, or a member, makes the leader current.
   - Mini-player and cover unchanged: they show the current player, which is
-    always a leader or a lone player (Misja, 2026-11-08).
-- Scope agreed by Misja (2026-11-08): show groups, group and ungroup players,
+    always a leader or a lone player (the maintainer, 2026-11-08).
+- Scope agreed by the maintainer (2026-11-08): show groups, group and ungroup players,
   and group volume. Fixed groups are out of scope.
 
 ## Problem
@@ -203,7 +203,7 @@ needs the official app for that.
 - LSDP announcements from the emulated players: they are added by address.
 - Running emulated players on the phone.
 
-## Decisions (Misja, 2026-11-08)
+## Decisions (the maintainer, 2026-11-08)
 
 - **Q1, Home follows the group** (made concrete by option B: the current
   player is always the leader).
@@ -211,20 +211,20 @@ needs the official app for that.
     group's primary: its playback, presets and inputs. Playing a preset or
     input acts on the group's source.
   - The secondary keeps its own volume.
-  - Expected use: a household has a main player (for Misja, the NAD) that
+  - Expected use: a household has a main player (for example an amplifier) that
     leads, and others join it.
   - Whether playing on a secondary would ungroup it is avoided by sending
     those commands to the primary. **Not verified on hardware.**
 - **Q2, the emulated players run on the local network, not on the phone.**
-  - The host (192.168.1.2) has Python 3.14 but no Qt or C++ compiler.
+  - The host has Python 3.14 but no Qt or C++ compiler.
   - So the device-check household is a stdlib-only Python script on the
-    host: three invented players on 192.168.1.2, ports 11010, 11020 and
+    host: three invented players on the host, ports 11010, 11020 and
     11030 (one IP with several ports, as on the NAD CI580). The phone adds
     them by "host:port".
   - The automated tests keep the C++ household. Both follow one written
     behaviour list (plan.md) to limit drift.
   - Running it opens three ports on the LAN while it runs: started by hand,
-    in the foreground, with Misja's approval each time. The host's ufw
+    in the foreground, with the maintainer's approval each time. The host's ufw
     state is checked then.
 
 ## Acceptance criteria
@@ -254,7 +254,7 @@ needs the official app for that.
 4. The UI agreed on the canvas is built as agreed. Runtime QML tests read
    the group values the pages use.
 5. The SDK build and the Harbour validator pass, for aarch64 and armv7hl.
-6. A device check by Misja covers:
+6. A device check by the maintainer covers:
    - the emulated household on the LAN (Q2): grouping, ungrouping,
      volumes, and Home following the primary (Q1);
    - the real NAD as a lone player.

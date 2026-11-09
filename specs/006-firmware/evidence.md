@@ -10,7 +10,7 @@ Branch 006-firmware, built from a clone of the branch in the SDK.
   - sha256 armv7hl:
     528bcdfeada666dc2d11eb557ee294af920330d25f509c9a6ece04ccda271b94
 - **Requires** (both): sailfish-components-webview-qt5, -popups and -pickers.
-- **Installed in both SDK targets with Misja's approval (2026-11-09):**
+- **Installed in both SDK targets with the maintainer's approval (2026-11-09):**
   - qtmozembed-qt5-devel 1.55.10;
   - sailfish-components-webview-qt5, -popups and -pickers 1.6.9;
   - qt5-qttest-devel 5.6.3, reinstalled.
@@ -23,7 +23,7 @@ Branch 006-firmware, built from a clone of the branch in the SDK.
   - The binary does not need libxul itself; `NEEDED` has only
     `libqt5embedwidget.so.1`, which carries its own rpath to xulrunner. The
     extra rpath points nowhere on the device.
-  - **Upstream practice** (researched 2026-11-09, at Misja's request):
+  - **Upstream practice** (researched 2026-11-09, at the maintainer's request):
     - The validator (sailfishos/sdk-harbour-rpmvalidator `rpmvalidation.sh`,
       master 7dd7dd5, l. 1221–1244) allows only `/usr/share/<name>/lib` and
       `$ORIGIN/../share/<name>/lib`. Any other rpath is a WARNING. It is an
@@ -48,7 +48,7 @@ Branch 006-firmware, built from a clone of the branch in the SDK.
 - **`make check`:** all eleven suites pass: spike 5, lsdp 18, xml 36,
   client 29, model 26, qml 19, qmlruntime 18, queue 28, browse 26,
   group 31, firmware 17. No compiler warnings.
-- **qt5-qttest-devel:** reinstalled in both SDK targets with Misja's
+- **qt5-qttest-devel:** reinstalled in both SDK targets with the maintainer's
   approval. A `build-requires reset` had removed it.
 - **The QML compile test found a missing dependency:** WebView.qml (1.6.9)
   imports `Sailfish.WebView.Pickers`, but `sailfish-components-webview-qt5`
@@ -91,15 +91,15 @@ The new tests:
 
 ## Device check (AC5)
 
-Installed with Misja's approval (2026-11-09):
+Installed with the maintainer's approval (2026-11-09):
 - Phone: SFOS 5.2.0.22, Sailfish WebView 1.7.4.1 (with -popups and -pickers).
   That is also before 1.8, so the link advice still holds there.
 - Build: harbour-swell-0.5.0-2, from ea43753. Release 2 was set only in the
   SDK clone for the device. Permissions `Internet;Audio;WebView`.
-- Test player: `household.py 192.168.1.18 --firmware`, run in the SDK
+- Test player: `household.py <sdk-container> --firmware`, run in the SDK
   container as root (port 80), approved.
 
-Result: Misja, 2026-11-09: "werkt allemaal" (build ea43753; since then the
+Result: the maintainer, 2026-11-09: "werkt allemaal" (build ea43753; since then the
 NAD page cannot be reached without an update on offer, by design). This was the whole list below,
 against the test player; the real NAD page opened in the web view. The test
 player was stopped afterwards.
@@ -111,7 +111,7 @@ Checked:
 - start-up time and memory compared with 0.5.0.
 
 A real firmware update is not verified until the NAD is offered one.
-The start-up time was judged by Misja on the device, not measured.
+The start-up time was judged by the maintainer on the device, not measured.
 
 ## Test household review (2026-11-09; separate agent, accept with two fixes)
 
@@ -134,14 +134,14 @@ Checked in the SDK container on 127.0.0.1:
 - a silent request is held for 9 s and then dropped;
 - the player comes back on 9.9.2.
 
-## After the device check (Misja, 2026-11-09)
+## After the device check (the maintainer, 2026-11-09)
 
 - The notice on Home opens the player's update page directly, without the
   Settings step.
 - Leaving the update page asks again (`PlayerWebPage.player`).
 - `make check` passes again on all eleven suites (8e0a7be).
 
-## A fault on main, fixed here (Misja: part of the PR, 2026-11-09)
+## A fault on main, fixed here (the maintainer: part of the PR, 2026-11-09)
 
 - **The fault:** after `setStatusPolling(false)`, /Status went on being
   read. The aborted poll failed, `failed()` rescheduled it, and
@@ -158,7 +158,7 @@ Checked in the SDK container on 127.0.0.1:
 ## Final state (2026-11-09, 012ae64)
 
 - **Settings:** "Start update" shows only while an update is on offer, and
-  it opens the player's page. With no update there is no button (Misja,
+  it opens the player's page. With no update there is no button (the maintainer,
   after the device check).
 - **Translations:** Dutch for "Start update" and "Firmware update" (the
   latter is now also used on Home).
@@ -166,7 +166,7 @@ Checked in the SDK container on 127.0.0.1:
   lsdp 18, xml 36, client 30, model 26, qml 19, qmlruntime 18, queue 28,
   browse 26, group 31, firmware 17. No compiler warnings.
 - **On the phone:** harbour-swell-0.5.0-4 (Release 4 set only in the SDK
-  clone), installed with Misja's approval. Misja accepts the result.
+  clone), installed with the maintainer's approval. The maintainer accepts the result.
 - **At 2a8620f:** all eleven suites pass (client 30); aarch64 and armv7hl
   build and validate (rpath WARNING only).
 

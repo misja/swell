@@ -53,10 +53,10 @@ These have no real grouped hardware behind them (one player, the NAD C 379):
 
 ## Device check (2026-11-08)
 
-Misja checked 0.4.0-3 on the Xperia 10 II (Sailfish OS 5.2.0.22). The
-emulated household ran on the host, at 192.168.1.2 on ports 11010–11030;
-the phone reached it, ufw was active, and it was stopped afterwards. He went
-through the list given before the check:
+The maintainer checked 0.4.0-3 on the Xperia 10 II (Sailfish OS 5.2.0.22). The
+emulated household ran on the host, at `<host>` on ports 11010–11030;
+the phone reached it, ufw was active, and it was stopped afterwards. The
+check followed the list given before it:
 - grouping from the Now Playing pulley;
 - the role line and the one-row group in Players;
 - group volume and a member's own volume;
@@ -64,10 +64,10 @@ through the list given before the check:
 - ungrouping;
 - the NAD as a lone player.
 
-He reported "klopt allemaal" (all correct), noting that the navigation
+The maintainer reported "klopt allemaal" (all correct), noting that the navigation
 takes some getting used to.
 Follow-up: "Add player…" became "Add player" (no ellipses in menu
-labels, Misja). Built as 0.4.0-4; all ten suites pass; the validator
+labels, the maintainer). Built as 0.4.0-4; all ten suites pass; the validator
 succeeds.
 
 ## Review findings
@@ -75,7 +75,7 @@ succeeds.
 Scope/design review, 2026-11-08 (approve with changes): H1–H3, M1–M5 and
 L1–L6 applied to spec and plan (spec.md, plan.md). L1 (pair halves, Hubs and
 players in a fixed group not offered as able to join) is built after the
-PR was opened, at Misja's request: the model keeps the LSDP class
+PR was opened, at the maintainer's request: the model keeps the LSDP class
 (0x0006 pair half, 0x0008 Hub) and `/SyncStatus` zoneSlave; the role
 `canJoin` combines them; test `pairHalvesHubsAndZonesCannotJoin`. All ten
 suites pass (xml 34, group 24).
@@ -86,7 +86,7 @@ suites pass (xml 34, group 24).
   and Volume answers), group 23 (3 of 3 runs). The others are unchanged.
 - **RPM 0.4.0-3:** the validator succeeds with no warnings; Dutch is
   complete.
-- **Pulley item:** "Group", not "Group…" (Misja, 2026-11-08).
+- **Pulley item:** "Group", not "Group…" (the maintainer, 2026-11-08).
 
 Result review, 2026-11-08 (approve with changes):
 
@@ -100,7 +100,7 @@ Result review, 2026-11-08 (approve with changes):
 | M4 | groupPage flag robustness | Set for Activating or Active, cleared otherwise and on destruction. The mini-player is not shown on the group page, so `openNowPlaying` needs no case. |
 | M5 | The Python household lacked two behaviours | `--refuse=N` and `--self-master`. |
 | M6 | Test gaps | Added: membership change elsewhere, a lone player's request paths and counts, reconnecting, the XML answers. Runtime QML for a grouped player is not added (the QML test has one fake player); device check. |
-| L1 | Persistence of a followed leader | Misja (2026-11-08): following the leader, also after the group ends, is the intended behaviour. |
+| L1 | Persistence of a followed leader | the maintainer (2026-11-08): following the leader, also after the group ends, is the intended behaviour. |
 | L2 | A timing margin in a test | Delay 1000 ms, wait 300 ms. |
 | L3 | Ordering between the two SyncStatus reads | Accepted; heals within a second. |
 | L4 | Group volume with a fixed-volume primary | The slider is hidden unless a level is known. |
@@ -114,7 +114,7 @@ Result review, 2026-11-08 (approve with changes):
 
 Separate assistant review of branch group-in-players (approve with changes;
 not a human audit; nothing run by the reviewer). Option A was decided live
-by Misja (canvas "Grouping, round 2") and assessed by this review instead of
+by the maintainer (canvas "Grouping, round 2") and assessed by this review instead of
 a separate design review. Findings, not yet applied:
 
 - [applied] H1 Group mute sticks while Per player is closed: groupMuted() trusts
@@ -171,7 +171,7 @@ follow model order; members unknown to Swell are not listed there, they can
 be added from Players), L8
 (scrollToBottom with many members).
 
-Own solutions replaced by platform mechanisms (Misja, 2026-11-08: no
+Own solutions replaced by platform mechanisms (the maintainer, 2026-11-08: no
 tricks; reviewable, maintainable code):
 1. A counter re-evaluating groupMuted on every model change: replaced by
    PlayerModel::currentGroupMuted, a property with currentGroupChanged.

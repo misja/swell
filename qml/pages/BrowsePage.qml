@@ -314,7 +314,7 @@ Page {
             }
         }
 
-        // No header per letter (Misja: it clutters the list); the letter
+        // No header per letter (the maintainer: it clutters the list); the letter
         // index shows where the list is.
 
         delegate: ListItem {

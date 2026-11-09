@@ -18,7 +18,7 @@ specs/004-browse/spec.md; builds on 002 (main 88939d0).
 | Keys and search text | C++ | `browseKey`, `nextKey`, `searchKey` and `q` are encoded with `QUrl::toPercentEncoding` (so `:/?&=+#` and an existing `%` are encoded too), matching the §7.1 examples. "C++" must stay "C++". |
 | Context menu | C++ filter + QML `ContextMenu` | Only the types Swell understands, documented in §7.1 or observed (`add-shuffle`): `add-now`, `add-next`, `add-last`, `addAll-now`, `addAll-next`, `addAll-last`, `add-shuffle`, `favourite-add`, `favourite-delete`. Only the inline menu (`withContextMenuItems=1`) is used; an item without one gets no menu (no `contextMenuKey` fetch in v1). After a favourite add or delete the page reloads, so its menu label is current. |
 | Search | C++ (`BrowseModel` opened with a key + `q`) and QML `SearchField` | Sent on Enter. From Browse, `/Browse?q=` without a key (top-level search, §7.2); the reply is a menu of one link per source (captured 2026-11-06). From a deeper page, the `searchKey` of the nearest page that has one. Results open in the same Browse page. `<category>` is parsed; paging inside a category is left out of v1. |
-| Pacing and deadline | C++ (`Client`) | Browse reads bypass the one-second interval (Misja, 2026-11-06: the API sets it for long-polled status); each model has at most one request in flight. Reads reuse the existing read deadline (`queueReadTimeoutMs`, renamed to a shared read deadline). Reply handlers are guarded with `QPointer`, because a page can be popped mid-request. |
+| Pacing and deadline | C++ (`Client`) | Browse reads bypass the one-second interval (the maintainer, 2026-11-06: the API sets it for long-polled status); each model has at most one request in flight. Reads reuse the existing read deadline (`queueReadTimeoutMs`, renamed to a shared read deadline). Reply handlers are guarded with `QPointer`, because a page can be popped mid-request. |
 | Library API shape | C++ | New 004 code exposes typed C++ (`BrowseModel*`, structs); QML-specific conversion stays in `src/`. Cleaning up the existing `QVariantList`/`QObject*` properties is a separate task after 004. |
 | Pages | QML/Silica | `BrowsePage.qml` is generic: `SilicaListView`, `PageHeader` (title, service), rows as `ListItem` (artwork when present, `text`, `text2`), no chevrons, and a `ViewPlaceholder` for empty and error. Sections mode adds `section.property`, a `SectionHeader` and `LetterIndex.qml`: a column of the letters present that jumps with `positionViewAtIndex` and keeps the section header in view after the jump. It is styled after Sailfish.Contacts' `SymbolScrollBar`, and fits in landscape by showing fewer letters, as `displayableSymbolCount` does. `quickScroll` is off while the index is shown, as in the People app (ContactBrowser.qml). A `tracks` reply shows the album header (cover beside the title) and a pulley with Play album (the list's `playURL`). Shuffle is shown only when the album row that opened the page had an `add-shuffle` action, which is passed along. `BrowseRootPage` is `BrowsePage` on the root key. `SearchPage.qml` holds the `SearchField` with a results list. Home's pulley gains "Browse". |
 
@@ -47,7 +47,7 @@ specs/004-browse/spec.md; builds on 002 (main 88939d0).
   - an error reply.
 - **qml:** the compile test covers the new pages.
 - **Build, validator, Dutch complete;** results in specs/004-browse/evidence.md.
-- **Device check by Misja,** spec AC5.
+- **Device check by the maintainer,** spec AC5.
 
 ## Review
 

@@ -104,7 +104,7 @@ Per player is open); leave(id, leaderId); canJoin and Follow in the list.
   pattern for a lone player) and runtime QML.
 - **Device check (Q2):** `tests/demo/household.py`, stdlib only.
   - Three invented players on one LAN address with ports 11010, 11020 and
-    11030 (default 192.168.1.2, given as an argument).
+    11030 (the host's address, given as an argument).
   - Started by hand in the foreground; stopped with Ctrl-C.
   - Every name and MAC is invented (`02:…`).
   - It is not packaged.
