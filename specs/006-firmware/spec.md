@@ -1,6 +1,7 @@
 # Feature specification — 006 firmware updates
 
-Status: draft 2026-11-09, for the scope/design review. No implementation and
+Status: revised 2026-11-09 after the scope/design review (approve with
+changes; findings applied). No implementation and
 no UI yet; the UI is agreed on the design canvas before it is built.
 
 ## Owner and linked issue
@@ -30,16 +31,21 @@ the update.
 - **The official app**, as observed by azzurro (jzbz/azzurro 10cce29,
   `docs/protocol.md`, "Firmware upgrades"; not documented by Lenbrook):
   - `GET :11000/upgrade?upgrade=check` is non-destructive. The app polls it
-    every 15 s only while it waits for a player to come back.
+    every 15 s while waiting for a player to come up, with a 60 s timeout.
+    Its parser reads only `inProgress` and `available`.
   - It answers `<upgrade inProgress="…" available="…" version="…">check</upgrade>`.
     `version` names the offered release.
   - The app does not drive the update: it shows the player's own page
-    `http://<player>/upgrade` (port 80) in a web view.
+    `http://<player>/upgrade?noheader=1` (port 80) in a web view.
   - `upgrade=this` starts an update directly. A second start over a running
     one can make the player unusable. The update cannot be aborted.
   - During an update `/SyncStatus` answers with the root `UpgradeStatusStage1`
-    or `UpgradeStatusStage2` instead of `SyncStatus`. The player is silent
-    for a while, as it reboots. One observed run took about 4.5 minutes.
+    or `UpgradeStatusStage2` instead of `SyncStatus` (seen on /SyncStatus
+    only; /Status during an update is not observed). One Powernode run:
+    silent 72–88 s, Stage1 at 88 s, Stage2 at 104 s, SyncStatus again at
+    265 s. The official app holds no long poll then and reads /SyncStatus
+    every 5 s. azzurro saw a `version` attribute on SyncStatus afterwards
+    (not in the API).
 - **On Misja's NAD C 379** (firmware 4.18.18; read-only, with his approval):
   - `GET :11000/upgrade?upgrade=check` →
     `<upgrade inProgress="false" available="false">check</upgrade>`. There is
@@ -52,7 +58,20 @@ the update.
   - `allowed_requires.conf:36` allows `sailfish-components-webview-qt5`;
   - `allowed_permissions.conf:13` allows the `WebView` permission.
 
-  QtWebKit and QtWebEngine are not allowed.
+  QtWebKit and QtWebEngine are not allowed. `qml(Sailfish.WebView)` is not
+  an allowed requirement; the package name is.
+- **Sailfish WebView in the target** (SDK documentation
+  sailfish-webview260616.qch; package sailfish-components-webview-qt5
+  1.6.9, in the jolla repo, not installed in the target):
+  - The documented pattern is `WebViewPage { WebView { url: … } }`.
+  - `WebEngine` initialises itself in QML; there is no `main()` change.
+  - Apps link against qtmozembed: `PKGCONFIG += qt5embedwidget`, with
+    `BuildRequires: pkgconfig(qt5embedwidget)` (qtmozembed-qt5-devel).
+  - Gecko (libxul) runs in the app's process when the page opens.
+- **The WebView permission** (`/etc/sailjail/permissions/WebView.permission`):
+  "Web content" / "Viewing web content". It also opens a few paths
+  (/usr/share/mozilla, /var/tmp, ~/Desktop, …) and D-Bus to pacrunner and
+  the transfer engine.
 - **Swell today:**
   - `/Status` with another root element makes a player NotAPlayer.
   - A `/SyncStatus` that is not `SyncStatus` is ignored.
@@ -60,26 +79,34 @@ the update.
 
 ## Scope
 
-1. **Check:**
-   - The library reads `upgrade=check` for a player: when it comes online,
-     and then at most once an hour while it is polled.
-   - It never sends `upgrade=this` or `all`.
+1. **Check (current player only):**
+   - The library reads `upgrade=check` (60 s deadline) while status polling
+     is on: when the player comes online, hourly, and when the update page
+     is closed.
+   - It never sends `upgrade=this` or `all`, nor `slave`/`port` parameters.
    - It exposes, typed, whether an update is available, the offered version
      when sent, and whether one is in progress.
+   - No answer, 404 or a malformed document keep the previous value and do
+     not touch availability.
+   - No notice for a secondary in a fixed group.
 2. **Notice:** when the current player has an update, the app says so, with
    the version when known. Where it shows is agreed on the canvas.
 3. **Update in the app:**
-   - The notice opens a page with a Sailfish WebView on
-     `http://<player>/upgrade`, the player's own page. The user starts and
-     follows the update there, as in the official app.
-   - The app adds the `WebView` Sailjail permission and requires
-     `sailfish-components-webview-qt5`.
-4. **While updating:**
-   - When `inProgress="true"`, or `/SyncStatus` answers with an
-     `UpgradeStatusStage*` root, the player shows as updating, not as "not a
-     BluOS player" or broken.
-   - The player's silence during the update is expected.
-   - When it answers as a player again, it is online, with its new version.
+   - The notice opens a `WebViewPage` with a `WebView` on
+     `http://<player>/upgrade?noheader=1`, the player's own page. The user
+     starts and follows the update there, as in the official app.
+   - The page is only loaded when pushed, so Gecko is not loaded at start.
+   - The app adds the `WebView` permission, requires
+     `sailfish-components-webview-qt5`, and builds with qt5embedwidget.
+4. **While updating** (an `Updating` availability, not a separate flag):
+   - The player enters Updating on `inProgress="true"` or on an
+     `UpgradeStatusStage*` root from any /SyncStatus read.
+   - When /Status fails or answers another root, a plain /SyncStatus read
+     classifies the player before it is marked Offline or NotAPlayer.
+   - While Updating, no long poll is held. /SyncStatus is read plainly on
+     the existing backoff, and silence is expected.
+   - Updating ends only when /SyncStatus answers with a `SyncStatus` root.
+     The check then runs again, so the notice clears.
 
 ## Room to grow (Misja, 2026-11-09)
 

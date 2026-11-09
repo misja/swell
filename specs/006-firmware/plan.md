@@ -1,6 +1,7 @@
 # Plan — 006 firmware updates
 
-Status: draft 2026-11-09, for the scope/design review.
+Status: revised 2026-11-09 after the scope/design review; the spec's scope
+and findings H1, M1–M7, L1–L5 apply. Open: Misja's approvals listed in tasks.md.
 
 ## Library (`bluos/`)
 
@@ -8,8 +9,8 @@ Status: draft 2026-11-09, for the scope/design review.
   version }` with `parseUpgradeCheck`. `parseSyncStatus` recognises the
   `UpgradeStatusStage1/2` roots and reports the stage, instead of failing.
 - **Client:**
-  - `upgradeAvailable()`, `upgradeVersion()` and `updating()`, with an
-    `upgradeChanged` signal.
+  - `upgradeAvailable()` and `upgradeVersion()` with an `upgradeChanged`
+    signal; `Availability::Updating` (appended) instead of a flag.
   - The check is read with the existing `fetch()` (paced) when the player
     comes online, and then on a timer of one hour while running.
   - `updating` is set:

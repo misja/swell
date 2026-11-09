@@ -146,7 +146,7 @@ Open items:
   the deploy steps below.
 - Connections to the player: 8 seen at once (expected from Qt pools). Watch
   over time.
-- Feature 006 (player settings) is to be discussed with Misja.
+- Feature 006 is firmware updates (specs/006-firmware); player settings are Q0.
 - Input for 004 (Misja, 2026-11-06): the official app's main sections are
   Home, Favourites, Music, Players and Search. Consider them, especially
   Favourites, when designing browse/search.
