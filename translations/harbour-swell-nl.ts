@@ -257,22 +257,22 @@
         <translation>Geen presets op deze speler. Presets maak je in de officiële app.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="198"/>
+        <location filename="../qml/pages/HomePage.qml" line="200"/>
         <source>Firmware update</source>
         <translation>Firmware-update</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="210"/>
+        <location filename="../qml/pages/HomePage.qml" line="212"/>
         <source>Update available</source>
         <translation>Update beschikbaar</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="219"/>
+        <location filename="../qml/pages/HomePage.qml" line="221"/>
         <source>Firmware %1</source>
         <translation>Firmware %1</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="225"/>
+        <location filename="../qml/pages/HomePage.qml" line="227"/>
         <source>Inputs</source>
         <translation>Ingangen</translation>
     </message>

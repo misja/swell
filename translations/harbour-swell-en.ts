@@ -257,22 +257,22 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="198"/>
+        <location filename="../qml/pages/HomePage.qml" line="200"/>
         <source>Firmware update</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="210"/>
+        <location filename="../qml/pages/HomePage.qml" line="212"/>
         <source>Update available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="219"/>
+        <location filename="../qml/pages/HomePage.qml" line="221"/>
         <source>Firmware %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="225"/>
+        <location filename="../qml/pages/HomePage.qml" line="227"/>
         <source>Inputs</source>
         <translation type="unfinished"></translation>
     </message>
