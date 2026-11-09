@@ -81,6 +81,21 @@ the update.
    - The player's silence during the update is expected.
    - When it answers as a player again, it is online, with its new version.
 
+## Room to grow (Misja, 2026-11-09)
+
+Player settings are expected to follow (Q0). This design should leave room
+for them without building anything for them now:
+- **Entry point:** the place where firmware lives should be one that can
+  grow into "Player settings" for the current player. For example, a
+  "Player" or "Settings" page per player, where firmware is the first item
+  and settings can be added later. It should not be a one-off firmware
+  screen that would have to move.
+- **Web page:** the in-app web page shows any page the player itself serves
+  (`/upgrade` now; its own WiFi and network-share pages are listed in the
+  settings tree). It is not tied to firmware.
+- **Agree on the canvas:** the entry point and that page's structure are
+  agreed on the canvas with the future settings in view.
+
 ## Out of scope
 
 - Starting, retrying or aborting an update from Swell itself.
