@@ -8,8 +8,10 @@
 - [x] Misja: require sailfish-components-webview-qt5-popups too (2026-11-09).
 - [ ] Issue.
 - [x] UI on the design canvas, agreed with Misja (2026-11-09): notice on Home only; Home pulley "Settings" for the player's settings, firmware first; update page with the player's name.
-- [ ] Check upstream WebView practice (permission, requirement, initialisation) in the target.
-- [ ] Tests first (fake player: check answers, upgrade stages), then library, app, packaging.
+- [x] Check upstream WebView practice in the target: documented WebViewPage pattern, no main() change, qt5embedwidget link, package-name requirements.
+- [ ] Tests written; library, app and packaging done. Tests not yet run (qt5-qttest-devel needed again in the SDK snapshots).
+- [ ] Validator rpath WARNING from libxul.pc (evidence.md): decide with Misja.
+- [ ] Dutch translations of the new strings.
 - [ ] Builds (aarch64, armv7hl), validator, evidence.md.
 - [ ] Device check with Misja.
 - [ ] Separate result review, then a PR.
