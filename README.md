@@ -19,11 +19,6 @@ from your phone:
 Swell works with any player that runs BluOS. You can also add a player by
 its address.
 
-## Requirements
-
-- A phone with Sailfish OS
-- A BluOS player on the same network as your phone
-
 ## Building
 
 Use the [Sailfish SDK](https://docs.sailfishos.org/Tools/Sailfish_SDK/):
