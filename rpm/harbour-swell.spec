@@ -11,6 +11,8 @@ Requires:   qml(Amber.Mpris)
 # The player's own pages in the app (spec 006); the package names, as Harbour allows.
 Requires:   sailfish-components-webview-qt5
 Requires:   sailfish-components-webview-qt5-popups
+# WebView.qml imports Sailfish.WebView.Pickers, which this package does not require (1.6.9).
+Requires:   sailfish-components-webview-qt5-pickers
 BuildRequires:  pkgconfig(sailfishapp) >= 1.0.2
 BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5Qml)
