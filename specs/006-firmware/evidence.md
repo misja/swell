@@ -111,3 +111,31 @@ Checked:
 
 A real firmware update is not verified until the NAD is offered one.
 The start-up time was judged by Misja on the device, not measured.
+
+## Test household review (2026-11-09; separate agent, accept with two fixes)
+
+Applied in 8e0a7be:
+- **M1:** silence holds a request until the restart phase ends, then drops
+  it; it no longer closes at once.
+- **M2:** root is dropped to the sudo user after binding port 80.
+- **L1:** one update however often it is started; a second start is logged
+  as REFUSED.
+- **L2:** every `/upgrade` other than `upgrade=check`, POST too, is REFUSED,
+  also while silent.
+- **L3:** logged requests are escaped.
+- **L4:** a malformed `timeout` is read as 0.
+- **L5:** the docstring names the invented parts.
+
+Checked in the SDK container on 127.0.0.1:
+- the script runs as `ubuntu` after binding;
+- POST `upgrade=this` gives 400 REFUSED;
+- the second start is refused;
+- a silent request is held for 9 s and then dropped;
+- the player comes back on 9.9.2.
+
+## After the device check (Misja, 2026-11-09)
+
+- The notice on Home opens the player's update page directly, without the
+  Settings step.
+- Leaving the update page asks again (`PlayerWebPage.player`).
+- `make check` passes again on all eleven suites (8e0a7be).
