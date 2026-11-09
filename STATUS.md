@@ -3,11 +3,16 @@
 The maintainer's working handoff between sessions. Contributors: see
 CONTRIBUTING.md.
 
-Updated: 2026-11-09 (release 0.6.0). Decision owner: Misja Hoebe (@misja).
+Updated: 2026-11-09 (released 0.6.0). Decision owner: Misja Hoebe (@misja).
 
 Current owner / next owner / decision owner: root / root (next session) / Misja.
 
-Now (2026-11-09): release 0.6.0 prepared (PR). Since 0.5.0: firmware
+Released 0.6.0 (2026-11-09): annotated tag v0.6.0 on 5295b73, GitHub
+release https://github.com/misja/swell/releases/tag/v0.6.0, built from a
+clean checkout of the tag; both RPMs validated (rpath WARNING only); all
+eleven suites pass on aarch64 and armv7hl (254 each). sha256: aarch64
+0c78754706af680e41180160720e4351360ad0cd4afa490bddbf4d4f6f0f8ee0, armv7hl
+e466ba4ad3796ce39f4a2bfa8d0a3d373ac68167bf08a4b3cd68beb54135b019. Since 0.5.0: firmware
 updates (006, #28/#29): a notice on Home and the player's own update page in
 the app (Sailfish WebView, new `WebView` permission and webview
 requirements); Settings for the current player; /Status polling now stops
