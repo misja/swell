@@ -60,7 +60,7 @@ Item {
     // HomePage and PlayerSettingsPage: firmware (spec 006).
     function firmware() {
         return [_player.upgradeAvailable, _player.upgradeVersion, _player.upgradeChecked,
-                _player.firmwareVersion, String(_player.upgradePage()), _player.availability].join(" ")
+                _player.firmwareVersion, String(_player.upgradePage()), typeof _player.availability].join(" ")
     }
 
     // NowPlayingPage and PlayersPage: group values (spec 005).

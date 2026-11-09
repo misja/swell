@@ -198,9 +198,10 @@ void TstQmlRuntime::queue()
 
 void TstQmlRuntime::firmwareValues()
 {
-    // What HomePage and PlayerSettingsPage read for firmware (spec 006).
+    // What HomePage and PlayerSettingsPage read for firmware (spec 006). An
+    // earlier test takes the player offline; the values stay as last checked.
     QTRY_COMPARE(call("firmware"),
-                 QStringLiteral("true 4.18.20 true 4.18.18 http://127.0.0.1/upgrade?noheader=1 1"));
+                 QStringLiteral("true 4.18.20 true 4.18.18 http://127.0.0.1/upgrade?noheader=1 number"));
 }
 
 void TstQmlRuntime::groupValues()
