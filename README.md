@@ -23,8 +23,7 @@ repository.
 ## Privacy
 
 Swell connects only to your players and to the servers their artwork comes
-from. A player's update page is the player's own, and loads what the player
-puts on it. There is no account, and no data is collected or shared.
+from. There is no account, and no data is collected or shared.
 
 ## Translations
 
