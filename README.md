@@ -10,10 +10,15 @@ A Sailfish OS controller for BluOS players.
 - Browse your library, radio and streaming services, and search
 - Group players, with group volume and each player's own volume
 - Control playback from the cover and the lock screen
-- See when a player has a firmware update, and install it on the player's
-  own update page
+- Update a player's firmware
 
 Players are found automatically, or added by their address.
+
+## Installing
+
+Download the RPM for your phone from
+[Releases](https://github.com/misja/swell/releases): aarch64 for most current
+devices, armv7hl for older 32-bit ones.
 
 ## Building
 
@@ -24,13 +29,12 @@ repository.
 ## Privacy
 
 Swell connects only to your players and to the servers their artwork comes
-from. A player's update page is the player's own, and loads what the player
-puts on it. There is no account, and no data is collected or shared.
+from. There is no account, and no data is collected or shared.
 
 ## Translations
 
 Swell is available in English and Dutch. Translations are in
-`translations/`; contributions are welcome.
+`translations/`.
 
 ## License
 

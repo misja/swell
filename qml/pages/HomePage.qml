@@ -181,7 +181,7 @@ Page {
                 wrapMode: Text.Wrap
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.secondaryHighlightColor
-                text: qsTr("No presets on this player. Presets are created in the official app.")
+                text: qsTr("No presets on this player. Presets are made in the BluOS Controller app.")
             }
 
             // Only while the player offers a firmware update.

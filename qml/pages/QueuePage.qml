@@ -204,7 +204,7 @@ Page {
         ViewPlaceholder {
             enabled: page._queue !== null && page._queue.known && page._queue.length === 0
             text: qsTr("Queue is empty")
-            hintText: qsTr("Play a preset or an input from Home")
+            hintText: qsTr("Play a preset or an input, or add music from Browse")
         }
 
         BusyIndicator {
