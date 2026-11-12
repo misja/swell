@@ -16,8 +16,8 @@ e466ba4ad3796ce39f4a2bfa8d0a3d373ac68167bf08a4b3cd68beb54135b019. Since 0.5.0: f
 updates (006, #28/#29): a notice on Home and the player's own update page in
 the app (Sailfish WebView, new `WebView` permission and webview
 requirements); Settings for the current player; /Status polling now stops
-when switched off. Q0 (player settings such as "Hide source" per input,
-only through the undocumented settings tree) is the maintainer's open decision.
+when switched off. Player settings go through the player's own settings
+page, blocked until the WebView has Intl.Segmenter (#40).
 Chum waits for an OBS account (the maintainer, 2026-11-09);
 then screenshots and the changelog approach (guide in ~/code/sailfish/CHUM.md).
 
@@ -154,7 +154,7 @@ Open items:
   the deploy steps below.
 - Connections to the player: 8 seen at once (expected from Qt pools). Watch
   over time.
-- Feature 006 is firmware updates (specs/006-firmware); player settings are Q0.
+- Feature 006 is firmware updates (specs/006-firmware); player settings are #40.
 - Input for 004 (the maintainer, 2026-11-06): the official app's main sections are
   Home, Favourites, Music, Players and Search. Consider them, especially
   Favourites, when designing browse/search.
