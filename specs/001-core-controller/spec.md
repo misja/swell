@@ -10,7 +10,7 @@ maintainer review.
 - Decision owner: the maintainer.
 - Scope reviewers: separate agents `scope_review` (first scope) and
   `scope_review_2` (MVP revision), both 2026-11-06, verdict "approve with
-  changes". Their findings are addressed below (see STATUS.md).
+  changes". Their findings are addressed below.
 - Result reviewer: a separate agent reviews the resulting changes before
   maintainer review.
 - Linked issue: https://github.com/misja/swell/issues/1 (private repository).

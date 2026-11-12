@@ -54,7 +54,7 @@ C++/QML split. Each part records why it is in C++, as the spec requires:
 | Cover page and cover actions | QML/Silica | `CoverActionList`: play/pause and next. |
 | Persistence (manual hosts, current player) | QML `Nemo.Configuration` (`ConfigurationValue`) | Existing allowed platform facility; no own storage code. |
 | Cover art | C++ helper `artworkUrl()` + QML `Image` | The helper resolves relative image paths against the player and adds `followRedirects=1` (API v1.7 image attributes). `Image` loads through the shared NAM, which also follows redirects as a fallback. |
-| Translations | `qsTr()` + `translations/*.ts`, `CONFIG += sailfishapp_i18n` | As in the SDK template. `lupdate` runs at build time and merges new strings without losing translations (checked 2026-11-06: only line references changed). Release check: no `type="unfinished"` left in a maintained language. The platform's `sailfishapp_i18n.prf` (libsailfishapp, read in the target 2026-11-06) does the work: `lupdate -noobsolete`, `lrelease -nounfinished`, install in `/usr/share/harbour-swell/translations`, loaded by libsailfishapp for the system locale at start. The maintainer 2026-11-06: keep `qsTr` (the SDK default), with `//:` translator comments where needed. `qsTrId` (`sailfishapp_i18n_idbased`, as in Jolla's own apps) stays an option. |
+| Translations | `qsTr()` + `translations/*.ts`, `CONFIG += sailfishapp_i18n` | As in the SDK template. `lupdate` runs at build time and merges new strings without losing translations (checked 2026-11-06: only line references changed). Release check: no `type="unfinished"` left in a maintained language. The platform's `sailfishapp_i18n.prf` (libsailfishapp, read in the target 2026-11-06) does the work: `lupdate -noobsolete`, `lrelease -nounfinished`, install in `/usr/share/harbour-swell/translations`, loaded by libsailfishapp for the system locale at start. The maintainer 2026-11-06: keep `qsTr` (the SDK default), with `//:` translator comments where needed. `qsTrId` (`sailfishapp_i18n_idbased`, as in Jolla's own apps) stays an option. No own English fallback translator: libsailfishapp has none (the maintainer, 2026-11-08). |
 
 No threads besides Qt's own network handling; everything runs on the event loop.
 
@@ -178,7 +178,7 @@ RPM. No full rebuild of SDK components is needed.
 
 - `specs/001-core-controller/evidence.md`: results, toolchain/version
   records, validator output and RPM hashes. Raw logs stay local (since
-  2026-11-08); STATUS.md links the conclusion.
+  2026-11-08).
 
 ## Risks, approval boundaries and remaining decisions
 

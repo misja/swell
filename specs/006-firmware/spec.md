@@ -159,7 +159,7 @@ for them without building anything for them now:
 - Starting, retrying or aborting an update from Swell itself.
 - Player settings and alarms (the undocumented settings tree on port 11001
   that the NAD showed on 2026-11-08). They are a separate decision, Q0,
-  recorded in STATUS.md.
+  now #40.
 - Updating players other than the current one, and players in a fixed group
   (the zone-member addressing azzurro describes).
 
