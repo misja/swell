@@ -68,6 +68,10 @@ sfdk build-shell sh -c "mkdir -p build/tests && cd build/tests && qmake ../../te
 All test suites must pass. New behaviour comes with tests. The tests use an
 in-process fake player, so no real player is needed.
 
+To install on a device registered in the SDK, copy the RPM with
+`sfdk -c device=<device> deploy --manual`, then on the device run
+`sdk-deploy-rpm ~/RPMS/<rpm>` in the user session and confirm on the phone.
+
 ## Working with an AI assistant
 
 `AGENTS.md` has the instructions for coding assistants. In short:
@@ -81,5 +85,15 @@ in-process fake player, so no real player is needed.
 
 ## Releases
 
-The maintainer decides on merges and releases. A release is an annotated tag
-`vX.Y.Z` with a GitHub release.
+The maintainer decides on merges and releases.
+
+- Versions are semantic. `Version` in `rpm/harbour-swell.spec` and `VERSION`
+  in `harbour-swell.pro` match.
+- A release has `Release: 1` and an annotated tag `vX.Y.Z` on its merge
+  commit. The tag subject becomes the RPM changelog entry
+  (`sfdk-changelog --auto-add-annotations`). Test builds for a device bump
+  `Release` instead.
+- The GitHub release carries RPMs for aarch64 and armv7hl with
+  `SHA256SUMS`. Build each architecture from a clean checkout of the tag:
+  objects left from the other architecture break `%install`. armv7hl is
+  tested in the SDK only.

@@ -1,6 +1,6 @@
 # Agent instructions — Sailfish workspace
 
-Baseline version: 1.5.0 (2026-11-09).
+Baseline version: 1.6.0 (2026-11-12).
 
 These are operational instructions for coding assistants. Contributors should
 start with CONTRIBUTING.md. The human maintainer retains responsibility for
@@ -9,11 +9,10 @@ merge and release decisions.
 For Swell: this file is the Sailfish workspace baseline
 (https://github.com/misja/sailfish-workspace), copied as the workspace asks.
 CONTRIBUTING.md describes how Swell is built, tested and changed. Swell has
-no ADRs; its decisions are in specs/. STATUS.md is the maintainer's working
-handoff. The rules on OBS, runtime isolation and crypto do not apply to
+no ADRs; its decisions are in specs/. The rules on OBS, runtime isolation and crypto do not apply to
 Swell.
 
-- Read STATUS.md and the relevant accepted ADR before project work. Project artifacts are English; use the maintainer’s language for discussion.
+- Before project work, read the local handoff for the work if there is one, the repository's open issues and pull requests, and the relevant accepted ADR. Project artifacts are English; use the maintainer’s language for discussion.
 - AI tools may propose changes and run authorized checks. The maintainer reviews changes before merge. Identify automated checks, assistant review and human review accurately; assistant agreement is not a human audit. AI tools cannot approve their own work, waive acceptance criteria or authorize deployment/publication.
 - Work autonomously on routine reversible local work within approved scope. Software installation, remote repository creation/push, OBS writes/publication, device/system/destructive changes and security exceptions require explicit scoped human approval. Architecture approval does not grant these permissions.
 - Repositories and everything published from them are public; local facts stay local. Name roles ("the maintainer"), never other people from our own process; names appear only in outside information reproduced as is (licences, cited sources). No real IP/MAC addresses, host, device, room or share names: use placeholders. Required identity stays only in copyright/licence notices, packaging metadata, git authorship and account-based URLs/IDs. Check before every push, PR, issue or release (principles 1.5.0, "Personal information").
@@ -23,7 +22,7 @@ Swell.
 - Keep one accountable owner per task. Role consultation does not transfer ownership. Investigate blockers and propose options; allow one clarification round-trip for the same blocker, then escalate to its decision owner.
 - Use distinct agents only on explicit delegation authorization. Independent security/release verification is required for crypto/isolation/release-critical changes; Builder self-tests do not count as independent approval.
 - Pin source/tool/template versions and cite dated evidence. Separate facts, supplied observations, assumptions and unresolved questions. No silent upstream updates or automatic Chum webhooks.
-- Use one spec/plan/task set per feature. Record concise artifact handoffs in STATUS.md. Do not create speculative app/common-library repositories.
+- Use one spec/plan/task set per feature. Keep the session handoff in a local file outside the repositories (agent-governance.md). Do not create speculative app/common-library repositories.
 - Run checks appropriate to the change; record failures and limitations. Never label unexecuted tests as passed.
 - Child repositories must contain this essential baseline themselves: a parent file outside their Git root is not assumed loaded. Copy changes with baseline version and reviewed diff.
 
