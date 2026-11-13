@@ -44,6 +44,12 @@ struct Status {
     QString backActionUrl;
 
     bool isPlaying() const { return state == QLatin1String("play") || state == QLatin1String("stream"); }
+    // Something to play: a stopped player with an empty queue and no source
+    // reports no titles and no stream (observed 2026-11-13).
+    bool hasContent() const
+    {
+        return !title1.isEmpty() || hasStreamUrl || state != QLatin1String("stop");
+    }
 };
 
 // /SyncStatus (section 2.2). The API names group members master and slave
