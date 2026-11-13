@@ -14,6 +14,11 @@ A Sailfish OS controller for BluOS players.
 
 Players are found automatically, or added by their address.
 
+<p>
+<img src="screenshots/now-playing.png" alt="Now Playing" width="200">
+<img src="screenshots/home.png" alt="Home: presets and inputs" width="200">
+</p>
+
 ## Installing
 
 Download the RPM for your phone from
