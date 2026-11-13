@@ -10,7 +10,9 @@ MprisPlayer {
 
     // A BluOS client (Player), or null.
     property QtObject player
-    readonly property bool _active: player !== null && player.online
+    // With nothing to play, every can* is false and the metadata empty, so
+    // the system controls (Sailfish.Media MprisControls) hide themselves.
+    readonly property bool _active: player !== null && player.online && player.hasContent
 
     // Constants, never bindings: amber locks canControl, hasShuffle and
     // hasLoopStatus after the first D-Bus GetAll or Introspect, and an empty

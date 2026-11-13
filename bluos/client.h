@@ -37,6 +37,7 @@ class Client : public QObject
     Q_PROPERTY(bool fixedVolume READ fixedVolume NOTIFY syncStatusChanged)
     Q_PROPERTY(QString state READ state NOTIFY statusChanged)
     Q_PROPERTY(bool playing READ playing NOTIFY statusChanged)
+    Q_PROPERTY(bool hasContent READ hasContent NOTIFY statusChanged)
     Q_PROPERTY(QString title1 READ title1 NOTIFY statusChanged)
     Q_PROPERTY(QString title2 READ title2 NOTIFY statusChanged)
     Q_PROPERTY(QString title3 READ title3 NOTIFY statusChanged)
@@ -153,6 +154,7 @@ public:
     // The player's own update page (port 80), where the user runs the update.
     Q_INVOKABLE QUrl upgradePage() const;
 
+    bool hasContent() const { return m_status.ok && m_status.hasContent(); }
     // The queue can always skip; a stream only when it offers the action (4.8).
     bool canSkip() const { return m_status.ok && (!m_status.hasStreamUrl || !m_status.skipActionUrl.isEmpty()); }
     bool canBack() const { return m_status.ok && (!m_status.hasStreamUrl || !m_status.backActionUrl.isEmpty()); }

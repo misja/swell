@@ -268,8 +268,13 @@ void TstQmlRuntime::mprisFollowsTheStatus()
     QTRY_COMPARE(call("mprisState"), QStringLiteral("1 true true true false false false false"));
     m_player->setStatus("<status etag=\"m4\"><state>pause</state></status>");
     QTRY_COMPARE(call("mprisState"), QStringLiteral("2 true true true true true false false"));
-    m_player->setStatus("<status etag=\"m5\"><state>stop</state></status>");
+    m_player->setStatus("<status etag=\"m5\"><state>stop</state><title1>A</title1></status>");
     QTRY_COMPARE(call("mprisState"), QStringLiteral("0 true true true true true false false"));
+    // Nothing to play (an emptied queue): nothing to offer, so the system
+    // controls hide.
+    m_player->setStatus("<status etag=\"m7\"><state>stop</state></status>");
+    QTRY_COMPARE(call("mprisState"), QStringLiteral("0 true false false false false false false"));
+    QCOMPARE(call("mprisMeta"), QStringLiteral("||||"));
     m_player->setStatus("<status etag=\"m6\"><state>connecting</state></status>");
     QTRY_COMPARE(call("mprisState"), QStringLiteral("0 true true true true true false false"));
 }

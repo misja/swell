@@ -136,7 +136,8 @@ void TstClient::firstContactThenLongPoll()
 }
 
 // A stopped player with an empty queue and no source has no title elements
-// in /Status (as a player answered 2026-11-13); the mini-player hides on it.
+// in /Status (as a player answered 2026-11-13); the mini-player and the
+// system media controls hide on it.
 void TstClient::clearedQueueLeavesNoTitle()
 {
     Client::Timing t = fast();
@@ -147,6 +148,11 @@ void TstClient::clearedQueueLeavesNoTitle()
                         "<secs>0</secs><volume>38</volume><syncStat>s1</syncStat></status>");
     QTRY_COMPARE(m_client->title1(), QString());
     QCOMPARE(m_client->title2(), QString());
+    QVERIFY(!m_client->hasContent());
+    // A stream without titles still has something to play.
+    m_player->setStatus("<status etag=\"e3\"><state>stop</state><streamUrl>Radio:x</streamUrl>"
+                        "<syncStat>s1</syncStat></status>");
+    QTRY_VERIFY(m_client->hasContent());
 }
 
 void TstClient::longPollReturnsOnChange()

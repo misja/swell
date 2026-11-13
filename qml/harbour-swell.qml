@@ -120,8 +120,7 @@ ApplicationWindow {
     }
 
     // The docked mini-player: on every page except Now Playing, only with a
-    // current player that is online and has something loaded. A stopped
-    // player with an empty queue and no source reports no title1 in /Status.
+    // current player that is online and has something to play (hasContent).
     // A drag closes it (DockedPanel sets
     // open = false), so the state is driven by a Binding rather than a plain
     // open: binding. It closes while the stack moves from Home or Players
@@ -145,7 +144,7 @@ ApplicationWindow {
             target: miniPlayer
             property: "open"
             value: miniPlayer._player !== null && miniPlayer._player.online
-                   && miniPlayer._player.title1 !== ""
+                   && miniPlayer._player.hasContent
                    && (miniPlayer._staysOpen
                        || ((miniPlayer._pageName === "home" || miniPlayer._pageName === "players")
                            && !pageStack.busy))
