@@ -99,32 +99,33 @@ def png(size, pixel):
             + chunk(b"IDAT", zlib.compress(bytes(rows), 6)) + chunk(b"IEND", b""))
 
 
-def art(pattern, a, b, size=300):
+def art(pattern, a, b, size=540):
+    """Album or station art; 2x2 samples per pixel keep the edges smooth on
+    Now Playing, where the image fills the width of the screen."""
     import math
 
-    def mix(t):
-        t = max(0.0, min(1.0, t))
-        return tuple(int(a[k] + (b[k] - a[k]) * t) for k in range(3)) + (255,)
-
-    def pixel(x, y):
-        u, v = x / size, y / size
+    def shade(u, v):
         d = math.hypot(u - 0.5, v - 0.5)
         if pattern == "rings":
-            return mix(1.0 if int(d * 14) % 2 and d < 0.42 else 0.15 * v)
+            return 1.0 if int(d * 14) % 2 and d < 0.42 else 0.15 * v
         if pattern == "waves":
-            return mix(1.0 if (v * 9 + 0.6 * math.sin(u * 12)) % 2 < 0.35 else 0.0)
+            return 1.0 if (v * 9 + 0.6 * math.sin(u * 12)) % 2 < 0.35 else 0.0
         if pattern == "sun":
-            return mix(1.0 if math.hypot(u - 0.5, v - 0.62) < 0.24 else 0.35 * (1 - v))
+            return 1.0 if math.hypot(u - 0.5, v - 0.62) < 0.24 else 0.35 * (1 - v)
         if pattern == "dots":
-            return mix(1.0 if math.hypot(u * 6 % 1 - 0.5, v * 6 % 1 - 0.5) < 0.22 else 0.0)
+            return 1.0 if math.hypot(u * 6 % 1 - 0.5, v * 6 % 1 - 0.5) < 0.22 else 0.0
         if pattern == "stripes":
-            return mix(1.0 if (u + v) * 10 % 2 < 0.25 else 0.0)
+            return 1.0 if (u + v) * 10 % 2 < 0.25 else 0.0
         if pattern == "orbit":
-            r = math.hypot((u - 0.5) * 1.0, (v - 0.5) * 2.4)
-            return mix(1.0 if abs(r - 0.36) < 0.012 or d < 0.09 else 0.0)
+            r = math.hypot(u - 0.5, (v - 0.5) * 2.4)
+            return 1.0 if abs(r - 0.36) < 0.012 or d < 0.09 else 0.0
         if pattern == "grid":
-            return mix(0.0 if (x % 38 < 34 and y % 20 < 17) else 1.0)
-        return mix(v * 0.8 + 0.2 * u)
+            return 0.0 if (u * 8 % 1 < 0.9 and v * 15 % 1 < 0.85) else 1.0
+        return v * 0.8 + 0.2 * u
+
+    def pixel(x, y):
+        t = sum(shade((x + dx) / size, (y + dy) / size) for dx in (0.25, 0.75) for dy in (0.25, 0.75)) / 4
+        return tuple(int(a[k] + (b[k] - a[k]) * t) for k in range(3)) + (255,)
     return png(size, pixel)
 
 
