@@ -8,7 +8,7 @@ QT += network
 # Sailfish WebView < 1.8 asks apps to link against qtmozembed; see issue #32.
 PKGCONFIG += qt5embedwidget
 
-VERSION = 0.6.0
+VERSION = 0.6.1
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 include(bluos/bluos.pri)
