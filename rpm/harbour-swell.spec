@@ -38,6 +38,12 @@ Categories:
 Custom:
   Repo: https://github.com/misja/swell
 PackageIcon: https://raw.githubusercontent.com/misja/swell/main/icons/harbour-swell.svg
+Screenshots:
+ - https://raw.githubusercontent.com/misja/swell/main/screenshots/now-playing.png
+ - https://raw.githubusercontent.com/misja/swell/main/screenshots/home.png
+ - https://raw.githubusercontent.com/misja/swell/main/screenshots/queue.png
+ - https://raw.githubusercontent.com/misja/swell/main/screenshots/library.png
+ - https://raw.githubusercontent.com/misja/swell/main/screenshots/album.png
 Links:
   Homepage: https://github.com/misja/swell
   Bugtracker: https://github.com/misja/swell/issues
