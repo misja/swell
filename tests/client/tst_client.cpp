@@ -53,6 +53,7 @@ private slots:
 
     void firstContactThenLongPoll();
     void longPollReturnsOnChange();
+    void clearedQueueLeavesNoTitle();
     void unchangedTimeoutKeepsState();
     void oneSecondRule();
     void commands();
@@ -132,6 +133,20 @@ void TstClient::firstContactThenLongPoll()
     QVERIFY(!polls.at(0).query.hasQueryItem(QStringLiteral("etag")));
     QCOMPARE(polls.at(1).query.queryItemValue(QStringLiteral("etag")), QStringLiteral("e1"));
     QCOMPARE(polls.at(1).query.queryItemValue(QStringLiteral("timeout")), QStringLiteral("1"));
+}
+
+// A stopped player with an empty queue and no source has no title elements
+// in /Status (as a player answered 2026-11-13); the mini-player hides on it.
+void TstClient::clearedQueueLeavesNoTitle()
+{
+    Client::Timing t = fast();
+    t.pollTimeoutSecs = 10;
+    startClient(t);
+    QTRY_VERIFY(m_player->requests(QStringLiteral("/Status")).size() >= 2);  // now held
+    m_player->setStatus("<status etag=\"e2\"><pid>15</pid><song>0</song><state>stop</state>"
+                        "<secs>0</secs><volume>38</volume><syncStat>s1</syncStat></status>");
+    QTRY_COMPARE(m_client->title1(), QString());
+    QCOMPARE(m_client->title2(), QString());
 }
 
 void TstClient::longPollReturnsOnChange()
