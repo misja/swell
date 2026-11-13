@@ -12,8 +12,8 @@ Page {
     // volumes folding out under it (spec 005, canvas A2).
     readonly property bool _leads: _player !== null && _player.groupRole === Player.Primary
     property bool _perPlayer: false
-    // Nothing to play (an emptied queue): a placeholder instead of empty
-    // artwork and controls that would do nothing.
+    // Nothing to play (an emptied queue): a label instead of empty artwork,
+    // titles and transport; volume and Per player stay.
     readonly property bool _empty: _player !== null && _player.online && !_player.hasContent
     // Scroll along while Per player opens, until the user scrolls.
     property bool _followGrowth: false
@@ -118,7 +118,6 @@ Page {
                 // Centres the controls in the space left beside (landscape) or
                 // below (portrait) the artwork, instead of leaving it empty.
                 Item {
-                    visible: !page._empty
                     width: parent.width
                     height: Math.max(0, Math.floor((page.height
                                                     - (page.isLandscape ? sideHeader.height : artColumn.height)
@@ -127,12 +126,17 @@ Page {
 
                 Column {
                     id: controls
-                    visible: !page._empty
                     width: parent.width
                     spacing: Theme.paddingMedium
 
+                InfoLabel {
+                    visible: page._empty
+                    text: qsTr("Nothing to play")
+                }
+
                 // The API requires title1..title3 for three-line now-playing text.
                 Column {
+                    visible: !page._empty
                     x: Theme.horizontalPageMargin
                     width: parent.width - 2 * Theme.horizontalPageMargin
 
@@ -195,6 +199,7 @@ Page {
                 Row {
                     anchors.horizontalCenter: parent.horizontalCenter
                     spacing: Theme.paddingLarge
+                    visible: !page._empty
 
                     // Hidden, not greyed, when the source has nothing to go back or
                     // forward to (plain radio: streamUrl without actions, API 4.8).
@@ -357,11 +362,6 @@ Page {
                 }
                 }
             }
-        }
-
-        ViewPlaceholder {
-            enabled: page._empty
-            text: qsTr("Nothing to play")
         }
 
         VerticalScrollDecorator {}
