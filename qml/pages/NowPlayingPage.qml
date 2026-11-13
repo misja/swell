@@ -12,6 +12,9 @@ Page {
     // volumes folding out under it (spec 005, canvas A2).
     readonly property bool _leads: _player !== null && _player.groupRole === Player.Primary
     property bool _perPlayer: false
+    // Nothing to play (an emptied queue): a placeholder instead of empty
+    // artwork and controls that would do nothing.
+    readonly property bool _empty: _player !== null && _player.online && !_player.hasContent
     // Scroll along while Per player opens, until the user scrolls.
     property bool _followGrowth: false
 
@@ -80,6 +83,7 @@ Page {
                 }
 
                 Item {
+                    visible: !page._empty
                     width: page._artSize
                     height: page._artSize
 
@@ -114,6 +118,7 @@ Page {
                 // Centres the controls in the space left beside (landscape) or
                 // below (portrait) the artwork, instead of leaving it empty.
                 Item {
+                    visible: !page._empty
                     width: parent.width
                     height: Math.max(0, Math.floor((page.height
                                                     - (page.isLandscape ? sideHeader.height : artColumn.height)
@@ -122,6 +127,7 @@ Page {
 
                 Column {
                     id: controls
+                    visible: !page._empty
                     width: parent.width
                     spacing: Theme.paddingMedium
 
@@ -351,6 +357,11 @@ Page {
                 }
                 }
             }
+        }
+
+        ViewPlaceholder {
+            enabled: page._empty
+            text: qsTr("Nothing to play")
         }
 
         VerticalScrollDecorator {}
