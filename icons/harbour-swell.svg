@@ -2,8 +2,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="86" height="86" viewBox="0 0 86 86" role="img" aria-label="Swell app icon">
   <title>Swell</title>
   <!-- Original Sailfish circular base geometry: cx=43, cy=43, r=42.7 -->
-  <circle id="jolla-base" cx="43" cy="43" r="42.7" fill="#0057B3"/>
-  <circle id="inner-disc" cx="43" cy="43" r="32.025" fill="#00B4E6"/>
+  <defs>
+    <linearGradient id="outer-gradient" x1="0" y1="1" x2="1" y2="0" gradientUnits="objectBoundingBox">
+      <stop offset="0%" stop-color="#00458F"/>
+      <stop offset="100%" stop-color="#006CC7"/>
+    </linearGradient>
+    <linearGradient id="inner-gradient" x1="0" y1="1" x2="1" y2="0" gradientUnits="objectBoundingBox">
+      <stop offset="0%" stop-color="#00BCEB"/>
+      <stop offset="100%" stop-color="#009FCD"/>
+    </linearGradient>
+  </defs>
+  <circle id="jolla-base" cx="43" cy="43" r="42.7" fill="url(#outer-gradient)"/>
+  <circle id="inner-disc" cx="43" cy="43" r="32.025" fill="url(#inner-gradient)"/>
   <g id="sound-bars" fill="#4AE3EA" transform="translate(1.005 0)">
     <rect x="18.04" y="37.72" width="4.79" height="10.56" rx="2.395"/>
     <rect x="25.23" y="33.89" width="4.79" height="18.22" rx="2.395"/>
