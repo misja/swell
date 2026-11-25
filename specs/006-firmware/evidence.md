@@ -246,7 +246,7 @@ Checked in the SDK container on 127.0.0.1:
 | L: superseded WebView sections; limits | Marked in place; residual risks and limits added |
 | L: unused `finished()` in OneShotGet | Removed |
 
-Re-review of the fixes: approve. `make check` after the fixes: all eleven suites
+Re-review of the fixes: approve. After the device check, e4bfd33 (dropping the old offer on another firmware version): approve. `make check` after the fixes: all eleven suites
 pass, firmware 43 tests (aarch64). The PR names three own mechanisms:
 `OneShotGet`, the five-minute bound and the start's generation number.
 
