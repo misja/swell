@@ -814,6 +814,13 @@ void Client::takeSyncStatus(const SyncStatus &sync)
         m_upgradeStarted = false;
         m_upgradeEvidence = false;
         setUpgradePhase(UpgradeDone);
+        // The offer was this update: gone until a check says otherwise. Just
+        // back, a player may not answer the check yet.
+        if (m_upgrade.available) {
+            m_upgrade.available = false;
+            m_upgrade.version.clear();
+            emit upgradeChanged();
+        }
     }
     emit syncStatusChanged();
 }

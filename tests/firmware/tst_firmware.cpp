@@ -770,14 +770,17 @@ void TstFirmware::updatingAfterAStart()
     QCOMPARE(m_client->availability(), Client::Updating);
 
     // Back on the new version: online, done, and the record is cleared.
+    // The check does not answer yet, as a NAD just back (evidence.md): the
+    // old offer is gone all the same.
     QVERIFY(m_player->listen(m_player->port()));
     m_player->serve(QStringLiteral("/SyncStatus"), syncStatus("4.18.20"));
-    m_player->serve(QStringLiteral("/upgrade"), check(false));
+    m_player->failWith(QStringLiteral("/upgrade"), 503);
     QTRY_COMPARE_WITH_TIMEOUT(m_client->availability(), Client::Online, 5000);
     QCOMPARE(m_client->upgradePhase(), Client::UpgradeDone);
     QVERIFY(!m_client->upgradeStarted());
     QCOMPARE(m_client->firmwareVersion(), QStringLiteral("4.18.20"));
-    QTRY_VERIFY(!m_client->upgradeAvailable());
+    QVERIFY(!m_client->upgradeAvailable());
+    QVERIFY(m_client->upgradeVersion().isEmpty());
     QCOMPARE(starts(), 1);
 }
 
