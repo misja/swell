@@ -925,6 +925,12 @@ void TstFirmware::canStartUpgradeFollowsItsParts()
     QVERIFY(m_client->canStartUpgrade());
     QCOMPARE(changed.count(), 4);
 
+    // Offline and back.
+    m_player->close();
+    QTRY_VERIFY(!m_client->canStartUpgrade());
+    QVERIFY(m_player->listen(m_player->port()));
+    QTRY_VERIFY_WITH_TIMEOUT(m_client->canStartUpgrade(), 5000);
+
     // While the start's own check runs, and once it was sent: no.
     m_client->startUpgrade(QStringLiteral("4.18.20"));
     QCOMPARE(m_client->upgradePhase(), Client::UpgradeChecking);
@@ -943,6 +949,7 @@ void TstFirmware::becomingAFixedSecondaryHidesTheOffer()
     startWithOffer();
     QTRY_VERIFY(m_client->canStartUpgrade());
     QSignalSpy changed(m_client, &Client::upgradeChanged);
+    QSignalSpy canStart(m_client, &Client::canStartUpgradeChanged);
     m_player->serve(QStringLiteral("/SyncStatus"),
                     syncStatus("4.18.18", " zone=\"Lounge\" zoneSlave=\"true\""));
     m_player->setStatus("<status etag=\"e2\"><state>stop</state><title1>Track</title1>"
@@ -951,6 +958,7 @@ void TstFirmware::becomingAFixedSecondaryHidesTheOffer()
     QVERIFY(!m_client->upgradeAvailable());
     QVERIFY(!m_client->canStartUpgrade());
     QCOMPARE(changed.count(), 1);
+    QCOMPARE(canStart.count(), 1);
 
     m_player->serve(QStringLiteral("/SyncStatus"), syncStatus("4.18.18"));
     m_player->setStatus("<status etag=\"e3\"><state>stop</state><title1>Track</title1>"
@@ -959,6 +967,7 @@ void TstFirmware::becomingAFixedSecondaryHidesTheOffer()
     QVERIFY(m_client->upgradeAvailable());
     QVERIFY(m_client->canStartUpgrade());
     QCOMPARE(changed.count(), 2);
+    QCOMPARE(canStart.count(), 2);
 }
 
 QTEST_MAIN(TstFirmware)

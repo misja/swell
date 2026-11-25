@@ -184,7 +184,10 @@ public:
     bool upgradeStarted() const { return m_upgradeStarted; }
     // Whether startUpgrade() would ask the player now: an offer, a start
     // allowed (see startUpgrade) and no check for a start running. The one
-    // condition the start button, the Home notice and the dialog use.
+    // condition the start button, the Home notice and the dialog use. Every
+    // input of upgradeStartAllowed() and upgradeAvailable() must change with
+    // one of the signals connected in the constructor, or call
+    // updateCanStartUpgrade().
     bool canStartUpgrade() const { return m_canStartUpgrade; }
     // The firmware version when the start was sent.
     QString upgradeStartFirmware() const { return m_upgradeStartFirmware; }
