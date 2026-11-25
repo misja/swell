@@ -124,6 +124,8 @@ private slots:
     void noRetry();
     void recordSurvivesANewClient_data();
     void recordSurvivesANewClient();
+    void pendingStartAcrossAPlayerChange_data();
+    void pendingStartAcrossAPlayerChange();
     void updatingAfterAStart();
     void boundEndsOnlyOnAnAnswer();
     void unfinishedKeepsTheRecord();
@@ -646,6 +648,7 @@ void TstFirmware::recordSurvivesANewClient_data()
     QTest::newRow("address change") << "address change";
     QTest::newRow("lost and found") << "lost and found";
     QTest::newRow("removed and added") << "removed and added";
+    QTest::newRow("added by address, announced, then moved") << "merged then moved";
 }
 
 void TstFirmware::recordSurvivesANewClient()
@@ -656,7 +659,7 @@ void TstFirmware::recordSurvivesANewClient()
     model.setClientTiming(fast());
     const QString id = QStringLiteral("127.0.0.1:%1").arg(m_player->port());
     const QString node = QStringLiteral("02:00:00:00:00:0A");
-    if (how == QLatin1String("removed and added")) {
+    if (how == QLatin1String("removed and added") || how == QLatin1String("merged then moved")) {
         QVERIFY(model.addManual(id));
         model.setCurrentId(id);
     } else {
@@ -670,6 +673,12 @@ void TstFirmware::recordSurvivesANewClient()
     QTRY_COMPARE(starts(), 1);
 
     if (how == QLatin1String("address change")) {
+        model.discovery()->handleDatagram(announce('\x0A', 20, m_player->port()));
+    } else if (how == QLatin1String("merged then moved")) {
+        // Recorded by address; the announcement gives the node, then the
+        // player comes back at another address.
+        model.discovery()->handleDatagram(announce('\x0A', 1, m_player->port()));
+        QCOMPARE(model.current(), first);
         model.discovery()->handleDatagram(announce('\x0A', 20, m_player->port()));
     } else if (how == QLatin1String("lost and found")) {
         QVERIFY(model.addManual(QStringLiteral("127.0.0.30:1")));
@@ -694,6 +703,43 @@ void TstFirmware::recordSurvivesANewClient()
     QCOMPARE(refused.count(), 1);
     QTest::qWait(1000);
     QCOMPARE(starts(), 1);
+}
+
+void TstFirmware::pendingStartAcrossAPlayerChange_data()
+{
+    QTest::addColumn<QString>("how");
+    QTest::newRow("address change") << "address change";
+    QTest::newRow("another current player") << "another current player";
+}
+
+void TstFirmware::pendingStartAcrossAPlayerChange()
+{
+    // The check for a start is pending when the Client is replaced or the
+    // user picks another player: nothing is sent, nothing is recorded.
+    QFETCH(QString, how);
+    m_player->serve(QStringLiteral("/upgrade"), check(true, false, "4.18.20"));
+    PlayerModel model;
+    model.setClientTiming(fast());
+    const QString id = QStringLiteral("127.0.0.1:%1").arg(m_player->port());
+    model.restoreCurrent(id, QStringLiteral("02:00:00:00:00:0A"));
+    Client *first = model.current();
+    QTRY_VERIFY(first->online());
+    QTRY_VERIFY(first->upgradeAvailable());
+    m_player->delay(QStringLiteral("/upgrade"), 800);
+    first->startUpgrade(QStringLiteral("4.18.20"));
+    QCOMPARE(first->upgradePhase(), Client::UpgradeChecking);
+    if (how == QLatin1String("address change")) {
+        model.discovery()->handleDatagram(announce('\x0A', 20, m_player->port()));
+        QVERIFY(!model.current()->upgradeStarted());
+    } else {
+        QVERIFY(model.addManual(QStringLiteral("127.0.0.30:1")));
+        model.setCurrentId(QStringLiteral("127.0.0.30:1"));
+        QCOMPARE(first->upgradePhase(), Client::NoUpgrade);
+    }
+    QTest::qWait(2000);
+    QCOMPARE(starts(), 0);
+    for (int row = 0; row < model.rowCount(); ++row)
+        QVERIFY(!model.client(model.idAt(row))->upgradeStarted());
 }
 
 void TstFirmware::updatingAfterAStart()

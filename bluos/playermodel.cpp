@@ -396,6 +396,9 @@ void PlayerModel::onFound(const Discovery::Found &player)
             e.classId = player.classId;
             if (e.client->host() != host) {
                 const bool wasCurrent = e.client->id() == m_currentId;
+                // Stopped first: a pending firmware start is cancelled, not
+                // sent by a Client on its way out.
+                e.client->stop();
                 e.client->deleteLater();
                 e.client = createClient(host, player.port);
                 restoreUpgradeStart(e);
@@ -413,6 +416,11 @@ void PlayerModel::onFound(const Discovery::Found &player)
     const int row = indexOf(QStringLiteral("%1:%2").arg(host).arg(player.port));
     if (row >= 0) {
         m_entries[row].nodeId = player.nodeId;
+        // A firmware start recorded by address is now also known by node,
+        // for when the address changes.
+        const QString id = m_entries.at(row).client->id();
+        if (m_upgradeStarts.contains(id))
+            m_upgradeStarts.insert(player.nodeId, m_upgradeStarts.value(id));
         m_entries[row].discoveredName = player.name;
         m_entries[row].classId = player.classId;
         emit dataChanged(index(row), index(row));
@@ -504,6 +512,7 @@ void PlayerModel::removeAt(int row)
     const bool wasCurrent = c->id() == m_currentId;
     m_entries.remove(row);
     endRemoveRows();
+    c->stop();
     c->deleteLater();
     if (wasCurrent) {
         m_currentId.clear();

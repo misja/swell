@@ -17,9 +17,7 @@ OneShotGet::OneShotGet(const QString &host, int port, const QByteArray &target, 
         // Written once; nothing below writes again.
         m_socket.write(m_request);
     });
-    connect(&m_socket, &QTcpSocket::readyRead, this, [this]() {
-        m_received += m_socket.readAll();
-    });
+    connect(&m_socket, &QTcpSocket::readyRead, this, [this]() { m_socket.readAll(); });
     connect(&m_socket, &QTcpSocket::disconnected, this, &OneShotGet::finish);
     connect(&m_socket, static_cast<void (QAbstractSocket::*)(QAbstractSocket::SocketError)>(&QAbstractSocket::error),
             this, &OneShotGet::finish);
@@ -36,9 +34,7 @@ void OneShotGet::finish()
         return;
     m_done = true;
     m_deadline.stop();
-    m_received += m_socket.readAll();
     m_socket.abort();
-    emit finished(m_received.startsWith("HTTP/"));
     deleteLater();
 }
 

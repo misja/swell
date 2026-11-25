@@ -20,6 +20,8 @@ Page {
         target: _player
         onUpgradeStartRefused: page._refused = true
     }
+    // A refusal belongs to the player it came from.
+    on_PlayerChanged: _refused = false
 
     // Opening the page asks again.
     onStatusChanged: {

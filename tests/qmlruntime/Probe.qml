@@ -63,9 +63,15 @@ Item {
                 _player.firmwareVersion, _player.upgradePhase === Player.NoUpgrade, _player.upgradeStarted,
                 typeof _player.availability].join(" ")
     }
-    // UpgradeDialog.canAccept for the player it was opened for.
+    // UpgradeDialog.canAccept (copied from it) for the player it was opened
+    // for: the current one, or the one held by holdPlayer().
+    property QtObject _held
+    function holdPlayer() {
+        _held = _player
+        return ""
+    }
     function upgradeCanAccept(version) {
-        var player = _player
+        var player = _held !== null ? _held : _player
         return String(player !== null && player === players.current && player.online
                       && player.upgradeAvailable && player.upgradeVersion === version
                       && !player.upgradeStarted && player.upgradePhase !== Player.UpgradeChecking)

@@ -109,7 +109,7 @@ the update.
    - The notice opens the player's update page directly (the maintainer, 2026-11-09,
      after the device check: the extra step through Settings is not wanted).
    - The update page has the player's name as header.
-3. **Update in the app:**
+3. **Update in the app** (superseded by the revision of 2026-11-25):
    - The Home notice and the Settings button open a `WebViewPage` with a `WebView` on
      `http://<player>/upgrade?noheader=1`, the player's own page. The user
      starts and follows the update there, as in the official app.
@@ -137,6 +137,9 @@ the update.
 
 ## WebView version (decided by the maintainer, 2026-11-09)
 
+Superseded: the WebView is removed (revision 2026-11-25, item 6).
+
+
 Swell links against qt5embedwidget, as WebView 1.6.9 in the SDK target asks,
 and accepts the validator's rpath WARNING. Dropping the link from WebView 1.8
 onwards is tracked in issue #32.
@@ -150,7 +153,7 @@ for them without building anything for them now:
   "Player" or "Settings" page per player, where firmware is the first item
   and settings can be added later. It should not be a one-off firmware
   screen that would have to move.
-- **Web page:** the in-app web page shows any page the player itself serves
+- **Web page** (superseded: no web page, revision 2026-11-25): the in-app web page shows any page the player itself serves
   (`/upgrade` now; its own WiFi and network-share pages are listed in the
   settings tree). It is not tied to firmware.
 - **Agree on the canvas:** the entry point and that page's structure are
@@ -278,7 +281,21 @@ are shown as the player reports them.
    sections "WebView version" and the web-page part of "Room to grow" no
    longer apply. Issue #32 lapses.
 
-### Residual risks (not designed for)
+### Residual risks and limits (not designed for)
+
+- One player listed twice (by host name and as discovered by address) has
+  two records; after "Not started" or "Not finished" on one, the other can
+  start again, guarded by the check only.
+- A record kept by address applies to whatever player later takes that
+  address in the same session; that player cannot be started until Swell
+  restarts.
+- "Updated" and clearing the record depend on the `version` attribute of
+  `/SyncStatus`, which is not in the API. A player without it always ends
+  as "Not finished".
+- A Client that takes over a record (address change) shows "Not finished"
+  until the player shows the update again.
+- The update check during Updating also runs for a player polled beside the
+  current one (Players page); it only reads.
 
 - The official app or another controller may start the same update between
   Swell's check and `this`; the check is the only guard, as in the official
@@ -350,7 +367,7 @@ are shown as the player reports them.
    again. A test drives this sequence on the fake player.
 3. With an update available, the app shows the notice where agreed on the
    canvas. The notice opens the in-app web view on the player's
-   `/upgrade` page.
+   `/upgrade` page (since 2026-11-25: the confirmation dialog).
 4. The SDK build and the Harbour validator pass with the new import,
    requirement and permission, for aarch64 and armv7hl.
 5. A device check by the maintainer covers:

@@ -215,6 +215,14 @@ void TstQmlRuntime::upgradeStartFromQml()
     QTRY_COMPARE_WITH_TIMEOUT(call("upgradeCanAccept", QStringLiteral("4.18.20")), QStringLiteral("true"), 10000);
     QCOMPARE(call("upgradeCanAccept", QStringLiteral("4.18.19")), QStringLiteral("false"));
     QCOMPARE(call("upgradeButton"), QStringLiteral("true"));
+    // A dialog opened for this player cannot accept after a switch.
+    call("holdPlayer");
+    const QString id = m_players->currentId();
+    QVERIFY(m_players->addManual(QStringLiteral("127.0.0.30:1")));
+    m_players->setCurrentId(QStringLiteral("127.0.0.30:1"));
+    QCOMPARE(call("upgradeCanAccept", QStringLiteral("4.18.20")), QStringLiteral("false"));
+    m_players->setCurrentId(id);
+    QTRY_COMPARE_WITH_TIMEOUT(call("upgradeCanAccept", QStringLiteral("4.18.20")), QStringLiteral("true"), 10000);
     call("startUpgrade", QStringLiteral("4.18.20"));
     QCOMPARE(call("upgradePhase"), QStringLiteral("checking"));
     QCOMPARE(call("upgradeCanAccept", QStringLiteral("4.18.20")), QStringLiteral("false"));

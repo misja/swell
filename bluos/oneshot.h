@@ -21,14 +21,10 @@ class OneShotGet : public QObject
 
 public:
     // Connects and writes "GET target" once; target is the encoded path and
-    // query. Deletes itself after finished().
+    // query. The answer is read and dropped; deletes itself when the
+    // connection ends or the deadline passes.
     OneShotGet(const QString &host, int port, const QByteArray &target, int deadlineMs,
                QObject *parent = nullptr);
-
-signals:
-    // answered: the player sent at least an HTTP status line. Not answered
-    // says nothing about whether the player acted on the request.
-    void finished(bool answered);
 
 private:
     void finish();
@@ -36,7 +32,6 @@ private:
     QTcpSocket m_socket;
     QTimer m_deadline;
     QByteArray m_request;
-    QByteArray m_received;
     bool m_done = false;
 };
 

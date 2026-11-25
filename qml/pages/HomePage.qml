@@ -24,6 +24,8 @@ Page {
         target: _player
         onUpgradeStartRefused: page._upgradeRefused = true
     }
+    // A refusal belongs to the player it came from.
+    on_PlayerChanged: _upgradeRefused = false
 
     // The update notice's first line: the offer, or how a started update goes.
     function _upgradeText() {
@@ -39,6 +41,9 @@ Page {
             return qsTr("The update did not start. Restart Swell to try again.")
         case Player.UpgradeUnfinished:
             return qsTr("The update did not finish. Restart Swell to try again.")
+        }
+        if (_player.availability === Player.Updating) {
+            return qsTr("Updating firmware")
         }
         return _upgradeRefused ? qsTr("The update was not started.") : qsTr("Update available")
     }
