@@ -809,18 +809,23 @@ void Client::takeSyncStatus(const SyncStatus &sync)
 {
     m_sync = sync;
     // Another firmware version: the update that was started has run.
+    bool updated = false;
     if (m_upgradeStarted && !sync.version.isEmpty() && !m_upgradeStartFirmware.isEmpty()
             && sync.version != m_upgradeStartFirmware) {
         m_upgradeStarted = false;
         m_upgradeEvidence = false;
         setUpgradePhase(UpgradeDone);
-        // The offer was this update: gone until a check says otherwise. Just
-        // back, a player may not answer the check yet.
-        if (m_upgrade.available) {
-            m_upgrade.available = false;
-            m_upgrade.version.clear();
-            emit upgradeChanged();
-        }
+        updated = true;
+    }
+    // An offer checked on other firmware is gone, whoever updated the player,
+    // until a check says otherwise. Just back, a NAD does not answer the
+    // check for some 20 s (spec 006, evidence.md).
+    const bool otherFirmware = !sync.version.isEmpty() && !m_upgradeCheckedOn.isEmpty()
+            && sync.version != m_upgradeCheckedOn;
+    if (m_upgrade.available && (updated || otherFirmware)) {
+        m_upgrade.available = false;
+        m_upgrade.version.clear();
+        emit upgradeChanged();
     }
     emit syncStatusChanged();
 }
@@ -1036,6 +1041,10 @@ void Client::takeUpgradeCheck(const UpgradeCheck &check)
     const bool changed = !m_upgrade.ok || check.available != m_upgrade.available
             || check.version != m_upgrade.version;
     m_upgrade = check;
+    m_upgradeCheckedOn = m_sync.version;
+    // "Updated" gives way to a later offer.
+    if (check.available && m_upgradePhase == UpgradeDone)
+        setUpgradePhase(NoUpgrade);
     if (changed)
         emit upgradeChanged();
 }

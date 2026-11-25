@@ -376,6 +376,9 @@ private:
     bool m_presetsFetched = false;
     bool m_inputsFetched = false;
     UpgradeCheck m_upgrade;
+    // The firmware the player ran when it last answered a check: the offer
+    // holds only while it still runs it.
+    QString m_upgradeCheckedOn;
     QTimer m_upgradeTimer;
     bool m_upgradeChecking = false;
     bool m_upgradeChecks = true;

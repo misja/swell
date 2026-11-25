@@ -85,10 +85,21 @@ Item {
         return String(_player.upgradeAvailable && _player.availability !== Player.Updating
                       && !_player.upgradeStarted && _player.upgradePhase !== Player.UpgradeChecking)
     }
+    // HomePage's update notice: visible, and whether it opens the dialog.
+    function upgradeNotice() {
+        var visible = _player.upgradeAvailable || _player.upgradeStarted
+                || _player.upgradePhase === Player.UpgradeChecking
+        var enabled = _player.online && _player.upgradeAvailable && !_player.upgradeStarted
+                && _player.upgradePhase !== Player.UpgradeChecking
+        return visible + " " + enabled
+    }
     function upgradePhase() {
         switch (_player.upgradePhase) {
+        case Player.NoUpgrade: return "none"
         case Player.UpgradeChecking: return "checking"
         case Player.UpgradeStarting: return "starting"
+        case Player.UpgradeInstalling: return "installing"
+        case Player.UpgradeDone: return "done"
         }
         return String(_player.upgradePhase)
     }

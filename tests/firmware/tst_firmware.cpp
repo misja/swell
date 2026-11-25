@@ -129,6 +129,8 @@ private slots:
     void updatingAfterAStart();
     void boundEndsOnlyOnAnAnswer();
     void unfinishedKeepsTheRecord();
+    void theMeasuredNadUpdate();
+    void anUpdateFromElsewhereDropsTheOffer();
 
 private:
     void startClient(const Client::Timing &timing = fast());
@@ -825,6 +827,82 @@ void TstFirmware::unfinishedKeepsTheRecord()
     QCOMPARE(m_client->upgradePhase(), Client::UpgradeUnfinished);
     QVERIFY(m_client->upgradeStarted());
     QCOMPARE(starts(), 1);
+}
+
+void TstFirmware::theMeasuredNadUpdate()
+{
+    // The update on the NAD C 379, 4.18.18 to 4.18.26, as measured
+    // (evidence.md): ordinary answers, silent, Stage2 with child elements
+    // while the check does not answer, silent again, back on the new firmware
+    // while the check still does not answer, then not available. Only the
+    // times are shorter, and the name is the test's.
+    startWithOffer();
+    m_client->startUpgrade(QStringLiteral("4.18.20"));
+    QTRY_COMPARE(m_client->upgradePhase(), Client::UpgradeStarting);
+
+    // Silent, before any sign of an update: still Starting.
+    m_player->close();
+    QTest::qWait(1500);
+    QCOMPARE(m_client->upgradePhase(), Client::UpgradeStarting);
+    QCOMPARE(m_client->availability(), Client::Updating);
+
+    // Stage2 as the NAD sends it; its version attribute is not the firmware.
+    QVERIFY(m_player->listen(m_player->port()));
+    m_player->silenceIf(QStringLiteral("/upgrade"), [](const QUrlQuery &) { return true; },
+                        FakePlayer::Hold);
+    m_player->serve(QStringLiteral("/SyncStatus"),
+                    "<UpgradeStatusStage2 version=\"1.97\" name=\"Living Room\" model=\"C379\">"
+                    "<format>0</format><git>4.18.20</git><total>3</total><step>2</step>"
+                    "<percent>1</percent><retry>0</retry><error>0</error><abortable>0</abortable>"
+                    "<started>1</started></UpgradeStatusStage2>");
+    QTRY_COMPARE(m_client->upgradePhase(), Client::UpgradeInstalling);
+    QCOMPARE(m_client->firmwareVersion(), QStringLiteral("4.18.18"));
+    QVERIFY(m_client->upgradeStarted());
+
+    // Silent again while it restarts.
+    m_player->close();
+    QTRY_COMPARE(m_client->upgradePhase(), Client::UpgradeRestarting);
+
+    // Back on the new firmware; the check is held without an answer.
+    QVERIFY(m_player->listen(m_player->port()));
+    m_player->serve(QStringLiteral("/SyncStatus"), syncStatus("4.18.20"));
+    QTRY_COMPARE_WITH_TIMEOUT(m_client->upgradePhase(), Client::UpgradeDone, 5000);
+    QCOMPARE(m_client->availability(), Client::Online);
+    QVERIFY(!m_client->upgradeStarted());
+    QVERIFY(!m_client->upgradeAvailable());
+
+    // Then the check answers: nothing on offer; Updated stays.
+    m_player->stopSilence(QStringLiteral("/upgrade"));
+    m_player->serve(QStringLiteral("/upgrade"), check(false));
+    const int checks = m_player->requests(QStringLiteral("/upgrade")).size();
+    QTRY_VERIFY_WITH_TIMEOUT((m_client->checkUpgrade(),
+                              m_player->requests(QStringLiteral("/upgrade")).size() > checks), 5000);
+    QTest::qWait(500);
+    QCOMPARE(m_client->upgradePhase(), Client::UpgradeDone);
+    QVERIFY(!m_client->upgradeAvailable());
+
+    // A later offer replaces Updated.
+    m_player->serve(QStringLiteral("/upgrade"), check(true, false, "4.18.30"));
+    QTRY_VERIFY((m_client->checkUpgrade(), m_client->upgradeAvailable()));
+    QCOMPARE(m_client->upgradePhase(), Client::NoUpgrade);
+    QCOMPARE(starts(), 1);
+}
+
+void TstFirmware::anUpdateFromElsewhereDropsTheOffer()
+{
+    // Another controller updates the player: when it runs other firmware
+    // than the offer was checked on, the offer is gone, also while the
+    // check does not answer.
+    startWithOffer();
+    m_player->silenceIf(QStringLiteral("/upgrade"), [](const QUrlQuery &) { return true; },
+                        FakePlayer::Hold);
+    m_player->serve(QStringLiteral("/SyncStatus"), syncStatus("4.18.20"));
+    m_player->setStatus("<status etag=\"e2\"><state>stop</state><title1>Track</title1>"
+                        "<syncStat>s2</syncStat></status>");
+    QTRY_COMPARE(m_client->firmwareVersion(), QStringLiteral("4.18.20"));
+    QVERIFY(!m_client->upgradeAvailable());
+    QCOMPARE(m_client->upgradePhase(), Client::NoUpgrade);
+    QCOMPARE(starts(), 0);
 }
 
 QTEST_MAIN(TstFirmware)

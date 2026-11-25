@@ -108,6 +108,7 @@ public:
     {
         m_silences.insert(path, { matches, how });
     }
+    void stopSilence(const QString &path) { m_silences.remove(path); }
 
     QList<Request> requests() const { return m_requests; }
     QList<Request> requests(const QString &path) const
