@@ -268,3 +268,28 @@ maintainer's phone, with the maintainer's approval; `tests/demo/household.py
   silent 30 s, stage1 and stage2; done; Swell asked again 13 s after done.
   One start in total, nothing REFUSED. The maintainer saw every phase,
   through to "Updated to 9.9.2": works.
+
+## Revision 2026-11-25: the update on the NAD (AC10)
+
+NAD C 379, 4.18.18 to 4.18.26, started from Swell (test build 557af9a) by the
+maintainer. Watched read-only from a desktop: `/SyncStatus` every 5 s, the
+check every 15 s (as the official app).
+
+- Before: `available="true" inProgress="false" version="4.18.26"`.
+- About 5 s after the start the player stopped answering, for about 25 s.
+  No check answered `inProgress="true"` before that.
+- Then `/SyncStatus` answered `<UpgradeStatusStage2 version="1.97" …>` for
+  about 90 s, with child elements `format`, `git` (4.18.26), `total` (3),
+  `step` (2, then 3), `percent` (1 … 100), `retry`, `error`, `abortable`,
+  `started`; the check did not answer. No Stage1 was seen (5 s reads).
+  Swell does not use the counters (spec). The root's `version` is not the
+  firmware and Swell does not read it as such (stage roots are not
+  `SyncStatus`).
+- Back as `SyncStatus` with `version="4.18.26"`; the check did not answer for
+  about 20 s more, then `available="false"`.
+- In Swell: the update ran through to "Updated to 4.18.26". Finding: the old
+  offer stayed (the check right after the return got no answer), so Settings
+  showed "Start update" and Home "Update available" again. A tap would only
+  have run a fresh check, which by then said not available. Fixed: the
+  offer is dropped when the player runs another version
+  (`updatingAfterAStart` now has the check not answering); 11 suites pass.

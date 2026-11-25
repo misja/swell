@@ -32,5 +32,5 @@
 - [x] Builds (aarch64, armv7hl), validator, evidence.md.
 - [x] Separate result review (approve with changes, then approve); findings resolved.
 - [x] Rehearsal on the device against household.py (evidence.md).
-- [ ] Device check: the update to the offered firmware on the NAD.
+- [x] Device check: the update to 4.18.26 on the NAD (evidence.md); the stale offer found there is fixed.
 - [ ] PR.
