@@ -72,19 +72,20 @@ Item {
     }
     function upgradeCanAccept(version) {
         var player = _held !== null ? _held : _player
-        return String(player !== null && player === players.current && player.online
-                      && player.upgradeAvailable && player.upgradeVersion === version
-                      && !player.upgradeStarted && player.upgradePhase !== Player.UpgradeChecking)
+        return String(player !== null && player === players.current && player.canStartUpgrade
+                      && player.upgradeVersion === version)
     }
-    // UpgradeDialog.onAccepted, then the start button's condition (copied
-    // from PlayerSettingsPage.qml; keep both in step).
+    // UpgradeDialog.onAccepted, then whether the start button can be tapped
+    // (visible and enabled, copied from PlayerSettingsPage.qml; keep both in
+    // step).
     function startUpgrade(version) {
         _player.startUpgrade(version)
         return ""
     }
     function upgradeButton() {
         return String(_player.upgradeAvailable && _player.availability !== Player.Updating
-                      && !_player.upgradeStarted && _player.upgradePhase !== Player.UpgradeChecking)
+                      && !_player.upgradeStarted && _player.upgradePhase !== Player.UpgradeChecking
+                      && _player.canStartUpgrade)
     }
     // HomePage's update notice (copied from HomePage.qml, updateNotice
     // visible and enabled; keep both in step): visible, and whether it opens
@@ -92,8 +93,7 @@ Item {
     function upgradeNotice() {
         var visible = _player.upgradeAvailable || _player.upgradeStarted
                 || _player.upgradePhase === Player.UpgradeChecking
-        var enabled = _player.online && _player.upgradeAvailable && !_player.upgradeStarted
-                && _player.upgradePhase !== Player.UpgradeChecking
+        var enabled = _player.canStartUpgrade
         return visible + " " + enabled
     }
     function upgradePhase() {

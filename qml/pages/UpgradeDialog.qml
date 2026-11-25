@@ -3,7 +3,6 @@
 // 2026-11-25). Once the player has it, the update cannot be stopped.
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import Swell 1.0
 
 Dialog {
     id: dialog
@@ -13,9 +12,8 @@ Dialog {
     property string version
 
     allowedOrientations: Orientation.All
-    canAccept: player !== null && player === players.current && player.online
-               && player.upgradeAvailable && player.upgradeVersion === version
-               && !player.upgradeStarted && player.upgradePhase !== Player.UpgradeChecking
+    canAccept: player !== null && player === players.current && player.canStartUpgrade
+               && player.upgradeVersion === version
 
     onAccepted: player.startUpgrade(version)
 

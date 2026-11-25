@@ -101,12 +101,13 @@ Page {
 
             Item { width: 1; height: Theme.paddingLarge }
 
-            // Only with an update on offer, and not once a start was sent.
+            // Only with an update on offer, and not once a start was sent;
+            // disabled while a start is not possible (offline, say).
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
                 visible: _player !== null && _player.upgradeAvailable && !_updating
                          && !_player.upgradeStarted && _player.upgradePhase !== Player.UpgradeChecking
-                enabled: _player !== null && _player.online
+                enabled: _player !== null && _player.canStartUpgrade
                 text: qsTr("Start update")
                 onClicked: {
                     page._refused = false

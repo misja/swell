@@ -131,6 +131,8 @@ private slots:
     void unfinishedKeepsTheRecord();
     void theMeasuredNadUpdate();
     void anUpdateFromElsewhereDropsTheOffer();
+    void canStartUpgradeFollowsItsParts();
+    void becomingAFixedSecondaryHidesTheOffer();
 
 private:
     void startClient(const Client::Timing &timing = fast());
@@ -905,6 +907,58 @@ void TstFirmware::anUpdateFromElsewhereDropsTheOffer()
     QVERIFY(!m_client->upgradeAvailable());
     QCOMPARE(m_client->upgradePhase(), Client::NoUpgrade);
     QCOMPARE(starts(), 0);
+}
+
+void TstFirmware::canStartUpgradeFollowsItsParts()
+{
+    // The one condition for the start button, the notice and the dialog.
+    startWithOffer();
+    QTRY_VERIFY(m_client->canStartUpgrade());
+    QSignalSpy changed(m_client, &Client::canStartUpgradeChanged);
+    m_client->setUpgradeChecks(false);
+    QVERIFY(!m_client->canStartUpgrade());
+    m_client->setUpgradeChecks(true);
+    QVERIFY(m_client->canStartUpgrade());
+    m_client->setStatusPolling(false);
+    QVERIFY(!m_client->canStartUpgrade());
+    m_client->setStatusPolling(true);
+    QVERIFY(m_client->canStartUpgrade());
+    QCOMPARE(changed.count(), 4);
+
+    // While the start's own check runs, and once it was sent: no.
+    m_client->startUpgrade(QStringLiteral("4.18.20"));
+    QCOMPARE(m_client->upgradePhase(), Client::UpgradeChecking);
+    QVERIFY(!m_client->canStartUpgrade());
+    QTRY_COMPARE(m_client->upgradePhase(), Client::UpgradeStarting);
+    QVERIFY(!m_client->canStartUpgrade());
+    m_client->stop();
+    QVERIFY(!m_client->canStartUpgrade());
+    QCOMPARE(starts(), 1);
+}
+
+void TstFirmware::becomingAFixedSecondaryHidesTheOffer()
+{
+    // The offer is hidden on a fixed-group secondary; joining or leaving
+    // such a group is told, so what shows the offer follows.
+    startWithOffer();
+    QTRY_VERIFY(m_client->canStartUpgrade());
+    QSignalSpy changed(m_client, &Client::upgradeChanged);
+    m_player->serve(QStringLiteral("/SyncStatus"),
+                    syncStatus("4.18.18", " zone=\"Lounge\" zoneSlave=\"true\""));
+    m_player->setStatus("<status etag=\"e2\"><state>stop</state><title1>Track</title1>"
+                        "<syncStat>s2</syncStat></status>");
+    QTRY_VERIFY(m_client->syncStatus().fixedSecondary);
+    QVERIFY(!m_client->upgradeAvailable());
+    QVERIFY(!m_client->canStartUpgrade());
+    QCOMPARE(changed.count(), 1);
+
+    m_player->serve(QStringLiteral("/SyncStatus"), syncStatus("4.18.18"));
+    m_player->setStatus("<status etag=\"e3\"><state>stop</state><title1>Track</title1>"
+                        "<syncStat>s3</syncStat></status>");
+    QTRY_VERIFY(!m_client->syncStatus().fixedSecondary);
+    QVERIFY(m_client->upgradeAvailable());
+    QVERIFY(m_client->canStartUpgrade());
+    QCOMPARE(changed.count(), 2);
 }
 
 QTEST_MAIN(TstFirmware)

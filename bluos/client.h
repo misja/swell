@@ -60,6 +60,7 @@ class Client : public QObject
     Q_PROPERTY(bool upgradeChecked READ upgradeChecked NOTIFY upgradeChanged)
     Q_PROPERTY(UpgradePhase upgradePhase READ upgradePhase NOTIFY upgradeStartChanged)
     Q_PROPERTY(bool upgradeStarted READ upgradeStarted NOTIFY upgradeStartChanged)
+    Q_PROPERTY(bool canStartUpgrade READ canStartUpgrade NOTIFY canStartUpgradeChanged)
 
 public:
     enum Availability {
@@ -181,6 +182,10 @@ public:
     UpgradePhase upgradePhase() const { return m_upgradePhase; }
     // A start was sent and the player has not yet run another version.
     bool upgradeStarted() const { return m_upgradeStarted; }
+    // Whether startUpgrade() would ask the player now: an offer, a start
+    // allowed (see startUpgrade) and no check for a start running. The one
+    // condition the start button, the Home notice and the dialog use.
+    bool canStartUpgrade() const { return m_canStartUpgrade; }
     // The firmware version when the start was sent.
     QString upgradeStartFirmware() const { return m_upgradeStartFirmware; }
     // For a new Client of a player whose start was sent in this session.
@@ -267,6 +272,7 @@ signals:
     void groupBusyChanged();
     void upgradeChanged();
     void upgradeStartChanged();
+    void canStartUpgradeChanged();
     // startUpgrade() sent nothing.
     void upgradeStartRefused();
     void presetsChanged();
@@ -319,6 +325,7 @@ private:
     // evidence: the player itself shows an update (not just a start sent).
     void enterUpdating(bool evidence = true);
     bool upgradeStartAllowed() const;
+    void updateCanStartUpgrade();
     void cancelUpgradeStart();
     void sendUpgradeStart();
     void noteUpgradeEvidence(UpgradePhase phase);
@@ -384,6 +391,7 @@ private:
     bool m_upgradeChecks = true;
     UpgradePhase m_upgradePhase = NoUpgrade;
     bool m_upgradeStarted = false;
+    bool m_canStartUpgrade = false;
     bool m_upgradeEvidence = false;
     QString m_upgradeStartFirmware;
     QElapsedTimer m_upgradeSentAt;

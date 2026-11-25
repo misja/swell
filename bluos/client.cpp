@@ -38,6 +38,12 @@ Client::Client(QNetworkAccessManager *nam, const QString &host, int port, QObjec
     m_positionTimer.setInterval(1000);
     connect(&m_positionTimer, &QTimer::timeout, this, &Client::positionChanged);
     connect(&m_upgradeTimer, &QTimer::timeout, this, &Client::checkUpgrade);
+    // canStartUpgrade follows everything it is made of; start, stop and the
+    // polling switches call updateCanStartUpgrade themselves.
+    connect(this, &Client::availabilityChanged, this, &Client::updateCanStartUpgrade);
+    connect(this, &Client::syncStatusChanged, this, &Client::updateCanStartUpgrade);
+    connect(this, &Client::upgradeChanged, this, &Client::updateCanStartUpgrade);
+    connect(this, &Client::upgradeStartChanged, this, &Client::updateCanStartUpgrade);
 }
 
 Client::~Client()
@@ -98,6 +104,7 @@ void Client::start()
         m_upgradeTimer.start(m_timing.upgradeCheckIntervalMs);
     }
     watchSyncStatus();
+    updateCanStartUpgrade();
 }
 
 void Client::setStatusPolling(bool polling)
@@ -105,6 +112,7 @@ void Client::setStatusPolling(bool polling)
     if (m_statusPolling == polling)
         return;
     m_statusPolling = polling;
+    updateCanStartUpgrade();
     if (!m_running)
         return;
     if (polling) {
@@ -124,6 +132,7 @@ void Client::stop()
 {
     cancelUpgradeStart();
     m_running = false;
+    updateCanStartUpgrade();
     m_pollTimer.stop();
     m_positionTimer.stop();
     m_upgradeTimer.stop();
@@ -807,6 +816,8 @@ void Client::onSyncStatusReply(QNetworkReply *reply)
 
 void Client::takeSyncStatus(const SyncStatus &sync)
 {
+    // upgradeAvailable() hides the offer on a fixed-group secondary.
+    const bool secondaryChanged = sync.fixedSecondary != m_sync.fixedSecondary;
     m_sync = sync;
     // Another firmware version: the update that was started has run.
     if (m_upgradeStarted && !sync.version.isEmpty() && !m_upgradeStartFirmware.isEmpty()
@@ -823,6 +834,8 @@ void Client::takeSyncStatus(const SyncStatus &sync)
     if (m_upgrade.available && otherFirmware) {
         m_upgrade.available = false;
         m_upgrade.version.clear();
+        emit upgradeChanged();
+    } else if (secondaryChanged && m_upgrade.available) {
         emit upgradeChanged();
     }
     emit syncStatusChanged();
@@ -999,6 +1012,7 @@ void Client::setUpgradeChecks(bool checks)
     if (m_upgradeChecks == checks)
         return;
     m_upgradeChecks = checks;
+    updateCanStartUpgrade();
     if (!checks)
         cancelUpgradeStart();
     checkUpgrade();
@@ -1123,6 +1137,15 @@ void Client::noteUpgradeEvidence(UpgradePhase phase)
         return;
     m_upgradeEvidence = true;
     setUpgradePhase(phase);
+}
+
+void Client::updateCanStartUpgrade()
+{
+    const bool can = upgradeStartAllowed() && upgradeAvailable() && m_upgradePhase != UpgradeChecking;
+    if (can == m_canStartUpgrade)
+        return;
+    m_canStartUpgrade = can;
+    emit canStartUpgradeChanged();
 }
 
 void Client::setUpgradePhase(UpgradePhase phase)

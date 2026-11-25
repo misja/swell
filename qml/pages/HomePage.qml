@@ -226,8 +226,7 @@ Page {
                                               || _player.upgradePhase === Player.UpgradeChecking)
                 // Straight to the confirmation (the maintainer, 2026-11-09 and
                 // 2026-11-25); only while a start is possible.
-                enabled: _player !== null && _player.online && _player.upgradeAvailable
-                         && !_player.upgradeStarted && _player.upgradePhase !== Player.UpgradeChecking
+                enabled: _player !== null && _player.canStartUpgrade
                 onClicked: {
                     page._upgradeRefused = false
                     pageStack.push(Qt.resolvedUrl("UpgradeDialog.qml"), {
