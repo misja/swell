@@ -182,3 +182,22 @@ Checked in the SDK container on 127.0.0.1:
 | L4: spec wording (check triggers, who opens the page, AC5) | Spec and evidence corrected |
 | L5: hash | 012ae64 |
 | L6: STATUS.md stale | Updated |
+
+## Revision 2026-11-25: scope/design review (separate agent, approve with changes)
+
+| Finding | Resolution |
+| --- | --- |
+| H: QNetworkAccessManager may resend `this` | Verified in qtbase v5.6.3 (spec, Facts); `this` on a one-shot socket; test with a drop mode |
+| H: the record is lost when PlayerModel recreates a Client | Record in PlayerModel per player; test |
+| H: an ordinary SyncStatus would end Updating at once | Kept Updating without evidence; tests |
+| M: cancelling a pending start | Generation number; stop, checks off, polling off, player switch; tests |
+| M: pacing between re-test and send | Record set and `this` sent in the same turn, unpaced |
+| M: silence as evidence | Dropped; silence keeps Updating |
+| M: bound during silence | Ends only on an ordinary answer |
+| L: origin in `enterUpdating` | Dropped; record plus evidence flag |
+| L: azzurro citation | Corrected; the 20 s settle against the 72 s timeline is open |
+| L: version equality, empty version | Equality only; absent equals absent |
+| L: dialog bound to the current player | Player passed at push; `canAccept` |
+| L: retry after a failed update | Record cleared only on another version |
+| Removal list for the WebView | Completed in the plan |
+| AC gaps; rehearsal | AC7, AC8 extended; AC9 rehearsal with household.py |

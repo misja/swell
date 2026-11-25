@@ -23,11 +23,14 @@
 - [x] Finding: the player's update page cannot start the update on 4.18.18 (spec, revision facts).
 - [x] The maintainer: Swell starts the update itself, strictly once (2026-11-25).
 - [x] Draft spec revision and plan.
-- [ ] Scope/design review by a separate agent; findings applied.
+- [x] Scope/design review by a separate agent (approve with changes); findings applied (evidence.md).
+- [x] The maintainer: remove the WebView; show the phases; reuse existing strings (2026-11-25).
+- [ ] The maintainer: one-shot socket for `this` (own mechanism) or QNetworkAccessManager with the risk recorded.
 - [ ] Issue.
-- [ ] The maintainer: UI texts and the dialog; remove or keep the WebView.
+- [ ] The maintainer: UI texts and the dialog.
 - [ ] Tests, library, app; Dutch translations; make check passes.
 - [ ] Builds (aarch64, armv7hl), validator, evidence.md.
 - [ ] Separate result review; findings resolved.
+- [ ] Rehearsal on the device against household.py.
 - [ ] Device check: the update to the offered firmware on the NAD.
 - [ ] PR.

@@ -158,95 +158,167 @@ for them without building anything for them now:
 
 ## Revision 2026-11-25: Swell starts the update
 
-### Facts (2026-11-25, NAD C 379, firmware 4.18.18; reads only)
+Decided by the maintainer (2026-11-25): Swell starts the update itself, and
+sends the start strictly once; the WebView is removed; the update's phases
+are shown as the player reports them.
 
-- `upgrade=check` answers `available="true"`, `inProgress="false"`,
-  `version="4.18.26"`. Swell's notice and Settings show it.
-- `http://<player>/upgrade?noheader=1`, the page Swell and the official app
-  open, says only "Update available.". It has no button, and a script that
-  calls `window.close()` after 5 s. So the user cannot start the update in
-  Swell's web view.
-- Without `noheader` the page adds an "Upgrade Now" button whose `onClick`
-  calls `$.get('/upgrade', {upgrade: 'old'})`. The page loads no jQuery, so
-  `$` is undefined and the button cannot work in any browser.
-- azzurro (jzbz/azzurro 10cce29, MIT; `docs/protocol.md` and
-  `crates/bluos/src/client.rs` `start_upgrade_for`) starts an update with
-  `GET :11000/upgrade?upgrade=this`, and only after a check answered
-  `available="true"` and `inProgress="false"`. That is the precondition the
-  official app enforces: "Starting a second upgrade over a running one is
-  the way to turn a working speaker into a brick." The answer to `this` is
-  "the same document the check answers with" and is not read. azzurro has
-  driven updates end to end on a Powernode.
-- What a NAD answers to `this`, and whether a check reports
-  `inProgress="true"` while it downloads, is not known until the first
-  update.
+### Facts (2026-11-25)
+
+- **NAD C 379, firmware 4.18.18** (reads only):
+  - `upgrade=check` answers `available="true"`, `inProgress="false"`,
+    `version="4.18.26"`. Swell's notice and Settings show it.
+  - `http://<player>/upgrade?noheader=1`, the page Swell and the official app
+    open, says only "Update available.". It has no button, and a script
+    calls `window.close()` after 5 s.
+  - Without `noheader` the page adds an "Upgrade Now" button whose `onClick`
+    calls `$.get('/upgrade', {upgrade: 'old'})`. The page loads no jQuery, so
+    `$` is undefined and the button cannot work in any browser.
+  - What a NAD answers to `this`, and whether a check reports
+    `inProgress="true"` while it downloads, is not known until the first
+    update.
+- **azzurro** (jzbz/azzurro 10cce29, MIT):
+  - `docs/protocol.md` and `crates/bluos/src/client.rs` `start_upgrade_for`:
+    an update starts with `GET :11000/upgrade?upgrade=this`, only after a
+    check answered `available="true"` and `inProgress="false"`, the
+    precondition the official app enforces ("Starting a second upgrade over
+    a running one is the way to turn a working speaker into a brick"). The
+    answer to `this` is the check's document and is not read.
+  - `crates/azzurro-gui/src/lib.rs`: after a start, an ordinary answer is not
+    "finished" without evidence of an update (`upgrade_ended`); an
+    unanswered start gets five minutes of silence
+    (`UPGRADE_SILENCE_UNANSWERED`), an answered one 20 s of ordinary answers
+    (`UPGRADE_SETTLE`). The 20 s does not fit the 72 s of ordinary answers
+    in its own timeline (open question).
+  - Powernode stage roots carry no `step`, `total` or `percent`.
+- **Qt 5.6.3** (qtbase v5.6.3, `src/network/access/`): QNetworkAccessManager
+  resends a request by itself when the server closes the connection after
+  the request was written and before a complete status line
+  (`qhttpnetworkconnectionchannel.cpp` l. 64 `reconnectAttemptsDefault = 3`,
+  l. 248–268 `handleUnexpectedEOF`, l. 851–867 `RemoteHostClosedError`;
+  `qhttpprotocolhandler.cpp` l. 98–114), whatever the method. A player that
+  reads `this` and drops the connection as it begins could get it up to
+  four times.
+- **Swell:** PlayerModel replaces a player's Client when its address changes
+  (`bluos/playermodel.cpp` l. 397–403), removes a non-current player that
+  LSDP lost (l. 430–441) and creates it again when found. A record kept in
+  the Client is lost then.
+- **Silica** (target 5.1.0.11 qmldir): `Dialog`, `DialogHeader`; the header's
+  accept and cancel texts are the platform's own translations
+  (`DialogHeader.qml` l. 67, 70).
 
 ### Scope (replaces scope item 3)
 
-1. **Start:** the client gets one entry point that starts the update of the
-   current player, given the version the user confirmed. It sends
-   `GET :11000/upgrade?upgrade=this` at most once, and only when all of the
-   following hold at the moment of sending:
-   - the client runs, polls status, checks upgrades (current player), the
-     player is online and not a secondary in a fixed group;
-   - it is not Updating, and no start is pending or was sent before (see 2);
+1. **Start:** one entry point starts the update of the player it is called
+   on, with the version the user confirmed. It sends
+   `GET :11000/upgrade?upgrade=this` at most once, and only when, at the
+   moment of sending:
+   - the client runs, polls status and checks upgrades (current player);
+     the player is online and not a secondary in a fixed group;
+   - it is not Updating, and the player has no start record (item 2);
    - a check made for this start, after the user confirmed, answered
-     `available="true"`, `inProgress="false"`, and the confirmed version.
+     `available="true"`, `inProgress="false"` and the confirmed version
+     (equality only; an absent version equals an absent version).
 
    Otherwise nothing is sent and the user is told that the update was not
-   started. Never `all`, `slave` or `port`.
-2. **Once:** before `this` is sent, the client records that it was sent. That
-   record is not cleared by an error, a timeout or no answer: those are not
-   retried, since a player that has begun rewriting its flash may not answer.
-   It is cleared only when the player has visibly updated (it answered with
-   an `UpgradeStatusStage*` root, or `/SyncStatus` names another firmware
-   version), so a later release can be started. Otherwise a new start needs a
-   new app session, and then the check guards it again.
-3. **After sending,** the player is Updating at once, through the existing
-   rules (no long poll, /SyncStatus read on the backoff). Updating ends when
-   the player answers as itself after evidence that it updated (a stage root,
-   a period without answer, `inProgress="true"`, or another firmware
-   version). Without such evidence within a fixed bound after the start
-   (five minutes, as azzurro allows an unanswered start), Updating ends and
-   the user is told that the update did not start; the record of 2 stays.
-4. **UI** (to agree with the maintainer):
+   started. Never `all`, `old`, `slave` or `port`.
+2. **Once:**
+   - The start record is set before `this` is sent, in the same turn as the
+     re-test, without pacing.
+   - `this` goes out on a connection that is never reopened or resent: not
+     through QNetworkAccessManager (Facts, Qt). Its answer is not used.
+   - An error, a timeout or no answer is not retried.
+   - The record lives in PlayerModel, per player (node id, else
+     `host:port`), for the app session, so a new Client for the same player
+     keeps it.
+   - It is cleared only when `/SyncStatus` names another firmware version
+     than before the start. A failed update therefore needs a new app
+     session before another start; the check then guards it again.
+   - A pending start is cancelled when the client stops, its checks or
+     status polling go off, or the current player changes; a late answer
+     to its check is ignored and nothing is sent.
+3. **After sending,** the player is Updating at once (no long poll,
+   /SyncStatus read on the backoff, as today).
+   - Evidence of an update: an `UpgradeStatusStage*` root,
+     `inProgress="true"`, or another firmware version. Silence is not
+     evidence; it keeps Updating.
+   - Without evidence, an ordinary `SyncStatus` keeps Updating. With
+     evidence, it ends Updating as today.
+   - Five minutes after the start without evidence, the next ordinary
+     `SyncStatus` ends Updating and the user is told that the update did not
+     start; silence keeps Updating. The record stays. This bound is an own
+     deadline; the PR names it.
+4. **Phases** shown, from what the player answers:
+   - Starting: sent, no evidence yet, the player answers.
+   - Installing: `inProgress="true"` or a stage root (both stages alike;
+     `step`/`percent` are not used, see Facts).
+   - Restarting: no answer after evidence.
+   - Not answering: no answer before evidence.
+   - Updated to <version>: back as itself on another version.
+   - Not started: see item 3.
+5. **UI** (texts to agree with the maintainer):
    - "Start update" in Settings and the Home notice open a Silica `Dialog`
-     that names the version and says that the player restarts, cannot be
-     used for a few minutes, that the update cannot be stopped, and that the
-     player must stay switched on. Accepting starts it; the dialog itself
-     cannot accept twice.
-   - While starting and updating, Settings shows the state and no button;
-     Home's notice says that the player is updating.
-5. **The web view:** with the update no longer on the player's page, the
-   WebView has no use in Swell. Removing it (page, permission, requirements,
-   the qt5embedwidget link; issue #32 then lapses) or keeping it for later
-   player pages is the maintainer's decision.
+     for the player it was opened for. It names the version and says that
+     the player restarts, cannot be used for a few minutes, cannot be
+     stopped and must stay switched on. `canAccept` only while that player
+     is current and online, offers that version and has no start record.
+   - With a start record or while Updating, there is no start button;
+     Settings and the Home notice show the phase. After "Not started" they
+     say that the update was sent and Swell must be restarted to try again.
+   - Existing strings are reused where they fit ("Updating firmware",
+     "Start update", "Firmware update", "Firmware %1"); the dialog's buttons
+     are DialogHeader's.
+6. **The WebView is removed:** `PlayerWebPage.qml`, `upgradePage()`, the
+   `WebView` permission, the three WebView requirements, the qt5embedwidget
+   link and its BuildRequires, and their tests, strings and comments. The
+   sections "WebView version" and the web-page part of "Room to grow" no
+   longer apply. Issue #32 lapses.
+
+### Residual risks (not designed for)
+
+- The official app or another controller may start the same update between
+  Swell's check and `this`; the check is the only guard, as in the official
+  app and azzurro.
+- A new app session in the minute before the player shows evidence relies on
+  the check alone.
+- Two Swell instances: not verified that the launcher prevents them.
 
 ### Acceptance criteria (added)
 
 7. Tests against the fake player, each asserting how many `this` requests
-   reached it:
+   reached it, and that the target is exactly `/upgrade?upgrade=this`:
    - a start with a fresh check that is available, matches and is not in
-     progress sends exactly one `this`, after that check;
+     progress sends exactly one `this`, after that check; also with an
+     absent version on both;
    - none when the fresh check is not available, in progress, names another
      version, gives no answer, 404 or malformed XML;
    - none when offline, Updating, not the current player, a fixed-group
      secondary, or not running;
-   - two starts in a row, a start while one is pending, and a start after
-     one was sent send one in total;
-   - an error, a timeout or no answer to `this` are not retried;
-   - after sending, the player is Updating without a long poll; it leaves
-     Updating on a stage root then `SyncStatus`, and after the bound
-     without evidence, with "not started" reported;
-   - after a visible update the record is cleared.
-8. The QML runtime test: the dialog starts the update once, and the button
-   is hidden while starting and updating.
-9. Device check by the maintainer: the update to 4.18.26 on the NAD from
-   Swell, followed to the end, with what the player answers recorded in
-   evidence.md. This is the only update on offer; if it fails, the official
-   app updates the player.
-10. A separate result review before the PR (a firmware update is
-    release-relevant).
+   - none when the client stops, checks or status polling go off, or the
+     current player changes while the check is pending, also when started
+     again before the answer arrives;
+   - two starts in a row, a start while one is pending, a start after one
+     was sent, and a start after the bound send one in total;
+   - the player reads `this` and closes without a byte; it answers an
+     error; it does not answer before the deadline: one `this`, no retry;
+   - after a start, a new Client for the same player (address change, lost
+     and found, manual remove and add), then a start: one in total;
+   - after sending: Updating without a long poll; ordinary `SyncStatus` for
+     several reads keeps Updating; stage root, silence, then another
+     version ends it and clears the record; the bound with silence keeps
+     Updating, with an ordinary answer ends it as not started;
+   - the phases in each of these steps.
+8. QML runtime test: the dialog starts the update once; `canAccept` is false
+   with a stale offer, a record, offline, and after a switch to another
+   player; no start button with a record or while Updating.
+9. Rehearsal on the device against `tests/demo/household.py --firmware`,
+   changed to accept `this` once and to log a second as REFUSED.
+10. Device check by the maintainer: the update to 4.18.26 on the NAD from
+    Swell, followed to the end; what the player answers is recorded in
+    evidence.md. It is the only update on offer; if it fails, the official
+    app updates the player.
+11. Build and validator without the WebView: no `WebView` permission or
+    WebView requirements, no qt5embedwidget link.
+12. A separate result review before the PR (release-relevant).
 
 ## Out of scope
 
