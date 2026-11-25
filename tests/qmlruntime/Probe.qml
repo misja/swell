@@ -60,7 +60,31 @@ Item {
     // HomePage and PlayerSettingsPage: firmware (spec 006).
     function firmware() {
         return [_player.upgradeAvailable, _player.upgradeVersion, _player.upgradeChecked,
-                _player.firmwareVersion, String(_player.upgradePage()), typeof _player.availability].join(" ")
+                _player.firmwareVersion, _player.upgradePhase === Player.NoUpgrade, _player.upgradeStarted,
+                typeof _player.availability].join(" ")
+    }
+    // UpgradeDialog.canAccept for the player it was opened for.
+    function upgradeCanAccept(version) {
+        var player = _player
+        return String(player !== null && player === players.current && player.online
+                      && player.upgradeAvailable && player.upgradeVersion === version
+                      && !player.upgradeStarted && player.upgradePhase !== Player.UpgradeChecking)
+    }
+    // UpgradeDialog.onAccepted, then the start button's and notice's conditions.
+    function startUpgrade(version) {
+        _player.startUpgrade(version)
+        return ""
+    }
+    function upgradeButton() {
+        return String(_player.upgradeAvailable && _player.availability !== Player.Updating
+                      && !_player.upgradeStarted && _player.upgradePhase !== Player.UpgradeChecking)
+    }
+    function upgradePhase() {
+        switch (_player.upgradePhase) {
+        case Player.UpgradeChecking: return "checking"
+        case Player.UpgradeStarting: return "starting"
+        }
+        return String(_player.upgradePhase)
     }
 
     // NowPlayingPage and PlayersPage: group values (spec 005).

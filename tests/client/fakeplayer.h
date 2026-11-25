@@ -3,7 +3,8 @@
 // It serves fixed documents per path, holds /Status long polls until the
 // status changes or the requested timeout passes (and /SyncStatus long polls
 // the same way), can redirect a path to
-// another server, and logs every request it receives.
+// another server, can leave a request unanswered, and logs every request it
+// receives.
 #ifndef FAKEPLAYER_H
 #define FAKEPLAYER_H
 
@@ -51,6 +52,10 @@ public:
             if (held.socket)
                 held.socket->abort();
         m_held.clear();
+        for (const QPointer<QTcpSocket> &socket : m_silent)
+            if (socket)
+                socket->abort();
+        m_silent.clear();
     }
 
     quint16 port() const { return m_port ? m_port : m_server.serverPort(); }
@@ -94,6 +99,16 @@ public:
     void failWith(const QString &path, int status) { m_failures.insert(path, status); }
     void stopFailing(const QString &path) { m_failures.remove(path); }
 
+    // A matching request on this path is read and logged, then the
+    // connection is closed without a byte (drop), or kept open without an
+    // answer (hold), like a player that begins rewriting its flash.
+    enum Silence { Drop, Hold };
+    void silenceIf(const QString &path, const std::function<bool(const QUrlQuery &)> &matches,
+                   Silence how)
+    {
+        m_silences.insert(path, { matches, how });
+    }
+
     QList<Request> requests() const { return m_requests; }
     QList<Request> requests(const QString &path) const
     {
@@ -108,6 +123,10 @@ private:
     struct Held {
         QPointer<QTcpSocket> socket;
         QString path;
+    };
+    struct Silenced {
+        std::function<bool(const QUrlQuery &)> matches;
+        Silence how;
     };
 
     static QString etagOf(const QByteArray &xml)
@@ -143,6 +162,14 @@ private:
         const QUrlQuery query(target);
         const QString path = target.path();
         m_requests.append({ path, query, m_clock.elapsed(), raw });
+
+        if (m_silences.contains(path) && m_silences.value(path).matches(query)) {
+            if (m_silences.value(path).how == Drop)
+                socket->disconnectFromHost();
+            else
+                m_silent.append(socket);
+            return;
+        }
 
         if ((path == QLatin1String("/Status") || path == QLatin1String("/SyncStatus"))
                 && query.hasQueryItem(QStringLiteral("etag"))
@@ -208,6 +235,8 @@ private:
     QHash<QString, int> m_delays;
     QHash<QTcpSocket *, QByteArray> m_buffers;
     QList<Held> m_held;
+    QHash<QString, Silenced> m_silences;
+    QList<QPointer<QTcpSocket>> m_silent;
     QList<Request> m_requests;
 };
 

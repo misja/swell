@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import Swell 1.0
 
 Page {
     id: page
@@ -15,6 +16,32 @@ Page {
                                                 - (_columns - 1) * Theme.paddingMedium) / _columns)
 
     allowedOrientations: Orientation.All
+
+    // The last start sent nothing (Player.upgradeStartRefused).
+    property bool _upgradeRefused: false
+
+    Connections {
+        target: _player
+        onUpgradeStartRefused: page._upgradeRefused = true
+    }
+
+    // The update notice's first line: the offer, or how a started update goes.
+    function _upgradeText() {
+        switch (_player.upgradePhase) {
+        case Player.UpgradeChecking:
+        case Player.UpgradeStarting:
+            return qsTr("Starting update")
+        case Player.UpgradeInstalling:
+            return qsTr("Updating firmware")
+        case Player.UpgradeRestarting:
+            return qsTr("Restarting")
+        case Player.UpgradeNotStarted:
+            return qsTr("The update did not start. Restart Swell to try again.")
+        case Player.UpgradeUnfinished:
+            return qsTr("The update did not finish. Restart Swell to try again.")
+        }
+        return _upgradeRefused ? qsTr("The update was not started.") : qsTr("Update available")
+    }
 
     // The icon the user chose for an input in the official app; presets that
     // select an input carry only a generic one.
@@ -184,32 +211,37 @@ Page {
                 text: qsTr("No presets on this player. Presets are made in the BluOS Controller app.")
             }
 
-            // Only while the player offers a firmware update.
+            // While the player offers a firmware update, and while one this
+            // app started runs.
             BackgroundItem {
                 id: updateNotice
                 width: parent.width
-                height: Theme.itemSizeMedium
-                visible: _player !== null && _player.upgradeAvailable
-                // The page is the player's own: only while it answers.
-                enabled: _player !== null && _player.online
-                // Straight to the player's own update page (the maintainer, 2026-11-09).
-                onClicked: pageStack.push(Qt.resolvedUrl("PlayerWebPage.qml"), {
-                    player: _player,
-                    url: _player.upgradePage(),
-                    title: _player.name !== "" ? _player.name : _player.host,
-                    description: qsTr("Firmware update")
-                })
+                height: Math.max(Theme.itemSizeMedium, noticeColumn.height + 2 * Theme.paddingMedium)
+                visible: _player !== null && (_player.upgradeAvailable || _player.upgradeStarted
+                                              || _player.upgradePhase === Player.UpgradeChecking)
+                // Straight to the confirmation (the maintainer, 2026-11-09 and
+                // 2026-11-25); only while a start is possible.
+                enabled: _player !== null && _player.online && _player.upgradeAvailable
+                         && !_player.upgradeStarted && _player.upgradePhase !== Player.UpgradeChecking
+                onClicked: {
+                    page._upgradeRefused = false
+                    pageStack.push(Qt.resolvedUrl("UpgradeDialog.qml"), {
+                        player: _player,
+                        version: _player.upgradeVersion
+                    })
+                }
 
                 Column {
+                    id: noticeColumn
                     x: Theme.horizontalPageMargin
                     width: parent.width - 2 * Theme.horizontalPageMargin
                     anchors.verticalCenter: parent.verticalCenter
 
                     Label {
                         width: parent.width
-                        truncationMode: TruncationMode.Fade
+                        wrapMode: Text.Wrap
                         color: updateNotice.highlighted ? Theme.highlightColor : Theme.primaryColor
-                        text: qsTr("Update available")
+                        text: _player ? page._upgradeText() : ""
                     }
                     Label {
                         width: parent.width

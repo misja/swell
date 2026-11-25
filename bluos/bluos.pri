@@ -7,6 +7,7 @@ HEADERS += \
     $$PWD/client.h \
     $$PWD/discovery.h \
     $$PWD/lsdp.h \
+    $$PWD/oneshot.h \
     $$PWD/playermodel.h \
     $$PWD/queuemodel.h \
     $$PWD/browsemodel.h \
@@ -15,6 +16,7 @@ SOURCES += \
     $$PWD/client.cpp \
     $$PWD/discovery.cpp \
     $$PWD/lsdp.cpp \
+    $$PWD/oneshot.cpp \
     $$PWD/playermodel.cpp \
     $$PWD/queuemodel.cpp \
     $$PWD/browsemodel.cpp \

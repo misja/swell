@@ -5,8 +5,6 @@ TARGET = harbour-swell
 
 CONFIG += sailfishapp
 QT += network
-# Sailfish WebView < 1.8 asks apps to link against qtmozembed; see issue #32.
-PKGCONFIG += qt5embedwidget
 
 VERSION = 0.6.2
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
@@ -30,6 +28,7 @@ DISTFILES += qml/harbour-swell.qml \
     qml/pages/CoverImage.qml \
     qml/pages/SearchPage.qml \
     qml/pages/AboutPage.qml \
+    qml/pages/UpgradeDialog.qml \
     rpm/harbour-swell.changes.run \
     rpm/harbour-swell.spec \
     translations/*.ts \

@@ -140,6 +140,10 @@ private:
     void onFound(const Discovery::Found &player);
     void onLost(const QString &nodeId);
     Client *createClient(const QString &host, int port);
+    // A firmware start sent in this session (spec 006) outlives the Client:
+    // kept per player and handed to a new Client for the same player.
+    void onUpgradeStartChanged();
+    void restoreUpgradeStart(const Entry &entry);
     void insert(const Entry &entry);
     void removeAt(int row);
     void clientChanged();
@@ -152,6 +156,8 @@ private:
     Discovery m_discovery;
     Client::Timing m_timing;
     QVector<Entry> m_entries;
+    // Firmware at the start, by node id and by "host:port".
+    QHash<QString, QString> m_upgradeStarts;
     QString m_currentId;
     bool m_pollAll = false;
     bool m_watchGroup = false;

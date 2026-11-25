@@ -398,6 +398,7 @@ void PlayerModel::onFound(const Discovery::Found &player)
                 const bool wasCurrent = e.client->id() == m_currentId;
                 e.client->deleteLater();
                 e.client = createClient(host, player.port);
+                restoreUpgradeStart(e);
                 if (wasCurrent)
                     m_currentId = e.client->id();
                 applyPolicy();
@@ -455,11 +456,40 @@ Client *PlayerModel::createClient(const QString &host, int port)
     connect(c, &Client::availabilityChanged, this, &PlayerModel::clientChanged);
     connect(c, &Client::statusChanged, this, &PlayerModel::clientChanged);
     connect(c, &Client::syncStatusChanged, this, &PlayerModel::clientChanged);
+    connect(c, &Client::upgradeStartChanged, this, &PlayerModel::onUpgradeStartChanged);
     return c;
+}
+
+void PlayerModel::onUpgradeStartChanged()
+{
+    Client *c = qobject_cast<Client *>(sender());
+    if (!c)
+        return;
+    QStringList keys { c->id() };
+    for (const Entry &e : m_entries) {
+        if (e.client == c && !e.nodeId.isEmpty())
+            keys.append(e.nodeId);
+    }
+    for (const QString &key : keys) {
+        if (c->upgradeStarted())
+            m_upgradeStarts.insert(key, c->upgradeStartFirmware());
+        else
+            m_upgradeStarts.remove(key);
+    }
+}
+
+void PlayerModel::restoreUpgradeStart(const Entry &entry)
+{
+    QString key = entry.nodeId;
+    if (key.isEmpty() || !m_upgradeStarts.contains(key))
+        key = entry.client->id();
+    if (m_upgradeStarts.contains(key))
+        entry.client->restoreUpgradeStart(m_upgradeStarts.value(key));
 }
 
 void PlayerModel::insert(const Entry &entry)
 {
+    restoreUpgradeStart(entry);
     beginInsertRows(QModelIndex(), m_entries.size(), m_entries.size());
     m_entries.append(entry);
     endInsertRows();

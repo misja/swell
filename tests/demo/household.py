@@ -11,21 +11,18 @@ list as tests/client/fakehousehold.h (spec 005, plan.md): per-player etags, a
 secondary serves its primary's /Status, long polls on /Status and /SyncStatus,
 /AddSlave and /RemoveSlave in single and multiple form, and tell_slaves.
 
-With --firmware (spec 006), Studio offers an invented firmware update, and a
-test page on port 80 of the address starts it. Port 80 needs root, so run it
-where that is harmless, e.g. in the SDK container:
+With --firmware (spec 006), Studio offers an invented firmware update, which
+/upgrade?upgrade=this starts once. A second start is answered 400 and logged
+as REFUSED, as is any other /upgrade request but upgrade=check, since Swell
+must never send one.
 
-    sudo python3 -I tests/demo/household.py <sdk-container> --firmware
-
-The update follows azzurro's observations (spec 006, Facts): the check says
-inProgress while the player still answers, then the player is silent (requests
-are held until the phase ends, then dropped), then /SyncStatus answers
-UpgradeStatusStage1 and 2, then it is back with the new version. Invented, as
-nothing is observed there: 503 on other paths and inProgress on the check
-during the stages. After binding port 80 the script drops root to the sudo
-user. The page is our own and looks nothing like a player's. Any /upgrade
-request other than upgrade=check is answered 400 and logged as REFUSED, since
-Swell must never send one.
+The update follows azzurro's observations (spec 006, Facts): the player still
+answers while it downloads, then it is silent (requests are held until the
+phase ends, then dropped), then /SyncStatus answers UpgradeStatusStage1 and 2,
+then it is back with the new version. Whether the check says inProgress while
+it downloads is not observed on a NAD; it does here, unless --no-progress.
+Invented, as nothing is observed there: 503 on other paths and inProgress on
+the check during the stages.
 With --showcase, the players carry invented content for screenshots: albums
 and stations with art drawn by this script, presets, inputs, a library and a
 play queue. Living Room plays an album with Kitchen in its group; Studio has
@@ -34,7 +31,6 @@ a radio station paused.
 Not packaged; for device checks and screenshots only.
 """
 
-import os
 import sys
 import threading
 import time
@@ -174,6 +170,7 @@ class House:
         self.version = [OLD, OLD, OLD]
         self.offered = False      # Studio offers NEW (set by --firmware)
         self.phase = None         # a name from PHASES while updating
+        self.progress = True      # the check says inProgress while downloading
         if showcase:
             self.leader[1] = 0        # Kitchen plays along with Living Room
             self.state = ["play", "play", "pause"]
@@ -206,8 +203,9 @@ class House:
 
     def upgrade_check(self, i):
         available = i == STUDIO and self.offered and self.phase is None
+        progress = i == STUDIO and self.phase and (self.phase != "download" or self.progress)
         return ('<upgrade inProgress="%s"%s available="%s">check</upgrade>'
-                % ("true" if i == STUDIO and self.phase else "false",
+                % ("true" if progress else "false",
                    ' version="%s"' % NEW if available else "", "true" if available else "false"))
 
     def run_update(self):
@@ -440,6 +438,17 @@ def handler_for(house, i):
             url = urlsplit(self.path)
             q = parse_qs(url.query)
             path = url.path
+            if path == "/upgrade" and q == {"upgrade": ["this"]} and i == STUDIO:
+                with house.lock:
+                    start = house.offered and house.phase is None
+                    if start:
+                        house.phase = "download"   # one update only
+                        doc = house.upgrade_check(i)
+                if not start:
+                    return self.refuse()
+                sys.stderr.write("Studio: update started\n")
+                threading.Thread(target=house.run_update, daemon=True).start()
+                return self.reply(doc)
             if path == "/upgrade" and (q.get("upgrade") != ["check"] or len(q) != 1):
                 return self.refuse()
             if path == "/upgrade" and self.updating() != "silent":
@@ -504,80 +513,27 @@ def handler_for(house, i):
     return Player
 
 
-def page_handler(house):
-    """The test update page on port 80, which the app opens in its web view."""
-    class Page(BaseHTTPRequestHandler):
-        def log_message(self, fmt, *args):
-            sys.stderr.write("page %r\n" % (fmt % args))
-
-        def do_GET(self):
-            url = urlsplit(self.path)
-            if url.path == "/upgrade/start":
-                with house.lock:
-                    start = house.offered and house.phase is None
-                    if start:
-                        house.phase = "download"   # one update only, however often tapped
-                if not start:
-                    sys.stderr.write("page REFUSED a second start\n")
-                else:
-                    threading.Thread(target=house.run_update, daemon=True).start()
-                self.send_response(303)
-                self.send_header("Location", "/upgrade?noheader=1")
-                self.end_headers()
-                return
-            if url.path != "/upgrade":
-                self.send_error(404)
-                return
-            with house.lock:
-                if house.phase:
-                    text, action = "Updating Studio: %s." % house.phase, ""
-                elif house.offered:
-                    text = "Studio (test player) runs %s; %s is offered." % (house.version[STUDIO], NEW)
-                    action = '<p><a href="/upgrade/start">Start the test update</a></p>'
-                else:
-                    text, action = "Studio (test player) runs %s. Nothing offered." % house.version[STUDIO], ""
-            body = ('<!doctype html><html><head><meta charset="utf-8">'
-                    '<meta name="viewport" content="width=device-width">'
-                    '<meta http-equiv="refresh" content="2"><title>Swell test player</title></head>'
-                    '<body style="font-family:sans-serif;padding:1em"><h1>Swell test player</h1>'
-                    '<p>%s</p>%s<p><small>Invented firmware, spec 006 device check.</small></p>'
-                    '</body></html>' % (text, action)).encode()
-            self.send_response(200)
-            self.send_header("Content-Type", "text/html; charset=utf-8")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
-
-    return Page
-
-
 def main():
     args = sys.argv[1:]
     refused = [int(a.split("=")[1]) for a in args if a.startswith("--refuse=")]
     self_master = "--self-master" in args
     firmware = "--firmware" in args
     showcase = "--showcase" in args
+    progress = "--no-progress" not in args
     rest = [a for a in args if not a.startswith("--")]
     if len(rest) != 1:
-        sys.exit("usage: household.py ADDRESS [--refuse=N] [--self-master] [--firmware] [--showcase]\n"
+        sys.exit("usage: household.py ADDRESS [--refuse=N] [--self-master] [--firmware] [--no-progress]\n"
+                 "                    [--showcase]\n"
                  "  ADDRESS        the address the phone reaches this machine on\n"
                  "  --refuse=N     /AddSlave silently leaves player N (0-2) out\n"
                  "  --self-master  a primary also names itself in <master> (API 2.2 example)\n"
-                 "  --firmware     Studio offers an update; test page on port 80 (needs root)\n"
+                 "  --firmware     Studio offers an update, started by upgrade=this once\n"
+                 "  --no-progress  the check does not say inProgress while downloading\n"
                  "  --showcase     invented albums, stations, inputs and a queue, for screenshots")
     house = House(rest[0], refused, self_master, showcase)
     house.offered = firmware
+    house.progress = progress
     servers = []
-    if firmware:
-        page = ThreadingHTTPServer((rest[0], 80), page_handler(house))
-        page.daemon_threads = True
-        threading.Thread(target=page.serve_forever, daemon=True).start()
-        servers.append(page)
-        print("Update page on http://%s/upgrade" % rest[0])
-    # Port 80 is bound; nothing else needs root.
-    if os.getuid() == 0 and "SUDO_UID" in os.environ:
-        os.setgid(int(os.environ["SUDO_GID"]))
-        os.setuid(int(os.environ["SUDO_UID"]))
     for i, port in enumerate(PORTS):
         server = ThreadingHTTPServer((rest[0], port), handler_for(house, i))
         server.daemon_threads = True

@@ -42,6 +42,7 @@ private slots:
     void mprisOffline();
     void mprisWithoutAPlayer();
     void firmwareValues();
+    void upgradeStartFromQml();
 
 private:
     QString call(const char *function, const QVariant &arg = QVariant());
@@ -72,6 +73,7 @@ void TstQmlRuntime::initTestCase()
 {
     m_player = new FakePlayer(this);
     QVERIFY(m_player->listen());
+    m_player->rememberPort();
     m_player->serve(QStringLiteral("/SyncStatus"),
                     "<SyncStatus etag=\"s\" syncStat=\"s\" name=\"Den\" volume=\"20\" version=\"4.18.18\"/>");
     m_player->serve(QStringLiteral("/upgrade"),
@@ -200,8 +202,32 @@ void TstQmlRuntime::firmwareValues()
 {
     // What HomePage and PlayerSettingsPage read for firmware (spec 006). An
     // earlier test takes the player offline; the values stay as last checked.
-    QTRY_COMPARE(call("firmware"),
-                 QStringLiteral("true 4.18.20 true 4.18.18 http://127.0.0.1/upgrade?noheader=1 number"));
+    QTRY_COMPARE(call("firmware"), QStringLiteral("true 4.18.20 true 4.18.18 true false number"));
+}
+
+void TstQmlRuntime::upgradeStartFromQml()
+{
+    // UpgradeDialog and the start button (revision 2026-11-25, AC8). Last:
+    // the player is updating afterwards. An earlier test took it offline.
+    QCOMPARE(call("upgradeCanAccept", QStringLiteral("4.18.20")), QStringLiteral("false"));
+    QVERIFY(m_player->listen(m_player->port()));
+    m_player->setStatus("<status etag=\"u1\"><state>stop</state><prid>1</prid></status>");
+    QTRY_COMPARE_WITH_TIMEOUT(call("upgradeCanAccept", QStringLiteral("4.18.20")), QStringLiteral("true"), 10000);
+    QCOMPARE(call("upgradeCanAccept", QStringLiteral("4.18.19")), QStringLiteral("false"));
+    QCOMPARE(call("upgradeButton"), QStringLiteral("true"));
+    call("startUpgrade", QStringLiteral("4.18.20"));
+    QCOMPARE(call("upgradePhase"), QStringLiteral("checking"));
+    QCOMPARE(call("upgradeCanAccept", QStringLiteral("4.18.20")), QStringLiteral("false"));
+    QCOMPARE(call("upgradeButton"), QStringLiteral("false"));
+    call("startUpgrade", QStringLiteral("4.18.20"));
+    QTRY_COMPARE(call("upgradePhase"), QStringLiteral("starting"));
+    QCOMPARE(call("upgradeCanAccept", QStringLiteral("4.18.20")), QStringLiteral("false"));
+    QCOMPARE(call("upgradeButton"), QStringLiteral("false"));
+    QTest::qWait(1000);
+    int starts = 0;
+    for (const FakePlayer::Request &r : m_player->requests(QStringLiteral("/upgrade")))
+        starts += r.target == QByteArray("/upgrade?upgrade=this") ? 1 : 0;
+    QCOMPARE(starts, 1);
 }
 
 void TstQmlRuntime::groupValues()
