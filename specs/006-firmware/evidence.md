@@ -234,3 +234,18 @@ Checked in the SDK container on 127.0.0.1:
   `sailfishsilica-qt5`, `qml(Amber.Mpris)`; no WebView packages.
   `Permissions=Internet;Audio`. rpmlint reports the existing
   description-line-too-long, as on main.
+
+## Revision 2026-11-25: result review (separate agent; approve with changes, then approve)
+
+| Finding | Resolution |
+| --- | --- |
+| M-A: record lost when an address-added player is announced, then moves | Record copied to the node id on merge; test row "added by address, announced, then moved" |
+| M-B: a replaced Client was not stopped before deletion | `stop()` before `deleteLater()` on address change and removal; test `pendingStartAcrossAPlayerChange` |
+| AC8: no case after a switch to another player | `holdPlayer` in Probe.qml (expression copied from UpgradeDialog); false after the switch |
+| L: refusal text kept after a player switch; shown while Updating | Reset on `_player` change; Home shows "Updating firmware" first |
+| L: superseded WebView sections; limits | Marked in place; residual risks and limits added |
+| L: unused `finished()` in OneShotGet | Removed |
+
+Re-review of the fixes: approve. `make check` after the fixes: all eleven suites
+pass, firmware 43 tests (aarch64). The PR names three own mechanisms:
+`OneShotGet`, the five-minute bound and the start's generation number.
