@@ -31,6 +31,6 @@
 - [x] Tests, library, app; Dutch translations; make check passes.
 - [x] Builds (aarch64, armv7hl), validator, evidence.md.
 - [x] Separate result review (approve with changes, then approve); findings resolved.
-- [ ] Rehearsal on the device against household.py.
+- [x] Rehearsal on the device against household.py (evidence.md).
 - [ ] Device check: the update to the offered firmware on the NAD.
 - [ ] PR.

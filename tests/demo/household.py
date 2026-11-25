@@ -21,6 +21,8 @@ answers while it downloads, then it is silent (requests are held until the
 phase ends, then dropped), then /SyncStatus answers UpgradeStatusStage1 and 2,
 then it is back with the new version. Whether the check says inProgress while
 it downloads is not observed on a NAD; it does here, unless --no-progress.
+With --slow, each phase takes three times as long and the silent phase drops
+connections at once, as a restarting player would, so every phase shows.
 Invented, as nothing is observed there: 503 on other paths and inProgress on
 the check during the stages.
 With --showcase, the players carry invented content for screenshots: albums
@@ -171,6 +173,7 @@ class House:
         self.offered = False      # Studio offers NEW (set by --firmware)
         self.phase = None         # a name from PHASES while updating
         self.progress = True      # the check says inProgress while downloading
+        self.slow = False         # longer phases; silence drops connections
         if showcase:
             self.leader[1] = 0        # Kitchen plays along with Living Room
             self.state = ["play", "play", "pause"]
@@ -215,7 +218,7 @@ class House:
                 self.phase = name
                 self.lock.notify_all()
             sys.stderr.write("Studio firmware: %s\n" % name)
-            time.sleep(secs)
+            time.sleep(secs * 3 if self.slow else secs)
         with self.lock:
             self.phase = None
             self.offered = False
@@ -412,9 +415,11 @@ def handler_for(house, i):
             if phase in (None, "download"):
                 return False
             if phase == "silent":
-                # Restarting: no answer at all, until the restart is over.
-                with house.lock:
-                    house.lock.wait_for(lambda: house.phase != "silent")
+                # Restarting: no answer at all, until the restart is over;
+                # with --slow, the connection is dropped at once.
+                if not house.slow:
+                    with house.lock:
+                        house.lock.wait_for(lambda: house.phase != "silent")
                 self.close_connection = True
             elif path == "/SyncStatus":
                 self.reply('<UpgradeStatusStage%s name="%s" model="DEMO"/>' % (phase[-1], NAMES[i]))
@@ -520,19 +525,22 @@ def main():
     firmware = "--firmware" in args
     showcase = "--showcase" in args
     progress = "--no-progress" not in args
+    slow = "--slow" in args
     rest = [a for a in args if not a.startswith("--")]
     if len(rest) != 1:
         sys.exit("usage: household.py ADDRESS [--refuse=N] [--self-master] [--firmware] [--no-progress]\n"
-                 "                    [--showcase]\n"
+                 "                    [--slow] [--showcase]\n"
                  "  ADDRESS        the address the phone reaches this machine on\n"
                  "  --refuse=N     /AddSlave silently leaves player N (0-2) out\n"
                  "  --self-master  a primary also names itself in <master> (API 2.2 example)\n"
                  "  --firmware     Studio offers an update, started by upgrade=this once\n"
                  "  --no-progress  the check does not say inProgress while downloading\n"
+                 "  --slow         phases three times as long; silence drops connections\n"
                  "  --showcase     invented albums, stations, inputs and a queue, for screenshots")
     house = House(rest[0], refused, self_master, showcase)
     house.offered = firmware
     house.progress = progress
+    house.slow = slow
     servers = []
     for i, port in enumerate(PORTS):
         server = ThreadingHTTPServer((rest[0], port), handler_for(house, i))

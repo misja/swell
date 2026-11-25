@@ -249,3 +249,22 @@ Checked in the SDK container on 127.0.0.1:
 Re-review of the fixes: approve. `make check` after the fixes: all eleven suites
 pass, firmware 43 tests (aarch64). The PR names three own mechanisms:
 `OneShotGet`, the five-minute bound and the start's generation number.
+
+## Revision 2026-11-25: rehearsal on the device (AC9)
+
+Test build 0.6.2+006.firmware.start.20261125191841.557af9a-1 (aarch64, sha256
+7d4ce1743bf0daf1c2ebe966d446e82493c89bffeb12faa85ddff71b923022d4) on the
+maintainer's phone, with the maintainer's approval; `tests/demo/household.py
+--firmware` in the SDK container on the same network.
+
+- Run 1 (default phases): one `upgrade=this`; the update ran to 9.9.2. The
+  maintainer did not see Installing and Restarting: the phases are short,
+  and the default silent phase holds requests until it ends, so a client
+  notices the silence only at its end.
+- `household.py --slow` added: phases three times as long, and the silent
+  phase drops connections at once, as a restarting player would.
+- Run 2 (`--slow`), demo log with timestamps: a check, then one
+  `upgrade=this` 0.1 s later; checks after 1, 3, 7 and 15 s (backoff);
+  silent 30 s, stage1 and stage2; done; Swell asked again 13 s after done.
+  One start in total, nothing REFUSED. The maintainer saw every phase,
+  through to "Updated to 9.9.2": works.
