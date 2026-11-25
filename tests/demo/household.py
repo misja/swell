@@ -17,11 +17,12 @@ as REFUSED, as is any other /upgrade request but upgrade=check, since Swell
 must never send one.
 
 The update follows the one measured on a NAD C 379 (spec 006, evidence.md),
-with its durations: answers as before for 5 s; silent for 25 s; then
-/SyncStatus answers UpgradeStatusStage2 with the NAD's child elements (step 2
-then 3 of 3, percent rising) for 75 s while the check does not answer; silent
-again for 15 s; back with the new version while the check does not answer for
-20 s; then nothing on offer. With --quick, every phase takes a fifth.
+with its durations, to the 5 s read interval: answers as before for 5 s;
+silent for 25 s; then /SyncStatus answers UpgradeStatusStage2 with the NAD's
+child elements (step 2 then 3 of 3, percent rising) for 75 s while the check
+does not answer; silent again for 15 s; back with the new version while the
+check does not answer for 20 s; then nothing on offer. With --quick, every
+phase takes a fifth.
 Not measured, so invented here: the check during the first 5 s answers as
 before the start; a silent player drops each connection at once (the NAD's
 answers did not come within 4 s, refused or held is unknown); the check that

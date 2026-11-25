@@ -123,6 +123,7 @@ void TstQmlRuntime::initTestCase()
     t.deadlineGraceMs = 2000;
     t.commandTimeoutMs = 3000;
     t.readTimeoutMs = 3000;
+    t.upgradeTimeoutMs = 3000;
     t.minIntervalMs = 200;
     t.backoffInitialMs = 200;
     t.backoffMaxMs = 400;
@@ -241,13 +242,17 @@ void TstQmlRuntime::upgradeStartFromQml()
 
 void TstQmlRuntime::upgradeEndState()
 {
-    // After the start above: once the player runs the new firmware, no
-    // start button and no notice, while the check does not answer (a NAD
-    // just back, evidence.md) and after it says nothing is on offer; a later
-    // offer brings them back.
-    m_player->serve(QStringLiteral("/SyncStatus"), "<UpgradeStatusStage1 name=\"Den\"/>");
+    // Continues the update upgradeStartFromQml started. Once the player runs
+    // the new firmware: no start button and no notice, while the check does
+    // not answer (a NAD just back, evidence.md; held here, which is
+    // invented) and after it says nothing is on offer; a later offer brings
+    // them back.
+    m_player->serve(QStringLiteral("/SyncStatus"),
+                    "<UpgradeStatusStage2 version=\"1.97\" name=\"Den\" model=\"C379\"><total>3</total>"
+                    "<step>2</step><percent>1</percent><error>0</error></UpgradeStatusStage2>");
     QTRY_COMPARE_WITH_TIMEOUT(call("upgradePhase"), QStringLiteral("installing"), 10000);
-    m_player->failWith(QStringLiteral("/upgrade"), 503);
+    m_player->silenceIf(QStringLiteral("/upgrade"), [](const QUrlQuery &) { return true; },
+                        FakePlayer::Hold);
     m_player->serve(QStringLiteral("/SyncStatus"),
                     "<SyncStatus etag=\"t\" syncStat=\"s\" name=\"Den\" volume=\"20\" version=\"4.18.20\"/>");
     QTRY_COMPARE_WITH_TIMEOUT(call("upgradePhase"), QStringLiteral("done"), 10000);
@@ -255,14 +260,14 @@ void TstQmlRuntime::upgradeEndState()
     QCOMPARE(call("upgradeNotice"), QStringLiteral("false false"));
     QCOMPARE(call("upgradeCanAccept", QStringLiteral("4.18.20")), QStringLiteral("false"));
 
-    m_player->stopFailing(QStringLiteral("/upgrade"));
+    m_player->stopSilence(QStringLiteral("/upgrade"));
     m_player->serve(QStringLiteral("/upgrade"),
                     "<upgrade inProgress=\"false\" available=\"false\">check</upgrade>");
     Client *client = m_players->client(m_players->currentId());
     const int checks = m_player->requests(QStringLiteral("/upgrade")).size();
     QTRY_VERIFY_WITH_TIMEOUT((client->checkUpgrade(),
                               m_player->requests(QStringLiteral("/upgrade")).size() > checks), 5000);
-    QTest::qWait(500);
+    QTest::qWait(500);  // for the answer; the state asserted does not change
     QCOMPARE(call("upgradePhase"), QStringLiteral("done"));
     QCOMPARE(call("upgradeButton"), QStringLiteral("false"));
     QCOMPARE(call("upgradeNotice"), QStringLiteral("false false"));

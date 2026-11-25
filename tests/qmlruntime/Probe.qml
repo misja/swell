@@ -76,7 +76,8 @@ Item {
                       && player.upgradeAvailable && player.upgradeVersion === version
                       && !player.upgradeStarted && player.upgradePhase !== Player.UpgradeChecking)
     }
-    // UpgradeDialog.onAccepted, then the start button's and notice's conditions.
+    // UpgradeDialog.onAccepted, then the start button's condition (copied
+    // from PlayerSettingsPage.qml; keep both in step).
     function startUpgrade(version) {
         _player.startUpgrade(version)
         return ""
@@ -85,7 +86,9 @@ Item {
         return String(_player.upgradeAvailable && _player.availability !== Player.Updating
                       && !_player.upgradeStarted && _player.upgradePhase !== Player.UpgradeChecking)
     }
-    // HomePage's update notice: visible, and whether it opens the dialog.
+    // HomePage's update notice (copied from HomePage.qml, updateNotice
+    // visible and enabled; keep both in step): visible, and whether it opens
+    // the dialog.
     function upgradeNotice() {
         var visible = _player.upgradeAvailable || _player.upgradeStarted
                 || _player.upgradePhase === Player.UpgradeChecking

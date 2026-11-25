@@ -363,19 +363,25 @@ What Settings and the Home notice show, and whether a start is possible:
 | Nothing on offer, checked | "No update found." | no | hidden | — |
 | Offer (no record) | "Firmware %1 is available." | yes | "Update available" | yes, while online |
 | Checking (fresh check for a start) | "Starting update" | no | "Starting update" | no |
-| Refused (nothing sent) | "The update was not started." | while still on offer | "The update was not started." | while still on offer |
+| Refused (nothing sent) | "The update was not started." | while still on offer | the same text while still on offer, else hidden | while still on offer |
 | Starting | "Starting update" | no | "Starting update" | no |
 | Installing | "The player is updating. …" | no | "Updating firmware" | no |
 | Restarting | "Restarting" | no | "Restarting" | no |
 | Updated (Done) | "Updated to %1" | no | hidden | — |
 | Updated, then a later offer | "Firmware %1 is available." | yes | "Update available" | yes |
-| Not started / Not finished | "The update did not … Restart Swell …" | no | the same text | no |
+| Not started / Not finished | "The update did not … Restart Swell …" | no | the same text | no; Updated once `/SyncStatus` names other firmware |
 | Updating, started elsewhere | "The player is updating. …" | no | "Updating firmware" while an offer is known | no (offline) |
-| Back on other firmware, check silent | as Done, or "No update found." | no | hidden | — |
+| Back on other firmware, check silent | as Done, else "No update found." (from the check on the old firmware) | no | hidden | — |
 
-Limit: a check answered just before the first `/SyncStatus` after the
-return is taken as checked on the old firmware, and its offer is dropped
-until the next check. This errs towards not offering.
+Limits:
+
+- On the sync-watch path only (no status polling), a check answered just
+  before the first `/SyncStatus` after the return is taken as checked on
+  the old firmware, and its offer is dropped until the next check. This
+  errs towards not offering.
+- Not measured: a check after the return that offers the version now
+  installed would replace Updated with that offer. The NAD said
+  `available="false"`.
 
 13. Tests: the measured NAD update end to end (`theMeasuredNadUpdate`,
     including Stage2 with its child elements and `version="1.97"`, which is

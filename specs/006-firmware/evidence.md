@@ -289,12 +289,12 @@ check every 15 s (as the official app).
   of this record; the raw read log has it.
 - Back as `SyncStatus` with `version="4.18.26"`; the check did not answer for
   about 20 s more, then `available="false"`.
-- Timeline from the read log (5 s reads, 4 s timeout, start about 21:08:31
-  local): ordinary to 21:08:30; silent 21:08:36–21:08:55; Stage2
-  21:09:00–21:10:15; silent 21:10:20–21:10:33; SyncStatus 4.18.26 from
-  21:10:39; the check unanswered at 21:10:44, `available="false"` from
-  21:10:59. Not measured: whether a silent player refused or held the
-  connection, what the check answered in the first 5 s after the start, and
+- Timeline from the read log (5 s reads, 4 s timeout; seconds after the
+  start, to the read interval): ordinary to −1; silent +5 to +24; Stage2 +29
+  to +104; silent +109 to +122; SyncStatus 4.18.26 from +128; the check
+  unanswered at +133, `available="false"` from +148. Not measured: whether a
+  silent player refused or held the connection, what the check answered in
+  the first 5 s after the start, and
   what `/Status` answered during Stage2.
 - In Swell: the update ran through to "Updated to 4.18.26". Finding: the old
   offer stayed (the check right after the return got no answer), so Settings
@@ -320,3 +320,15 @@ check every 15 s (as the official app).
 - Tests: `theMeasuredNadUpdate`, `anUpdateFromElsewhereDropsTheOffer`,
   `upgradeEndState`; 11 suites pass (aarch64 target, build-shell).
 
+
+Separate result review of the end states (assistant review, not a human
+audit): approve with changes, no blockers. Applied: one rule for the offer
+(the `updated` term dropped); the tests name what they invent (refused and
+held connections); the QML runtime test uses Stage2 and a held check, and
+says it continues the earlier start; the state table rows for Refused, Not
+started / Not finished and the silent check after the return; the limits
+(sync-watch path only; an offer of the installed version is not measured);
+the demo's durations are to the 5 s read interval; the timeline in seconds
+after the start; Probe.qml names the page conditions it copies. The QML
+runtime timing gained an upgrade timeout of 3 s, so a held check ends as in
+the firmware tests. 11 suites pass (aarch64 target).

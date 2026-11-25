@@ -835,7 +835,9 @@ void TstFirmware::theMeasuredNadUpdate()
     // (evidence.md): ordinary answers, silent, Stage2 with child elements
     // while the check does not answer, silent again, back on the new firmware
     // while the check still does not answer, then not available. Only the
-    // times are shorter, and the name is the test's.
+    // times are shorter, and the name is the test's. Invented: silence as a
+    // refused connection (close) and the unanswered check as a held one;
+    // evidence.md has only "no answer within 4 s".
     startWithOffer();
     m_client->startUpgrade(QStringLiteral("4.18.20"));
     QTRY_COMPARE(m_client->upgradePhase(), Client::UpgradeStarting);
@@ -877,7 +879,7 @@ void TstFirmware::theMeasuredNadUpdate()
     const int checks = m_player->requests(QStringLiteral("/upgrade")).size();
     QTRY_VERIFY_WITH_TIMEOUT((m_client->checkUpgrade(),
                               m_player->requests(QStringLiteral("/upgrade")).size() > checks), 5000);
-    QTest::qWait(500);
+    QTest::qWait(500);  // for the answer; the state asserted does not change
     QCOMPARE(m_client->upgradePhase(), Client::UpgradeDone);
     QVERIFY(!m_client->upgradeAvailable());
 
