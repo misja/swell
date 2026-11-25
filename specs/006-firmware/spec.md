@@ -197,7 +197,12 @@ are shown as the player reports them.
   l. 248–268 `handleUnexpectedEOF`, l. 851–867 `RemoteHostClosedError`;
   `qhttpprotocolhandler.cpp` l. 98–114), whatever the method. A player that
   reads `this` and drops the connection as it begins could get it up to
-  four times.
+  four times. `QNetworkRequest::Attribute` in the target's headers has no
+  switch for it.
+- **azzurro's HTTP client** (reqwest 0.13.5 on hyper-util 0.1.21, its
+  Cargo.lock): hyper-util retries only requests "disrupted before ever
+  starting to write" (`retry_canceled_requests`, client/legacy/client.rs
+  l. 1583–1593), so a written `this` is never sent again.
 - **Swell:** PlayerModel replaces a player's Client when its address changes
   (`bluos/playermodel.cpp` l. 397–403), removes a non-current player that
   LSDP lost (l. 430–441) and creates it again when found. A record kept in
@@ -248,11 +253,11 @@ are shown as the player reports them.
      start; silence keeps Updating. The record stays. This bound is an own
      deadline; the PR names it.
 4. **Phases** shown, from what the player answers:
-   - Starting: sent, no evidence yet, the player answers.
+   - Starting: sent, no evidence yet, whether or not the player answers
+     (the maintainer, 2026-11-25: no alarming "does not answer" text).
    - Installing: `inProgress="true"` or a stage root (both stages alike;
      `step`/`percent` are not used, see Facts).
    - Restarting: no answer after evidence.
-   - Not answering: no answer before evidence.
    - Updated to <version>: back as itself on another version.
    - Not started: see item 3.
 5. **UI** (texts to agree with the maintainer):

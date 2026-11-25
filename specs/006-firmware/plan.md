@@ -72,7 +72,7 @@ After the scope/design review (approve with changes, evidence.md).
 - **Client:**
   - `Q_INVOKABLE void startUpgrade(const QString &version)`;
     `upgradePhase` (enum: None, Checking, Starting, Installing, Restarting,
-    NotAnswering, Updated, NotStarted) with NOTIFY; `upgradeStarted`
+    Updated, NotStarted) with NOTIFY; `upgradeStarted`
     (the record) with NOTIFY.
   - The start's check uses `fetch()` with a generation number; `stop()`,
     `setUpgradeChecks(false)`, `setStatusPolling(false)` bump it and reset
