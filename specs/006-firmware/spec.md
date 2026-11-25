@@ -10,7 +10,7 @@ item 3 and the first point of "Out of scope".
 
 - Accountable owner: root (primary assistant session).
 - Decision owner: the maintainer.
-- Issue: misja/swell#28.
+- Issue: misja/swell#28; revision 2026-11-25: misja/swell#50.
 - Review: a separate agent reviews scope and design before implementation,
   and the result before the PR. A firmware update is release-relevant for
   the user's device, so the result review is required.

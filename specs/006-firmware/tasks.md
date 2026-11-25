@@ -25,9 +25,9 @@
 - [x] Draft spec revision and plan.
 - [x] Scope/design review by a separate agent (approve with changes); findings applied (evidence.md).
 - [x] The maintainer: remove the WebView; show the phases; reuse existing strings (2026-11-25).
-- [ ] The maintainer: one-shot socket for `this` (own mechanism) or QNetworkAccessManager with the risk recorded.
-- [ ] Issue.
-- [ ] The maintainer: UI texts and the dialog.
+- [x] The maintainer: one-shot socket for `this` (2026-11-25).
+- [x] The maintainer: UI texts and the dialog (2026-11-25).
+- [x] Issue: misja/swell#50.
 - [ ] Tests, library, app; Dutch translations; make check passes.
 - [ ] Builds (aarch64, armv7hl), validator, evidence.md.
 - [ ] Separate result review; findings resolved.
