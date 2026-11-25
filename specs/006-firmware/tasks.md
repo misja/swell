@@ -28,8 +28,8 @@
 - [x] The maintainer: one-shot socket for `this` (2026-11-25).
 - [x] The maintainer: UI texts and the dialog (2026-11-25).
 - [x] Issue: misja/swell#50.
-- [ ] Tests, library, app; Dutch translations; make check passes.
-- [ ] Builds (aarch64, armv7hl), validator, evidence.md.
+- [x] Tests, library, app; Dutch translations; make check passes.
+- [x] Builds (aarch64, armv7hl), validator, evidence.md.
 - [ ] Separate result review; findings resolved.
 - [ ] Rehearsal on the device against household.py.
 - [ ] Device check: the update to the offered firmware on the NAD.

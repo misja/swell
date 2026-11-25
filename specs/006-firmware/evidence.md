@@ -201,3 +201,36 @@ Checked in the SDK container on 127.0.0.1:
 | L: retry after a failed update | Record cleared only on another version |
 | Removal list for the WebView | Completed in the plan |
 | AC gaps; rehearsal | AC7, AC8 extended; AC9 rehearsal with household.py |
+
+## Revision 2026-11-25: build and tests (commit 4f454e9)
+
+- **`make check`** (aarch64, SDK target 5.1.0.11): all eleven suites pass;
+  firmware 40, qmlruntime 19. No compiler warnings.
+- **New tests** (`tests/firmware`, AC7):
+  - `whyTheStartHasItsOwnSocket`: QNetworkAccessManager sends a request
+    again when FakePlayer reads it and closes without a byte (more than one
+    request seen). It guards the reason for `OneShotGet`.
+  - a start after a fresh check, with and without a version; refusals by
+    the fresh check (not available, in progress, another version, 404,
+    malformed, no answer); refusals when not current, stopped, updating, a
+    fixed-group secondary, offline; cancellation while the check is pending
+    (stop, checks off, status polling off, stop and start); one start for
+    repeated calls; no retry after a drop, no answer, an error document;
+    the record across a new Client (address change, lost and found, removed
+    and added); the phases through to the new version; the bound only on an
+    ordinary answer; an unfinished update keeps the record.
+  - Every test counts the starts that reached FakePlayer and fails on any
+    other `/upgrade` target than `check` and `this`.
+- **`tests/qmlruntime`** (AC8): `upgradeStartFromQml` with the dialog's
+  `canAccept` and the button's condition, read as the pages read them
+  (offline, stale version, pending, sent); two calls, one start. The pages
+  themselves are not instantiated.
+- **Builds** with `-c no-fix-version` (the branch suffix in the version is
+  refused by the validator, "rpm version must contain only digits"):
+  - aarch64 sha256 33b677f42b41ca6c7f43f20f0bf852c51162c1e6d3cee54b896e7cb3a12324b1;
+  - armv7hl sha256 e2695cee96a10ec6f8ebe5c52e4c9763f27a39d55c8587aaa61efa15e84b8c47.
+- **Harbour validator:** succeeds on both. The rpath WARNING of 2026-11-09
+  is gone with the qt5embedwidget link. Requires: Qt, sailfishapp,
+  `sailfishsilica-qt5`, `qml(Amber.Mpris)`; no WebView packages.
+  `Permissions=Internet;Audio`. rpmlint reports the existing
+  description-line-too-long, as on main.
