@@ -383,6 +383,14 @@ Limits:
   installed would replace Updated with that offer. The NAD said
   `available="false"`.
 
+One condition decides whether a start is possible: `Client::canStartUpgrade`
+(an offer, a start allowed as in scope item 1, and no check for a start
+running). The start button (enabled), the Home notice (enabled) and the
+dialog (`canAccept`, with the version it names) read it; the maintainer
+agreed (2026-11-25) after a general code review found four copies of the
+condition. `upgradeAvailable` is told when the player becomes or stops
+being a fixed-group secondary, since it hides the offer there.
+
 13. Tests: the measured NAD update end to end (`theMeasuredNadUpdate`,
     including Stage2 with its child elements and `version="1.97"`, which is
     not the firmware); an update from elsewhere drops the offer
@@ -392,6 +400,10 @@ Limits:
     offer (`upgradeEndState`).
 14. A separate result review of this addition, with the end states as an
     explicit question.
+15. Tests: `canStartUpgradeFollowsItsParts` (checks and status polling off,
+    the start's own check, after sending, stopped) and
+    `becomingAFixedSecondaryHidesTheOffer` (told on joining and leaving;
+    fails without it). A separate review of this change.
 
 ## Out of scope
 

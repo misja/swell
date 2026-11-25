@@ -35,4 +35,6 @@
 - [x] Device check: the update to 4.18.26 on the NAD (evidence.md); the stale offer found there is fixed.
 - [x] End states after the update on the NAD: rule, state table, tests replaying the measured update, demo player on the measured timeline.
 - [x] Separate result review of the end states (approve with changes); findings resolved.
-- [ ] PR.
+- [x] PR: misja/swell#51.
+- [x] General code review (separate agent): one start condition, `canStartUpgrade`; the fixed-group secondary is told (the maintainer agreed, 2026-11-25). Other findings: misja/swell#53.
+- [ ] Separate review of `canStartUpgrade`.
