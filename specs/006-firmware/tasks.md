@@ -37,4 +37,4 @@
 - [x] Separate result review of the end states (approve with changes); findings resolved.
 - [x] PR: misja/swell#51.
 - [x] General code review (separate agent): one start condition, `canStartUpgrade`; the fixed-group secondary is told (the maintainer agreed, 2026-11-25). Other findings: misja/swell#53.
-- [ ] Separate review of `canStartUpgrade`.
+- [x] Separate review of `canStartUpgrade` (approve with changes); findings resolved.

@@ -332,3 +332,15 @@ the demo's durations are to the 5 s read interval; the timeline in seconds
 after the start; Probe.qml names the page conditions it copies. The QML
 runtime timing gained an upgrade timeout of 3 s, so a held check ends as in
 the firmware tests. 11 suites pass (aarch64 target).
+
+## One start condition (2026-11-25)
+
+After a general code review (misja/swell#53), `Client::canStartUpgrade`
+replaces four copies of the start condition, and `upgradeChanged` follows a
+fixed-group secondary. Separate review (assistant review, not a human
+audit): approve with changes, no blockers; every input of the condition was
+traced to a notifying write. Applied: the test covers going offline and
+counts `canStartUpgradeChanged`; Probe.qml reports the button's visible and
+enabled apart; the header names the rule for future inputs. The fixed-group
+test fails without the new notification. 11 suites pass (aarch64 target;
+firmware 47).
