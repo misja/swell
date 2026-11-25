@@ -60,3 +60,47 @@ and findings H1, M1–M7, L1–L5 apply. Open: the maintainer's approvals listed
   shows no notice and nothing breaks.
 - The WebView adds a permission prompt and a dependency.
 - A real update can only be checked when the NAD is offered one.
+
+## Revision 2026-11-25: starting the update (draft)
+
+- **Library (`Client`):**
+  - `Q_INVOKABLE void startUpgrade(const QString &version)`, a
+    `StartState { None, Checking, Sent }` member (the record of spec
+    revision item 2), and a signal `upgradeStartFailed(QString reason)`.
+  - `startUpgrade` returns at once unless the conditions of revision item 1
+    hold and the state is None. It sets Checking and reads a check of its
+    own through `fetch()` (not `checkUpgrade()`, which can skip when a check
+    is in flight). On the answer it re-tests every condition; only then it
+    sets Sent and sends `this` with the 60 s deadline. The answer to `this`
+    is not used.
+  - The one place that builds `/upgrade` queries takes the action
+    (`check` or `this`) from the code, never from QML.
+  - `enterUpdating()` gets the origin (start, `inProgress`, stage root), and
+    a single-shot timer for the five-minute bound, started only for a start.
+    Evidence of updating stops it. `leaveUpdating` clears Sent only after
+    evidence (stage root seen or another firmware version).
+  - `Client::Timing` gets `upgradeStartBoundMs`, so tests can shorten it.
+- **App:**
+  - `qml/pages/UpgradeDialog.qml`: a Silica `Dialog` (qmldir of the 5.1.0.11
+    target, `Dialog 1.0 Dialog.qml`, `DialogHeader 1.0`) with the version and
+    the warnings; `onAccepted` calls `startUpgrade(version)`.
+  - `PlayerSettingsPage.qml` and the Home notice push the dialog instead of
+    `PlayerWebPage.qml`; texts for starting, updating and "not started".
+  - The client's start state reaches QML as a property with NOTIFY.
+  - If the maintainer chooses to remove the WebView: `PlayerWebPage.qml`,
+    `upgradePage()`, `Permissions=…;WebView`, the three WebView requirements,
+    `PKGCONFIG += qt5embedwidget` and its BuildRequires go; issue #32 is
+    closed as no longer applicable.
+- **Tests:** `tests/firmware`: the cases of acceptance criterion 7 with
+  `FakePlayer` counting `upgrade=this`; the existing "only check is sent"
+  test becomes "only check, and this only through a start".
+  `tests/qmlruntime`: criterion 8.
+- **Alternatives considered:**
+  - Open the page without `noheader`: its button cannot work (no jQuery).
+  - Send `upgrade=old` as that button would on port 80: seen only in a
+    button that cannot run; meaning unknown. Rejected for `this`, which the
+    official app uses (azzurro).
+  - RemorsePopup instead of a Dialog: a countdown that runs out starts an
+    irreversible update when the user looks away. Rejected.
+  - No bound after a start: a player that ignored `this` would show
+    "Updating" until the app restarts.

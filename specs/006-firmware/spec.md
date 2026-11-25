@@ -2,7 +2,9 @@
 
 Status: implemented 2026-11-09 on branch 006-firmware; the scope/design review
 and the result review (both approve with changes) are applied. UI agreed on the
-design canvas, page "Firmware (006)".
+design canvas, page "Firmware (006)". Revised 2026-11-25 (draft): Swell starts
+the update itself; see "Revision 2026-11-25" below, which replaces scope
+item 3 and the first point of "Out of scope".
 
 ## Owner and linked issue
 
@@ -154,9 +156,102 @@ for them without building anything for them now:
 - **Agree on the canvas:** the entry point and that page's structure are
   agreed on the canvas with the future settings in view.
 
+## Revision 2026-11-25: Swell starts the update
+
+### Facts (2026-11-25, NAD C 379, firmware 4.18.18; reads only)
+
+- `upgrade=check` answers `available="true"`, `inProgress="false"`,
+  `version="4.18.26"`. Swell's notice and Settings show it.
+- `http://<player>/upgrade?noheader=1`, the page Swell and the official app
+  open, says only "Update available.". It has no button, and a script that
+  calls `window.close()` after 5 s. So the user cannot start the update in
+  Swell's web view.
+- Without `noheader` the page adds an "Upgrade Now" button whose `onClick`
+  calls `$.get('/upgrade', {upgrade: 'old'})`. The page loads no jQuery, so
+  `$` is undefined and the button cannot work in any browser.
+- azzurro (jzbz/azzurro 10cce29, MIT; `docs/protocol.md` and
+  `crates/bluos/src/client.rs` `start_upgrade_for`) starts an update with
+  `GET :11000/upgrade?upgrade=this`, and only after a check answered
+  `available="true"` and `inProgress="false"`. That is the precondition the
+  official app enforces: "Starting a second upgrade over a running one is
+  the way to turn a working speaker into a brick." The answer to `this` is
+  "the same document the check answers with" and is not read. azzurro has
+  driven updates end to end on a Powernode.
+- What a NAD answers to `this`, and whether a check reports
+  `inProgress="true"` while it downloads, is not known until the first
+  update.
+
+### Scope (replaces scope item 3)
+
+1. **Start:** the client gets one entry point that starts the update of the
+   current player, given the version the user confirmed. It sends
+   `GET :11000/upgrade?upgrade=this` at most once, and only when all of the
+   following hold at the moment of sending:
+   - the client runs, polls status, checks upgrades (current player), the
+     player is online and not a secondary in a fixed group;
+   - it is not Updating, and no start is pending or was sent before (see 2);
+   - a check made for this start, after the user confirmed, answered
+     `available="true"`, `inProgress="false"`, and the confirmed version.
+
+   Otherwise nothing is sent and the user is told that the update was not
+   started. Never `all`, `slave` or `port`.
+2. **Once:** before `this` is sent, the client records that it was sent. That
+   record is not cleared by an error, a timeout or no answer: those are not
+   retried, since a player that has begun rewriting its flash may not answer.
+   It is cleared only when the player has visibly updated (it answered with
+   an `UpgradeStatusStage*` root, or `/SyncStatus` names another firmware
+   version), so a later release can be started. Otherwise a new start needs a
+   new app session, and then the check guards it again.
+3. **After sending,** the player is Updating at once, through the existing
+   rules (no long poll, /SyncStatus read on the backoff). Updating ends when
+   the player answers as itself after evidence that it updated (a stage root,
+   a period without answer, `inProgress="true"`, or another firmware
+   version). Without such evidence within a fixed bound after the start
+   (five minutes, as azzurro allows an unanswered start), Updating ends and
+   the user is told that the update did not start; the record of 2 stays.
+4. **UI** (to agree with the maintainer):
+   - "Start update" in Settings and the Home notice open a Silica `Dialog`
+     that names the version and says that the player restarts, cannot be
+     used for a few minutes, that the update cannot be stopped, and that the
+     player must stay switched on. Accepting starts it; the dialog itself
+     cannot accept twice.
+   - While starting and updating, Settings shows the state and no button;
+     Home's notice says that the player is updating.
+5. **The web view:** with the update no longer on the player's page, the
+   WebView has no use in Swell. Removing it (page, permission, requirements,
+   the qt5embedwidget link; issue #32 then lapses) or keeping it for later
+   player pages is the maintainer's decision.
+
+### Acceptance criteria (added)
+
+7. Tests against the fake player, each asserting how many `this` requests
+   reached it:
+   - a start with a fresh check that is available, matches and is not in
+     progress sends exactly one `this`, after that check;
+   - none when the fresh check is not available, in progress, names another
+     version, gives no answer, 404 or malformed XML;
+   - none when offline, Updating, not the current player, a fixed-group
+     secondary, or not running;
+   - two starts in a row, a start while one is pending, and a start after
+     one was sent send one in total;
+   - an error, a timeout or no answer to `this` are not retried;
+   - after sending, the player is Updating without a long poll; it leaves
+     Updating on a stage root then `SyncStatus`, and after the bound
+     without evidence, with "not started" reported;
+   - after a visible update the record is cleared.
+8. The QML runtime test: the dialog starts the update once, and the button
+   is hidden while starting and updating.
+9. Device check by the maintainer: the update to 4.18.26 on the NAD from
+   Swell, followed to the end, with what the player answers recorded in
+   evidence.md. This is the only update on offer; if it fails, the official
+   app updates the player.
+10. A separate result review before the PR (a firmware update is
+    release-relevant).
+
 ## Out of scope
 
-- Starting, retrying or aborting an update from Swell itself.
+- Retrying or aborting an update from Swell itself (starting it: see the
+  revision of 2026-11-25).
 - Player settings and alarms (the undocumented settings tree on port 11001
   that the NAD showed on 2026-11-08). They are a separate decision, Q0,
   now #40.

@@ -17,3 +17,17 @@
 - [x] Separate result review (approve with changes); findings resolved (evidence.md).
 - [x] Separate review of the changes after the device check (direct update page, "Start update", the polling fix).
 - [ ] PR.
+
+## Revision 2026-11-25: Swell starts the update
+
+- [x] Finding: the player's update page cannot start the update on 4.18.18 (spec, revision facts).
+- [x] The maintainer: Swell starts the update itself, strictly once (2026-11-25).
+- [x] Draft spec revision and plan.
+- [ ] Scope/design review by a separate agent; findings applied.
+- [ ] Issue.
+- [ ] The maintainer: UI texts and the dialog; remove or keep the WebView.
+- [ ] Tests, library, app; Dutch translations; make check passes.
+- [ ] Builds (aarch64, armv7hl), validator, evidence.md.
+- [ ] Separate result review; findings resolved.
+- [ ] Device check: the update to the offered firmware on the NAD.
+- [ ] PR.
