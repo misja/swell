@@ -285,11 +285,38 @@ check every 15 s (as the official app).
   Swell does not use the counters (spec). The root's `version` is not the
   firmware and Swell does not read it as such (stage roots are not
   `SyncStatus`).
+- Then silent again for about 15 s (the restart), not in the first version
+  of this record; the raw read log has it.
 - Back as `SyncStatus` with `version="4.18.26"`; the check did not answer for
   about 20 s more, then `available="false"`.
+- Timeline from the read log (5 s reads, 4 s timeout, start about 21:08:31
+  local): ordinary to 21:08:30; silent 21:08:36–21:08:55; Stage2
+  21:09:00–21:10:15; silent 21:10:20–21:10:33; SyncStatus 4.18.26 from
+  21:10:39; the check unanswered at 21:10:44, `available="false"` from
+  21:10:59. Not measured: whether a silent player refused or held the
+  connection, what the check answered in the first 5 s after the start, and
+  what `/Status` answered during Stage2.
 - In Swell: the update ran through to "Updated to 4.18.26". Finding: the old
   offer stayed (the check right after the return got no answer), so Settings
   showed "Start update" and Home "Update available" again. A tap would only
   have run a fresh check, which by then said not available. Fixed: the
   offer is dropped when the player runs another version
   (`updatingAfterAStart` now has the check not answering); 11 suites pass.
+
+## End states (2026-11-25, after the update on the NAD)
+
+- Cause of the stale offer: the offer and the start record were kept apart,
+  with no rule that other firmware ends the offer; the fake player and
+  `household.py` answered the check at once after the return, which was
+  assumed, not measured. The same gap existed for an update started
+  elsewhere, and for a later offer after Updated.
+- Changed: an offer holds only while the player runs the firmware it was
+  checked on; Updated gives way to a later offer (spec, End states).
+- `household.py --firmware` follows the measured timeline (`--quick`: a
+  fifth); `--slow` and `--no-progress`, which modelled azzurro's Powernode,
+  are gone. Checked locally with curl against `--quick`: one start, a second
+  refused, silent, Stage2 with step 2 then 3 and percent rising, silent,
+  back on 9.9.2 with the check unanswered, then `available="false"`.
+- Tests: `theMeasuredNadUpdate`, `anUpdateFromElsewhereDropsTheOffer`,
+  `upgradeEndState`; 11 suites pass (aarch64 target, build-shell).
+

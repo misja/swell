@@ -16,15 +16,16 @@ With --firmware (spec 006), Studio offers an invented firmware update, which
 as REFUSED, as is any other /upgrade request but upgrade=check, since Swell
 must never send one.
 
-The update follows azzurro's observations (spec 006, Facts): the player still
-answers while it downloads, then it is silent (requests are held until the
-phase ends, then dropped), then /SyncStatus answers UpgradeStatusStage1 and 2,
-then it is back with the new version. Whether the check says inProgress while
-it downloads is not observed on a NAD; it does here, unless --no-progress.
-With --slow, each phase takes three times as long and the silent phase drops
-connections at once, as a restarting player would, so every phase shows.
-Invented, as nothing is observed there: 503 on other paths and inProgress on
-the check during the stages.
+The update follows the one measured on a NAD C 379 (spec 006, evidence.md),
+with its durations: answers as before for 5 s; silent for 25 s; then
+/SyncStatus answers UpgradeStatusStage2 with the NAD's child elements (step 2
+then 3 of 3, percent rising) for 75 s while the check does not answer; silent
+again for 15 s; back with the new version while the check does not answer for
+20 s; then nothing on offer. With --quick, every phase takes a fifth.
+Not measured, so invented here: the check during the first 5 s answers as
+before the start; a silent player drops each connection at once (the NAD's
+answers did not come within 4 s, refused or held is unknown); the check that
+does not answer is dropped the same way; 503 on other paths during Stage2.
 With --showcase, the players carry invented content for screenshots: albums
 and stations with art drawn by this script, presets, inputs, a library and a
 play queue. Living Room plays an album with Kitchen in its group; Studio has
@@ -43,8 +44,10 @@ NAMES = ["Living Room", "Kitchen", "Studio"]
 PORTS = [11010, 11020, 11030]
 STUDIO = 2
 OLD, NEW = "9.9.1", "9.9.2"
-# The update's phases on Studio, in seconds.
-PHASES = [("download", 10), ("silent", 10), ("stage1", 8), ("stage2", 8)]
+# The update's phases on Studio, in seconds, as measured on a NAD (evidence.md).
+PHASES = [("start", 5), ("silent", 25), ("stage2", 75), ("restart", 15), ("back", 20)]
+# While these, the player gives no answer at all.
+SILENT = ("silent", "restart")
 TRACKS = [("Undertow", "Harbour Lights", "Low Tide Sessions"),
           ("Morning Radio", "Invented FM", ""),
           ("Cirrus", "Weather Report Band", "Skies")]
@@ -172,8 +175,9 @@ class House:
         self.version = [OLD, OLD, OLD]
         self.offered = False      # Studio offers NEW (set by --firmware)
         self.phase = None         # a name from PHASES while updating
-        self.progress = True      # the check says inProgress while downloading
-        self.slow = False         # longer phases; silence drops connections
+        self.phase_started = 0.0  # time.monotonic() when the phase began
+        self.phase_secs = 0       # how long it lasts
+        self.quick = False        # every phase a fifth (--quick)
         if showcase:
             self.leader[1] = 0        # Kitchen plays along with Living Room
             self.state = ["play", "play", "pause"]
@@ -205,25 +209,39 @@ class House:
                    self.version[i], inner))
 
     def upgrade_check(self, i):
-        available = i == STUDIO and self.offered and self.phase is None
-        progress = i == STUDIO and self.phase and (self.phase != "download" or self.progress)
-        return ('<upgrade inProgress="%s"%s available="%s">check</upgrade>'
-                % ("true" if progress else "false",
-                   ' version="%s"' % NEW if available else "", "true" if available else "false"))
+        available = i == STUDIO and self.offered
+        return ('<upgrade inProgress="false"%s available="%s">check</upgrade>'
+                % (' version="%s"' % NEW if available else "", "true" if available else "false"))
+
+    def stage_doc(self, i):
+        """UpgradeStatusStage2 with the child elements a NAD sends."""
+        done = min(1.0, (time.monotonic() - self.phase_started) / max(self.phase_secs, 1))
+        step = 2 if done < 0.5 else 3
+        percent = max(1, int(100 * (done * 2 if step == 2 else done * 2 - 1)))
+        return ('<UpgradeStatusStage2 version="1.97" name="%s" model="DEMO"><format>0</format>'
+                '<git>%s</git><total>3</total><step>%d</step><percent>%d</percent><retry>0</retry>'
+                '<error>0</error><abortable>0</abortable><started>1</started></UpgradeStatusStage2>'
+                % (NAMES[i], NEW, step, min(percent, 100)))
 
     def run_update(self):
         """The update on Studio, in a thread of its own."""
         for name, secs in PHASES:
+            secs = secs / 5 if self.quick else secs
             with self.lock:
                 self.phase = name
+                self.phase_started = time.monotonic()
+                self.phase_secs = secs
+                if name == "silent":
+                    self.offered = False
+                if name == "back":
+                    self.version[STUDIO] = NEW
+                    self.publish()
                 self.lock.notify_all()
             sys.stderr.write("Studio firmware: %s\n" % name)
-            time.sleep(secs * 3 if self.slow else secs)
+            time.sleep(secs)
         with self.lock:
             self.phase = None
-            self.offered = False
-            self.version[STUDIO] = NEW
-            self.publish()
+            self.lock.notify_all()
         sys.stderr.write("Studio firmware: done, %s\n" % NEW)
 
     def status_body(self, i):
@@ -412,31 +430,27 @@ def handler_for(house, i):
         def while_updating(self, path):
             """Answers as Studio does while updating; False when it is not."""
             phase = self.updating()
-            if phase in (None, "download"):
+            if phase in SILENT or (path == "/upgrade" and phase in ("stage2", "back")):
+                self.close_connection = True   # no answer
+            elif phase != "stage2":
                 return False
-            if phase == "silent":
-                # Restarting: no answer at all, until the restart is over;
-                # with --slow, the connection is dropped at once.
-                if not house.slow:
-                    with house.lock:
-                        house.lock.wait_for(lambda: house.phase != "silent")
-                self.close_connection = True
             elif path == "/SyncStatus":
-                self.reply('<UpgradeStatusStage%s name="%s" model="DEMO"/>' % (phase[-1], NAMES[i]))
+                with house.lock:
+                    self.reply(house.stage_doc(i))
             else:
                 self.reply("<html>Upgrading</html>", 503)
             return True
 
         def held(self, query, doc):
             """A long poll: wait while the etag is unchanged, up to the timeout,
-            or until Studio's update moves past the download."""
+            or until Studio's update stops answering as a player."""
             etag = query.get("etag", [None])[0]
             raw = query.get("timeout", ["0"])[0]
             timeout = min(int(raw), 300) if raw.isdigit() else 0
             with house.lock:
                 if etag:
                     house.lock.wait_for(lambda: ('etag="%s"' % etag) not in doc()
-                                        or self.updating() not in (None, "download"), timeout)
+                                        or self.updating() in SILENT + ("stage2",), timeout)
                 return doc()
 
         def do_GET(self):
@@ -447,7 +461,7 @@ def handler_for(house, i):
                 with house.lock:
                     start = house.offered and house.phase is None
                     if start:
-                        house.phase = "download"   # one update only
+                        house.phase = "start"   # one update only
                         doc = house.upgrade_check(i)
                 if not start:
                     return self.refuse()
@@ -456,11 +470,11 @@ def handler_for(house, i):
                 return self.reply(doc)
             if path == "/upgrade" and (q.get("upgrade") != ["check"] or len(q) != 1):
                 return self.refuse()
-            if path == "/upgrade" and self.updating() != "silent":
-                with house.lock:
-                    return self.reply(house.upgrade_check(i))
             if self.while_updating(path):
                 return
+            if path == "/upgrade":
+                with house.lock:
+                    return self.reply(house.upgrade_check(i))
             if path in ("/Status", "/SyncStatus"):
                 doc = self.held(q, lambda: house.status_doc(i) if path == "/Status" else house.sync_doc(i))
                 if not self.while_updating(path):
@@ -524,23 +538,20 @@ def main():
     self_master = "--self-master" in args
     firmware = "--firmware" in args
     showcase = "--showcase" in args
-    progress = "--no-progress" not in args
-    slow = "--slow" in args
+    quick = "--quick" in args
     rest = [a for a in args if not a.startswith("--")]
     if len(rest) != 1:
-        sys.exit("usage: household.py ADDRESS [--refuse=N] [--self-master] [--firmware] [--no-progress]\n"
-                 "                    [--slow] [--showcase]\n"
+        sys.exit("usage: household.py ADDRESS [--refuse=N] [--self-master] [--firmware] [--quick]\n"
+                 "                    [--showcase]\n"
                  "  ADDRESS        the address the phone reaches this machine on\n"
                  "  --refuse=N     /AddSlave silently leaves player N (0-2) out\n"
                  "  --self-master  a primary also names itself in <master> (API 2.2 example)\n"
                  "  --firmware     Studio offers an update, started by upgrade=this once\n"
-                 "  --no-progress  the check does not say inProgress while downloading\n"
-                 "  --slow         phases three times as long; silence drops connections\n"
+                 "  --quick        the update's phases take a fifth of the measured time\n"
                  "  --showcase     invented albums, stations, inputs and a queue, for screenshots")
     house = House(rest[0], refused, self_master, showcase)
     house.offered = firmware
-    house.progress = progress
-    house.slow = slow
+    house.quick = quick
     servers = []
     for i, port in enumerate(PORTS):
         server = ThreadingHTTPServer((rest[0], port), handler_for(house, i))

@@ -342,6 +342,51 @@ are shown as the player reports them.
     WebView requirements, no qt5embedwidget link.
 12. A separate result review before the PR (release-relevant).
 
+### End states (added after the update on the NAD, 2026-11-25)
+
+The NAD showed that Swell kept an offer the player no longer made
+(evidence.md). The tests had used a player that answered the check at once
+after the return, which no measurement supported. Rules:
+
+- An offer holds only while the player runs the firmware it was checked on.
+  When `/SyncStatus` names other firmware, the offer is gone, whoever
+  updated the player, until a check says otherwise.
+- "Updated to <version>" gives way to a later offer.
+- The firmware tests, the QML runtime test and `household.py --firmware`
+  follow the update as measured on the NAD. What was not measured is named
+  as invented where it is used.
+
+What Settings and the Home notice show, and whether a start is possible:
+
+| State | Settings text | Start button | Home notice | Notice opens the dialog |
+| --- | --- | --- | --- | --- |
+| Nothing on offer, checked | "No update found." | no | hidden | — |
+| Offer (no record) | "Firmware %1 is available." | yes | "Update available" | yes, while online |
+| Checking (fresh check for a start) | "Starting update" | no | "Starting update" | no |
+| Refused (nothing sent) | "The update was not started." | while still on offer | "The update was not started." | while still on offer |
+| Starting | "Starting update" | no | "Starting update" | no |
+| Installing | "The player is updating. …" | no | "Updating firmware" | no |
+| Restarting | "Restarting" | no | "Restarting" | no |
+| Updated (Done) | "Updated to %1" | no | hidden | — |
+| Updated, then a later offer | "Firmware %1 is available." | yes | "Update available" | yes |
+| Not started / Not finished | "The update did not … Restart Swell …" | no | the same text | no |
+| Updating, started elsewhere | "The player is updating. …" | no | "Updating firmware" while an offer is known | no (offline) |
+| Back on other firmware, check silent | as Done, or "No update found." | no | hidden | — |
+
+Limit: a check answered just before the first `/SyncStatus` after the
+return is taken as checked on the old firmware, and its offer is dropped
+until the next check. This errs towards not offering.
+
+13. Tests: the measured NAD update end to end (`theMeasuredNadUpdate`,
+    including Stage2 with its child elements and `version="1.97"`, which is
+    not the firmware); an update from elsewhere drops the offer
+    (`anUpdateFromElsewhereDropsTheOffer`); in the QML runtime test, no
+    start button and no notice after Updated, while the check does not
+    answer and after it says nothing is on offer, and both back with a later
+    offer (`upgradeEndState`).
+14. A separate result review of this addition, with the end states as an
+    explicit question.
+
 ## Out of scope
 
 - Retrying or aborting an update from Swell itself (starting it: see the
