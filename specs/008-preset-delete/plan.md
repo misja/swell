@@ -1,41 +1,46 @@
-# Plan — 008 deleting a preset
+# Plan — 008 presets: a page, deleting and adding
 
 ## Changes
 
 - `bluos/client.{h,cpp}`:
-  - `presetsPrid` (the version of the list as read) and `presetsCurrent`
-    (`/Status` reports no newer one), NOTIFY `presetsVersionChanged`.
-  - `Q_INVOKABLE deletePreset(int id, const QString &prid)`:
-    - refuses with `presetDeleteRefused(bool presetsChanged)` when the
-      player is not online, or the version differs or is not current;
-    - otherwise one `fetch("/SetPreset", "id=N")`. A reply that is a
-      `<presets>` document without the id is success; anything else is
-      `commandFailed("/SetPreset", …)`.
+  - `presetsPrid` and `presetsCurrent`, NOTIFY `presetsVersionChanged`;
+  - `deletePreset(id, prid)` and `presetDeleteRefused(bool)`.
+- `bluos/browsemodel.cpp`: `preset` in `knownAction`.
+- `qml/pages/PresetTile.qml`: the shared tile, a `GridItem` with no menu.
+- `qml/pages/PresetsPage.qml`:
+  - a scrolling `SilicaGridView` of tiles, each with Delete;
+  - a page `RemorsePopup` that records the player, the id and
+    `presetsPrid`;
+  - a `ViewPlaceholder`.
 - `qml/pages/HomePage.qml`:
-  - the preset `Flow` becomes a `SilicaGridView` of `GridItem`s, with the
-    same cells and a `ContextMenu` with Delete;
-  - a page `RemorsePopup` records the player, the id and the `prid`, and
-    checks that the player is still current before the call.
-- `translations/`: the new strings, in Dutch too.
+  - a play-only row: the first 8 or 6 presets by id, in a page-wide,
+    non-interactive grid;
+  - the pull-down menu, from the top: About, Players, Settings, Presets,
+    Browse;
+  - the empty text points to Browse.
+- `qml/pages/BrowsePage.qml`: "Add preset" (`_actionText`) and "Added to
+  presets" (`onActionDone`).
+- `qml/harbour-swell.qml`: the Presets page keeps the mini-player and
+  goes back to Home for Now Playing, like Browse.
+- `translations/`: the new strings, Dutch complete.
 
 ## Tests
 
-- `tests/client/fakeplayer.h`: no change. A `handle("/SetPreset", …)` in
-  the test plays the player, as in the capture (list without the id, `prid`
-  + 1, gaps kept).
-- New suite `tests/presets`:
-  - success, with a gap kept;
-  - a refusal on a changed list, and on a list not read yet;
-  - a refusal when offline;
-  - the failure replies: HTTP error, no answer, `<error>`, id still
-    listed. These are invented and marked as such;
-  - two deletes in quick succession, by send time (`SendLog`, now shared).
-- `tests/qmlruntime` is unchanged: `presets` and `presetsFollowThePlayer`
-  still pass. The page's checks (a cancelled remorse, a player switched,
-  the disabled items) are left to the device check.
+- `tests/presets`, against a double that follows the capture and the add
+  measurement:
+  - delete: success with a gap kept, the refusals (a changed list, a list
+    not read yet, offline), the failures (HTTP error, no answer,
+    `<error>`, the id still listed; invented and marked so), two deletes
+    by send time;
+  - add through `runAction`: the first free slot, then a duplicate.
+- `tests/browse`: a station as the NAD sent it offers `preset`. Its
+  `actionURL` passes `splitPlayerPath` unchanged (`%21`, `%2520`).
+- `tests/qml` compiles the new pages. `tests/qmlruntime` is unchanged.
+- The pages themselves are checked on the device (spec, End states).
 
 ## Validation
 
-`make check` in the aarch64 target, the Harbour validator on aarch64 and
-armv7hl, a separate result review, then a device check on the NAD with a
-throwaway preset.
+- `make check` in the aarch64 target.
+- The Harbour validator on aarch64 and armv7hl.
+- A separate result review.
+- The device check on the NAD, with throwaway presets.

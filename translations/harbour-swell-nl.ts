@@ -76,7 +76,7 @@
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="45"/>
-        <location filename="../qml/pages/BrowsePage.qml" line="299"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="303"/>
         <source>Shuffle</source>
         <translation>Willekeurig</translation>
     </message>
@@ -101,34 +101,44 @@
         <translation>Verwijderen uit favorieten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="63"/>
-        <location filename="../qml/pages/BrowsePage.qml" line="223"/>
-        <location filename="../qml/pages/BrowsePage.qml" line="385"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="57"/>
+        <source>Add preset</source>
+        <translation>Preset toevoegen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/BrowsePage.qml" line="65"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="227"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="389"/>
         <source>Favorites</source>
         <translation>Favorieten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="119"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="121"/>
         <source>Added to favorites</source>
         <translation>Toegevoegd aan favorieten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="119"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="121"/>
         <source>Removed from favorites</source>
         <translation>Verwijderd uit favorieten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="125"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="127"/>
+        <source>Added to presets</source>
+        <translation>Toegevoegd aan presets</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/BrowsePage.qml" line="129"/>
         <source>Added to the queue</source>
         <translation>Toegevoegd aan de wachtrij</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="155"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="159"/>
         <source>Browse</source>
         <translation>Bladeren</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/pages/BrowsePage.qml" line="211"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="215"/>
         <source>%n tracks</source>
         <translation>
             <numerusform>%n nummer</numerusform>
@@ -136,52 +146,52 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="291"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="295"/>
         <source>Search</source>
         <translation>Zoeken</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="304"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="308"/>
         <source>Play album</source>
         <translation>Album afspelen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="304"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="308"/>
         <source>Play all</source>
         <translation>Alles afspelen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="427"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="431"/>
         <source>Player not reachable</source>
         <translation>Speler niet bereikbaar</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="430"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="434"/>
         <source>The player could not load this</source>
         <translation>De speler kon dit niet laden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="432"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="436"/>
         <source>No favorites yet</source>
         <translation>Nog geen favorieten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="432"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="436"/>
         <source>Nothing here</source>
         <translation>Hier staat niets</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="436"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="440"/>
         <source>Swell will try again when it is back</source>
         <translation>Swell probeert het opnieuw zodra hij terug is</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="440"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="444"/>
         <source>No usable answer from the player</source>
         <translation>Geen bruikbaar antwoord van de speler</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="443"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="447"/>
         <source>Long press an album, artist or track and choose Add to favorites</source>
         <translation>Houd een album, artiest of nummer ingedrukt en kies Toevoegen aan favorieten</translation>
     </message>
@@ -197,120 +207,100 @@
 <context>
     <name>HomePage</name>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="114"/>
+        <location filename="../qml/pages/HomePage.qml" line="83"/>
         <source>About</source>
         <translation>Over</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="118"/>
+        <location filename="../qml/pages/HomePage.qml" line="91"/>
         <source>Settings</source>
         <translation>Instellingen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="123"/>
+        <location filename="../qml/pages/HomePage.qml" line="87"/>
         <source>Players</source>
         <translation>Spelers</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="127"/>
+        <location filename="../qml/pages/HomePage.qml" line="101"/>
         <source>Browse</source>
         <translation>Bladeren</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="141"/>
+        <location filename="../qml/pages/HomePage.qml" line="115"/>
         <source>No player chosen. Pull down to pick one.</source>
         <translation>Geen speler gekozen. Trek omlaag om er een te kiezen.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="150"/>
+        <location filename="../qml/pages/HomePage.qml" line="124"/>
         <source>Not a BluOS player</source>
         <translation>Geen BluOS-speler</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="40"/>
-        <location filename="../qml/pages/HomePage.qml" line="49"/>
-        <location filename="../qml/pages/HomePage.qml" line="153"/>
+        <location filename="../qml/pages/HomePage.qml" line="44"/>
+        <location filename="../qml/pages/HomePage.qml" line="53"/>
+        <location filename="../qml/pages/HomePage.qml" line="127"/>
         <source>Updating firmware</source>
         <translation>Firmware wordt bijgewerkt</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="155"/>
+        <location filename="../qml/pages/HomePage.qml" line="129"/>
         <source>Not reachable. Pull down to pick another player.</source>
         <translation>Niet bereikbaar. Trek omlaag om een andere speler te kiezen.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="147"/>
+        <location filename="../qml/pages/HomePage.qml" line="121"/>
         <source>Connecting</source>
         <translation>Verbinden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="38"/>
+        <location filename="../qml/pages/HomePage.qml" line="42"/>
         <source>Starting update</source>
         <translation>Update wordt gestart</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="42"/>
+        <location filename="../qml/pages/HomePage.qml" line="46"/>
         <source>Restarting</source>
         <translation>Speler herstart</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="44"/>
+        <location filename="../qml/pages/HomePage.qml" line="48"/>
         <source>The update did not start. Restart Swell to try again.</source>
         <translation>De update is niet gestart. Herstart Swell om het opnieuw te proberen.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="46"/>
+        <location filename="../qml/pages/HomePage.qml" line="50"/>
         <source>The update did not finish. Restart Swell to try again.</source>
         <translation>De update is niet afgerond. Herstart Swell om het opnieuw te proberen.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="51"/>
+        <location filename="../qml/pages/HomePage.qml" line="55"/>
         <source>The update was not started.</source>
         <translation>De update is niet gestart.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="60"/>
-        <source>Deleting %1</source>
-        <translation>%1 wordt verwijderd</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/HomePage.qml" line="62"/>
-        <location filename="../qml/pages/HomePage.qml" line="103"/>
-        <source>Nothing was deleted.</source>
-        <translation>Er is niets verwijderd.</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/HomePage.qml" line="102"/>
-        <source>The presets have changed. Nothing was deleted.</source>
-        <translation>De presets zijn gewijzigd. Er is niets verwijderd.</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/HomePage.qml" line="159"/>
+        <location filename="../qml/pages/HomePage.qml" line="96"/>
+        <location filename="../qml/pages/HomePage.qml" line="133"/>
         <source>Presets</source>
         <translation>Presets</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="193"/>
-        <source>Delete</source>
-        <translation>Verwijderen</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/HomePage.qml" line="254"/>
-        <source>No presets on this player. Presets are made in the BluOS Controller app.</source>
-        <translation>Geen presets op deze speler. Presets maak je in de BluOS Controller-app.</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/HomePage.qml" line="51"/>
+        <location filename="../qml/pages/HomePage.qml" line="55"/>
         <source>Update available</source>
         <translation>Update beschikbaar</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="295"/>
+        <location filename="../qml/pages/HomePage.qml" line="168"/>
+        <source>No presets on this player. Add them from Browse.</source>
+        <translation>Geen presets op deze speler. Voeg ze toe vanuit Bladeren.</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="209"/>
         <source>Firmware %1</source>
         <translation>Firmware %1</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="301"/>
+        <location filename="../qml/pages/HomePage.qml" line="215"/>
         <source>Inputs</source>
         <translation>Ingangen</translation>
     </message>
@@ -522,6 +512,45 @@
         <location filename="../qml/pages/PlayersPage.qml" line="207"/>
         <source>Pull down to search again or to add a player by address</source>
         <translation>Trek omlaag om opnieuw te zoeken of een speler op adres toe te voegen</translation>
+    </message>
+</context>
+<context>
+    <name>PresetsPage</name>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="25"/>
+        <source>Deleting %1</source>
+        <translation>%1 wordt verwijderd</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="27"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="37"/>
+        <source>Nothing was deleted.</source>
+        <translation>Er is niets verwijderd.</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="36"/>
+        <source>The presets have changed. Nothing was deleted.</source>
+        <translation>De presets zijn gewijzigd. Er is niets verwijderd.</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="55"/>
+        <source>Presets</source>
+        <translation>Presets</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="67"/>
+        <source>Delete</source>
+        <translation>Verwijderen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="79"/>
+        <source>No presets</source>
+        <translation>Geen presets</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="80"/>
+        <source>Add them from Browse: long press a station and choose Add preset</source>
+        <translation>Voeg ze toe vanuit Bladeren: houd een zender ingedrukt en kies Preset toevoegen</translation>
     </message>
 </context>
 <context>

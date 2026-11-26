@@ -1,4 +1,4 @@
-# Evidence — 008 deleting a preset
+# Evidence — 008 presets: a page, deleting and adding
 
 Raw files (reads, the capture, screenshots) stay local; they hold the
 player's address and the maintainer's stations.
