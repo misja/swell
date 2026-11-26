@@ -571,18 +571,18 @@ void TstGroup::aStatusChangesOnlyItsOwnRow()
     QSignalSpy changed(model.data(), &QAbstractItemModel::dataChanged);
     m_house->setStatus(1, "<state>play</state><title1>Song</title1>");
     QTRY_COMPARE(model->data(model->index(row), PlayerModel::NowPlayingRole).toString(), QStringLiteral("Song"));
-    // Group roles may still change for others (a late /SyncStatus); what
-    // carries the status is this row alone.
-    int statusChanges = 0;
+    // Other players may still report their own changes (a late
+    // /SyncStatus), and group roles span every row; a change that carries a
+    // status is one row, and this player's row has one.
+    bool own = false;
     for (const QList<QVariant> &args : changed) {
         const QVector<int> roles = args.at(2).value<QVector<int>>();
         if (!roles.isEmpty() && !roles.contains(PlayerModel::NowPlayingRole))
             continue;
-        ++statusChanges;
-        QCOMPARE(args.at(0).toModelIndex().row(), row);
-        QCOMPARE(args.at(1).toModelIndex().row(), row);
+        QCOMPARE(args.at(0).toModelIndex().row(), args.at(1).toModelIndex().row());
+        own = own || args.at(0).toModelIndex().row() == row;
     }
-    QVERIFY(statusChanges > 0);
+    QVERIFY(own);
 }
 
 void TstGroup::perPlayerShowsTheCurrentGroup()
