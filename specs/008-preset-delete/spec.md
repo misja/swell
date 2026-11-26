@@ -78,9 +78,14 @@ stay local; `evidence.md` has the record.
      has (`Player.presetsCurrent`). So deletes go one at a time.
    - `__silica_menu_height` is a private Silica property, used only for the
      grid's height. It is named in the PR as an own solution.
-   - The menu takes the grid's width (ContextMenu.qml:96). That width runs
-     from the left page margin to one spacing past the right one. To be
-     looked at on the device.
+   - The grid is as wide as the page and starts its tiles at the page
+     margin (`leftMargin`). A tile's menu then spans the page like any
+     Silica context menu: it takes the view's width (ContextMenu.qml:96).
+     GridView counts its columns on its whole width (Qt 5.6.3,
+     qquickgridview.cpp:451). The margin is less than a column, so there
+     are 4 or 6 columns as before. On the device the first version's menu
+     ran from the margin to past it on the right (2026-11-26); hence this
+     change.
 2. **Remorse.** A `RemorsePopup` on the page, not on the delegate. Every
    presets change recreates the delegates, and a remorse on a delegate
    would go with it.

@@ -165,9 +165,13 @@ Page {
             SilicaGridView {
                 id: presetGrid
                 readonly property int _rows: Math.ceil(count / page._columns)
-                x: Theme.horizontalPageMargin
-                // The last column's spacing lies outside the page margin.
-                width: parent.width - 2 * Theme.horizontalPageMargin + Theme.paddingMedium
+                // As wide as the page, so a tile's menu spans the page like any
+                // Silica context menu (ContextMenu.qml:96 takes the view's
+                // width); the tiles start at the page margin. GridView counts
+                // its columns on its whole width (qquickgridview.cpp:451); the
+                // margin is less than a column, so they stay page._columns.
+                width: parent.width
+                leftMargin: Theme.horizontalPageMargin
                 // Without the spacing below the last row, as the Flow had.
                 height: Math.max(0, _rows * cellHeight - Theme.paddingMedium) + __silica_menu_height
                 interactive: false
