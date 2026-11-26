@@ -246,6 +246,21 @@ BrowseItem readBrowseItem(QXmlStreamReader &reader, const QString &category)
 
 } // namespace
 
+QString parseError(const QByteArray &xml)
+{
+    QXmlStreamReader reader(xml);
+    if (!reader.readNextStartElement() || reader.name() != QLatin1String("error"))
+        return QString();
+    QString message;
+    while (reader.readNextStartElement()) {
+        if (reader.name() == QLatin1String("message"))
+            message = reader.readElementText();
+        else
+            reader.skipCurrentElement();
+    }
+    return message.isEmpty() ? QStringLiteral("error") : message;
+}
+
 Browse parseBrowse(const QByteArray &xml)
 {
     Browse b;
@@ -255,15 +270,8 @@ Browse parseBrowse(const QByteArray &xml)
         return b;
     }
     if (reader.name() == QLatin1String("error")) {
-        QString message;
-        while (reader.readNextStartElement()) {
-            if (reader.name() == QLatin1String("message"))
-                message = reader.readElementText();
-            else
-                reader.skipCurrentElement();
-        }
         b.playerError = true;
-        b.error = message.isEmpty() ? QStringLiteral("error") : message;
+        b.error = parseError(xml);
         return b;
     }
     if (reader.name() != QLatin1String("browse")) {

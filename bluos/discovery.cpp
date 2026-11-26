@@ -98,7 +98,6 @@ void Discovery::handleDatagram(const QByteArray &datagram)
             const int port = record.txt.value(QStringLiteral("port")).toInt(&ok);
             player.port = ok && port > 0 && port < 65536 ? port : 11000;
             player.name = record.txt.value(QStringLiteral("name"));
-            player.model = record.txt.value(QStringLiteral("model"));
             player.classId = record.classId;
             // A multi-zone player may announce several player classes on
             // different ports under one node id; each is its own player.

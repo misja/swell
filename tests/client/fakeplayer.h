@@ -101,7 +101,9 @@ public:
 
     // A matching request on this path is read and logged, then the
     // connection is closed without a byte (drop), or kept open without an
-    // answer (hold), like a player that begins rewriting its flash.
+    // answer (hold). Both forms are invented: in the measured NAD update
+    // (specs/006-firmware/evidence.md) checks went unanswered, but how each
+    // connection ended was not recorded.
     enum Silence { Drop, Hold };
     void silenceIf(const QString &path, const std::function<bool(const QUrlQuery &)> &matches,
                    Silence how)
@@ -143,6 +145,8 @@ private:
     {
         while (QTcpSocket *socket = m_server.nextPendingConnection()) {
             connect(socket, &QTcpSocket::disconnected, socket, &QObject::deleteLater);
+            // A socket that goes away mid-header leaves no buffer behind.
+            connect(socket, &QTcpSocket::disconnected, this, [this, socket]() { m_buffers.remove(socket); });
             connect(socket, &QTcpSocket::readyRead, this, [this, socket]() { read(socket); });
         }
     }

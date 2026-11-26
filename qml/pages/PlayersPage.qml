@@ -38,10 +38,10 @@ Page {
 
     function _availabilityText(availability) {
         switch (availability) {
-        case 0: return qsTr("Connecting")
-        case 2: return qsTr("Not reachable")
-        case 3: return qsTr("Not a BluOS player")
-        case 4: return qsTr("Updating firmware")
+        case Player.Connecting: return qsTr("Connecting")
+        case Player.Offline: return qsTr("Not reachable")
+        case Player.NotAPlayer: return qsTr("Not a BluOS player")
+        case Player.Updating: return qsTr("Updating firmware")
         }
         return ""
     }
@@ -119,7 +119,7 @@ Page {
                         font.pixelSize: Theme.fontSizeExtraSmall
                         truncationMode: TruncationMode.Fade
                         color: item.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
-                        text: model.availability === 1
+                        text: model.availability === Player.Online
                               ? (model.nowPlaying !== "" ? model.nowPlaying : model.modelName)
                               : page._availabilityText(model.availability)
                     }

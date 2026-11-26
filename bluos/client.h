@@ -313,7 +313,6 @@ private:
     void processRemovals();
     void adoptQueueId(int position);
     void finishRemoval();
-    static QString errorIn(const QByteArray &body);
     void fetchPresets();
 
     void pollStatus();

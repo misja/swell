@@ -7,10 +7,37 @@
 
 #include "client.h"
 #include "fakeplayer.h"
+#include "timing.h"
 
 using namespace BluOS;
 
 namespace {
+
+// Records when the client hands each request to the network, by path. The
+// interval rule is about sending; arrival at the fake player also includes
+// transit, which varies (measured under valgrind on the device: 30 to 163 ms
+// for the same kind of request, misja/swell#53).
+class SendLog : public QNetworkAccessManager
+{
+public:
+    using QNetworkAccessManager::QNetworkAccessManager;
+
+    QList<qint64> sentAt(const QString &path) const { return m_sent.value(path); }
+
+protected:
+    QNetworkReply *createRequest(Operation op, const QNetworkRequest &request,
+                                 QIODevice *data) override
+    {
+        if (!m_clock.isValid())
+            m_clock.start();
+        m_sent[request.url().path()].append(m_clock.elapsed());
+        return QNetworkAccessManager::createRequest(op, request, data);
+    }
+
+private:
+    QElapsedTimer m_clock;
+    QHash<QString, QList<qint64>> m_sent;
+};
 
 QByteArray status(const QByteArray &etag, const QByteArray &title, const QByteArray &syncStat = "s1",
                   const QByteArray &state = "play")
@@ -29,17 +56,6 @@ QByteArray syncStatus(const QByteArray &name, const QByteArray &syncStat = "s1",
             + "\" mute=\"0\" id=\"127.0.0.1:11000\">" + inner + "</SyncStatus>";
 }
 
-Client::Timing fast()
-{
-    Client::Timing t;
-    t.pollTimeoutSecs = 1;
-    t.deadlineGraceMs = 2000;
-    t.commandTimeoutMs = 3000;
-    t.minIntervalMs = 300;
-    t.backoffInitialMs = 200;
-    t.backoffMaxMs = 400;
-    return t;
-}
 
 } // namespace
 
@@ -81,16 +97,16 @@ private slots:
     void statusPollingOffStopsStatusReads();
 
 private:
-    void startClient(const Client::Timing &timing = fast());
+    void startClient(const Client::Timing &timing = fastTiming());
 
-    QNetworkAccessManager *m_nam = nullptr;
+    SendLog *m_nam = nullptr;
     FakePlayer *m_player = nullptr;
     Client *m_client = nullptr;
 };
 
 void TstClient::init()
 {
-    m_nam = new QNetworkAccessManager(this);
+    m_nam = new SendLog(this);
     m_player = new FakePlayer(this);
     QVERIFY(m_player->listen());
     m_player->rememberPort();
@@ -140,7 +156,7 @@ void TstClient::firstContactThenLongPoll()
 // system media controls hide on it.
 void TstClient::clearedQueueLeavesNoTitle()
 {
-    Client::Timing t = fast();
+    Client::Timing t = fastTiming();
     t.pollTimeoutSecs = 10;
     startClient(t);
     QTRY_VERIFY(m_player->requests(QStringLiteral("/Status")).size() >= 2);  // now held
@@ -157,7 +173,7 @@ void TstClient::clearedQueueLeavesNoTitle()
 
 void TstClient::longPollReturnsOnChange()
 {
-    Client::Timing t = fast();
+    Client::Timing t = fastTiming();
     t.pollTimeoutSecs = 10;
     startClient(t);
     QTRY_VERIFY(m_player->requests(QStringLiteral("/Status")).size() >= 2);  // now held
@@ -188,7 +204,7 @@ void TstClient::oneSecondRule()
 {
     // A server that changes on every poll must still not be asked more often
     // than once per interval; this uses the real 1000 ms interval.
-    Client::Timing t = fast();
+    Client::Timing t = fastTiming();
     t.minIntervalMs = 1000;
     startClient(t);
     QTimer churn;
@@ -199,10 +215,11 @@ void TstClient::oneSecondRule()
     churn.start(50);
     QTRY_VERIFY_WITH_TIMEOUT(m_player->requests(QStringLiteral("/Status")).size() >= 4, 10000);
     churn.stop();
-    const auto polls = m_player->requests(QStringLiteral("/Status"));
+    const QList<qint64> polls = m_nam->sentAt(QStringLiteral("/Status"));
+    QVERIFY(polls.size() >= 4);
     for (int i = 1; i < polls.size(); ++i) {
-        const qint64 gap = polls.at(i).atMs - polls.at(i - 1).atMs;
-        QVERIFY2(gap >= 990, qPrintable(QStringLiteral("gap %1 ms").arg(gap)));
+        const qint64 gap = polls.at(i) - polls.at(i - 1);
+        QVERIFY2(gap >= t.minIntervalMs - 1, qPrintable(QStringLiteral("gap %1 ms").arg(gap)));
     }
 }
 
@@ -231,12 +248,14 @@ void TstClient::volumeBurstCollapses()
     for (int level : { 10, 20, 30, 40, 50 })
         m_client->setVolume(level);
     QTRY_COMPARE(m_player->requests(QStringLiteral("/Volume")).size(), 2);
-    QTest::qWait(fast().minIntervalMs * 2);
+    QTest::qWait(fastTiming().minIntervalMs * 2);
     const auto sent = m_player->requests(QStringLiteral("/Volume"));
     QCOMPARE(sent.size(), 2);
     QCOMPARE(sent.at(0).query.queryItemValue(QStringLiteral("level")), QStringLiteral("10"));
     QCOMPARE(sent.at(1).query.queryItemValue(QStringLiteral("level")), QStringLiteral("50"));
-    QVERIFY(sent.at(1).atMs - sent.at(0).atMs >= fast().minIntervalMs - 10);
+    const QList<qint64> times = m_nam->sentAt(QStringLiteral("/Volume"));
+    QCOMPARE(times.size(), 2);
+    QVERIFY(times.at(1) - times.at(0) >= fastTiming().minIntervalMs - 1);   // whole milliseconds
 }
 
 void TstClient::fixedVolumeIgnoresSetVolume()
@@ -523,9 +542,11 @@ void TstClient::muteIsNotLostInAVolumeBurst()
     QCOMPARE(queries.first(), QStringLiteral("level=10"));
     QVERIFY(queries.contains(QStringLiteral("mute=1")));
     QVERIFY(queries.contains(QStringLiteral("level=20")));
-    // Still one request per resource per interval.
-    for (int i = 1; i < sent.size(); ++i)
-        QVERIFY(sent.at(i).atMs - sent.at(i - 1).atMs >= fast().minIntervalMs - 10);
+    // Still one request per resource per interval, as sent.
+    const QList<qint64> times = m_nam->sentAt(QStringLiteral("/Volume"));
+    QCOMPARE(times.size(), 3);
+    for (int i = 1; i < times.size(); ++i)
+        QVERIFY(times.at(i) - times.at(i - 1) >= fastTiming().minIntervalMs - 1);   // whole milliseconds
 }
 
 void TstClient::presetsRefetchIsBounded()
@@ -535,7 +556,7 @@ void TstClient::presetsRefetchIsBounded()
     m_player->serve(QStringLiteral("/Presets"), "<presets prid=\"999\"><preset id=\"1\" name=\"A\"/></presets>");
     startClient();
     QTRY_COMPARE(m_client->presets().size(), 1);
-    QTest::qWait(fast().minIntervalMs * 5);
+    QTest::qWait(fastTiming().minIntervalMs * 5);
     QCOMPARE(m_player->requests(QStringLiteral("/Presets")).size(), 1);
 }
 

@@ -9,6 +9,7 @@
 
 #include "client.h"
 #include "fakeplayer.h"
+#include "timing.h"
 #include "playermodel.h"
 
 using namespace BluOS;
@@ -74,13 +75,8 @@ QByteArray deletion(char node)
 
 Client::Timing fast()
 {
-    Client::Timing t;
-    t.pollTimeoutSecs = 1;
-    t.deadlineGraceMs = 2000;
+    Client::Timing t = fastTiming();
     t.commandTimeoutMs = 2000;
-    t.minIntervalMs = 300;
-    t.backoffInitialMs = 200;
-    t.backoffMaxMs = 400;
     t.upgradeTimeoutMs = 2000;
     return t;
 }

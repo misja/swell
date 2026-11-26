@@ -13,6 +13,13 @@
 
 namespace BluOS {
 
+// The most placeholder rows Swell makes from a length a player announces:
+// a queue's length, or the counts of a library list's letters together.
+// Swell's own bound against a wrong or hostile number, not a limit of the API
+// or of a player. Announced rows beyond it are not made; rows a reply
+// actually brings are kept.
+constexpr int MaxListLength = 100000;
+
 // /Status (section 2.1).
 struct Status {
     bool ok = false;
@@ -245,6 +252,9 @@ SyncStatus parseSyncStatus(const QByteArray &xml);
 GroupAdd parseGroupAdd(const QByteArray &xml);
 VolumeReply parseVolume(const QByteArray &xml);
 UpgradeCheck parseUpgradeCheck(const QByteArray &xml);
+// The message of an <error> document (API 7.1), "error" when it has none;
+// empty when the document is not an <error>.
+QString parseError(const QByteArray &xml);
 
 } // namespace BluOS
 

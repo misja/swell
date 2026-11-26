@@ -43,6 +43,8 @@ private slots:
     void aLetterListFindsItsFavourites();
     void noFavouritesWhenTheLibraryHasNone();
     void songListsGetNoFavourites();
+    void whatBrowsePageAsks();
+    void aReportedCountIsBounded();
 
 private:
     void startClient();
@@ -103,6 +105,9 @@ void TstBrowse::init()
         if (key == QLatin1String("Index"))
             return "<browse type=\"sections\">" + section("A", "3") + section("B", "60") + section("C", "2")
                     + section("D", "4") + "</browse>";
+        if (key == QLatin1String("HugeIndex"))
+            return "<browse type=\"sections\">" + section("A", "2000000000") + section("B", "2000000000")
+                    + "</browse>";
         if (key == QLatin1String("BadIndex"))
             return "<browse type=\"sections\">" + section("A", "3") + section("B", "many") + "</browse>";
         if (key == QLatin1String("Lib:S:A"))
@@ -219,6 +224,13 @@ void TstBrowse::rootKeepsLinksAndOffersFavourites()
              QStringLiteral("LocalMusic:MG/LocalMusic-Favourites"));
     QCOMPARE(m->data(m->index(0), BrowseModel::Text2Role).toString(), QStringLiteral("Library"));
     QCOMPARE(m->data(m->index(0), BrowseModel::DurationRole).toInt(), -1);   // no NaN:NaN
+    // Every role has a value, as on any other row (BrowsePage reads actions.length).
+    const QVariant actions = m->data(m->index(0), BrowseModel::ActionsRole);
+    QCOMPARE(actions.userType(), qMetaTypeId<QList<BrowseAction>>());
+    QVERIFY(actions.value<QList<BrowseAction>>().isEmpty());
+    for (int role : { BrowseModel::TextRole, BrowseModel::PlayUrlRole, BrowseModel::AutoplayUrlRole,
+                      BrowseModel::SectionRole })
+        QVERIFY2(m->data(m->index(0), role).isValid(), qPrintable(QString::number(role)));
     QCOMPARE(text(m.data(), 1), QStringLiteral("Playlists"));
     QCOMPARE(text(m.data(), 2), QStringLiteral("Library"));
     QCOMPARE(text(m.data(), 3), QStringLiteral("Radio"));
@@ -247,10 +259,12 @@ void TstBrowse::sectionsHaveTheirLengthAtOnce()
     QCOMPARE(m->rowCount(), 3 + 60 + 2 + 4);
     QTest::qWait(200);
     QCOMPARE(browseKeys(), QStringList({ QStringLiteral("Index") }));   // nothing read until shown
-    // A row of B is a placeholder with its letter; showing it reads B only.
-    QCOMPARE(m->sectionAt(64), QStringLiteral("C"));   // without reading C
+    // A row's letter is known without reading it (the ListView asks for the
+    // sections beside the rows it shows).
+    QCOMPARE(m->data(m->index(64), BrowseModel::SectionRole).toString(), QStringLiteral("C"));
     QTest::qWait(100);
-    QVERIFY(!browseKeys().contains(QStringLiteral("Lib:S:C")));
+    QCOMPARE(browseKeys(), QStringList({ QStringLiteral("Index") }));
+    // A row of B is a placeholder with its letter; showing it reads B only.
     QCOMPARE(m->data(m->index(3), BrowseModel::SectionRole).toString(), QStringLiteral("B"));
     QCOMPARE(m->data(m->index(3), BrowseModel::LoadedRole).toBool(), false);
     QTRY_COMPARE(text(m.data(), 3), QStringLiteral("B album 0"));
@@ -514,6 +528,7 @@ void TstBrowse::aLetterListFindsItsFavourites()
     QVERIFY(m->sectioned());
     QTRY_COMPARE(m->favouritesKey(),
                  QStringLiteral("LocalMusic:Album/%2Flibrary%2Fv1%2FAlbums%3Fcategory=FAVOURITES&service=LocalMusic"));
+    QVERIFY(m->favouriteAlbums());
     // Only after the Library menu offered Favourites.
     const QStringList keys = browseKeys();
     QVERIFY(keys.indexOf(QStringLiteral("LocalMusic:")) < keys.indexOf(QStringLiteral("LocalMusic:MG/LocalMusic-Favourites")));
@@ -542,6 +557,29 @@ void TstBrowse::songListsGetNoFavourites()
     QVERIFY(!browseKeys().contains(QStringLiteral("LocalMusic:")));
     QCOMPARE(m->favouritesKey(), QString());
 }
+
+void TstBrowse::whatBrowsePageAsks()
+{
+    BrowseModel m;
+    for (const char *type : { "add-now", "addAll-now", "add-shuffle" })
+        QVERIFY2(m.startsPlayback(QLatin1String(type)), type);
+    for (const char *type : { "add-next", "add-last", "addAll-next", "addAll-last", "favourite-add",
+                              "favourite-delete" })
+        QVERIFY2(!m.startsPlayback(QLatin1String(type)), type);
+    QVERIFY(!m.favouritesList());
+    m.setKey(QString::fromLatin1(BrowseModel::FavouritesKey));
+    QVERIFY(m.favouritesList());
+    QVERIFY(!m.favouriteAlbums());
+}
+
+void TstBrowse::aReportedCountIsBounded()
+{
+    startClient();
+    QScopedPointer<BrowseModel> m(open(QStringLiteral("HugeIndex")));
+    QTRY_VERIFY(m->ready());
+    QCOMPARE(m->rowCount(), MaxListLength);   // for all letters together
+}
+
 
 QTEST_GUILESS_MAIN(TstBrowse)
 #include "tst_browse.moc"

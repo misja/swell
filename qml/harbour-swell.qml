@@ -7,10 +7,29 @@ import "pages"
 ApplicationWindow {
     id: app
 
-    // Shows a short message about a failed command (see HomePage).
+    // Shows a short message, as about a failed command.
     function notify(text) {
         notice.text = text
         noticeTimer.restart()
+    }
+
+    // "m:ss" for a duration or position in seconds; empty when unknown.
+    function formatTime(secs) {
+        if (!(secs >= 0)) {
+            return ""
+        }
+        var m = Math.floor(secs / 60)
+        var s = secs % 60
+        return m + ":" + (s < 10 ? "0" : "") + s
+    }
+
+    // A command to the current player failed, from whichever page sent it.
+    Connections {
+        target: players.current
+        onCommandFailed: {
+            console.warn("Command", path, "failed:", error)
+            app.notify(qsTr("The player did not accept that."))
+        }
     }
 
     ConfigurationValue {

@@ -214,6 +214,11 @@ private:
         });
         p->handle(QStringLiteral("/Volume"), [this, i](const QUrlQuery &q) -> QByteArray {
             QList<int> targets{ i };
+            // Invented, not measured: with tell_slaves every member gets the
+            // same absolute level and mute. The API does not say whether
+            // members keep their differences. groupAndMemberMute,
+            // groupMuteWithMembersNotShown and theCurrentGroupIsAProperty rely
+            // on the members' mute (an open risk).
             if (q.queryItemValue(QStringLiteral("tell_slaves")) == QLatin1String("1"))
                 targets += membersOf(i);
             for (int t : targets) {

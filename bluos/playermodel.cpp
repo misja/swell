@@ -194,11 +194,6 @@ QString PlayerModel::idAt(int row) const
     return row >= 0 && row < m_entries.size() ? m_entries.at(row).client->id() : QString();
 }
 
-QString PlayerModel::nameAt(int row) const
-{
-    return data(index(row), NameRole).toString();
-}
-
 Client *PlayerModel::client(const QString &id) const
 {
     const int row = indexOf(id);
@@ -283,7 +278,13 @@ void PlayerModel::applyPolicy()
         // Firmware checks for the current player only (spec 006).
         e.client->setUpgradeChecks(current);
         e.client->start();
-    }    // Running or not changes which members count (groupMuted).
+    }
+    // The current player and which clients run decide who can join and
+    // who follows whom on every row; running or not also changes which
+    // members count (groupMuted).
+    if (!m_entries.isEmpty())
+        emit dataChanged(index(0), index(m_entries.size() - 1),
+                         { LeaderIdRole, MemberNamesRole, MemberIdsRole, CanJoinRole });
     updateCurrentGroup();
 }
 
@@ -462,7 +463,7 @@ Client *PlayerModel::createClient(const QString &host, int port)
     Client *c = newClient(&m_nam, host, port, this);
     c->setTiming(m_timing);
     connect(c, &Client::availabilityChanged, this, &PlayerModel::clientChanged);
-    connect(c, &Client::statusChanged, this, &PlayerModel::clientChanged);
+    connect(c, &Client::statusChanged, this, [this, c]() { onClientStatus(c); });
     connect(c, &Client::syncStatusChanged, this, &PlayerModel::clientChanged);
     connect(c, &Client::upgradeStartChanged, this, &PlayerModel::onUpgradeStartChanged);
     return c;
@@ -521,12 +522,32 @@ void PlayerModel::removeAt(int row)
     emit countChanged();
 }
 
+int PlayerModel::rowOf(const Client *client) const
+{
+    for (int i = 0; i < m_entries.size(); ++i)
+        if (m_entries.at(i).client == client)
+            return i;
+    return -1;
+}
+
+void PlayerModel::onClientStatus(Client *client)
+{
+    const int row = rowOf(client);
+    if (row >= 0)
+        emit dataChanged(index(row), index(row), { PlayingRole, NowPlayingRole });
+}
+
 void PlayerModel::clientChanged()
 {
     Client *c = qobject_cast<Client *>(sender());
-    // A player's group shows on other rows too (a primary's member names).
+    const int row = rowOf(c);
+    if (row >= 0)
+        emit dataChanged(index(row), index(row));
+    // A player's group, name and reachability show on other rows too: a
+    // primary's members, a secondary's leader, who can join the current one.
     if (!m_entries.isEmpty())
-        emit dataChanged(index(0), index(m_entries.size() - 1));
+        emit dataChanged(index(0), index(m_entries.size() - 1),
+                         { LeaderIdRole, MemberNamesRole, MemberIdsRole, CanJoinRole });
     if (c && c->id() == m_currentId && c->groupRole() == Client::Secondary) {
         // The current player joined a group elsewhere: follow its primary.
         const QString leader = memberId(c->primaryId());

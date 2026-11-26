@@ -12,15 +12,6 @@ Page {
 
     allowedOrientations: Orientation.All
 
-    function _formatTime(secs) {
-        if (secs < 0) {
-            return ""
-        }
-        var m = Math.floor(secs / 60)
-        var s = secs % 60
-        return m + ":" + (s < 10 ? "0" : "") + s
-    }
-
     // The Binding leaves the old player's queue active: switch it off.
     on_QueueChanged: {
         if (_previousQueue) {
@@ -53,10 +44,6 @@ Page {
 
     Connections {
         target: page._player
-        onCommandFailed: {
-            console.warn("Command", path, "failed:", error)
-            app.notify(qsTr("The player did not accept that."))
-        }
         onRemoveRefused: app.notify(qsTr("The queue has changed. Nothing was removed."))
     }
 
@@ -187,7 +174,7 @@ Page {
                 }
                 font.pixelSize: Theme.fontSizeExtraSmall
                 color: item.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
-                text: model.loaded ? page._formatTime(model.duration) : ""
+                text: model.loaded ? app.formatTime(model.duration) : ""
             }
 
             Component {
