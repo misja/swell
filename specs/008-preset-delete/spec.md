@@ -71,20 +71,29 @@ stay local; `evidence.md` has the record.
    - It has `interactive: false`; its height is `contentHeight` plus
      `__silica_menu_height`, so an open menu fits inside the page.
    - Tile size, spacing and the 4 or 6 columns stay as now.
-   - A long press opens a `ContextMenu` with one item, Delete. It is
-     enabled while the player is online.
+   - A long press opens a `ContextMenu` with one item, Delete. The tiles
+     are disabled while the player is offline.
+   - Delete is enabled only while no remorse runs (`RemorsePopup.active`,
+     RemorsePopup.qml:44) and while the list shown is the one the player
+     has (`Player.presetsCurrent`). So deletes go one at a time.
+   - `__silica_menu_height` is a private Silica property, used only for the
+     grid's height. It is named in the PR as an own solution.
+   - The menu takes the grid's width (ContextMenu.qml:96). That width runs
+     from the left page margin to one spacing past the right one. To be
+     looked at on the device.
 2. **Remorse.** A `RemorsePopup` on the page, not on the delegate. Every
    presets change recreates the delegates, and a remorse on a delegate
    would go with it.
    - When Delete is chosen, Swell records the player, the preset id and
-     the status `prid`.
+     the version of the list shown (`Player.presetsPrid`). The status
+     `prid` can be newer before `/Presets` has answered.
 3. **Sending.** When the remorse runs out, Swell calls
    `Client::deletePreset(id, prid)`. It sends nothing, and reports a
    refusal, when:
    - the player is no longer current, or is gone (checked on the page);
    - the player is not online;
-   - its status `prid` (the `Player.prid` property) differs from the
-     recorded one.
+   - the recorded version is not the list's version now, or `/Status`
+     reports a newer one (`Player.presetsCurrent` is false).
    Otherwise it sends `/SetPreset?id=N` through `fetch()`, paced by path
    like `runAction` and `/Delete`. It does not go through the merging gate.
 4. **Outcome.** The reply decides the outcome. Success is a `<presets>`
@@ -105,7 +114,19 @@ stay local; `evidence.md` has the record.
 | Player offline when the remorse runs out | nothing | "Nothing was deleted." (not online) |
 | No answer, HTTP error, `<error>`, or the id still listed | one request | the failure notice; list unchanged until a `prid` change |
 | Player offline when the menu would open | — | tiles disabled, as now |
+| Delete chosen again while a remorse runs | — | Delete disabled |
+| `/Status` reports a newer list that `/Presets` has not given yet | — | Delete disabled; if chosen just before, the change refusal |
 | A group secondary is current (primary unknown) | as any player | not measured; no special handling |
+
+Tests (`tests/presets`) cover the client side of each state. The page's
+side is checked on the device:
+- a cancelled remorse;
+- another player made current during the remorse;
+- the disabled tiles and menu item;
+- the layout and the menu.
+
+The pages are not instantiated in the tests. A timeout is covered with
+an HTTP error row and a no-answer row.
 
 ## Out of scope
 

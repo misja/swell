@@ -402,13 +402,24 @@ void Client::playPreset(int id)
     send(QStringLiteral("/Preset"), encoded(query));
 }
 
+void Client::updatePresetsVersion()
+{
+    // A player without prid in /Status: the list as read is all there is.
+    const bool current = m_presetsFetched && (m_status.prid.isEmpty() || m_status.prid == m_presetsPrid);
+    if (current == m_presetsCurrent && m_presetsPrid == m_notifiedPresetsPrid)
+        return;
+    m_presetsCurrent = current;
+    m_notifiedPresetsPrid = m_presetsPrid;
+    emit presetsVersionChanged();
+}
+
 void Client::deletePreset(int id, const QString &prid)
 {
     if (!online()) {
         emit presetDeleteRefused(false);
         return;
     }
-    if (prid != m_status.prid) {
+    if (prid != m_presetsPrid || !m_presetsCurrent) {
         emit presetDeleteRefused(true);
         return;
     }
@@ -483,6 +494,7 @@ void Client::fetchPresets()
         // Remember the status prid this answer belongs to, so a /Presets prid
         // that never matches cannot cause endless refetching.
         m_presetsPrid = requestedFor.isEmpty() ? presets.prid : requestedFor;
+        updatePresetsVersion();
         // The status may have moved on while this was in flight.
         if (m_status.ok && m_status.prid != requestedFor)
             fetchPresets();
@@ -784,6 +796,7 @@ void Client::onStatusReply(QNetworkReply *reply)
     const bool changed = !m_status.ok || status.etag != m_status.etag;
     // secs is outside the etag; keep the position fresh either way.
     m_status = status;
+    updatePresetsVersion();
     m_statusAge.start();
     if (m_status.isPlaying())
         m_positionTimer.start();

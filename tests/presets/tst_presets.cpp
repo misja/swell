@@ -8,6 +8,7 @@
 
 #include "client.h"
 #include "fakeplayer.h"
+#include "sendlog.h"
 #include "timing.h"
 
 using namespace BluOS;
@@ -22,18 +23,20 @@ private slots:
 
     void deleteSendsOneRequestAndTheListFollows();
     void aChangedListIsNotTouched();
+    void aListNotYetReadIsNotTouched();
     void offlineSendsNothing();
     void twoDeletesAreTwoRequests();
     void aFailedDeleteIsReported_data();
     void aFailedDeleteIsReported();
 
 private:
+    QByteArray list() const;
     void publish();
     void startClient();
     QList<int> ids() const;
     int deletes() const;
 
-    QNetworkAccessManager *m_nam = nullptr;
+    SendLog *m_nam = nullptr;
     FakePlayer *m_player = nullptr;
     Client *m_client = nullptr;
     QMap<int, QByteArray> m_presets;   // id -> name
@@ -42,7 +45,7 @@ private:
 
 void TstPresets::init()
 {
-    m_nam = new QNetworkAccessManager(this);
+    m_nam = new SendLog(this);
     m_player = new FakePlayer(this);
     QVERIFY(m_player->listen());
     m_presets.clear();
@@ -51,21 +54,19 @@ void TstPresets::init()
     m_prid = 4;
     m_player->serve(QStringLiteral("/SyncStatus"),
                     "<SyncStatus etag=\"s\" syncStat=\"s\" name=\"Den\" volume=\"20\"/>");
-    // As captured: the delete answers the whole list, prid one higher.
+    // As captured: a delete (only an id) answers the whole list without it,
+    // prid one higher. In the capture /Status showed the new prid about 40 ms
+    // after the reply; here it is published before. Other /SetPreset forms
+    // (an add) were not measured for this double and are answered with the
+    // list unchanged (invented).
     m_player->handle(QStringLiteral("/SetPreset"), [this](const QUrlQuery &q) {
-        const QStringList keys = { QStringLiteral("id") };
-        QStringList given;
-        for (const auto &item : q.queryItems())
-            given << item.first;
-        if (given == keys)
+        if (q.queryItems().size() == 1 && q.hasQueryItem(QStringLiteral("id"))) {
+            // An id that is not there: invented, not measured.
             m_presets.remove(q.queryItemValue(QStringLiteral("id")).toInt());
-        ++m_prid;
-        publish();
-        QByteArray xml = "<presets prid=\"" + QByteArray::number(m_prid) + "\">";
-        for (auto it = m_presets.cbegin(); it != m_presets.cend(); ++it)
-            xml += "<preset id=\"" + QByteArray::number(it.key()) + "\" name=\"" + it.value()
-                    + "\" url=\"Invented:" + QByteArray::number(it.key()) + "\"/>";
-        return xml + "</presets>";
+            ++m_prid;
+            publish();
+        }
+        return list();
     });
     publish();
 }
@@ -80,13 +81,18 @@ void TstPresets::cleanup()
     m_nam = nullptr;
 }
 
-void TstPresets::publish()
+QByteArray TstPresets::list() const
 {
     QByteArray xml = "<presets prid=\"" + QByteArray::number(m_prid) + "\">";
     for (auto it = m_presets.cbegin(); it != m_presets.cend(); ++it)
         xml += "<preset id=\"" + QByteArray::number(it.key()) + "\" name=\"" + it.value()
                 + "\" url=\"Invented:" + QByteArray::number(it.key()) + "\"/>";
-    m_player->serve(QStringLiteral("/Presets"), xml + "</presets>");
+    return xml + "</presets>";
+}
+
+void TstPresets::publish()
+{
+    m_player->serve(QStringLiteral("/Presets"), list());
     m_player->setStatus("<status etag=\"p" + QByteArray::number(m_prid) + "\"><state>stop</state><prid>"
                         + QByteArray::number(m_prid) + "</prid><syncStat>s</syncStat></status>");
 }
@@ -118,12 +124,12 @@ void TstPresets::deleteSendsOneRequestAndTheListFollows()
     startClient();
     QSignalSpy failed(m_client, &Client::commandFailed);
     QSignalSpy refused(m_client, &Client::presetDeleteRefused);
-    m_client->deletePreset(7, m_client->prid());
+    m_client->deletePreset(7, m_client->presetsPrid());
     QTRY_COMPARE(deletes(), 1);
     QCOMPARE(m_player->requests(QStringLiteral("/SetPreset")).first().target, QByteArray("/SetPreset?id=7"));
     // The list comes from the prid change; 8 keeps its id (a gap at 7).
     QTRY_COMPARE(ids(), QList<int>({ 1, 2, 3, 8 }));
-    QCOMPARE(m_client->prid(), QStringLiteral("5"));
+    QCOMPARE(m_client->presetsPrid(), QStringLiteral("5"));
     QVERIFY(failed.isEmpty());
     QVERIFY(refused.isEmpty());
 }
@@ -133,12 +139,20 @@ void TstPresets::aChangedListIsNotTouched()
     // Ids are reused: once another controller changed the list, id 7 may be
     // another preset. Nothing is sent.
     startClient();
-    const QString seen = m_client->prid();
+    const QString seen = m_client->presetsPrid();
     m_presets.remove(7);
     m_presets.insert(7, "Someone else's");
     ++m_prid;
     publish();
-    QTRY_COMPARE(m_client->prid(), QString::number(m_prid));
+    // The list refreshes from the prid change.
+    auto replaced = [this]() {
+        for (const Preset &p : m_client->presets())
+            if (p.id == 7 && p.name == QLatin1String("Someone else's"))
+                return true;
+        return false;
+    };
+    QTRY_VERIFY(replaced());
+    QVERIFY(m_client->presetsCurrent());
     QSignalSpy refused(m_client, &Client::presetDeleteRefused);
     m_client->deletePreset(7, seen);
     QCOMPARE(refused.size(), 1);
@@ -147,10 +161,29 @@ void TstPresets::aChangedListIsNotTouched()
     QCOMPARE(deletes(), 0);
 }
 
+void TstPresets::aListNotYetReadIsNotTouched()
+{
+    // /Status already reports a newer list that /Presets has not given yet:
+    // the tiles show the old one, so nothing is sent.
+    startClient();
+    const QString seen = m_client->presetsPrid();
+    m_player->failWith(QStringLiteral("/Presets"), 500);
+    m_presets.insert(7, "Someone else's");
+    ++m_prid;
+    publish();
+    QTRY_VERIFY(!m_client->presetsCurrent());
+    QCOMPARE(m_client->presetsPrid(), seen);
+    QSignalSpy refused(m_client, &Client::presetDeleteRefused);
+    m_client->deletePreset(7, seen);
+    QCOMPARE(refused.size(), 1);
+    QCOMPARE(refused.first().first().toBool(), true);
+    QCOMPARE(deletes(), 0);
+}
+
 void TstPresets::offlineSendsNothing()
 {
     startClient();
-    const QString seen = m_client->prid();
+    const QString seen = m_client->presetsPrid();
     m_client->stop();
     m_player->failWith(QStringLiteral("/Status"), 500);
     m_player->failWith(QStringLiteral("/SyncStatus"), 500);
@@ -167,24 +200,26 @@ void TstPresets::twoDeletesAreTwoRequests()
 {
     // Not merged like a volume burst; paced per path.
     startClient();
-    const QString seen = m_client->prid();
+    const QString seen = m_client->presetsPrid();
     m_client->deletePreset(7, seen);
     m_client->deletePreset(8, seen);
     QTRY_COMPARE(deletes(), 2);
     const auto sent = m_player->requests(QStringLiteral("/SetPreset"));
     QCOMPARE(sent.at(0).target, QByteArray("/SetPreset?id=7"));
     QCOMPARE(sent.at(1).target, QByteArray("/SetPreset?id=8"));
-    QVERIFY(sent.at(1).atMs - sent.at(0).atMs >= fastTiming().minIntervalMs - 50);
+    const QList<qint64> times = m_nam->sentAt(QStringLiteral("/SetPreset"));
+    QVERIFY(times.at(1) - times.at(0) >= fastTiming().minIntervalMs - 1);   // whole milliseconds
     QTRY_COMPARE(ids(), QList<int>({ 1, 2, 3 }));
 }
 
 void TstPresets::aFailedDeleteIsReported_data()
 {
     // Invented: none of these replies was measured (spec 008, "Not measured").
-    QTest::addColumn<int>("http");
+    QTest::addColumn<int>("http");   // -1: no answer within commandTimeoutMs
     QTest::addColumn<QByteArray>("body");
     QTest::addColumn<QString>("error");
     QTest::newRow("http error") << 500 << QByteArray() << QStringLiteral("no answer");
+    QTest::newRow("timeout") << -1 << QByteArray() << QStringLiteral("no answer");
     QTest::newRow("error document") << 0 << QByteArray("<error><message>Nope</message></error>")
                                     << QStringLiteral("Nope");
     QTest::newRow("still listed") << 0
@@ -198,13 +233,15 @@ void TstPresets::aFailedDeleteIsReported()
     QFETCH(QByteArray, body);
     QFETCH(QString, error);
     startClient();
-    if (http)
+    if (http < 0)
+        m_player->delay(QStringLiteral("/SetPreset"), fastTiming().commandTimeoutMs + 2000);
+    else if (http)
         m_player->failWith(QStringLiteral("/SetPreset"), http);
     else
         m_player->handle(QStringLiteral("/SetPreset"), [body](const QUrlQuery &) { return body; });
     QSignalSpy failed(m_client, &Client::commandFailed);
-    m_client->deletePreset(7, m_client->prid());
-    QTRY_COMPARE(failed.size(), 1);
+    m_client->deletePreset(7, m_client->presetsPrid());
+    QTRY_COMPARE_WITH_TIMEOUT(failed.size(), 1, fastTiming().commandTimeoutMs + 2000);
     QCOMPARE(failed.first().at(0).toString(), QStringLiteral("/SetPreset"));
     QCOMPARE(failed.first().at(1).toString(), error);
     QCOMPARE(ids(), QList<int>({ 1, 2, 3, 7, 8 }));

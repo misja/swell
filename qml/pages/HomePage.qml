@@ -56,9 +56,9 @@ Page {
     // player and the presets' version the user saw.
     function _deletePreset(id, name) {
         var player = _player
-        var prid = player.prid
+        var prid = player.presetsPrid
         deleteRemorse.execute(qsTr("Deleting %1").arg(name), function() {
-            if (players.current !== player) {
+            if (!player || players.current !== player) {
                 app.notify(qsTr("Nothing was deleted."))
                 return
             }
@@ -168,7 +168,8 @@ Page {
                 x: Theme.horizontalPageMargin
                 // The last column's spacing lies outside the page margin.
                 width: parent.width - 2 * Theme.horizontalPageMargin + Theme.paddingMedium
-                height: _rows * cellHeight + __silica_menu_height
+                // Without the spacing below the last row, as the Flow had.
+                height: Math.max(0, _rows * cellHeight - Theme.paddingMedium) + __silica_menu_height
                 interactive: false
                 visible: count > 0
                 cellWidth: page._tileSize + Theme.paddingMedium
@@ -191,6 +192,9 @@ Page {
                         ContextMenu {
                             MenuItem {
                                 text: qsTr("Delete")
+                                // One at a time, and only on the list as the
+                                // player has it now.
+                                enabled: !deleteRemorse.active && _player.presetsCurrent
                                 onClicked: page._deletePreset(modelData.id, modelData.name)
                             }
                         }

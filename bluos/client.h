@@ -46,8 +46,10 @@ class Client : public QObject
     Q_PROPERTY(bool canBack READ canBack NOTIFY statusChanged)
     Q_PROPERTY(int duration READ duration NOTIFY statusChanged)
     Q_PROPERTY(int position READ position NOTIFY positionChanged)
-    // The presets' version from /Status; it changes with every edit (spec 008).
-    Q_PROPERTY(QString prid READ prid NOTIFY statusChanged)
+    // The version (prid) of the presets list as read, and whether /Status
+    // still reports that version; prid changes with every edit (spec 008).
+    Q_PROPERTY(QString presetsPrid READ presetsPrid NOTIFY presetsVersionChanged)
+    Q_PROPERTY(bool presetsCurrent READ presetsCurrent NOTIFY presetsVersionChanged)
     Q_PROPERTY(BluOS::QueueModel *queue READ queue CONSTANT)
     Q_PROPERTY(GroupRole groupRole READ groupRole NOTIFY syncStatusChanged)
     Q_PROPERTY(QString groupName READ groupName NOTIFY syncStatusChanged)
@@ -205,7 +207,8 @@ public:
     // As the player lists them; images as given, see resolveImage. Cached per
     // player.
     QList<Preset> presets() const { return m_presets; }
-    QString prid() const { return m_status.prid; }
+    QString presetsPrid() const { return m_presetsPrid; }
+    bool presetsCurrent() const { return m_presetsCurrent; }
     QList<Input> inputs() const { return m_inputs; }
     QueueModel *queue() const { return m_queue; }
 
@@ -242,7 +245,8 @@ public slots:
     void playPreset(int id);
     // Deletes preset id with /SetPreset?id=N, the official app's request
     // (not in the API; spec 008). Only while online and while the presets
-    // are still the version prid the user saw; otherwise
+    // are still the version prid the user saw (presetsPrid when it was
+    // chosen) and /Status reports no newer one; otherwise
     // presetDeleteRefused() and nothing is sent. The list follows from the
     // prid change; a reply that is not the list without id is commandFailed.
     void deletePreset(int id, const QString &prid);
@@ -288,6 +292,7 @@ signals:
     // startUpgrade() sent nothing.
     void upgradeStartRefused();
     void presetsChanged();
+    void presetsVersionChanged();
     void inputsChanged();
     // A command request failed; the poll keeps running.
     void commandFailed(const QString &path, const QString &error);
@@ -326,6 +331,7 @@ private:
     void adoptQueueId(int position);
     void finishRemoval();
     void fetchPresets();
+    void updatePresetsVersion();
 
     void pollStatus();
     void onStatusReply(QNetworkReply *reply);
@@ -384,6 +390,8 @@ private:
     QList<Preset> m_presets;
     QList<Input> m_inputs;
     QString m_presetsPrid;
+    bool m_presetsCurrent = false;
+    QString m_notifiedPresetsPrid;
     bool m_presetsLoading = false;
     bool m_inputsLoading = false;
     QueueModel *m_queue;
