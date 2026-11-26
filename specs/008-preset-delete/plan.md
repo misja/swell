@@ -13,7 +13,8 @@
     `presetsPrid`;
   - a `ViewPlaceholder`.
 - `qml/pages/HomePage.qml`:
-  - a play-only row: the first 8 or 6 presets by id, in a page-wide,
+  - a play-only row: two rows (portrait) or one (landscape) of the first
+    presets by id, columns as in Jolla's Gallery, in a page-wide,
     non-interactive grid;
   - the pull-down menu, from the top: About, Players, Settings, Presets,
     Browse;

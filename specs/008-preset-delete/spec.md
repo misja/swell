@@ -80,9 +80,13 @@ stay local; `evidence.md` has the record.
    guidelines.
 9. Home's row only plays: no menu there. The page is reached only from
    the pull-down menu.
-10. Home shows the first 8 presets in portrait (two rows of 4) and the
-    first 6 in landscape (one row), by id. The page always has all of
-    them.
+10. Home shows two rows of presets in portrait and one in landscape, the
+    first by id. The page always has all of them. The columns follow
+    Jolla's Gallery: `Math.floor(width / Theme.itemSizeHuge)`, with cells
+    of `width / columns` (Sailfish.Gallery ImageGridView.qml in the
+    5.1.0.11 target). So a larger screen gets more columns, not larger
+    tiles. Fixed counts of 4 and 6 were dropped (the maintainer: one
+    device is one resolution).
 11. Home's pull-down menu, from the top: About, Players, Settings,
     Presets, Browse. The items for the current player are nearest the
     content, so they come first when pulling.
@@ -97,7 +101,7 @@ A. **Presets page.** A new page, `PresetsPage.qml`, with all presets of
    - The page's own scrolling `SilicaGridView`, with `anchors.fill:
      parent`, is a standard Silica grid:
      - `GridItem` delegates that fill their cells (GridItem.qml:47–48),
-       4 or 6 columns;
+       columns as in decision 10;
      - a `PageHeader` in `header` ("Presets", with the player's name);
      - a `ViewPlaceholder` when there are none, which says presets are
        added from Browse.
@@ -105,8 +109,8 @@ A. **Presets page.** A new page, `PresetsPage.qml`, with all presets of
      grid's width, which is the page's (ContextMenu.qml:96).
    - The page follows the current player. Its tiles are disabled while
      the player is offline.
-B. **Home.** A row that only plays: the first 8 (portrait) or 6
-   (landscape) presets by id, in a page-wide, non-interactive
+B. **Home.** A row that only plays: two rows (portrait) or one
+   (landscape) of the first presets by id, in a page-wide, non-interactive
    `SilicaGridView`.
    - The tiles have no menu. So nothing opens inside the grid, and the
      grid needs no menu height: it is `rows * cellHeight`.
@@ -194,9 +198,9 @@ D. **Adding.** In Browse, an item whose context menu from the player has
 | A group secondary is current (primary unknown) | as any player | not measured; no special handling |
 | Add preset | the player's `actionURL` | "Added to presets"; the tile appears after the next status |
 | Add while offline, no answer, HTTP error, `<error>` | one request (offline: the request fails) | the failure notice |
-| 8 or fewer presets (portrait; 6 in landscape) | — | Home shows all |
-| More | — | Home shows the first 8 or 6 by id; the page has all |
-| Rotation | — | Home switches between 8 and 6 |
+| No more presets than Home's rows hold | — | Home shows all |
+| More | — | Home shows the first by id; the page has all |
+| Rotation | — | Home switches between two rows and one |
 | No presets | — | the page's placeholder; Home's text points to Browse |
 
 Tests (`tests/presets`, `tests/browse`) cover the client and model side:
@@ -233,7 +237,7 @@ The pages are not instantiated in the tests. The device check covers:
    has an action of type `preset`. It sends that `actionURL` unchanged,
    once. The double answers as measured: the first free slot, gaps filled,
    duplicates allowed.
-7. Home shows at most 8 (portrait) or 6 (landscape) presets, by id, and
+7. Home shows at most two rows (portrait) or one (landscape) of presets, by id, and
    has no menu. The page shows all presets and deletes as in 1–4. The
    pull-down order is as in decision 11. These are checked on the device.
 8. `tst_qmlruntime` `presets` and `presetsFollowThePlayer` still pass.

@@ -13,13 +13,15 @@ Page {
     readonly property QtObject _player: players.current
     // Read once per change: each read of _player.inputs makes a new array.
     readonly property var _inputs: _player ? _player.inputs : []
-    readonly property int _columns: isLandscape ? 6 : 4
-    // The quick row (spec 008): the first 8 presets by id in portrait, 6 in
-    // landscape. All of them are on the Presets page.
+    // Columns as in Jolla's Gallery (Sailfish.Gallery ImageGridView.qml):
+    // as many as fit at Theme.itemSizeHuge, which scales per device.
+    readonly property int _columns: Math.max(1, Math.floor(width / Theme.itemSizeHuge))
+    // The quick row (spec 008): two rows in portrait, one in landscape, of
+    // the first presets by id. All of them are on the Presets page.
     readonly property var _quickPresets: {
         var list = _player ? _player.presets.slice(0) : []
         list.sort(function(a, b) { return a.id - b.id })
-        return list.slice(0, isLandscape ? 6 : 8)
+        return list.slice(0, _columns * (isLandscape ? 1 : 2))
     }
 
     allowedOrientations: Orientation.All

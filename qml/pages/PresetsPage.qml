@@ -12,7 +12,8 @@ Page {
 
     readonly property QtObject _player: players.current
     readonly property var _inputs: _player ? _player.inputs : []
-    readonly property int _columns: isLandscape ? 6 : 4
+    // As in Jolla's Gallery (Sailfish.Gallery ImageGridView.qml).
+    readonly property int _columns: Math.max(1, Math.floor(width / Theme.itemSizeHuge))
 
     allowedOrientations: Orientation.All
 
