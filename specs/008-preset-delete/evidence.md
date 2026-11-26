@@ -47,6 +47,40 @@ app read `/ui/presets` again. In the screenshots the add flow is: source,
 name, preset number (it warns "will overwrite the current Preset 7"), then
 volume. The maintainer reports no confirmation before a delete.
 
+## 2026-11-26, adding (NAD C 379, 4.18.26)
+
+Reads by the assistant, read-only:
+- `/Browse?key=RadioParadise%3A&withContextMenuItems=1`: each station
+  carries a context menu item `type="preset"`, "Add preset", with
+  `actionURL="/SetPreset?image=…&name=…&service=RadioParadise&url=…"`. It has
+  no `id`.
+- A TuneIn station list has the same item on each station (177 in one
+  list).
+- Not seen on the second level of Airable, which is a menu, or on the
+  capture inputs (`/RadioBrowse?service=Capture`).
+- API v1.7 §7.1 documents `actionURL` ("may be invoked directly") but not
+  the type `preset`.
+- `/Services` declares "Add preset" as `/SetPreset` with `name`, `url` and
+  an optional `image`. One form takes them from browse items (`text`,
+  `URL`), one from now playing (`title1`, `streamUrl`).
+
+Writes by the assistant, with the maintainer's approval, on throwaway
+Radio Paradise stations. The maintainer's presets 1–9 were not touched.
+Each request was sent as the player's `actionURL`, or as `/SetPreset?id=N`:
+
+| Request | Reply | Presets after | `prid` |
+| --- | --- | --- | --- |
+| add The Main Mix (no `id`) | 200, the whole list | 1–10 | 13 |
+| add Mellow Mix (no `id`) | 200, the whole list | 1–11 | 14 |
+| `/SetPreset?id=10` | 200, the whole list | 1–9, 11 | 15 |
+| add RockIt! (no `id`) | 200, the whole list | 1–11 (RockIt! in 10) | 16 |
+| add Mellow Mix again | 200, the whole list | 1–12 (11 and 12 both Mellow Mix) | 17 |
+| delete 12, 11, 10 | 200 each | 1–9, as before | 18–20 |
+
+So without an `id`, the player takes the first free slot, and a gap is
+filled. It does not refuse a station that is already a preset. `/Status`
+reported every `prid`.
+
 ## Reviews
 
 - Scope, a separate agent, 2026-11-26: request changes. Resolved in the

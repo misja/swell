@@ -1,7 +1,10 @@
-# Feature specification — 008 deleting a preset
+# Feature specification — 008 presets: a page, deleting and adding
 
-Status: draft 2026-11-26. Scope reviewed by a separate agent (request
-changes, resolved in misja/swell#55).
+Status: draft 2026-11-26.
+- Deleting: scope reviewed (request changes, resolved in misja/swell#55),
+  built and reviewed (approve with changes, resolved).
+- Widened the same day by the maintainer: a Presets page, a limited row on
+  Home, and adding. The new scope needs its own review.
 
 ## Owner and linked issue
 
@@ -13,8 +16,10 @@ changes, resolved in misja/swell#55).
 
 ## Problem
 
-Deleting a preset is one of the things that still need the official BluOS
-app. Swell should delete a preset of the current player from Home.
+Managing presets still needs the official BluOS app. Swell should show
+all presets of the current player on a page of their own, and delete and
+add them there. Home keeps a short row, so that many presets do not fill
+it.
 
 ## Facts
 
@@ -62,11 +67,48 @@ stay local; `evidence.md` has the record.
    `/SetPreset?id=N`.
 2. No exception to spec 004: Swell does not read `/ui/ContextMenu`.
 3. A remorse comes before the delete, although the official app has none.
-4. Only the current player, from Home.
+4. Only the current player.
+5. The Presets page, the short row on Home and adding belong to 008.
+6. Adding goes to the first free slot; Swell does not ask for a slot.
+7. Moving presets (`/Presets/edit`) comes later; the per-preset volume is
+   left out.
 
 ## Scope
 
-1. **Menu.** The preset tiles on Home become Silica `GridItem`s in a
+### Pages
+
+A. **Presets page.** A new page (`PresetsPage.qml`) with all presets of
+   the current player.
+   - The page's own `SilicaGridView` scrolls. It has a `PageHeader`
+     ("Presets", with the player's name), and its tiles are the same
+     `GridItem`s as Home's, each with a menu and Delete (below).
+   - An empty list gets a `ViewPlaceholder` that says how to add a
+     preset: from Browse.
+   - It is opened from Home's pull-down menu ("Presets"), next to Browse
+     and Players. Home's pull-down already holds its navigation.
+B. **Home** shows one row of presets (4 portrait, 6 landscape), the
+   ones with the lowest ids.
+   - When there are more, the section header is followed by a way to the
+     page.
+   - The tiles and their menu are those of the page. The remorse is on
+     each page.
+   - Open for the review: the standard Silica way to say "more on another
+     page" under a grid. The pull-down item is always there.
+C. **Adding.** In Browse, an item whose context menu from the player has
+   an action of type `preset` offers "Add as preset".
+   - Swell runs the player's `actionURL` as given, as with the other
+     actions (`runAction`). Without an `id`, the player takes the first
+     free slot (measured).
+   - The outcome is `actionDone("preset")`, which gives the notice
+     "Added to the presets". The list follows from the `prid` change.
+   - Not offered where the player does not send the action (Airable menus,
+     inputs). A station that is already a preset can be added again, as
+     the player allows (measured).
+
+### Deleting
+
+
+1. **Menu.** The preset tiles on the page and on Home become Silica `GridItem`s in a
    `SilicaGridView`.
    - A standard Silica grid (the maintainer, 2026-11-26: standard
      implementations, by the design guidelines):
@@ -126,6 +168,10 @@ stay local; `evidence.md` has the record.
 | Delete chosen again while a remorse runs | — | Delete disabled |
 | `/Status` reports a newer list that `/Presets` has not given yet | — | Delete disabled; if chosen just before, the change refusal |
 | A group secondary is current (primary unknown) | as any player | not measured; no special handling |
+| Add as preset | the player's `actionURL` | the notice; the tile appears after the next status |
+| Add fails (no answer, HTTP error, `<error>`) | one request | the failure notice |
+| More presets than one row | — | Home: the first row and the way to the page |
+| No presets | — | page: placeholder with how to add; Home: the existing text, now pointing to Browse |
 
 Tests (`tests/presets`) cover the client side of each state. The page's
 side is checked on the device:
@@ -139,8 +185,10 @@ an HTTP error row and a no-answer row.
 
 ## Out of scope
 
-- Adding, editing or reordering presets.
-- Deleting on players other than the current one.
+- Moving (reordering) presets, editing a preset, the per-preset volume.
+- Choosing a slot when adding.
+- Adding inputs as presets; the player sends no action for them.
+- Presets of players other than the current one.
 
 ## Acceptance criteria
 
@@ -152,7 +200,13 @@ an HTTP error row and a no-answer row.
    per-path interval apart.
 5. The double follows the capture: the reply carries the list, `prid` rises
    by one, and gaps stay. Unmeasured behaviour is marked invented.
-6. `tst_qmlruntime` `presets` and `presetsFollowThePlayer` still pass.
+6. "Add as preset" is offered exactly on browse items whose context menu
+   has an action of type `preset`. It sends that `actionURL` unchanged,
+   once. The double answers as measured: the first free slot, gaps filled,
+   duplicates allowed.
+7. Home shows at most one row and the way to the page; the page shows
+   all presets. Both delete as in 1–4.
+8. `tst_qmlruntime` `presets` and `presetsFollowThePlayer` still pass.
    `make check` and the Harbour validator pass. Dutch is complete.
-7. Device check on the NAD with a throwaway preset (the maintainer's
-   approval).
+9. Device check on the NAD with throwaway presets (the maintainer's
+   approval): add from Browse, the page, the Home row, delete.
