@@ -60,7 +60,50 @@ Item {
     // HomePage and PlayerSettingsPage: firmware (spec 006).
     function firmware() {
         return [_player.upgradeAvailable, _player.upgradeVersion, _player.upgradeChecked,
-                _player.firmwareVersion, String(_player.upgradePage()), typeof _player.availability].join(" ")
+                _player.firmwareVersion, _player.upgradePhase === Player.NoUpgrade, _player.upgradeStarted,
+                typeof _player.availability].join(" ")
+    }
+    // UpgradeDialog.canAccept (copied from it) for the player it was opened
+    // for: the current one, or the one held by holdPlayer().
+    property QtObject _held
+    function holdPlayer() {
+        _held = _player
+        return ""
+    }
+    function upgradeCanAccept(version) {
+        var player = _held !== null ? _held : _player
+        return String(player !== null && player === players.current && player.canStartUpgrade
+                      && player.upgradeVersion === version)
+    }
+    // UpgradeDialog.onAccepted, then the start button's visible and enabled
+    // (copied from PlayerSettingsPage.qml; keep both in step).
+    function startUpgrade(version) {
+        _player.startUpgrade(version)
+        return ""
+    }
+    function upgradeButton() {
+        var visible = _player.upgradeAvailable && _player.availability !== Player.Updating
+                && !_player.upgradeStarted && _player.upgradePhase !== Player.UpgradeChecking
+        return visible + " " + _player.canStartUpgrade
+    }
+    // HomePage's update notice (copied from HomePage.qml, updateNotice
+    // visible and enabled; keep both in step): visible, and whether it opens
+    // the dialog.
+    function upgradeNotice() {
+        var visible = _player.upgradeAvailable || _player.upgradeStarted
+                || _player.upgradePhase === Player.UpgradeChecking
+        var enabled = _player.canStartUpgrade
+        return visible + " " + enabled
+    }
+    function upgradePhase() {
+        switch (_player.upgradePhase) {
+        case Player.NoUpgrade: return "none"
+        case Player.UpgradeChecking: return "checking"
+        case Player.UpgradeStarting: return "starting"
+        case Player.UpgradeInstalling: return "installing"
+        case Player.UpgradeDone: return "done"
+        }
+        return String(_player.upgradePhase)
     }
 
     // NowPlayingPage and PlayersPage: group values (spec 005).

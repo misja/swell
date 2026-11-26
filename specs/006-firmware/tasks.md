@@ -17,3 +17,24 @@
 - [x] Separate result review (approve with changes); findings resolved (evidence.md).
 - [x] Separate review of the changes after the device check (direct update page, "Start update", the polling fix).
 - [ ] PR.
+
+## Revision 2026-11-25: Swell starts the update
+
+- [x] Finding: the player's update page cannot start the update on 4.18.18 (spec, revision facts).
+- [x] The maintainer: Swell starts the update itself, strictly once (2026-11-25).
+- [x] Draft spec revision and plan.
+- [x] Scope/design review by a separate agent (approve with changes); findings applied (evidence.md).
+- [x] The maintainer: remove the WebView; show the phases; reuse existing strings (2026-11-25).
+- [x] The maintainer: one-shot socket for `this` (2026-11-25).
+- [x] The maintainer: UI texts and the dialog (2026-11-25).
+- [x] Issue: misja/swell#50.
+- [x] Tests, library, app; Dutch translations; make check passes.
+- [x] Builds (aarch64, armv7hl), validator, evidence.md.
+- [x] Separate result review (approve with changes, then approve); findings resolved.
+- [x] Rehearsal on the device against household.py (evidence.md).
+- [x] Device check: the update to 4.18.26 on the NAD (evidence.md); the stale offer found there is fixed.
+- [x] End states after the update on the NAD: rule, state table, tests replaying the measured update, demo player on the measured timeline.
+- [x] Separate result review of the end states (approve with changes); findings resolved.
+- [x] PR: misja/swell#51.
+- [x] General code review (separate agent): one start condition, `canStartUpgrade`; the fixed-group secondary is told (the maintainer agreed, 2026-11-25). Other findings: misja/swell#53.
+- [x] Separate review of `canStartUpgrade` (approve with changes); findings resolved.

@@ -197,82 +197,103 @@
 <context>
     <name>HomePage</name>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="54"/>
+        <location filename="../qml/pages/HomePage.qml" line="81"/>
         <source>The player did not accept that.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="64"/>
+        <location filename="../qml/pages/HomePage.qml" line="91"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="68"/>
+        <location filename="../qml/pages/HomePage.qml" line="95"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="73"/>
+        <location filename="../qml/pages/HomePage.qml" line="100"/>
         <source>Players</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="77"/>
+        <location filename="../qml/pages/HomePage.qml" line="104"/>
         <source>Browse</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="91"/>
+        <location filename="../qml/pages/HomePage.qml" line="118"/>
         <source>No player chosen. Pull down to pick one.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="100"/>
+        <location filename="../qml/pages/HomePage.qml" line="127"/>
         <source>Not a BluOS player</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="103"/>
+        <location filename="../qml/pages/HomePage.qml" line="35"/>
+        <location filename="../qml/pages/HomePage.qml" line="130"/>
         <source>Updating firmware</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="105"/>
+        <location filename="../qml/pages/HomePage.qml" line="132"/>
         <source>Not reachable. Pull down to pick another player.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="97"/>
+        <location filename="../qml/pages/HomePage.qml" line="124"/>
         <source>Connecting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="109"/>
+        <location filename="../qml/pages/HomePage.qml" line="33"/>
+        <source>Starting update</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="37"/>
+        <source>Restarting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="39"/>
+        <source>The update did not start. Restart Swell to try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="41"/>
+        <source>The update did not finish. Restart Swell to try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="43"/>
+        <source>The update was not started.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="136"/>
         <source>Presets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="184"/>
+        <location filename="../qml/pages/HomePage.qml" line="211"/>
         <source>No presets on this player. Presets are made in the BluOS Controller app.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="200"/>
-        <source>Firmware update</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/HomePage.qml" line="212"/>
+        <location filename="../qml/pages/HomePage.qml" line="43"/>
         <source>Update available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="221"/>
+        <location filename="../qml/pages/HomePage.qml" line="253"/>
         <source>Firmware %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="227"/>
+        <location filename="../qml/pages/HomePage.qml" line="259"/>
         <source>Inputs</source>
         <translation type="unfinished"></translation>
     </message>
@@ -332,58 +353,84 @@
 <context>
     <name>PlayerSettingsPage</name>
     <message>
-        <location filename="../qml/pages/PlayerSettingsPage.qml" line="32"/>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="41"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayerSettingsPage.qml" line="35"/>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="44"/>
         <source>Player</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayerSettingsPage.qml" line="38"/>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="47"/>
         <source>Model</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayerSettingsPage.qml" line="43"/>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="52"/>
         <source>Firmware version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayerSettingsPage.qml" line="48"/>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="57"/>
         <source>Firmware</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayerSettingsPage.qml" line="57"/>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="71"/>
+        <source>Starting update</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="73"/>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="84"/>
         <source>The player is updating. This takes a few minutes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayerSettingsPage.qml" line="61"/>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="75"/>
+        <source>Restarting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="77"/>
+        <source>Updated to %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="79"/>
+        <source>The update did not start. Restart Swell to try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="81"/>
+        <source>The update did not finish. Restart Swell to try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="87"/>
+        <source>The update was not started.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="91"/>
         <source>Firmware %1 is available.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayerSettingsPage.qml" line="62"/>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="92"/>
         <source>A firmware update is available.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayerSettingsPage.qml" line="65"/>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="95"/>
         <source>No update found.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayerSettingsPage.qml" line="78"/>
+        <location filename="../qml/pages/PlayerSettingsPage.qml" line="108"/>
         <source>Start update</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/PlayerSettingsPage.qml" line="83"/>
-        <source>Firmware update</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -536,6 +583,24 @@
     <message>
         <location filename="../qml/pages/SearchPage.qml" line="41"/>
         <source>Artist, album, track or station</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>UpgradeDialog</name>
+    <message>
+        <location filename="../qml/pages/UpgradeDialog.qml" line="27"/>
+        <source>Update to firmware %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/UpgradeDialog.qml" line="28"/>
+        <source>Firmware update</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/UpgradeDialog.qml" line="36"/>
+        <source>The player restarts and cannot be used for a few minutes. The update cannot be stopped. Keep the player switched on.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

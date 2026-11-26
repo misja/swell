@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #include "client.h"
+#include "oneshot.h"
 
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -37,6 +38,12 @@ Client::Client(QNetworkAccessManager *nam, const QString &host, int port, QObjec
     m_positionTimer.setInterval(1000);
     connect(&m_positionTimer, &QTimer::timeout, this, &Client::positionChanged);
     connect(&m_upgradeTimer, &QTimer::timeout, this, &Client::checkUpgrade);
+    // canStartUpgrade follows everything it is made of; start, stop and the
+    // polling switches call updateCanStartUpgrade themselves.
+    connect(this, &Client::availabilityChanged, this, &Client::updateCanStartUpgrade);
+    connect(this, &Client::syncStatusChanged, this, &Client::updateCanStartUpgrade);
+    connect(this, &Client::upgradeChanged, this, &Client::updateCanStartUpgrade);
+    connect(this, &Client::upgradeStartChanged, this, &Client::updateCanStartUpgrade);
 }
 
 Client::~Client()
@@ -97,6 +104,7 @@ void Client::start()
         m_upgradeTimer.start(m_timing.upgradeCheckIntervalMs);
     }
     watchSyncStatus();
+    updateCanStartUpgrade();
 }
 
 void Client::setStatusPolling(bool polling)
@@ -104,6 +112,7 @@ void Client::setStatusPolling(bool polling)
     if (m_statusPolling == polling)
         return;
     m_statusPolling = polling;
+    updateCanStartUpgrade();
     if (!m_running)
         return;
     if (polling) {
@@ -111,6 +120,7 @@ void Client::setStatusPolling(bool polling)
         m_upgradeTimer.start(m_timing.upgradeCheckIntervalMs);
         checkUpgrade();
     } else {
+        cancelUpgradeStart();
         m_pollTimer.stop();
         m_upgradeTimer.stop();
         if (m_statusReply)
@@ -120,7 +130,9 @@ void Client::setStatusPolling(bool polling)
 
 void Client::stop()
 {
+    cancelUpgradeStart();
     m_running = false;
+    updateCanStartUpgrade();
     m_pollTimer.stop();
     m_positionTimer.stop();
     m_upgradeTimer.stop();
@@ -804,7 +816,28 @@ void Client::onSyncStatusReply(QNetworkReply *reply)
 
 void Client::takeSyncStatus(const SyncStatus &sync)
 {
+    // upgradeAvailable() hides the offer on a fixed-group secondary.
+    const bool secondaryChanged = sync.fixedSecondary != m_sync.fixedSecondary;
     m_sync = sync;
+    // Another firmware version: the update that was started has run.
+    if (m_upgradeStarted && !sync.version.isEmpty() && !m_upgradeStartFirmware.isEmpty()
+            && sync.version != m_upgradeStartFirmware) {
+        m_upgradeStarted = false;
+        m_upgradeEvidence = false;
+        setUpgradePhase(UpgradeDone);
+    }
+    // An offer checked on other firmware is gone, whoever updated the player,
+    // until a check says otherwise. Just back, a NAD does not answer the
+    // check for some 20 s (spec 006, evidence.md).
+    const bool otherFirmware = !sync.version.isEmpty() && !m_upgradeCheckedOn.isEmpty()
+            && sync.version != m_upgradeCheckedOn;
+    if (m_upgrade.available && otherFirmware) {
+        m_upgrade.available = false;
+        m_upgrade.version.clear();
+        emit upgradeChanged();
+    } else if (secondaryChanged && m_upgrade.available) {
+        emit upgradeChanged();
+    }
     emit syncStatusChanged();
 }
 
@@ -897,10 +930,37 @@ void Client::probeSyncStatus(Availability otherwise)
         if (!m_running || !m_statusPolling)
             return;
         const SyncStatus sync = parseSyncStatus(body);
-        if (sync.upgradeStage > 0 || (m_availability == Updating && !sync.ok)) {
+        const bool newFirmware = m_upgradeStarted && sync.ok && !sync.version.isEmpty()
+                && !m_upgradeStartFirmware.isEmpty() && sync.version != m_upgradeStartFirmware;
+        if (sync.upgradeStage > 0) {
+            noteUpgradeEvidence(UpgradeInstalling);
+            failed(Updating);
+        } else if (m_availability == Updating && !sync.ok) {
+            // Silent while it restarts; before any sign of an update, still
+            // only a start that was sent.
+            if (m_upgradeEvidence)
+                noteUpgradeEvidence(UpgradeRestarting);
             failed(Updating);
         } else if (m_availability != Updating) {
             failed(otherwise);
+        } else if (m_upgradeStarted && !m_upgradeEvidence && !newFirmware) {
+            // This client sent the start and the player answers as before:
+            // not finished without a sign of an update (azzurro,
+            // upgrade_ended). Asks the check; past the bound, it is back.
+            m_probing = true;
+            fetchUpgradeCheck([this, sync](const UpgradeCheck &check) {
+                m_probing = false;
+                if (!m_running || !m_statusPolling || m_availability != Updating)
+                    return;
+                if (check.ok && check.inProgress) {
+                    noteUpgradeEvidence(UpgradeInstalling);
+                    failed(Updating);
+                } else if (m_upgradeSentAt.elapsed() >= m_timing.upgradeStartBoundMs) {
+                    leaveUpdating(sync);
+                } else {
+                    failed(Updating);
+                }
+            });
         } else if (!m_upgrade.inProgress) {
             leaveUpdating(sync);
         } else {
@@ -909,9 +969,10 @@ void Client::probeSyncStatus(Availability otherwise)
             m_probing = true;
             fetchUpgradeCheck([this, sync](const UpgradeCheck &check) {
                 m_probing = false;
-                if (!m_statusPolling)
+                if (!m_running || !m_statusPolling)
                     return;
                 if (check.ok && check.inProgress) {
+                    noteUpgradeEvidence(UpgradeInstalling);
                     failed(Updating);
                 } else {
                     m_upgrade.inProgress = false;  // or no answer: the player is back
@@ -922,16 +983,21 @@ void Client::probeSyncStatus(Availability otherwise)
     });
 }
 
-// Back as a player, with its new firmware.
+// Back as a player: with its new firmware, or, after a start this client
+// sent, without (the record stays, see takeSyncStatus).
 void Client::leaveUpdating(const SyncStatus &sync)
 {
     takeSyncStatus(sync);
+    if (m_upgradeStarted)
+        setUpgradePhase(m_upgradeEvidence ? UpgradeUnfinished : UpgradeNotStarted);
     succeeded();
     schedulePoll(0);
 }
 
-void Client::enterUpdating()
+void Client::enterUpdating(bool evidence)
 {
+    if (evidence)
+        noteUpgradeEvidence(UpgradeInstalling);
     if (m_availability == Updating)
         return;
     failed(Updating);
@@ -946,18 +1012,10 @@ void Client::setUpgradeChecks(bool checks)
     if (m_upgradeChecks == checks)
         return;
     m_upgradeChecks = checks;
+    updateCanStartUpgrade();
+    if (!checks)
+        cancelUpgradeStart();
     checkUpgrade();
-}
-
-QUrl Client::upgradePage() const
-{
-    QUrl u;
-    u.setScheme(QStringLiteral("http"));
-    u.setHost(m_host);
-    u.setPath(QStringLiteral("/upgrade"));
-    // Without the player's own header, as the official app shows it (azzurro).
-    u.setQuery(QStringLiteral("noheader=1"));
-    return u;
 }
 
 void Client::checkUpgrade()
@@ -971,25 +1029,131 @@ void Client::checkUpgrade()
     });
 }
 
-// The one request to /upgrade. Only ever "check": "this" or "all" would
-// start an update. No answer, or not one, keeps what was known.
+// Asks; never starts anything. No answer, or not one, keeps what was known.
+// After stop() the handler still runs, with no answer.
 void Client::fetchUpgradeCheck(const std::function<void(const UpgradeCheck &)> &done)
 {
     m_upgradeChecking = true;
     fetch(QStringLiteral("/upgrade"), QStringLiteral("upgrade=check"), [this, done](const QByteArray &body) {
         m_upgradeChecking = false;
-        if (!m_running)
+        if (!m_running) {
+            done(UpgradeCheck());
             return;
-        const UpgradeCheck check = parseUpgradeCheck(body);
-        if (check.ok) {
-            const bool changed = !m_upgrade.ok || check.available != m_upgrade.available
-                    || check.version != m_upgrade.version;
-            m_upgrade = check;
-            if (changed)
-                emit upgradeChanged();
         }
+        const UpgradeCheck check = parseUpgradeCheck(body);
+        takeUpgradeCheck(check);
         done(check);
     }, m_timing.upgradeTimeoutMs);
+}
+
+void Client::takeUpgradeCheck(const UpgradeCheck &check)
+{
+    if (!check.ok)
+        return;
+    const bool changed = !m_upgrade.ok || check.available != m_upgrade.available
+            || check.version != m_upgrade.version;
+    m_upgrade = check;
+    m_upgradeCheckedOn = m_sync.version;
+    // "Updated" gives way to a later offer.
+    if (check.available && m_upgradePhase == UpgradeDone)
+        setUpgradePhase(NoUpgrade);
+    if (changed)
+        emit upgradeChanged();
+}
+
+bool Client::upgradeStartAllowed() const
+{
+    return m_running && m_statusPolling && m_upgradeChecks && online() && !m_sync.fixedSecondary
+            && !m_upgradeStarted;
+}
+
+void Client::startUpgrade(const QString &version)
+{
+    if (m_upgradePhase == UpgradeChecking || !upgradeStartAllowed()) {
+        emit upgradeStartRefused();
+        return;
+    }
+    // A check of its own, asked after the user confirmed; a cancelled start
+    // (cancelUpgradeStart) ignores its answer.
+    const int generation = ++m_upgradeStartGeneration;
+    setUpgradePhase(UpgradeChecking);
+    fetch(QStringLiteral("/upgrade"), QStringLiteral("upgrade=check"), [this, generation, version](const QByteArray &body) {
+        if (generation != m_upgradeStartGeneration)
+            return;
+        const UpgradeCheck check = parseUpgradeCheck(body);
+        if (m_running)
+            takeUpgradeCheck(check);
+        // Equality only: the release the user confirmed, nothing else.
+        if (!check.ok || !check.available || check.inProgress || check.version != version
+                || !upgradeStartAllowed()) {
+            setUpgradePhase(NoUpgrade);
+            emit upgradeStartRefused();
+            if (check.ok && check.inProgress && m_running && m_statusPolling)
+                enterUpdating();
+            return;
+        }
+        sendUpgradeStart();
+    }, m_timing.upgradeTimeoutMs);
+}
+
+// In the same turn as the test above, unpaced.
+void Client::sendUpgradeStart()
+{
+    // The record first: nothing after this point can send a second start.
+    m_upgradeStarted = true;
+    m_upgradeEvidence = false;
+    m_upgradeStartFirmware = m_sync.version;
+    m_upgradeSentAt.start();
+    setUpgradePhase(UpgradeStarting);
+    // Its answer is not used: the player is followed through /SyncStatus.
+    new OneShotGet(m_host, m_port, QByteArrayLiteral("/upgrade?upgrade=this"),
+                   m_timing.upgradeTimeoutMs, this);
+    enterUpdating(false);
+}
+
+void Client::cancelUpgradeStart()
+{
+    if (m_upgradePhase != UpgradeChecking)
+        return;
+    ++m_upgradeStartGeneration;
+    setUpgradePhase(NoUpgrade);
+    emit upgradeStartRefused();
+}
+
+void Client::restoreUpgradeStart(const QString &firmwareAtStart)
+{
+    if (m_upgradeStarted)
+        return;
+    m_upgradeStarted = true;
+    // What the player did meanwhile is not known: an ordinary answer counts.
+    m_upgradeEvidence = true;
+    m_upgradeStartFirmware = firmwareAtStart;
+    setUpgradePhase(UpgradeUnfinished);
+}
+
+void Client::noteUpgradeEvidence(UpgradePhase phase)
+{
+    if (!m_upgradeStarted)
+        return;
+    m_upgradeEvidence = true;
+    setUpgradePhase(phase);
+}
+
+void Client::updateCanStartUpgrade()
+{
+    const bool can = upgradeStartAllowed() && upgradeAvailable() && m_upgradePhase != UpgradeChecking;
+    if (can == m_canStartUpgrade)
+        return;
+    m_canStartUpgrade = can;
+    emit canStartUpgradeChanged();
+}
+
+void Client::setUpgradePhase(UpgradePhase phase)
+{
+    if (m_upgradePhase == phase)
+        return;
+    m_upgradePhase = phase;
+    emit upgradeStartChanged();
 }
 
 void Client::succeeded()

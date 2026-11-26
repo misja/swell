@@ -58,6 +58,9 @@ class Client : public QObject
     Q_PROPERTY(bool upgradeAvailable READ upgradeAvailable NOTIFY upgradeChanged)
     Q_PROPERTY(QString upgradeVersion READ upgradeVersion NOTIFY upgradeChanged)
     Q_PROPERTY(bool upgradeChecked READ upgradeChecked NOTIFY upgradeChanged)
+    Q_PROPERTY(UpgradePhase upgradePhase READ upgradePhase NOTIFY upgradeStartChanged)
+    Q_PROPERTY(bool upgradeStarted READ upgradeStarted NOTIFY upgradeStartChanged)
+    Q_PROPERTY(bool canStartUpgrade READ canStartUpgrade NOTIFY canStartUpgradeChanged)
 
 public:
     enum Availability {
@@ -77,6 +80,19 @@ public:
     };
     Q_ENUM(GroupRole)
 
+    // An update this client started (startUpgrade), as the player shows it.
+    enum UpgradePhase {
+        NoUpgrade,
+        UpgradeChecking,     // asking the player before sending the start
+        UpgradeStarting,     // sent; nothing seen of an update yet
+        UpgradeInstalling,   // inProgress, or an UpgradeStatusStage root
+        UpgradeRestarting,   // no answer after the update showed itself
+        UpgradeDone,         // back on another firmware version
+        UpgradeNotStarted,   // nothing of an update within the bound
+        UpgradeUnfinished    // back on the same version after it showed itself
+    };
+    Q_ENUM(UpgradePhase)
+
     struct Timing {
         int pollTimeoutSecs = 100;   // API 2.1: recommended 100 s, never below 10 s
         int deadlineGraceMs = 15000; // added to the poll timeout before aborting
@@ -89,6 +105,10 @@ public:
         int syncPollTimeoutSecs = 180;   // API 2.2: recommended 180 s
         int upgradeCheckIntervalMs = 3600000;  // how often a polled player is asked
         int upgradeTimeoutMs = 60000;    // the official app's deadline (azzurro)
+        // After a start without any sign of an update, an ordinary answer
+        // ends Updating once this has passed (as azzurro allows an
+        // unanswered start).
+        int upgradeStartBoundMs = 300000;
     };
 
     Client(QNetworkAccessManager *nam, const QString &host, int port = 11000,
@@ -139,9 +159,9 @@ public:
     void setStatusPolling(bool polling);
 
     // Firmware updates are not in the API. What follows is how the official
-    // app does it, as observed by azzurro: it asks /upgrade?upgrade=check, and
-    // the update itself runs on the player's own web page (upgradePage()).
-    // This client only ever asks; it never starts an update.
+    // app does it, as observed by azzurro: /upgrade?upgrade=check asks, and
+    // /upgrade?upgrade=this starts the update. This client asks on its own;
+    // it starts an update only through startUpgrade(), at most once.
     // The firmware version from /SyncStatus; empty when the player sends none.
     QString firmwareVersion() const { return m_sync.version; }
     // Not for a secondary of a fixed group, which its primary updates.
@@ -151,8 +171,28 @@ public:
     bool upgradeChecked() const { return m_upgrade.ok; }
     // On by default; PlayerModel keeps it on for the current player only.
     void setUpgradeChecks(bool checks);
-    // The player's own update page (port 80), where the user runs the update.
-    Q_INVOKABLE QUrl upgradePage() const;
+
+    // Starts the offered update, which the user confirmed as version. Only
+    // when the player is online, its checks are on, it is not updating and
+    // this client has not sent a start before; and only after a new check
+    // says that version is available and not in progress. Otherwise
+    // upgradeStartRefused() and nothing is sent. The start is sent once,
+    // never retried, on its own connection (OneShotGet).
+    Q_INVOKABLE void startUpgrade(const QString &version);
+    UpgradePhase upgradePhase() const { return m_upgradePhase; }
+    // A start was sent and the player has not yet run another version.
+    bool upgradeStarted() const { return m_upgradeStarted; }
+    // Whether startUpgrade() would ask the player now: an offer, a start
+    // allowed (see startUpgrade) and no check for a start running. The one
+    // condition the start button, the Home notice and the dialog use. Every
+    // input of upgradeStartAllowed() and upgradeAvailable() must change with
+    // one of the signals connected in the constructor, or call
+    // updateCanStartUpgrade().
+    bool canStartUpgrade() const { return m_canStartUpgrade; }
+    // The firmware version when the start was sent.
+    QString upgradeStartFirmware() const { return m_upgradeStartFirmware; }
+    // For a new Client of a player whose start was sent in this session.
+    void restoreUpgradeStart(const QString &firmwareAtStart);
 
     bool hasContent() const { return m_status.ok && m_status.hasContent(); }
     // The queue can always skip; a stream only when it offers the action (4.8).
@@ -223,8 +263,8 @@ public slots:
     void setGroupVolume(int level);
     void setGroupMuted(bool muted);
     // Asks the player whether it has a firmware update, while its status is
-    // polled and it is online. Also done on coming online and hourly; the app
-    // asks again when the update page closes.
+    // polled and it is online. Also done on coming online and hourly, and
+    // when the player's settings open.
     void checkUpgrade();
 
 signals:
@@ -234,6 +274,10 @@ signals:
     void positionChanged();
     void groupBusyChanged();
     void upgradeChanged();
+    void upgradeStartChanged();
+    void canStartUpgradeChanged();
+    // startUpgrade() sent nothing.
+    void upgradeStartRefused();
     void presetsChanged();
     void inputsChanged();
     // A command request failed; the poll keeps running.
@@ -281,8 +325,16 @@ private:
     void takeSyncStatus(const SyncStatus &sync);
     void probeSyncStatus(Availability otherwise);
     void leaveUpdating(const SyncStatus &sync);
-    void enterUpdating();
+    // evidence: the player itself shows an update (not just a start sent).
+    void enterUpdating(bool evidence = true);
+    bool upgradeStartAllowed() const;
+    void updateCanStartUpgrade();
+    void cancelUpgradeStart();
+    void sendUpgradeStart();
+    void noteUpgradeEvidence(UpgradePhase phase);
+    void setUpgradePhase(UpgradePhase phase);
     void fetchUpgradeCheck(const std::function<void(const UpgradeCheck &)> &done);
+    void takeUpgradeCheck(const UpgradeCheck &check);
     void nextGroupCommand();
     void setGroupBusy(bool busy);
     void onCommandReply(QNetworkReply *reply, const QString &path);
@@ -334,9 +386,19 @@ private:
     bool m_presetsFetched = false;
     bool m_inputsFetched = false;
     UpgradeCheck m_upgrade;
+    // The firmware the player ran when it last answered a check: the offer
+    // holds only while it still runs it.
+    QString m_upgradeCheckedOn;
     QTimer m_upgradeTimer;
     bool m_upgradeChecking = false;
     bool m_upgradeChecks = true;
+    UpgradePhase m_upgradePhase = NoUpgrade;
+    bool m_upgradeStarted = false;
+    bool m_canStartUpgrade = false;
+    bool m_upgradeEvidence = false;
+    QString m_upgradeStartFirmware;
+    QElapsedTimer m_upgradeSentAt;
+    int m_upgradeStartGeneration = 0;
     bool m_probing = false;
 };
 

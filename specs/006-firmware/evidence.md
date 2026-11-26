@@ -182,3 +182,165 @@ Checked in the SDK container on 127.0.0.1:
 | L4: spec wording (check triggers, who opens the page, AC5) | Spec and evidence corrected |
 | L5: hash | 012ae64 |
 | L6: STATUS.md stale | Updated |
+
+## Revision 2026-11-25: scope/design review (separate agent, approve with changes)
+
+| Finding | Resolution |
+| --- | --- |
+| H: QNetworkAccessManager may resend `this` | Verified in qtbase v5.6.3 (spec, Facts); `this` on a one-shot socket; test with a drop mode |
+| H: the record is lost when PlayerModel recreates a Client | Record in PlayerModel per player; test |
+| H: an ordinary SyncStatus would end Updating at once | Kept Updating without evidence; tests |
+| M: cancelling a pending start | Generation number; stop, checks off, polling off, player switch; tests |
+| M: pacing between re-test and send | Record set and `this` sent in the same turn, unpaced |
+| M: silence as evidence | Dropped; silence keeps Updating |
+| M: bound during silence | Ends only on an ordinary answer |
+| L: origin in `enterUpdating` | Dropped; record plus evidence flag |
+| L: azzurro citation | Corrected; the 20 s settle against the 72 s timeline is open |
+| L: version equality, empty version | Equality only; absent equals absent |
+| L: dialog bound to the current player | Player passed at push; `canAccept` |
+| L: retry after a failed update | Record cleared only on another version |
+| Removal list for the WebView | Completed in the plan |
+| AC gaps; rehearsal | AC7, AC8 extended; AC9 rehearsal with household.py |
+
+## Revision 2026-11-25: build and tests (commit 4f454e9)
+
+- **`make check`** (aarch64, SDK target 5.1.0.11): all eleven suites pass;
+  firmware 40, qmlruntime 19. No compiler warnings.
+- **New tests** (`tests/firmware`, AC7):
+  - `whyTheStartHasItsOwnSocket`: QNetworkAccessManager sends a request
+    again when FakePlayer reads it and closes without a byte (more than one
+    request seen). It guards the reason for `OneShotGet`.
+  - a start after a fresh check, with and without a version; refusals by
+    the fresh check (not available, in progress, another version, 404,
+    malformed, no answer); refusals when not current, stopped, updating, a
+    fixed-group secondary, offline; cancellation while the check is pending
+    (stop, checks off, status polling off, stop and start); one start for
+    repeated calls; no retry after a drop, no answer, an error document;
+    the record across a new Client (address change, lost and found, removed
+    and added); the phases through to the new version; the bound only on an
+    ordinary answer; an unfinished update keeps the record.
+  - Every test counts the starts that reached FakePlayer and fails on any
+    other `/upgrade` target than `check` and `this`.
+- **`tests/qmlruntime`** (AC8): `upgradeStartFromQml` with the dialog's
+  `canAccept` and the button's condition, read as the pages read them
+  (offline, stale version, pending, sent); two calls, one start. The pages
+  themselves are not instantiated.
+- **Builds** with `-c no-fix-version` (the branch suffix in the version is
+  refused by the validator, "rpm version must contain only digits"):
+  - aarch64 sha256 33b677f42b41ca6c7f43f20f0bf852c51162c1e6d3cee54b896e7cb3a12324b1;
+  - armv7hl sha256 e2695cee96a10ec6f8ebe5c52e4c9763f27a39d55c8587aaa61efa15e84b8c47.
+- **Harbour validator:** succeeds on both. The rpath WARNING of 2026-11-09
+  is gone with the qt5embedwidget link. Requires: Qt, sailfishapp,
+  `sailfishsilica-qt5`, `qml(Amber.Mpris)`; no WebView packages.
+  `Permissions=Internet;Audio`. rpmlint reports the existing
+  description-line-too-long, as on main.
+
+## Revision 2026-11-25: result review (separate agent; approve with changes, then approve)
+
+| Finding | Resolution |
+| --- | --- |
+| M-A: record lost when an address-added player is announced, then moves | Record copied to the node id on merge; test row "added by address, announced, then moved" |
+| M-B: a replaced Client was not stopped before deletion | `stop()` before `deleteLater()` on address change and removal; test `pendingStartAcrossAPlayerChange` |
+| AC8: no case after a switch to another player | `holdPlayer` in Probe.qml (expression copied from UpgradeDialog); false after the switch |
+| L: refusal text kept after a player switch; shown while Updating | Reset on `_player` change; Home shows "Updating firmware" first |
+| L: superseded WebView sections; limits | Marked in place; residual risks and limits added |
+| L: unused `finished()` in OneShotGet | Removed |
+
+Re-review of the fixes: approve. After the device check, e4bfd33 (dropping the old offer on another firmware version): approve. `make check` after the fixes: all eleven suites
+pass, firmware 43 tests (aarch64). The PR names three own mechanisms:
+`OneShotGet`, the five-minute bound and the start's generation number.
+
+## Revision 2026-11-25: rehearsal on the device (AC9)
+
+Test build 0.6.2+006.firmware.start.20261125191841.557af9a-1 (aarch64, sha256
+7d4ce1743bf0daf1c2ebe966d446e82493c89bffeb12faa85ddff71b923022d4) on the
+maintainer's phone, with the maintainer's approval; `tests/demo/household.py
+--firmware` in the SDK container on the same network.
+
+- Run 1 (default phases): one `upgrade=this`; the update ran to 9.9.2. The
+  maintainer did not see Installing and Restarting: the phases are short,
+  and the default silent phase holds requests until it ends, so a client
+  notices the silence only at its end.
+- `household.py --slow` added: phases three times as long, and the silent
+  phase drops connections at once, as a restarting player would.
+- Run 2 (`--slow`), demo log with timestamps: a check, then one
+  `upgrade=this` 0.1 s later; checks after 1, 3, 7 and 15 s (backoff);
+  silent 30 s, stage1 and stage2; done; Swell asked again 13 s after done.
+  One start in total, nothing REFUSED. The maintainer saw every phase,
+  through to "Updated to 9.9.2": works.
+
+## Revision 2026-11-25: the update on the NAD (AC10)
+
+NAD C 379, 4.18.18 to 4.18.26, started from Swell (test build 557af9a) by the
+maintainer. Watched read-only from a desktop: `/SyncStatus` every 5 s, the
+check every 15 s (as the official app).
+
+- Before: `available="true" inProgress="false" version="4.18.26"`.
+- About 5 s after the start the player stopped answering, for about 25 s.
+  No check answered `inProgress="true"` before that.
+- Then `/SyncStatus` answered `<UpgradeStatusStage2 version="1.97" …>` for
+  about 90 s, with child elements `format`, `git` (4.18.26), `total` (3),
+  `step` (2, then 3), `percent` (1 … 100), `retry`, `error`, `abortable`,
+  `started`; the check did not answer. No Stage1 was seen (5 s reads).
+  Swell does not use the counters (spec). The root's `version` is not the
+  firmware and Swell does not read it as such (stage roots are not
+  `SyncStatus`).
+- Then silent again for about 15 s (the restart), not in the first version
+  of this record; the raw read log has it.
+- Back as `SyncStatus` with `version="4.18.26"`; the check did not answer for
+  about 20 s more, then `available="false"`.
+- Timeline from the read log (5 s reads, 4 s timeout; seconds after the
+  start, to the read interval): ordinary to −1; silent +5 to +24; Stage2 +29
+  to +104; silent +109 to +122; SyncStatus 4.18.26 from +128; the check
+  unanswered at +133, `available="false"` from +148. Not measured: whether a
+  silent player refused or held the connection, what the check answered in
+  the first 5 s after the start, and
+  what `/Status` answered during Stage2.
+- In Swell: the update ran through to "Updated to 4.18.26". Finding: the old
+  offer stayed (the check right after the return got no answer), so Settings
+  showed "Start update" and Home "Update available" again. A tap would only
+  have run a fresh check, which by then said not available. Fixed: the
+  offer is dropped when the player runs another version
+  (`updatingAfterAStart` now has the check not answering); 11 suites pass.
+
+## End states (2026-11-25, after the update on the NAD)
+
+- Cause of the stale offer: the offer and the start record were kept apart,
+  with no rule that other firmware ends the offer; the fake player and
+  `household.py` answered the check at once after the return, which was
+  assumed, not measured. The same gap existed for an update started
+  elsewhere, and for a later offer after Updated.
+- Changed: an offer holds only while the player runs the firmware it was
+  checked on; Updated gives way to a later offer (spec, End states).
+- `household.py --firmware` follows the measured timeline (`--quick`: a
+  fifth); `--slow` and `--no-progress`, which modelled azzurro's Powernode,
+  are gone. Checked locally with curl against `--quick`: one start, a second
+  refused, silent, Stage2 with step 2 then 3 and percent rising, silent,
+  back on 9.9.2 with the check unanswered, then `available="false"`.
+- Tests: `theMeasuredNadUpdate`, `anUpdateFromElsewhereDropsTheOffer`,
+  `upgradeEndState`; 11 suites pass (aarch64 target, build-shell).
+
+
+Separate result review of the end states (assistant review, not a human
+audit): approve with changes, no blockers. Applied: one rule for the offer
+(the `updated` term dropped); the tests name what they invent (refused and
+held connections); the QML runtime test uses Stage2 and a held check, and
+says it continues the earlier start; the state table rows for Refused, Not
+started / Not finished and the silent check after the return; the limits
+(sync-watch path only; an offer of the installed version is not measured);
+the demo's durations are to the 5 s read interval; the timeline in seconds
+after the start; Probe.qml names the page conditions it copies. The QML
+runtime timing gained an upgrade timeout of 3 s, so a held check ends as in
+the firmware tests. 11 suites pass (aarch64 target).
+
+## One start condition (2026-11-25)
+
+After a general code review (misja/swell#53), `Client::canStartUpgrade`
+replaces four copies of the start condition, and `upgradeChanged` follows a
+fixed-group secondary. Separate review (assistant review, not a human
+audit): approve with changes, no blockers; every input of the condition was
+traced to a notifying write. Applied: the test covers going offline and
+counts `canStartUpgradeChanged`; Probe.qml reports the button's visible and
+enabled apart; the header names the rule for future inputs. The fixed-group
+test fails without the new notification. 11 suites pass (aarch64 target;
+firmware 47).

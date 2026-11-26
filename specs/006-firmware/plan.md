@@ -60,3 +60,67 @@ and findings H1, M1–M7, L1–L5 apply. Open: the maintainer's approvals listed
   shows no notice and nothing breaks.
 - The WebView adds a permission prompt and a dependency.
 - A real update can only be checked when the NAD is offered one.
+
+## Revision 2026-11-25: starting the update
+
+After the scope/design review (approve with changes, evidence.md).
+
+- **PlayerModel:** a set of players with a start record (node id, else
+  `host:port`), for the session. It hands the record to every Client it
+  creates for that player (`createClient`), and receives it from the Client
+  when set. Clients outside PlayerModel (tests) keep their own.
+- **Client:**
+  - `Q_INVOKABLE void startUpgrade(const QString &version)`;
+    `upgradePhase` (enum: None, Checking, Starting, Installing, Restarting,
+    Updated, NotStarted) with NOTIFY; `upgradeStarted`
+    (the record) with NOTIFY.
+  - The start's check uses `fetch()` with a generation number; `stop()`,
+    `setUpgradeChecks(false)`, `setStatusPolling(false)` bump it and reset
+    Checking to None. On the answer, every condition is tested again; then
+    the record is set and `this` is sent in the same turn.
+  - **Sending `this`:** `bluos/oneshot.{h,cpp}`, a QTcpSocket that writes one
+    `GET /upgrade?upgrade=this HTTP/1.1` with `Connection: close`, reads
+    until close or the 60 s deadline, and never reconnects. It reports only
+    whether an answer came. This is an own mechanism, needed because
+    QNetworkAccessManager resends (spec, Facts); the PR names it.
+    Alternative for the maintainer: QNetworkAccessManager and the risk
+    recorded.
+  - **Updating after a start:** `probeSyncStatus` gets one rule: with the
+    record set and no evidence yet, an ordinary `SyncStatus` keeps Updating,
+    except past the bound (`Timing::upgradeStartBoundMs`, five minutes),
+    where it ends Updating with phase NotStarted. Evidence (stage root,
+    `inProgress="true"`, another `firmwareVersion`) sets a flag; with it,
+    today's rules apply. Another version clears the record.
+  - Nothing else in `enterUpdating`/`leaveUpdating` changes.
+- **App:**
+  - `qml/pages/UpgradeDialog.qml`: `Dialog` with `DialogHeader`, a property
+    `player` set at push, the version and the warnings; `canAccept` as in
+    the spec; `onAccepted: player.startUpgrade(version)`.
+  - `PlayerSettingsPage.qml` and the Home notice push the dialog with the
+    current player; they show the phase and hide the button with a record
+    or while Updating.
+  - New strings in Dutch; existing ones reused.
+- **WebView removal:** `qml/pages/PlayerWebPage.qml`, `Client::upgradePage()`,
+  `tests/qmlruntime/Probe.qml` l. 63, `tst_firmware` `upgradePage`,
+  `Permissions=…;WebView`, three `Requires`, `PKGCONFIG += qt5embedwidget`
+  and its BuildRequires, the comments in `client.h`/`client.cpp` that say the
+  client only asks, the strings, and household.py's update page; issue #32
+  closed as no longer applicable.
+- **Tests:**
+  - `FakePlayer`: a mode that reads a request and closes without a byte.
+  - `tests/firmware`: acceptance criterion 7; `onlyEverAsks` stays for a
+    client that is not asked to start.
+  - `tests/model`: the record across Client recreation.
+  - `tests/qmlruntime`: criterion 8.
+  - `tests/demo/household.py --firmware`: accept `this` once (then the
+    existing update sequence), log a second as REFUSED; the port 80 page
+    goes.
+- **Alternatives considered:**
+  - The page without `noheader`: its button cannot work (no jQuery).
+  - `upgrade=old` on port 80, as that button would: seen only in a button
+    that cannot run; meaning unknown.
+  - RemorsePopup: a countdown that runs out starts an irreversible update
+    when the user looks away.
+  - No bound: a player that ignored `this` would show Updating until the
+    app restarts.
+  - Silence as evidence: one dropped read would end Updating mid-download.
