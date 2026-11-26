@@ -13,10 +13,14 @@ Page {
     readonly property QtObject _player: players.current
     // Read once per change: each read of _player.inputs makes a new array.
     readonly property var _inputs: _player ? _player.inputs : []
-    readonly property var _presets: _player ? _player.presets : []
     readonly property int _columns: isLandscape ? 6 : 4
-    // The preset grid spans the page; each GridItem fills its cell.
-    readonly property int _tileSize: Math.floor(width / _columns)
+    // The quick row (spec 008): the first 8 presets by id in portrait, 6 in
+    // landscape. All of them are on the Presets page.
+    readonly property var _quickPresets: {
+        var list = _player ? _player.presets.slice(0) : []
+        list.sort(function(a, b) { return a.id - b.id })
+        return list.slice(0, isLandscape ? 6 : 8)
+    }
 
     allowedOrientations: Orientation.All
 
@@ -51,35 +55,6 @@ Page {
         return _upgradeRefused ? qsTr("The update was not started.") : qsTr("Update available")
     }
 
-    // Delete a preset after a remorse (spec 008). The remorse is the page's,
-    // not the tile's: a presets change recreates the tiles. It keeps the
-    // player and the presets' version the user saw.
-    function _deletePreset(id, name) {
-        var player = _player
-        var prid = player.presetsPrid
-        deleteRemorse.execute(qsTr("Deleting %1").arg(name), function() {
-            if (!player || players.current !== player) {
-                app.notify(qsTr("Nothing was deleted."))
-                return
-            }
-            player.deletePreset(id, prid)
-        })
-    }
-
-    // The icon the user chose for an input in the official app; presets that
-    // select an input carry only a generic one.
-    function _inputImage(inputId) {
-        if (!_player || inputId === "") {
-            return ""
-        }
-        for (var i = 0; i < _inputs.length; ++i) {
-            if (_inputs[i].id === inputId) {
-                return _inputs[i].image
-            }
-        }
-        return ""
-    }
-
     onStatusChanged: {
         if (status !== PageStatus.Active) {
             return
@@ -97,22 +72,20 @@ Page {
         }
     }
 
-    Connections {
-        target: _player
-        onPresetDeleteRefused: app.notify(presetsChanged ? qsTr("The presets have changed. Nothing was deleted.")
-                                                         : qsTr("Nothing was deleted."))
-    }
-
-    RemorsePopup { id: deleteRemorse }
-
     SilicaFlickable {
         anchors.fill: parent
         contentHeight: column.height + Theme.paddingLarge
 
+        // From the top: the general items, then the current player's, nearest
+        // the content (spec 008, decision 11).
         PullDownMenu {
             MenuItem {
                 text: qsTr("About")
                 onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
+            }
+            MenuItem {
+                text: qsTr("Players")
+                onClicked: pageStack.navigateBack()
             }
             MenuItem {
                 text: qsTr("Settings")
@@ -120,8 +93,9 @@ Page {
                 onClicked: pageStack.push(Qt.resolvedUrl("PlayerSettingsPage.qml"))
             }
             MenuItem {
-                text: qsTr("Players")
-                onClicked: pageStack.navigateBack()
+                text: qsTr("Presets")
+                enabled: _player !== null
+                onClicked: pageStack.push(Qt.resolvedUrl("PresetsPage.qml"))
             }
             MenuItem {
                 text: qsTr("Browse")
@@ -158,102 +132,40 @@ Page {
 
             SectionHeader { text: qsTr("Presets") }
 
-            // Silica's grid of items with a context menu (GridItem.qml). Not
-            // a view of its own here: the page scrolls, so the grid is as tall
-            // as its rows plus an open menu (SilicaGridView.qml:59 does not
-            // add __silica_menu_height to contentHeight).
+            // Silica's grid of items (GridItem.qml), as wide as the page. Not a
+            // view of its own here: the page scrolls, so the grid is as tall as
+            // its rows. The tiles have no menu (spec 008).
             SilicaGridView {
                 id: presetGrid
-                readonly property int _rows: Math.ceil(count / page._columns)
-                // A standard Silica grid: as wide as the page, so a tile's menu
-                // spans the page (ContextMenu.qml:96 takes the view's width),
-                // and each GridItem fills its cell (GridItem.qml:47-48).
                 width: parent.width
-                height: _rows * cellHeight + __silica_menu_height
+                height: Math.ceil(count / page._columns) * cellHeight
                 interactive: false
                 visible: count > 0
-                cellWidth: page._tileSize
-                cellHeight: page._tileSize + nameFont.height + 2 * Theme.paddingSmall
-                model: page._presets
+                cellWidth: Math.floor(width / page._columns)
+                cellHeight: cellWidth + nameFont.height + 2 * Theme.paddingSmall
+                model: page._quickPresets
 
                 FontMetrics {
                     id: nameFont
                     font.pixelSize: Theme.fontSizeExtraSmall
                 }
 
-                delegate: GridItem {
-                    id: tile
-                    readonly property bool _isInput: modelData.inputId !== ""
+                delegate: PresetTile {
+                    preset: modelData
+                    inputs: page._inputs
                     enabled: _player.online
                     onClicked: _player.playPreset(modelData.id)
-                    menu: Component {
-                        ContextMenu {
-                            MenuItem {
-                                text: qsTr("Delete")
-                                // One at a time, and only on the list as the
-                                // player has it now.
-                                enabled: !deleteRemorse.active && _player.presetsCurrent
-                                onClicked: page._deletePreset(modelData.id, modelData.name)
-                            }
-                        }
-                    }
-
-                    // Inputs are line icons: give them a tile like the station logos.
-                    Rectangle {
-                        width: page._tileSize
-                        height: page._tileSize
-                        visible: tile._isInput
-                        color: Theme.rgba(Theme.highlightBackgroundColor, Theme.highlightBackgroundOpacity)
-                    }
-                    Image {
-                        id: inputArt
-                        visible: tile._isInput
-                        x: (page._tileSize - width) / 2
-                        y: (page._tileSize - height) / 2
-                        width: page._tileSize * 0.55
-                        height: width
-                        fillMode: Image.PreserveAspectFit
-                        asynchronous: true
-                        sourceSize.width: width
-                        sourceSize.height: height
-                        source: tile._isInput ? page._inputImage(modelData.inputId) || modelData.image : ""
-                    }
-                    Icon {
-                        x: (page._tileSize - width) / 2
-                        y: (page._tileSize - height) / 2
-                        visible: tile._isInput && inputArt.status !== Image.Ready
-                        source: "image://theme/icon-m-media-radio"
-                    }
-                    // Stations, albums and playlists: the cover placeholder.
-                    CoverImage {
-                        visible: !tile._isInput
-                        width: page._tileSize
-                        height: width
-                        highlighted: tile.highlighted
-                        icon: "image://theme/icon-m-media-radio"
-                        source: tile._isInput ? "" : modelData.image
-                    }
-                    Label {
-                        id: nameLabel
-                        x: Theme.paddingSmall
-                        y: page._tileSize + Theme.paddingSmall
-                        width: parent.width - 2 * Theme.paddingSmall
-                        font.pixelSize: Theme.fontSizeExtraSmall
-                        truncationMode: TruncationMode.Fade
-                        color: tile.highlighted ? Theme.highlightColor : Theme.primaryColor
-                        text: modelData.name
-                    }
                 }
             }
 
             Label {
                 x: Theme.horizontalPageMargin
                 width: parent.width - 2 * Theme.horizontalPageMargin
-                visible: _player && _player.online && _player.presets.length === 0
+                visible: _player && _player.online && page._quickPresets.length === 0
                 wrapMode: Text.Wrap
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.secondaryHighlightColor
-                text: qsTr("No presets on this player. Presets are made in the BluOS Controller app.")
+                text: qsTr("No presets on this player. Add them from Browse.")
             }
 
             // While the player offers a firmware update, and while one this

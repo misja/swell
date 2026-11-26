@@ -26,6 +26,7 @@ private slots:
     void aListNotYetReadIsNotTouched();
     void offlineSendsNothing();
     void twoDeletesAreTwoRequests();
+    void addTakesTheFirstFreeSlot();
     void aFailedDeleteIsReported_data();
     void aFailedDeleteIsReported();
 
@@ -63,6 +64,16 @@ void TstPresets::init()
         if (q.queryItems().size() == 1 && q.hasQueryItem(QStringLiteral("id"))) {
             // An id that is not there: invented, not measured.
             m_presets.remove(q.queryItemValue(QStringLiteral("id")).toInt());
+            ++m_prid;
+            publish();
+        } else if (!q.hasQueryItem(QStringLiteral("id")) && q.hasQueryItem(QStringLiteral("url"))) {
+            // An add as measured (evidence.md, adding): the lowest free id,
+            // gaps filled, a station already there added again. A full list
+            // was not measured.
+            int id = 1;
+            while (m_presets.contains(id))
+                ++id;
+            m_presets.insert(id, q.queryItemValue(QStringLiteral("name"), QUrl::FullyDecoded).toUtf8());
             ++m_prid;
             publish();
         }
@@ -210,6 +221,22 @@ void TstPresets::twoDeletesAreTwoRequests()
     const QList<qint64> times = m_nam->sentAt(QStringLiteral("/SetPreset"));
     QVERIFY(times.at(1) - times.at(0) >= fastTiming().minIntervalMs - 1);   // whole milliseconds
     QTRY_COMPARE(ids(), QList<int>({ 1, 2, 3 }));
+}
+
+void TstPresets::addTakesTheFirstFreeSlot()
+{
+    // Through runAction, with the player's own actionURL (spec 008).
+    startClient();
+    QSignalSpy done(m_client, &Client::actionDone);
+    const QString add = QStringLiteral("/SetPreset?image=https%3A%2F%2Fimg.example%2Fx.jpg&name=RockIt%21"
+                                       "&service=RadioParadise&url=RadioParadise%3A%2F2%3A20%2FRockIt%2521");
+    m_client->runAction(add, QStringLiteral("preset"));
+    QTRY_COMPARE(done.size(), 1);
+    QCOMPARE(done.first().first().toString(), QStringLiteral("preset"));
+    QCOMPARE(QString::fromLatin1(m_player->requests(QStringLiteral("/SetPreset")).first().target), add);
+    QTRY_COMPARE(ids(), QList<int>({ 1, 2, 3, 4, 7, 8 }));   // the gap at 4 filled
+    m_client->runAction(add, QStringLiteral("preset"));        // the same station again
+    QTRY_COMPARE(ids(), QList<int>({ 1, 2, 3, 4, 5, 7, 8 }));
 }
 
 void TstPresets::aFailedDeleteIsReported_data()

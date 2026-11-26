@@ -112,7 +112,7 @@ public:
     int count() const { return rowCount(); }
 
     // The context-menu types Swell understands (section 7.1, plus the
-    // observed add-shuffle); other actions are not offered.
+    // observed add-shuffle and preset); other actions are not offered.
     static bool knownAction(const QString &type);
     // An action that starts playback (add-now, addAll-now, add-shuffle)
     // rather than adding to the queue or changing a favourite.

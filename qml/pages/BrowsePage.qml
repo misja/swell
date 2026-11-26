@@ -53,6 +53,8 @@ Page {
             return qsTr("Add to favorites")
         case "favourite-delete":
             return qsTr("Remove from favorites")
+        case "preset":
+            return qsTr("Add preset")
         }
         return ""
     }
@@ -121,6 +123,8 @@ Page {
                 if (favouritesModel.key !== "") {
                     favouritesModel.load()
                 }
+            } else if (type === "preset") {
+                app.notify(qsTr("Added to presets"))
             } else if (!browseModel.startsPlayback(type)) {
                 app.notify(qsTr("Added to the queue"))
             }

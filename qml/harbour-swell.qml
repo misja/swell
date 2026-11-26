@@ -106,7 +106,8 @@ ApplicationWindow {
         var page = pageStack.currentPage
         if (page.objectName === "home") {
             pageStack.navigateForward()
-        } else if (page.objectName === "browse" || page.objectName === "search") {
+        } else if (page.objectName === "browse" || page.objectName === "search"
+                   || page.objectName === "presets") {
             var home = _homePage()
             if (home) {
                 home.openNowPlaying = true
@@ -152,6 +153,7 @@ ApplicationWindow {
         readonly property QtObject _player: players.current
         readonly property string _pageName: pageStack.currentPage ? pageStack.currentPage.objectName : ""
         readonly property bool _staysOpen: _pageName === "browse" || _pageName === "search"
+                                           || _pageName === "presets"
                                            || _pageName === "queue" || _pageName === "about"
 
         width: parent.width

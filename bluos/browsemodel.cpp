@@ -41,6 +41,8 @@ bool BrowseModel::knownAction(const QString &type)
         QStringLiteral("add-now"), QStringLiteral("add-next"), QStringLiteral("add-last"),
         QStringLiteral("addAll-now"), QStringLiteral("addAll-next"), QStringLiteral("addAll-last"),
         QStringLiteral("add-shuffle"), QStringLiteral("favourite-add"), QStringLiteral("favourite-delete"),
+        // Not in the API's list; the NAD sends it on stations (spec 008).
+        QStringLiteral("preset"),
     };
     return known.contains(type);
 }
