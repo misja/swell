@@ -56,10 +56,6 @@ QByteArray syncStatus(const QByteArray &name, const QByteArray &syncStat = "s1",
             + "\" mute=\"0\" id=\"127.0.0.1:11000\">" + inner + "</SyncStatus>";
 }
 
-Client::Timing fast()
-{
-    return fastTiming();
-}
 
 } // namespace
 
@@ -101,7 +97,7 @@ private slots:
     void statusPollingOffStopsStatusReads();
 
 private:
-    void startClient(const Client::Timing &timing = fast());
+    void startClient(const Client::Timing &timing = fastTiming());
 
     SendLog *m_nam = nullptr;
     FakePlayer *m_player = nullptr;
@@ -160,7 +156,7 @@ void TstClient::firstContactThenLongPoll()
 // system media controls hide on it.
 void TstClient::clearedQueueLeavesNoTitle()
 {
-    Client::Timing t = fast();
+    Client::Timing t = fastTiming();
     t.pollTimeoutSecs = 10;
     startClient(t);
     QTRY_VERIFY(m_player->requests(QStringLiteral("/Status")).size() >= 2);  // now held
@@ -177,7 +173,7 @@ void TstClient::clearedQueueLeavesNoTitle()
 
 void TstClient::longPollReturnsOnChange()
 {
-    Client::Timing t = fast();
+    Client::Timing t = fastTiming();
     t.pollTimeoutSecs = 10;
     startClient(t);
     QTRY_VERIFY(m_player->requests(QStringLiteral("/Status")).size() >= 2);  // now held
@@ -208,7 +204,7 @@ void TstClient::oneSecondRule()
 {
     // A server that changes on every poll must still not be asked more often
     // than once per interval; this uses the real 1000 ms interval.
-    Client::Timing t = fast();
+    Client::Timing t = fastTiming();
     t.minIntervalMs = 1000;
     startClient(t);
     QTimer churn;
@@ -252,14 +248,14 @@ void TstClient::volumeBurstCollapses()
     for (int level : { 10, 20, 30, 40, 50 })
         m_client->setVolume(level);
     QTRY_COMPARE(m_player->requests(QStringLiteral("/Volume")).size(), 2);
-    QTest::qWait(fast().minIntervalMs * 2);
+    QTest::qWait(fastTiming().minIntervalMs * 2);
     const auto sent = m_player->requests(QStringLiteral("/Volume"));
     QCOMPARE(sent.size(), 2);
     QCOMPARE(sent.at(0).query.queryItemValue(QStringLiteral("level")), QStringLiteral("10"));
     QCOMPARE(sent.at(1).query.queryItemValue(QStringLiteral("level")), QStringLiteral("50"));
     const QList<qint64> times = m_nam->sentAt(QStringLiteral("/Volume"));
     QCOMPARE(times.size(), 2);
-    QVERIFY(times.at(1) - times.at(0) >= fast().minIntervalMs - 1);   // whole milliseconds
+    QVERIFY(times.at(1) - times.at(0) >= fastTiming().minIntervalMs - 1);   // whole milliseconds
 }
 
 void TstClient::fixedVolumeIgnoresSetVolume()
@@ -550,7 +546,7 @@ void TstClient::muteIsNotLostInAVolumeBurst()
     const QList<qint64> times = m_nam->sentAt(QStringLiteral("/Volume"));
     QCOMPARE(times.size(), 3);
     for (int i = 1; i < times.size(); ++i)
-        QVERIFY(times.at(i) - times.at(i - 1) >= fast().minIntervalMs - 1);   // whole milliseconds
+        QVERIFY(times.at(i) - times.at(i - 1) >= fastTiming().minIntervalMs - 1);   // whole milliseconds
 }
 
 void TstClient::presetsRefetchIsBounded()
@@ -560,7 +556,7 @@ void TstClient::presetsRefetchIsBounded()
     m_player->serve(QStringLiteral("/Presets"), "<presets prid=\"999\"><preset id=\"1\" name=\"A\"/></presets>");
     startClient();
     QTRY_COMPARE(m_client->presets().size(), 1);
-    QTest::qWait(fast().minIntervalMs * 5);
+    QTest::qWait(fastTiming().minIntervalMs * 5);
     QCOMPARE(m_player->requests(QStringLiteral("/Presets")).size(), 1);
 }
 

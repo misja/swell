@@ -146,7 +146,7 @@ private:
     void insert(const Entry &entry);
     void removeAt(int row);
     // A client's /Status changed: only its own row.
-    void statusChanged(Client *client);
+    void onClientStatus(Client *client);
     // Its availability or /SyncStatus changed: its row, and the rows that
     // show its group.
     void clientChanged();

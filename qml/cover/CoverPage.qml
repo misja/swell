@@ -9,9 +9,10 @@ CoverBackground {
         anchors.fill: parent
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
-        // Decoded at the cover's size, not the artwork's own.
-        sourceSize.width: width
-        sourceSize.height: height
+        // Decoded at the cover's size, not the artwork's own; both sides at
+        // the longer edge, so the crop is not upscaled.
+        sourceSize.width: Math.max(width, height)
+        sourceSize.height: Math.max(width, height)
         opacity: 0.35
         source: _player ? _player.artworkUrl : ""
     }

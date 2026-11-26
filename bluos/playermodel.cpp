@@ -278,7 +278,13 @@ void PlayerModel::applyPolicy()
         // Firmware checks for the current player only (spec 006).
         e.client->setUpgradeChecks(current);
         e.client->start();
-    }    // Running or not changes which members count (groupMuted).
+    }
+    // The current player and which clients run decide who can join and
+    // who follows whom on every row; running or not also changes which
+    // members count (groupMuted).
+    if (!m_entries.isEmpty())
+        emit dataChanged(index(0), index(m_entries.size() - 1),
+                         { LeaderIdRole, MemberNamesRole, MemberIdsRole, CanJoinRole });
     updateCurrentGroup();
 }
 
@@ -457,7 +463,7 @@ Client *PlayerModel::createClient(const QString &host, int port)
     Client *c = newClient(&m_nam, host, port, this);
     c->setTiming(m_timing);
     connect(c, &Client::availabilityChanged, this, &PlayerModel::clientChanged);
-    connect(c, &Client::statusChanged, this, [this, c]() { statusChanged(c); });
+    connect(c, &Client::statusChanged, this, [this, c]() { onClientStatus(c); });
     connect(c, &Client::syncStatusChanged, this, &PlayerModel::clientChanged);
     connect(c, &Client::upgradeStartChanged, this, &PlayerModel::onUpgradeStartChanged);
     return c;
@@ -524,7 +530,7 @@ int PlayerModel::rowOf(const Client *client) const
     return -1;
 }
 
-void PlayerModel::statusChanged(Client *client)
+void PlayerModel::onClientStatus(Client *client)
 {
     const int row = rowOf(client);
     if (row >= 0)

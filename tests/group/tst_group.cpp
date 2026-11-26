@@ -49,6 +49,7 @@ private slots:
     void thePlayerListShowsOneRowPerGroup();
     void perPlayerShowsTheCurrentGroup();
     void aStatusChangesOnlyItsOwnRow();
+    void anotherCurrentPlayerChangesWhoCanJoin();
     void pairHalvesHubsAndZonesCannotJoin();
     void onlyTheCurrentPlayerIsAskedForFirmware();
 
@@ -556,6 +557,27 @@ void TstGroup::thePlayerListShowsOneRowPerGroup()
              QStringList({ m_house->id(1), m_house->id(2) }));
     model->leave(m_house->id(2), m_house->id(0));
     QTRY_COMPARE(list.rowCount(), 2);
+}
+
+void TstGroup::anotherCurrentPlayerChangesWhoCanJoin()
+{
+    // Who can join depends on the current player: every row hears of it.
+    QScopedPointer<PlayerModel> model(household(m_house, nullptr));
+    model->setCurrentId(m_house->id(0));
+    model->setPollAll(true);
+    for (int i = 0; i < m_house->size(); ++i)
+        QTRY_VERIFY(model->client(m_house->id(i))->online());
+    qRegisterMetaType<QVector<int>>();
+    QSignalSpy changed(model.data(), &QAbstractItemModel::dataChanged);
+    model->setCurrentId(m_house->id(1));
+    bool all = false;
+    for (const QList<QVariant> &args : changed) {
+        const QVector<int> roles = args.at(2).value<QVector<int>>();
+        all = all || (args.at(0).toModelIndex().row() == 0
+                      && args.at(1).toModelIndex().row() == model->rowCount() - 1
+                      && (roles.isEmpty() || roles.contains(PlayerModel::CanJoinRole)));
+    }
+    QVERIFY(all);
 }
 
 void TstGroup::aStatusChangesOnlyItsOwnRow()

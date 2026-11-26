@@ -603,7 +603,6 @@ void TstQueue::playFromSendsId()
     QCOMPARE(m_player->requests(QStringLiteral("/Play")).first().target, QByteArray("/Play?id=5"));
 }
 
-QTEST_GUILESS_MAIN(TstQueue)
 void TstQueue::aReportedLengthIsBounded()
 {
     m_reportedLength = 2000000000;
@@ -614,4 +613,6 @@ void TstQueue::aReportedLengthIsBounded()
     QTRY_COMPARE(title(0), QStringLiteral("Track 0"));
 }
 
+
+QTEST_GUILESS_MAIN(TstQueue)
 #include "tst_queue.moc"

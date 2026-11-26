@@ -106,7 +106,8 @@ void TstBrowse::init()
             return "<browse type=\"sections\">" + section("A", "3") + section("B", "60") + section("C", "2")
                     + section("D", "4") + "</browse>";
         if (key == QLatin1String("HugeIndex"))
-            return "<browse type=\"sections\">" + section("A", "2000000000") + "</browse>";
+            return "<browse type=\"sections\">" + section("A", "2000000000") + section("B", "2000000000")
+                    + "</browse>";
         if (key == QLatin1String("BadIndex"))
             return "<browse type=\"sections\">" + section("A", "3") + section("B", "many") + "</browse>";
         if (key == QLatin1String("Lib:S:A"))
@@ -258,6 +259,11 @@ void TstBrowse::sectionsHaveTheirLengthAtOnce()
     QCOMPARE(m->rowCount(), 3 + 60 + 2 + 4);
     QTest::qWait(200);
     QCOMPARE(browseKeys(), QStringList({ QStringLiteral("Index") }));   // nothing read until shown
+    // A row's letter is known without reading it (the ListView asks for the
+    // sections beside the rows it shows).
+    QCOMPARE(m->data(m->index(64), BrowseModel::SectionRole).toString(), QStringLiteral("C"));
+    QTest::qWait(100);
+    QCOMPARE(browseKeys(), QStringList({ QStringLiteral("Index") }));
     // A row of B is a placeholder with its letter; showing it reads B only.
     QCOMPARE(m->data(m->index(3), BrowseModel::SectionRole).toString(), QStringLiteral("B"));
     QCOMPARE(m->data(m->index(3), BrowseModel::LoadedRole).toBool(), false);
@@ -552,7 +558,6 @@ void TstBrowse::songListsGetNoFavourites()
     QCOMPARE(m->favouritesKey(), QString());
 }
 
-QTEST_GUILESS_MAIN(TstBrowse)
 void TstBrowse::whatBrowsePageAsks()
 {
     BrowseModel m;
@@ -572,7 +577,9 @@ void TstBrowse::aReportedCountIsBounded()
     startClient();
     QScopedPointer<BrowseModel> m(open(QStringLiteral("HugeIndex")));
     QTRY_VERIFY(m->ready());
-    QCOMPARE(m->rowCount(), MaxListLength);
+    QCOMPARE(m->rowCount(), MaxListLength);   // for all letters together
 }
 
+
+QTEST_GUILESS_MAIN(TstBrowse)
 #include "tst_browse.moc"

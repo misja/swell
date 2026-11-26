@@ -13,9 +13,11 @@
 
 namespace BluOS {
 
-// The most rows Swell makes for a length a player reports (a queue, a
-// letter of a library list). Swell's own bound against a wrong or hostile
-// number, not a limit of the API or of a player; rows beyond it are not shown.
+// The most placeholder rows Swell makes from a length a player announces:
+// a queue's length, or the counts of a library list's letters together.
+// Swell's own bound against a wrong or hostile number, not a limit of the API
+// or of a player. Announced rows beyond it are not made; rows a reply
+// actually brings are kept.
 constexpr int MaxListLength = 100000;
 
 // /Status (section 2.1).

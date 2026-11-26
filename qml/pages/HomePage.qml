@@ -11,6 +11,8 @@ Page {
     property bool openNowPlaying
 
     readonly property QtObject _player: players.current
+    // Read once per change: each read of _player.inputs makes a new array.
+    readonly property var _inputs: _player ? _player.inputs : []
     readonly property int _columns: isLandscape ? 6 : 4
     readonly property int _tileSize: Math.floor((width - 2 * Theme.horizontalPageMargin
                                                 - (_columns - 1) * Theme.paddingMedium) / _columns)
@@ -54,9 +56,9 @@ Page {
         if (!_player || inputId === "") {
             return ""
         }
-        for (var i = 0; i < _player.inputs.length; ++i) {
-            if (_player.inputs[i].id === inputId) {
-                return _player.inputs[i].image
+        for (var i = 0; i < _inputs.length; ++i) {
+            if (_inputs[i].id === inputId) {
+                return _inputs[i].image
             }
         }
         return ""
@@ -258,7 +260,7 @@ Page {
 
             Repeater {
                 id: inputs
-                model: _player ? _player.inputs : []
+                model: page._inputs
 
                 ListItem {
                     id: inputItem

@@ -159,6 +159,10 @@ QVariant BrowseModel::data(const QModelIndex &index, int role) const
     if (segment < 0)
         return QVariant();
     const Segment &s = m_segments.at(segment);
+    // Known without reading the row: the ListView reads the section of rows
+    // beside the ones it shows (the letter index's currentSection).
+    if (role == SectionRole)
+        return s.title;
     const Row &r = s.rows.at(offset);
     if (!r.loaded) {
         want(segment);
@@ -175,7 +179,6 @@ QVariant BrowseModel::data(const QModelIndex &index, int role) const
     case AutoplayUrlRole: return r.item.autoplayUrl;
     case DurationRole: return r.item.duration;
     case ActionsRole: return QVariant::fromValue(r.loaded ? actionsOf(r.item) : QList<BrowseAction>());
-    case SectionRole: return s.title;
     case LoadedRole: return r.loaded;
     case FavouritesRole: return false;
     }
@@ -280,11 +283,14 @@ void BrowseModel::onFirst(const Browse &reply)
         if (sections) {
             // Letters with counts: the length is known; the rows load per letter.
             m_sectioned = true;
+            int left = MaxListLength;   // for all letters together
             for (const BrowseItem &item : reply.items) {
                 Segment s;
                 s.key = item.browseKey;
                 s.title = item.text;
-                s.rows = QVector<Row>(qMin(countOf(item.text2), MaxListLength));
+                const int n = qMin(countOf(item.text2), left);
+                left -= n;
+                s.rows = QVector<Row>(n);
                 m_segments.append(s);
             }
         } else {
