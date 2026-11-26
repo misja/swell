@@ -68,9 +68,21 @@ stay local; `evidence.md` has the record.
 
 1. **Menu.** The preset tiles on Home become Silica `GridItem`s in a
    `SilicaGridView`.
-   - It has `interactive: false`; its height is `contentHeight` plus
-     `__silica_menu_height`, so an open menu fits inside the page.
-   - Tile size, spacing and the 4 or 6 columns stay as now.
+   - A standard Silica grid (the maintainer, 2026-11-26: standard
+     implementations, by the design guidelines):
+     - it is as wide as the page, and each `GridItem` fills its cell
+       (GridItem.qml:47–48); the tiles run from edge to edge;
+     - a tile's menu spans the page, because ContextMenu.qml:96 gives it
+       the view's width;
+     - the grid has `interactive: false`, and its height is its rows plus
+       `__silica_menu_height`, so an open menu fits inside the page;
+     - there are 4 or 6 columns, as before.
+   - Tried and dropped on the device, 2026-11-26:
+     - a grid inset by the page margin: its menu ran from the margin to
+       past it on the right;
+     - a page-wide grid with `leftMargin`: GridView sets `contentX` to 0
+       on every width change (Qt 5.6.3 qquickgridview.cpp:2119 and 409), so
+       the tiles started at the screen edge with a margin's gap at the end.
    - A long press opens a `ContextMenu` with one item, Delete. The tiles
      are disabled while the player is offline.
    - Delete is enabled only while no remorse runs (`RemorsePopup.active`,
@@ -78,16 +90,6 @@ stay local; `evidence.md` has the record.
      has (`Player.presetsCurrent`). So deletes go one at a time.
    - `__silica_menu_height` is a private Silica property, used only for the
      grid's height. It is named in the PR as an own solution.
-   - The grid is as wide as the page and starts its tiles at the page
-     margin (`leftMargin`). A tile's menu then spans the page like any
-     Silica context menu: it takes the view's width (ContextMenu.qml:96).
-     GridView counts its columns on its whole width (Qt 5.6.3,
-     qquickgridview.cpp:451). The margin is less than a column, so there
-     are 4 or 6 columns as before. On the device the first version's menu
-     ran from the margin to past it on the right (2026-11-26); hence this
-     change. `contentX` is set to `-leftMargin`: Flickable does not move to
-     its margin while it is created (qquickflickable.cpp:386). Without it
-     the tiles started at the screen edge (device, 2026-11-26).
 2. **Remorse.** A `RemorsePopup` on the page, not on the delegate. Every
    presets change recreates the delegates, and a remorse on a delegate
    would go with it.

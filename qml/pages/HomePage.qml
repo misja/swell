@@ -15,8 +15,8 @@ Page {
     readonly property var _inputs: _player ? _player.inputs : []
     readonly property var _presets: _player ? _player.presets : []
     readonly property int _columns: isLandscape ? 6 : 4
-    readonly property int _tileSize: Math.floor((width - 2 * Theme.horizontalPageMargin
-                                                - (_columns - 1) * Theme.paddingMedium) / _columns)
+    // The preset grid spans the page; each GridItem fills its cell.
+    readonly property int _tileSize: Math.floor(width / _columns)
 
     allowedOrientations: Orientation.All
 
@@ -165,22 +165,15 @@ Page {
             SilicaGridView {
                 id: presetGrid
                 readonly property int _rows: Math.ceil(count / page._columns)
-                // As wide as the page, so a tile's menu spans the page like any
-                // Silica context menu (ContextMenu.qml:96 takes the view's
-                // width); the tiles start at the page margin. GridView counts
-                // its columns on its whole width (qquickgridview.cpp:451); the
-                // margin is less than a column, so they stay page._columns.
+                // A standard Silica grid: as wide as the page, so a tile's menu
+                // spans the page (ContextMenu.qml:96 takes the view's width),
+                // and each GridItem fills its cell (GridItem.qml:47-48).
                 width: parent.width
-                leftMargin: Theme.horizontalPageMargin
-                // The view does not scroll, and Flickable does not move to its
-                // margin while it is created (qquickflickable.cpp:386).
-                contentX: -leftMargin
-                // Without the spacing below the last row, as the Flow had.
-                height: Math.max(0, _rows * cellHeight - Theme.paddingMedium) + __silica_menu_height
+                height: _rows * cellHeight + __silica_menu_height
                 interactive: false
                 visible: count > 0
-                cellWidth: page._tileSize + Theme.paddingMedium
-                cellHeight: page._tileSize + nameFont.height + Theme.paddingSmall + Theme.paddingMedium
+                cellWidth: page._tileSize
+                cellHeight: page._tileSize + nameFont.height + 2 * Theme.paddingSmall
                 model: page._presets
 
                 FontMetrics {
@@ -191,8 +184,6 @@ Page {
                 delegate: GridItem {
                     id: tile
                     readonly property bool _isInput: modelData.inputId !== ""
-                    width: page._tileSize
-                    contentHeight: presetGrid.cellHeight - Theme.paddingMedium
                     enabled: _player.online
                     onClicked: _player.playPreset(modelData.id)
                     menu: Component {
@@ -244,9 +235,9 @@ Page {
                     }
                     Label {
                         id: nameLabel
-                        y: page._tileSize
-                        anchors.topMargin: Theme.paddingSmall
-                        width: parent.width
+                        x: Theme.paddingSmall
+                        y: page._tileSize + Theme.paddingSmall
+                        width: parent.width - 2 * Theme.paddingSmall
                         font.pixelSize: Theme.fontSizeExtraSmall
                         truncationMode: TruncationMode.Fade
                         color: tile.highlighted ? Theme.highlightColor : Theme.primaryColor
