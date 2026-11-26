@@ -304,8 +304,9 @@ void TstQmlRuntime::parentActionsArePassedOn()
 
 void TstQmlRuntime::favouritesAndUnreadRows()
 {
-    // The favourites row has no actions at all; a row not read yet has none.
-    QTRY_COMPARE(call("rootRow", 0), QStringLiteral("true undefined"));
+    // The favourites row and a row not read yet both have an empty list of
+    // actions, which BrowsePage reads as model.actions.length.
+    QTRY_COMPARE(call("rootRow", 0), QStringLiteral("true 0"));
     QCOMPARE(call("unreadActions", 5), QStringLiteral("false 0"));
 }
 

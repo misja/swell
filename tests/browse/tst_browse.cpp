@@ -219,6 +219,13 @@ void TstBrowse::rootKeepsLinksAndOffersFavourites()
              QStringLiteral("LocalMusic:MG/LocalMusic-Favourites"));
     QCOMPARE(m->data(m->index(0), BrowseModel::Text2Role).toString(), QStringLiteral("Library"));
     QCOMPARE(m->data(m->index(0), BrowseModel::DurationRole).toInt(), -1);   // no NaN:NaN
+    // Every role has a value, as on any other row (BrowsePage reads actions.length).
+    const QVariant actions = m->data(m->index(0), BrowseModel::ActionsRole);
+    QCOMPARE(actions.userType(), qMetaTypeId<QList<BrowseAction>>());
+    QVERIFY(actions.value<QList<BrowseAction>>().isEmpty());
+    for (int role : { BrowseModel::TextRole, BrowseModel::PlayUrlRole, BrowseModel::AutoplayUrlRole,
+                      BrowseModel::SectionRole })
+        QVERIFY2(m->data(m->index(0), role).isValid(), qPrintable(QString::number(role)));
     QCOMPARE(text(m.data(), 1), QStringLiteral("Playlists"));
     QCOMPARE(text(m.data(), 2), QStringLiteral("Library"));
     QCOMPARE(text(m.data(), 3), QStringLiteral("Radio"));

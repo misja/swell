@@ -174,8 +174,9 @@ Item {
         root: true
     }
     function rootRow(i) {
+        // As BrowsePage reads it: model.actions.length.
         return rootModel.data(rootModel.index(i, 0), browseRoles.favourites) + " "
-                + String(rootModel.data(rootModel.index(i, 0), browseRoles.actions))
+                + rootModel.data(rootModel.index(i, 0), browseRoles.actions).length
     }
     BrowseModel {
         id: indexModel
