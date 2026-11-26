@@ -172,6 +172,9 @@ Page {
                 // margin is less than a column, so they stay page._columns.
                 width: parent.width
                 leftMargin: Theme.horizontalPageMargin
+                // The view does not scroll, and Flickable does not move to its
+                // margin while it is created (qquickflickable.cpp:386).
+                contentX: -leftMargin
                 // Without the spacing below the last row, as the Flow had.
                 height: Math.max(0, _rows * cellHeight - Theme.paddingMedium) + __silica_menu_height
                 interactive: false

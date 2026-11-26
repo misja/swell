@@ -85,7 +85,9 @@ stay local; `evidence.md` has the record.
      qquickgridview.cpp:451). The margin is less than a column, so there
      are 4 or 6 columns as before. On the device the first version's menu
      ran from the margin to past it on the right (2026-11-26); hence this
-     change.
+     change. `contentX` is set to `-leftMargin`: Flickable does not move to
+     its margin while it is created (qquickflickable.cpp:386). Without it
+     the tiles started at the screen edge (device, 2026-11-26).
 2. **Remorse.** A `RemorsePopup` on the page, not on the delegate. Every
    presets change recreates the delegates, and a remorse on a delegate
    would go with it.
