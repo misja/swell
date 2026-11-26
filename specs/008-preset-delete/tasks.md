@@ -8,6 +8,6 @@
 - [x] Tests: `tests/presets`, `tests/browse`
 - [x] Translations (Dutch)
 - [x] `make check`
-- [ ] Harbour validator (aarch64, armv7hl)
+- [x] Harbour validator (aarch64, armv7hl), at 86a69c1
 - [ ] Result review by a separate agent; findings resolved
 - [ ] Device check on the NAD (the list in the spec)
