@@ -197,99 +197,120 @@
 <context>
     <name>HomePage</name>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="90"/>
+        <location filename="../qml/pages/HomePage.qml" line="114"/>
         <source>About</source>
         <translation>Over</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="94"/>
+        <location filename="../qml/pages/HomePage.qml" line="118"/>
         <source>Settings</source>
         <translation>Instellingen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="99"/>
+        <location filename="../qml/pages/HomePage.qml" line="123"/>
         <source>Players</source>
         <translation>Spelers</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="103"/>
+        <location filename="../qml/pages/HomePage.qml" line="127"/>
         <source>Browse</source>
         <translation>Bladeren</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="117"/>
+        <location filename="../qml/pages/HomePage.qml" line="141"/>
         <source>No player chosen. Pull down to pick one.</source>
         <translation>Geen speler gekozen. Trek omlaag om er een te kiezen.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="126"/>
+        <location filename="../qml/pages/HomePage.qml" line="150"/>
         <source>Not a BluOS player</source>
         <translation>Geen BluOS-speler</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="39"/>
-        <location filename="../qml/pages/HomePage.qml" line="48"/>
-        <location filename="../qml/pages/HomePage.qml" line="129"/>
+        <location filename="../qml/pages/HomePage.qml" line="40"/>
+        <location filename="../qml/pages/HomePage.qml" line="49"/>
+        <location filename="../qml/pages/HomePage.qml" line="153"/>
         <source>Updating firmware</source>
         <translation>Firmware wordt bijgewerkt</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="131"/>
+        <location filename="../qml/pages/HomePage.qml" line="155"/>
         <source>Not reachable. Pull down to pick another player.</source>
         <translation>Niet bereikbaar. Trek omlaag om een andere speler te kiezen.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="123"/>
+        <location filename="../qml/pages/HomePage.qml" line="147"/>
         <source>Connecting</source>
         <translation>Verbinden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="37"/>
+        <location filename="../qml/pages/HomePage.qml" line="38"/>
         <source>Starting update</source>
         <translation>Update wordt gestart</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="41"/>
+        <location filename="../qml/pages/HomePage.qml" line="42"/>
         <source>Restarting</source>
         <translation>Speler herstart</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="43"/>
+        <location filename="../qml/pages/HomePage.qml" line="44"/>
         <source>The update did not start. Restart Swell to try again.</source>
         <translation>De update is niet gestart. Herstart Swell om het opnieuw te proberen.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="45"/>
+        <location filename="../qml/pages/HomePage.qml" line="46"/>
         <source>The update did not finish. Restart Swell to try again.</source>
         <translation>De update is niet afgerond. Herstart Swell om het opnieuw te proberen.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="50"/>
+        <location filename="../qml/pages/HomePage.qml" line="51"/>
         <source>The update was not started.</source>
         <translation>De update is niet gestart.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="135"/>
+        <location filename="../qml/pages/HomePage.qml" line="60"/>
+        <source>Deleting %1</source>
+        <translation>%1 wordt verwijderd</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="62"/>
+        <location filename="../qml/pages/HomePage.qml" line="103"/>
+        <source>Nothing was deleted.</source>
+        <translation>Er is niets verwijderd.</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="102"/>
+        <source>The presets have changed. Nothing was deleted.</source>
+        <translation>De presets zijn gewijzigd. Er is niets verwijderd.</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="159"/>
         <source>Presets</source>
         <translation>Presets</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="210"/>
+        <location filename="../qml/pages/HomePage.qml" line="193"/>
+        <source>Delete</source>
+        <translation>Verwijderen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="254"/>
         <source>No presets on this player. Presets are made in the BluOS Controller app.</source>
         <translation>Geen presets op deze speler. Presets maak je in de BluOS Controller-app.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="50"/>
+        <location filename="../qml/pages/HomePage.qml" line="51"/>
         <source>Update available</source>
         <translation>Update beschikbaar</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="251"/>
+        <location filename="../qml/pages/HomePage.qml" line="295"/>
         <source>Firmware %1</source>
         <translation>Firmware %1</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="257"/>
+        <location filename="../qml/pages/HomePage.qml" line="301"/>
         <source>Inputs</source>
         <translation>Ingangen</translation>
     </message>
