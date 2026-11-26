@@ -28,9 +28,11 @@ Page {
     readonly property bool _tracks: browseModel.listType === "tracks" && fromAlbum
     // Covers in every list except menus and an album's own tracks (B9).
     readonly property bool _images: !root && browseModel.listType !== "menu" && !_tracks
-    readonly property bool _favouriteAlbums: browseModel.favouritesKey.indexOf("LocalMusic:Album/") === 0
+    readonly property bool _favouriteAlbums: browseModel.favouriteAlbums
     readonly property bool _offline: _player !== null && !_player.online && (!browseModel.ready || browseModel.error !== "")
     readonly property string _searchKey: browseModel.searchKey !== "" ? browseModel.searchKey : inheritedSearchKey
+    readonly property bool _hasFavourites: browseModel.favouritesKey !== "" && favouritesModel.ready
+                                           && favouritesModel.count > 0
 
     allowedOrientations: Orientation.All
 
@@ -55,15 +57,6 @@ Page {
         return ""
     }
 
-    function _formatTime(secs) {
-        if (!(secs >= 0)) {
-            return ""
-        }
-        var m = Math.floor(secs / 60)
-        var s = secs % 60
-        return m + ":" + (s < 10 ? "0" : "") + s
-    }
-
     function _open(row) {
         pageStack.push(Qt.resolvedUrl("BrowsePage.qml"), {
             key: row.browseKey,
@@ -79,14 +72,14 @@ Page {
 
     // Starting playback ends the browsing: back to Home in one step, where the
     // mini-player shows what plays (canvas N1-N3). Adding to the queue stays
-    // on the page. Home reports a failed command.
+    // on the page. The app reports a failed command.
     function _play(path) {
         page._player.playPath(path)
         app.returnHome()
     }
     function _run(url, type) {
         page._player.runAction(url, type)
-        if (type.indexOf("-now") > 0 || type === "add-shuffle") {
+        if (browseModel.startsPlayback(type)) {
             app.returnHome()
         }
     }
@@ -117,11 +110,8 @@ Page {
         key: browseModel.favouritesKey
         onKeyChanged: if (key !== "") load()
     }
-    readonly property bool _hasFavourites: browseModel.favouritesKey !== "" && favouritesModel.ready
-                                           && favouritesModel.count > 0
-
     // Only the page in front reacts: a favourite change must not reload (and
-    // reset) the pages below it, and Home already reports failures.
+    // reset) the pages below it; the app reports failures.
     Connections {
         target: page.status === PageStatus.Active ? page._player : null
         onActionDone: {
@@ -131,7 +121,7 @@ Page {
                 if (favouritesModel.key !== "") {
                     favouritesModel.load()
                 }
-            } else if (type.indexOf("-now") < 0 && type !== "add-shuffle") {
+            } else if (!browseModel.startsPlayback(type)) {
                 app.notify(qsTr("Added to the queue"))
             }
         }
@@ -152,6 +142,9 @@ Page {
         anchors.fill: parent
         model: browseModel
         quickScroll: !browseModel.sectioned
+        // No header per letter (the maintainer: it clutters the list); the
+        // section gives currentSection, the letter in view for the index.
+        section.property: "section"
 
         header: Column {
             width: list.width
@@ -314,9 +307,6 @@ Page {
             }
         }
 
-        // No header per letter (the maintainer: it clutters the list); the letter
-        // index shows where the list is.
-
         delegate: ListItem {
             id: item
 
@@ -413,7 +403,7 @@ Page {
                 }
                 font.pixelSize: Theme.fontSizeExtraSmall
                 color: item.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
-                text: model.loaded ? page._formatTime(model.duration) : ""
+                text: model.loaded ? app.formatTime(model.duration) : ""
             }
 
             Component {
@@ -439,8 +429,7 @@ Page {
                 if (browseModel.error !== "") {
                     return qsTr("The player could not load this")
                 }
-                return page.key === "LocalMusic:MG/LocalMusic-Favourites" ? qsTr("No favorites yet")
-                                                                         : qsTr("Nothing here")
+                return browseModel.favouritesList ? qsTr("No favorites yet") : qsTr("Nothing here")
             }
             hintText: {
                 if (page._offline) {
@@ -450,7 +439,7 @@ Page {
                     // The player's own words, or Swell's (translated).
                     return browseModel.playerError ? browseModel.error : qsTr("No usable answer from the player")
                 }
-                return page.key === "LocalMusic:MG/LocalMusic-Favourites"
+                return browseModel.favouritesList
                         ? qsTr("Long press an album, artist or track and choose Add to favorites") : ""
             }
         }
@@ -476,11 +465,7 @@ Page {
         letters: browseModel.letters
         favourites: page._hasFavourites
         // The letter of the part in view stays lit, as in People.
-        current: {
-            list.contentY   // re-evaluate while scrolling
-            var row = list.indexAt(0, list.contentY + Theme.itemSizeSmall)
-            return row < 0 ? "" : browseModel.sectionAt(row)
-        }
+        current: list.currentSection
         onJump: list.positionViewAtIndex(row, ListView.Beginning)
         onTop: list.positionViewAtBeginning()
     }

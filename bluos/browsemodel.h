@@ -44,6 +44,10 @@ class BrowseModel : public QAbstractListModel
     // For a library letter list: the key of the matching favourites list
     // (favourite albums for Albums, …), once the library is seen to offer it.
     Q_PROPERTY(QString favouritesKey READ favouritesKey NOTIFY favouritesKeyChanged)
+    // favouritesKey lists albums (a cover grid) rather than artists (rows).
+    Q_PROPERTY(bool favouriteAlbums READ favouriteAlbums NOTIFY favouritesKeyChanged)
+    // This level is the library's favourites (FavouritesKey).
+    Q_PROPERTY(bool favouritesList READ favouritesList NOTIFY keyChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
@@ -98,18 +102,21 @@ public:
     bool sectioned() const { return m_sectioned; }
     // For a letter index; changes with lettersChanged.
     QList<Letter> letters() const;
-    // The letter of a row, without reading it (for the letter index).
-    Q_INVOKABLE QString sectionAt(int row) const;
     bool expandFirst() const { return m_expandFirst; }
     void setExpandFirst(bool expand);
     // The other links of an expanded menu; changes with readyChanged.
     QList<BrowseItem> moreLinks() const { return m_moreLinks; }
     QString favouritesKey() const { return m_favouritesKey; }
+    bool favouriteAlbums() const;
+    bool favouritesList() const { return m_key == QLatin1String(FavouritesKey); }
     int count() const { return rowCount(); }
 
     // The context-menu types Swell understands (section 7.1, plus the
     // observed add-shuffle); other actions are not offered.
     static bool knownAction(const QString &type);
+    // An action that starts playback (add-now, addAll-now, add-shuffle)
+    // rather than adding to the queue or changing a favourite.
+    Q_INVOKABLE bool startsPlayback(const QString &type) const;
 
 public slots:
     // Reads the level (again). Call once the properties are set.

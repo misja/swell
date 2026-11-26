@@ -24,13 +24,21 @@ class QmlPlayer : public BluOS::Client
 public:
     QmlPlayer(QNetworkAccessManager *nam, const QString &host, int port, QObject *parent);
 
-    QVariantList qmlPresets() const;
-    QVariantList qmlInputs() const;
+    // Built once per change, not on every read (Home reads inputs per tile).
+    QVariantList qmlPresets() const { return m_qmlPresets; }
+    QVariantList qmlInputs() const { return m_qmlInputs; }
 
 signals:
     // moc in Qt 5.6 needs a NOTIFY signal of this class (evidence.md).
     void qmlPresetsChanged();
     void qmlInputsChanged();
+
+private:
+    void updatePresets();
+    void updateInputs();
+
+    QVariantList m_qmlPresets;
+    QVariantList m_qmlInputs;
 };
 
 class QmlPlayerModel : public BluOS::PlayerModel

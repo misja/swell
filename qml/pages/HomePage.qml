@@ -79,14 +79,6 @@ Page {
         }
     }
 
-    Connections {
-        target: _player
-        onCommandFailed: {
-            console.warn("Command", path, "failed:", error)
-            app.notify(qsTr("The player did not accept that."))
-        }
-    }
-
     SilicaFlickable {
         anchors.fill: parent
         contentHeight: column.height + Theme.paddingLarge
@@ -125,13 +117,13 @@ Page {
                     if (_player.online) {
                         return ""
                     }
-                    if (_player.availability === 0) {
+                    if (_player.availability === Player.Connecting) {
                         return qsTr("Connecting")
                     }
-                    if (_player.availability === 3) {
+                    if (_player.availability === Player.NotAPlayer) {
                         return qsTr("Not a BluOS player")
                     }
-                    if (_player.availability === 4) {
+                    if (_player.availability === Player.Updating) {
                         return qsTr("Updating firmware")
                     }
                     return qsTr("Not reachable. Pull down to pick another player.")

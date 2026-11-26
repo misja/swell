@@ -17,6 +17,11 @@ Page {
     readonly property bool _empty: _player !== null && _player.online && !_player.hasContent
     // Scroll along while Per player opens, until the user scrolls.
     property bool _followGrowth: false
+    // Artwork edge: the short side of the page, flush with the page edges
+    // (Silica pitfalls); beside the controls in landscape.
+    readonly property real _artSize: isLandscape ? height : width
+
+    allowedOrientations: Orientation.All
 
     // Members keep their own volume current only while it is shown.
     Binding {
@@ -25,11 +30,6 @@ Page {
         value: page.status === PageStatus.Active && Qt.application.active && page._leads && page._perPlayer
     }
     Component.onDestruction: players.watchGroup = false
-    // Artwork edge: the short side of the page, flush with the page edges
-    // (Silica pitfalls); beside the controls in landscape.
-    readonly property real _artSize: isLandscape ? height : width
-
-    allowedOrientations: Orientation.All
 
     // The queue is the page attached to Now Playing (swipe left).
     onStatusChanged: {
@@ -50,15 +50,6 @@ Page {
             return _player.primaryReconnecting ? qsTr("Reconnecting") : qsTr("In another player's group")
         }
         return ""
-    }
-
-    function _formatTime(secs) {
-        if (secs < 0) {
-            return ""
-        }
-        var m = Math.floor(secs / 60)
-        var s = secs % 60
-        return m + ":" + (s < 10 ? "0" : "") + s
     }
 
     SilicaFlickable {
@@ -129,237 +120,237 @@ Page {
                     width: parent.width
                     spacing: Theme.paddingMedium
 
-                InfoLabel {
-                    visible: page._empty
-                    text: qsTr("Nothing to play")
-                }
-
-                // The API requires title1..title3 for three-line now-playing text.
-                Column {
-                    visible: !page._empty
-                    x: Theme.horizontalPageMargin
-                    width: parent.width - 2 * Theme.horizontalPageMargin
-
-                    Label {
-                        width: parent.width
-                        horizontalAlignment: Text.AlignHCenter
-                        truncationMode: TruncationMode.Fade
-                        font.pixelSize: Theme.fontSizeLarge
-                        color: Theme.highlightColor
-                        text: _player ? _player.title1 : ""
+                    InfoLabel {
+                        visible: page._empty
+                        text: qsTr("Nothing to play")
                     }
-                    Label {
-                        width: parent.width
-                        horizontalAlignment: Text.AlignHCenter
-                        truncationMode: TruncationMode.Fade
-                        text: _player ? _player.title2 : ""
-                    }
-                    Label {
-                        width: parent.width
-                        horizontalAlignment: Text.AlignHCenter
-                        truncationMode: TruncationMode.Fade
-                        font.pixelSize: Theme.fontSizeSmall
-                        color: Theme.secondaryColor
-                        text: _player ? _player.title3 : ""
-                    }
-                }
 
-                // Display only: the MVP does not seek.
-                Column {
-                    x: Theme.horizontalPageMargin
-                    width: parent.width - 2 * Theme.horizontalPageMargin
-                    visible: _player && _player.duration > 0
+                    // The API requires title1..title3 for three-line now-playing text.
+                    Column {
+                        visible: !page._empty
+                        x: Theme.horizontalPageMargin
+                        width: parent.width - 2 * Theme.horizontalPageMargin
 
-                    ProgressBar {
-                        width: parent.width
-                        leftMargin: 0
-                        rightMargin: 0
-                        minimumValue: 0
-                        maximumValue: _player && _player.duration > 0 ? _player.duration : 1
-                        value: _player && _player.position > 0 ? _player.position : 0
-                    }
-                    Item {
-                        width: parent.width
-                        height: elapsed.height
                         Label {
-                            id: elapsed
-                            font.pixelSize: Theme.fontSizeExtraSmall
-                            color: Theme.secondaryColor
-                            text: _player ? page._formatTime(_player.position) : ""
+                            width: parent.width
+                            horizontalAlignment: Text.AlignHCenter
+                            truncationMode: TruncationMode.Fade
+                            font.pixelSize: Theme.fontSizeLarge
+                            color: Theme.highlightColor
+                            text: _player ? _player.title1 : ""
                         }
                         Label {
-                            anchors.right: parent.right
-                            font.pixelSize: Theme.fontSizeExtraSmall
+                            width: parent.width
+                            horizontalAlignment: Text.AlignHCenter
+                            truncationMode: TruncationMode.Fade
+                            text: _player ? _player.title2 : ""
+                        }
+                        Label {
+                            width: parent.width
+                            horizontalAlignment: Text.AlignHCenter
+                            truncationMode: TruncationMode.Fade
+                            font.pixelSize: Theme.fontSizeSmall
                             color: Theme.secondaryColor
-                            text: _player ? page._formatTime(_player.duration) : ""
+                            text: _player ? _player.title3 : ""
                         }
                     }
-                }
 
-                Row {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    spacing: Theme.paddingLarge
-                    visible: !page._empty
+                    // Display only: the MVP does not seek.
+                    Column {
+                        x: Theme.horizontalPageMargin
+                        width: parent.width - 2 * Theme.horizontalPageMargin
+                        visible: _player && _player.duration > 0
 
-                    // Hidden, not greyed, when the source has nothing to go back or
-                    // forward to (plain radio: streamUrl without actions, API 4.8).
-                    IconButton {
-                        anchors.verticalCenter: parent.verticalCenter
-                        icon.source: "image://theme/icon-m-previous"
-                        visible: _player && _player.canBack
-                        enabled: _player && _player.online
-                        onClicked: _player.back()
-                    }
-                    IconButton {
-                        anchors.verticalCenter: parent.verticalCenter
-                        icon.source: _player && _player.playing ? "image://theme/icon-l-pause" : "image://theme/icon-l-play"
-                        enabled: _player && _player.online
-                        onClicked: _player.playing ? _player.pause() : _player.play()
-                    }
-                    IconButton {
-                        anchors.verticalCenter: parent.verticalCenter
-                        icon.source: "image://theme/icon-m-next"
-                        visible: _player && _player.canSkip
-                        enabled: _player && _player.online
-                        onClicked: _player.skip()
-                    }
-                }
-
-                Row {
-                    x: Theme.paddingMedium
-                    width: parent.width - Theme.paddingMedium
-                    // Hidden when the player reports a fixed volume (volume=-1),
-                    // unless it leads a group.
-                    visible: _player && (page._leads ? (_player.groupVolume >= 0 || !_player.fixedVolume)
-                                                     : !_player.fixedVolume)
-
-                    IconButton {
-                        id: mute
-                        anchors.verticalCenter: parent.verticalCenter
-                        icon.source: (page._leads ? players.currentGroupMuted : _player && _player.muted)
-                                     ? "image://theme/icon-m-speaker-mute" : "image://theme/icon-m-speaker"
-                        enabled: _player && _player.online
-                        // A leader mutes the whole group, like its slider.
-                        onClicked: {
-                            if (page._leads) {
-                                _player.setGroupMuted(!players.currentGroupMuted)
-                            } else {
-                                _player.setMuted(!_player.muted)
+                        ProgressBar {
+                            width: parent.width
+                            leftMargin: 0
+                            rightMargin: 0
+                            minimumValue: 0
+                            maximumValue: _player && _player.duration > 0 ? _player.duration : 1
+                            value: _player && _player.position > 0 ? _player.position : 0
+                        }
+                        Item {
+                            width: parent.width
+                            height: elapsed.height
+                            Label {
+                                id: elapsed
+                                font.pixelSize: Theme.fontSizeExtraSmall
+                                color: Theme.secondaryColor
+                                text: _player ? app.formatTime(_player.position) : ""
+                            }
+                            Label {
+                                anchors.right: parent.right
+                                font.pixelSize: Theme.fontSizeExtraSmall
+                                color: Theme.secondaryColor
+                                text: _player ? app.formatTime(_player.duration) : ""
                             }
                         }
                     }
 
-                    Slider {
-                        id: volume
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: parent.width - mute.width
-                        minimumValue: 0
-                        maximumValue: 100
-                        stepSize: 1
-                        enabled: _player && _player.online
-                        label: page._leads ? qsTr("Group volume") : qsTr("Volume")
-                        valueText: Math.round(value)
+                    Row {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        spacing: Theme.paddingLarge
+                        visible: !page._empty
 
-                        // Follow the player, except while the user drags.
-                        Binding {
-                            target: volume
-                            property: "value"
-                            value: {
-                                if (!_player) {
-                                    return 0
-                                }
-                                if (page._leads && _player.groupVolume >= 0) {
-                                    return _player.groupVolume
-                                }
-                                return Math.max(0, _player.volume)
-                            }
-                            when: !volume.down
+                        // Hidden, not greyed, when the source has nothing to go back or
+                        // forward to (plain radio: streamUrl without actions, API 4.8).
+                        IconButton {
+                            anchors.verticalCenter: parent.verticalCenter
+                            icon.source: "image://theme/icon-m-previous"
+                            visible: _player && _player.canBack
+                            enabled: _player && _player.online
+                            onClicked: _player.back()
                         }
-                        onValueChanged: {
-                            if (down && _player) {
+                        IconButton {
+                            anchors.verticalCenter: parent.verticalCenter
+                            icon.source: _player && _player.playing ? "image://theme/icon-l-pause" : "image://theme/icon-l-play"
+                            enabled: _player && _player.online
+                            onClicked: _player.playing ? _player.pause() : _player.play()
+                        }
+                        IconButton {
+                            anchors.verticalCenter: parent.verticalCenter
+                            icon.source: "image://theme/icon-m-next"
+                            visible: _player && _player.canSkip
+                            enabled: _player && _player.online
+                            onClicked: _player.skip()
+                        }
+                    }
+
+                    Row {
+                        x: Theme.paddingMedium
+                        width: parent.width - Theme.paddingMedium
+                        // Hidden when the player reports a fixed volume (volume=-1),
+                        // unless it leads a group.
+                        visible: _player && (page._leads ? (_player.groupVolume >= 0 || !_player.fixedVolume)
+                                                         : !_player.fixedVolume)
+
+                        IconButton {
+                            id: mute
+                            anchors.verticalCenter: parent.verticalCenter
+                            icon.source: (page._leads ? players.currentGroupMuted : _player && _player.muted)
+                                         ? "image://theme/icon-m-speaker-mute" : "image://theme/icon-m-speaker"
+                            enabled: _player && _player.online
+                            // A leader mutes the whole group, like its slider.
+                            onClicked: {
                                 if (page._leads) {
-                                    _player.setGroupVolume(Math.round(value))
+                                    _player.setGroupMuted(!players.currentGroupMuted)
                                 } else {
-                                    _player.setVolume(Math.round(value))
+                                    _player.setMuted(!_player.muted)
+                                }
+                            }
+                        }
+
+                        Slider {
+                            id: volume
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: parent.width - mute.width
+                            minimumValue: 0
+                            maximumValue: 100
+                            stepSize: 1
+                            enabled: _player && _player.online
+                            label: page._leads ? qsTr("Group volume") : qsTr("Volume")
+                            valueText: Math.round(value)
+
+                            // Follow the player, except while the user drags.
+                            Binding {
+                                target: volume
+                                property: "value"
+                                value: {
+                                    if (!_player) {
+                                        return 0
+                                    }
+                                    if (page._leads && _player.groupVolume >= 0) {
+                                        return _player.groupVolume
+                                    }
+                                    return Math.max(0, _player.volume)
+                                }
+                                when: !volume.down
+                            }
+                            onValueChanged: {
+                                if (down && _player) {
+                                    if (page._leads) {
+                                        _player.setGroupVolume(Math.round(value))
+                                    } else {
+                                        _player.setVolume(Math.round(value))
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                // Silica's own fold-out; members are watched only while open.
-                ExpandingSection {
-                    id: perPlayer
-                    visible: page._leads
-                    title: qsTr("Per player")
-                    onExpandedChanged: {
-                        page._perPlayer = expanded
-                        // The members sit below the fold: keep the bottom in
-                        // view while the section grows.
-                        page._followGrowth = expanded
-                    }
-                    onHeightChanged: {
-                        if (page._followGrowth) {
-                            flickable.scrollToBottom()
+                    // Silica's own fold-out; members are watched only while open.
+                    ExpandingSection {
+                        id: perPlayer
+                        visible: page._leads
+                        title: qsTr("Per player")
+                        onExpandedChanged: {
+                            page._perPlayer = expanded
+                            // The members sit below the fold: keep the bottom in
+                            // view while the section grows.
+                            page._followGrowth = expanded
                         }
-                    }
+                        onHeightChanged: {
+                            if (page._followGrowth) {
+                                flickable.scrollToBottom()
+                            }
+                        }
 
-                    content.sourceComponent: Column {
-                        width: perPlayer.width
-                        Repeater {
-                            model: players
-                            delegate: Row {
-                                visible: model.playerId === players.currentId
-                                         || players.currentMemberIds.indexOf(model.playerId) >= 0
-                                x: Theme.paddingMedium
-                                width: parent.width - Theme.paddingMedium
-
-                                // This member's own mute.
-                                IconButton {
-                                    width: mute.width
-                                    height: Theme.itemSizeSmall
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    // The theme's small volume icons, drawn for this size.
-                                    icon.source: model.muted ? "image://theme/icon-system-volume-mute" : "image://theme/icon-system-volume"
-                                    enabled: model.online
-                                    onClicked: players.setPlayerMuted(model.playerId, !model.muted)
+                        content.sourceComponent: Column {
+                            width: perPlayer.width
+                            Repeater {
+                                model: CurrentGroup {
+                                    sourceModel: players
                                 }
+                                delegate: Row {
+                                    x: Theme.paddingMedium
+                                    width: parent.width - Theme.paddingMedium
 
-                                // A member with a fixed volume: its name only.
-                                Label {
-                                    visible: model.volume < 0
-                                    width: parent.width - mute.width
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    text: qsTr("%1: fixed volume").arg(model.name)
-                                    color: Theme.secondaryColor
-                                }
-                                Slider {
-                                    id: member
-                                    visible: model.volume >= 0
-                                    width: parent.width - mute.width
-                                    enabled: model.online
-                                    minimumValue: 0
-                                    maximumValue: 100
-                                    stepSize: 1
-                                    label: model.name
-                                    valueText: Math.round(value)
-
-                                    Binding {
-                                        target: member
-                                        property: "value"
-                                        value: Math.max(0, model.volume)
-                                        when: !member.down
+                                    // This member's own mute.
+                                    IconButton {
+                                        width: mute.width
+                                        height: Theme.itemSizeSmall
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        // The theme's small volume icons, drawn for this size.
+                                        icon.source: model.muted ? "image://theme/icon-system-volume-mute" : "image://theme/icon-system-volume"
+                                        enabled: model.online
+                                        onClicked: players.setPlayerMuted(model.playerId, !model.muted)
                                     }
-                                    onValueChanged: {
-                                        if (down) {
-                                            players.setPlayerVolume(model.playerId, Math.round(value))
+
+                                    // A member with a fixed volume: its name only.
+                                    Label {
+                                        visible: model.volume < 0
+                                        width: parent.width - mute.width
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: qsTr("%1: fixed volume").arg(model.name)
+                                        color: Theme.secondaryColor
+                                    }
+                                    Slider {
+                                        id: member
+                                        visible: model.volume >= 0
+                                        width: parent.width - mute.width
+                                        enabled: model.online
+                                        minimumValue: 0
+                                        maximumValue: 100
+                                        stepSize: 1
+                                        label: model.name
+                                        valueText: Math.round(value)
+
+                                        Binding {
+                                            target: member
+                                            property: "value"
+                                            value: Math.max(0, model.volume)
+                                            when: !member.down
+                                        }
+                                        onValueChanged: {
+                                            if (down) {
+                                                players.setPlayerVolume(model.playerId, Math.round(value))
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                     }
-                }
                 }
             }
         }

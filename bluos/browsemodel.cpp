@@ -45,6 +45,17 @@ bool BrowseModel::knownAction(const QString &type)
     return known.contains(type);
 }
 
+bool BrowseModel::startsPlayback(const QString &type) const
+{
+    return type == QLatin1String("add-now") || type == QLatin1String("addAll-now")
+            || type == QLatin1String("add-shuffle");
+}
+
+bool BrowseModel::favouriteAlbums() const
+{
+    return m_favouritesKey.startsWith(QLatin1String("LocalMusic:Album/"));
+}
+
 void BrowseModel::setClient(Client *client)
 {
     if (m_client == client)
@@ -127,14 +138,19 @@ QVariant BrowseModel::data(const QModelIndex &index, int role) const
         if (row == 0) {
             switch (role) {
             case TypeRole: return QStringLiteral("link");
+            case TextRole: return QString();
             case Text2Role: return m_favouritesName;
+            case ImageRole: return QUrl();
             case BrowseKeyRole: return QString::fromLatin1(FavouritesKey);
+            case PlayUrlRole: return QString();
+            case AutoplayUrlRole: return QString();
+            case DurationRole: return -1;
+            case ActionsRole: return QVariant::fromValue(QList<BrowseAction>());
+            case SectionRole: return QString();
             case LoadedRole: return true;
             case FavouritesRole: return true;
-            case ImageRole: return QUrl();
-            case DurationRole: return -1;
-            default: return QVariant();
             }
+            return QVariant();
         }
         --row;
     }
@@ -182,15 +198,6 @@ QHash<int, QByteArray> BrowseModel::roleNames() const
         { LoadedRole, "loaded" },
         { FavouritesRole, "favourites" },
     };
-}
-
-QString BrowseModel::sectionAt(int row) const
-{
-    if (!m_sectioned || row < 0)
-        return QString();
-    int offset = 0;
-    const int segment = segmentOf(row - (m_favourites ? 1 : 0), &offset);
-    return segment < 0 ? QString() : m_segments.at(segment).title;
 }
 
 QList<BrowseModel::Letter> BrowseModel::letters() const
@@ -277,7 +284,7 @@ void BrowseModel::onFirst(const Browse &reply)
                 Segment s;
                 s.key = item.browseKey;
                 s.title = item.text;
-                s.rows = QVector<Row>(countOf(item.text2));
+                s.rows = QVector<Row>(qMin(countOf(item.text2), MaxListLength));
                 m_segments.append(s);
             }
         } else {

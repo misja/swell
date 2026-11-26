@@ -35,6 +35,7 @@ private slots:
     void ownDeletesWithAnUnchangedId();
     void statusBeforeTheDeleteReply();
     void foreignChangeAfterOwnDeleteReloads();
+    void aReportedLengthIsBounded();
     void removeAfterClearIsRefused();
     void currentMarkerAcrossOwnDelete();
     void noRepeatedReloadDuringTheFirstRead();
@@ -55,6 +56,7 @@ private:
     Client *m_client = nullptr;
     QStringList m_queue;   // the player's queue: titles by position
     int m_pid = 7;
+    qint64 m_reportedLength = -1;   // a length other than the queue's, when set
     int m_etag = 0;
     bool m_bumpOnDelete = true;
 };
@@ -68,12 +70,15 @@ void TstQueue::init()
     for (int i = 0; i < 300; ++i)
         m_queue << QStringLiteral("Track %1").arg(i);
     m_pid = 7;
+    m_reportedLength = -1;
     m_bumpOnDelete = true;
     m_player->serve(QStringLiteral("/SyncStatus"), "<SyncStatus etag=\"s\" syncStat=\"s\" name=\"Den\" volume=\"20\"/>");
     m_player->handle(QStringLiteral("/Playlist"), [this](const QUrlQuery &q) {
         const int start = q.queryItemValue(QStringLiteral("start")).toInt();
         const int end = q.queryItemValue(QStringLiteral("end")).toInt();
-        QByteArray xml = "<playlist length=\"" + QByteArray::number(m_queue.size()) + "\" id=\""
+        const QByteArray length = m_reportedLength >= 0 ? QByteArray::number(m_reportedLength)
+                                                        : QByteArray::number(m_queue.size());
+        QByteArray xml = "<playlist length=\"" + length + "\" id=\""
                 + QByteArray::number(m_pid) + "\">";
         for (int i = start; i <= end && i < m_queue.size(); ++i) {
             xml += "<song id=\"" + QByteArray::number(i) + "\" songid=\"S:" + m_queue.at(i).toUtf8()
@@ -599,4 +604,14 @@ void TstQueue::playFromSendsId()
 }
 
 QTEST_GUILESS_MAIN(TstQueue)
+void TstQueue::aReportedLengthIsBounded()
+{
+    m_reportedLength = 2000000000;
+    startClient();
+    QueueModel *q = m_client->queue();
+    q->setActive(true);
+    QTRY_COMPARE(q->length(), MaxListLength);
+    QTRY_COMPARE(title(0), QStringLiteral("Track 0"));
+}
+
 #include "tst_queue.moc"

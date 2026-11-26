@@ -82,11 +82,11 @@ public:
     // when it joins a group elsewhere.
     // The model id for a member reference from /SyncStatus ("IP:port"): by
     // id, then by each player's own reported id. Empty if none matches.
-    Q_INVOKABLE QString memberId(const QString &ref) const;
+    QString memberId(const QString &ref) const;
     // The primary's model id for a secondary, empty otherwise.
-    Q_INVOKABLE QString leaderOf(const QString &id) const;
+    QString leaderOf(const QString &id) const;
     // A primary's secondaries: model ids, or the reference when not known.
-    Q_INVOKABLE QStringList memberIds(const QString &leaderId) const;
+    QStringList memberIds(const QString &leaderId) const;
     // Adds a player to the current player's group.
     Q_INVOKABLE void join(const QString &id);
     // Takes a secondary out of its group, through its primary (leaderId when
@@ -96,7 +96,7 @@ public:
     Q_INVOKABLE void setPlayerVolume(const QString &id, int level);
     Q_INVOKABLE void setPlayerMuted(const QString &id, bool muted);
     // Whether a primary and all its secondaries are muted.
-    Q_INVOKABLE bool groupMuted(const QString &leaderId) const;
+    bool groupMuted(const QString &leaderId) const;
     // Makes a remembered player current at once, before discovery answers. With
     // its node id, a later announcement at a new address moves it there.
     Q_INVOKABLE void restoreCurrent(const QString &id, const QString &nodeId);
@@ -105,10 +105,9 @@ public:
     Q_INVOKABLE bool addManual(const QString &address);
     Q_INVOKABLE void removeManual(const QString &id);
     Q_INVOKABLE void search();
-    Q_INVOKABLE int indexOf(const QString &id) const;
+    int indexOf(const QString &id) const;
     Q_INVOKABLE bool isValidAddress(const QString &address) const;
     Q_INVOKABLE QString idAt(int row) const;
-    Q_INVOKABLE QString nameAt(int row) const;
     Client *client(const QString &id) const;
 
     static bool parseAddress(const QString &address, QString *host, int *port);
@@ -146,7 +145,12 @@ private:
     void restoreUpgradeStart(const Entry &entry);
     void insert(const Entry &entry);
     void removeAt(int row);
+    // A client's /Status changed: only its own row.
+    void statusChanged(Client *client);
+    // Its availability or /SyncStatus changed: its row, and the rows that
+    // show its group.
     void clientChanged();
+    int rowOf(const Client *client) const;
     void applyPolicy();
     void updateCurrentGroup();
     // "IP:port" for /AddSlave and /RemoveSlave, which take IP addresses.

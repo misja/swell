@@ -13,6 +13,11 @@
 
 namespace BluOS {
 
+// The most rows Swell makes for a length a player reports (a queue, a
+// letter of a library list). Swell's own bound against a wrong or hostile
+// number, not a limit of the API or of a player; rows beyond it are not shown.
+constexpr int MaxListLength = 100000;
+
 // /Status (section 2.1).
 struct Status {
     bool ok = false;
@@ -245,6 +250,9 @@ SyncStatus parseSyncStatus(const QByteArray &xml);
 GroupAdd parseGroupAdd(const QByteArray &xml);
 VolumeReply parseVolume(const QByteArray &xml);
 UpgradeCheck parseUpgradeCheck(const QByteArray &xml);
+// The message of an <error> document (API 7.1), "error" when it has none;
+// empty when the document is not an <error>.
+QString parseError(const QByteArray &xml);
 
 } // namespace BluOS
 

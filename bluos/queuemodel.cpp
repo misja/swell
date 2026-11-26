@@ -235,11 +235,11 @@ void QueueModel::adopt(const QString &pid)
 
 void QueueModel::setLength(int length)
 {
-    if (length == m_rows.size()) {
+    if (qBound(0, length, MaxListLength) == m_rows.size()) {
         return;
     }
     beginResetModel();
-    m_rows = QVector<Row>(qMax(0, length));
+    m_rows = QVector<Row>(qBound(0, length, MaxListLength));
     endResetModel();
     emit lengthChanged();
 }
@@ -321,7 +321,7 @@ void QueueModel::onWindow(int generation, int window, const Playlist &playlist)
         m_failed.remove(window);
         const bool wasKnown = m_known;
         m_known = true;
-        if (playlist.length != m_rows.size()) {
+        if (qBound(0, playlist.length, MaxListLength) != m_rows.size()) {
             setLength(playlist.length);
         } else if (!wasKnown) {
             emit lengthChanged();

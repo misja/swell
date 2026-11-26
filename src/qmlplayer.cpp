@@ -8,11 +8,11 @@ namespace Swell {
 QmlPlayer::QmlPlayer(QNetworkAccessManager *nam, const QString &host, int port, QObject *parent)
     : BluOS::Client(nam, host, port, parent)
 {
-    connect(this, &BluOS::Client::presetsChanged, this, &QmlPlayer::qmlPresetsChanged);
-    connect(this, &BluOS::Client::inputsChanged, this, &QmlPlayer::qmlInputsChanged);
+    connect(this, &BluOS::Client::presetsChanged, this, &QmlPlayer::updatePresets);
+    connect(this, &BluOS::Client::inputsChanged, this, &QmlPlayer::updateInputs);
 }
 
-QVariantList QmlPlayer::qmlPresets() const
+void QmlPlayer::updatePresets()
 {
     QVariantList list;
     for (const BluOS::Preset &p : presets()) {
@@ -24,10 +24,11 @@ QVariantList QmlPlayer::qmlPresets() const
         item.insert(QStringLiteral("inputId"), p.inputId());
         list.append(item);
     }
-    return list;
+    m_qmlPresets = list;
+    emit qmlPresetsChanged();
 }
 
-QVariantList QmlPlayer::qmlInputs() const
+void QmlPlayer::updateInputs()
 {
     QVariantList list;
     for (const BluOS::Input &in : inputs()) {
@@ -39,7 +40,8 @@ QVariantList QmlPlayer::qmlInputs() const
         item.insert(QStringLiteral("url"), in.url);
         list.append(item);
     }
-    return list;
+    m_qmlInputs = list;
+    emit qmlInputsChanged();
 }
 
 BluOS::Client *QmlPlayerModel::newClient(QNetworkAccessManager *nam, const QString &host, int port,

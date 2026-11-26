@@ -5,11 +5,18 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QXmlStreamReader>
 
 namespace BluOS {
 
 namespace {
+
+// "host:port" for /AddSlave and /RemoveSlave; the API's port when none is given.
+void splitId(const QString &id, QString *host, QString *port)
+{
+    const int colon = id.lastIndexOf(QLatin1Char(':'));
+    *host = colon > 0 ? id.left(colon) : id;
+    *port = colon > 0 ? id.mid(colon + 1) : QStringLiteral("11000");
+}
 
 QString describe(QNetworkReply *reply)
 {
@@ -216,7 +223,7 @@ void Client::runAction(const QString &playerPath, const QString &type)
     }
     // Not through the merging gate: two adds are two adds.
     fetch(path, query, [this, path, type](const QByteArray &body) {
-        const QString error = body.isEmpty() ? QStringLiteral("no answer") : errorIn(body);
+        const QString error = body.isEmpty() ? QStringLiteral("no answer") : parseError(body);
         if (error.isEmpty()) {
             emit actionDone(type);
         } else {
@@ -307,10 +314,12 @@ void Client::nextGroupCommand()
         return;
     }
     const QString target = m_pendingAdds.takeFirst();
-    const int colon = target.lastIndexOf(QLatin1Char(':'));
+    QString host;
+    QString port;
+    splitId(target, &host, &port);
     QUrlQuery query;
-    query.addQueryItem(QStringLiteral("slave"), colon > 0 ? target.left(colon) : target);
-    query.addQueryItem(QStringLiteral("port"), colon > 0 ? target.mid(colon + 1) : QStringLiteral("11000"));
+    query.addQueryItem(QStringLiteral("slave"), host);
+    query.addQueryItem(QStringLiteral("port"), port);
     m_groupCommandRunning = true;
     setGroupBusy(true);
     fetch(QStringLiteral("/AddSlave"), encoded(query), [this, target](const QByteArray &body) {
@@ -318,9 +327,10 @@ void Client::nextGroupCommand()
         const GroupAdd answer = parseGroupAdd(body);
         if (body.isEmpty())
             emit commandFailed(QStringLiteral("/AddSlave"), QStringLiteral("no answer"));
-        else if (!answer.ok)
-            emit commandFailed(QStringLiteral("/AddSlave"),
-                               errorIn(body).isEmpty() ? answer.error : errorIn(body));
+        else if (!answer.ok) {
+            const QString playerError = parseError(body);
+            emit commandFailed(QStringLiteral("/AddSlave"), playerError.isEmpty() ? answer.error : playerError);
+        }
         else if (!answer.added.contains(target))
             emit commandFailed(QStringLiteral("/AddSlave"), QStringLiteral("%1 was not added").arg(target));
         fetchSyncStatus();
@@ -335,9 +345,11 @@ void Client::removeSecondaries(const QStringList &ids)
     QStringList hosts;
     QStringList ports;
     for (const QString &target : ids) {
-        const int colon = target.lastIndexOf(QLatin1Char(':'));
-        hosts << (colon > 0 ? target.left(colon) : target);
-        ports << (colon > 0 ? target.mid(colon + 1) : QStringLiteral("11000"));
+        QString host;
+        QString port;
+        splitId(target, &host, &port);
+        hosts << host;
+        ports << port;
     }
     QUrlQuery query;
     const bool one = ids.size() == 1;
@@ -352,7 +364,7 @@ void Client::removeSecondaries(const QStringList &ids)
             takeSyncStatus(sync);
         else
             emit commandFailed(QStringLiteral("/RemoveSlave"),
-                               body.isEmpty() ? QStringLiteral("no answer") : errorIn(body));
+                               body.isEmpty() ? QStringLiteral("no answer") : parseError(body));
         setGroupBusy(m_groupCommandRunning || !m_pendingAdds.isEmpty());
     });
 }
@@ -533,7 +545,7 @@ void Client::processRemovals()
         m_queue->setHoldPid(true);
         // Not through the merging gate: removals are not idempotent.
         fetch(QStringLiteral("/Delete"), encoded(query), [this, removal, generation](const QByteArray &body) {
-            const QString error = body.isEmpty() ? QStringLiteral("no answer") : errorIn(body);
+            const QString error = body.isEmpty() ? QStringLiteral("no answer") : parseError(body);
             m_removals.removeFirst();
             if (!error.isEmpty()) {
                 emit commandFailed(QStringLiteral("/Delete"), error);
@@ -594,26 +606,9 @@ void Client::clearQueue()
         if (cleared.ok) {
             m_queue->resetTo(cleared.id, cleared.length);
         } else {
-            emit commandFailed(QStringLiteral("/Clear"), body.isEmpty() ? QStringLiteral("no answer") : errorIn(body));
+            emit commandFailed(QStringLiteral("/Clear"), body.isEmpty() ? QStringLiteral("no answer") : parseError(body));
         }
     });
-}
-
-QString Client::errorIn(const QByteArray &body)
-{
-    QXmlStreamReader xml(body);
-    if (!xml.readNextStartElement() || xml.name() != QLatin1String("error")) {
-        return QString();
-    }
-    QString message;
-    while (xml.readNextStartElement()) {
-        if (xml.name() == QLatin1String("message")) {
-            message = xml.readElementText();
-        } else {
-            xml.skipCurrentElement();
-        }
-    }
-    return message.isEmpty() ? QStringLiteral("error") : message;
 }
 
 QString Client::encoded(const QUrlQuery &query)
@@ -900,7 +895,7 @@ void Client::onCommandReply(QNetworkReply *reply, const QString &path)
     }
     const QByteArray body = reply->readAll();
     // A command can also fail with an <error> document (API 7.1).
-    const QString error = errorIn(body);
+    const QString error = parseError(body);
     if (!error.isEmpty()) {
         emit commandFailed(path, error);
         return;
@@ -1077,12 +1072,9 @@ void Client::startUpgrade(const QString &version)
     // (cancelUpgradeStart) ignores its answer.
     const int generation = ++m_upgradeStartGeneration;
     setUpgradePhase(UpgradeChecking);
-    fetch(QStringLiteral("/upgrade"), QStringLiteral("upgrade=check"), [this, generation, version](const QByteArray &body) {
+    fetchUpgradeCheck([this, generation, version](const UpgradeCheck &check) {
         if (generation != m_upgradeStartGeneration)
             return;
-        const UpgradeCheck check = parseUpgradeCheck(body);
-        if (m_running)
-            takeUpgradeCheck(check);
         // Equality only: the release the user confirmed, nothing else.
         if (!check.ok || !check.available || check.inProgress || check.version != version
                 || !upgradeStartAllowed()) {
@@ -1093,7 +1085,7 @@ void Client::startUpgrade(const QString &version)
             return;
         }
         sendUpgradeStart();
-    }, m_timing.upgradeTimeoutMs);
+    });
 }
 
 // In the same turn as the test above, unpaced.

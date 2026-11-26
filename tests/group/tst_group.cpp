@@ -8,6 +8,7 @@
 #include "playerlistmodel.h"
 #include "playermodel.h"
 #include "fakehousehold.h"
+#include "timing.h"
 
 using namespace BluOS;
 
@@ -46,6 +47,8 @@ private slots:
     void leaveWithoutALeaderUsesTheCurrentOnlyIfItListsTheMember();
     void theCurrentGroupIsAProperty();
     void thePlayerListShowsOneRowPerGroup();
+    void perPlayerShowsTheCurrentGroup();
+    void aStatusChangesOnlyItsOwnRow();
     void pairHalvesHubsAndZonesCannotJoin();
     void onlyTheCurrentPlayerIsAskedForFirmware();
 
@@ -59,14 +62,9 @@ private:
 
 static Client::Timing fast()
 {
-    Client::Timing t;
-    t.pollTimeoutSecs = 1;
+    Client::Timing t = fastTiming();
     t.syncPollTimeoutSecs = 2;
-    t.deadlineGraceMs = 2000;
-    t.commandTimeoutMs = 3000;
     t.minIntervalMs = 200;
-    t.backoffInitialMs = 200;
-    t.backoffMaxMs = 400;
     return t;
 }
 
@@ -216,8 +214,7 @@ void TstGroup::groupVolumeIsKeptApartFromOwnVolume()
     const auto requests = m_house->player(0)->requests(QStringLiteral("/Volume"));
     QCOMPARE(requests.at(0).target, QByteArray("/Volume?level=40&tell_slaves=1"));
     QCOMPARE(requests.at(1).target, QByteArray("/Volume?level=12"));
-    QCOMPARE(m_house->volume(1), 40);
-    QCOMPARE(m_house->volume(2), 40);
+    // What the members then have is the double's invention (FakeHousehold).
     QCOMPARE(m_house->volume(0), 12);
 }
 
@@ -231,7 +228,14 @@ void TstGroup::aSecondarysVolumeNeedsTheSyncWatch()
     QTRY_COMPARE(watched->groupRole(), Client::Secondary);
     QTRY_COMPARE(unwatched->groupRole(), Client::Secondary);
     watched->setSyncWatch(true);
-    QTest::qWait(300);
+    // The watch's long poll is held before the change.
+    auto watching = [this]() {
+        for (const auto &r : m_house->player(1)->requests(QStringLiteral("/SyncStatus")))
+            if (r.query.hasQueryItem(QStringLiteral("timeout")))
+                return true;
+        return false;
+    };
+    QTRY_VERIFY(watching());
     m_house->setVolume(1, 77);
     m_house->setVolume(2, 66);
     QTRY_COMPARE(watched->volume(), 77);
@@ -422,7 +426,8 @@ static QByteArray announce(char node, quint16 classId, quint16 port)
 
 void TstGroup::pairHalvesHubsAndZonesCannotJoin()
 {
-    auto *house = new FakeHousehold(5, this);
+    // Before the model, so the model's clients go first.
+    QScopedPointer<FakeHousehold> house(new FakeHousehold(5));
     house->setFixedSecondary(2, true);
     PlayerModel model;
     model.setClientTiming(fast());
@@ -446,7 +451,6 @@ void TstGroup::pairHalvesHubsAndZonesCannotJoin()
     QVERIFY(!canJoin(house->id(3)));   // the second half of a stereo pair
     QVERIFY(!canJoin(house->id(4)));   // a Hub
     model.setPollAll(false);
-    delete house;
 }
 
 void TstGroup::groupAndMemberMute()
@@ -552,6 +556,45 @@ void TstGroup::thePlayerListShowsOneRowPerGroup()
              QStringList({ m_house->id(1), m_house->id(2) }));
     model->leave(m_house->id(2), m_house->id(0));
     QTRY_COMPARE(list.rowCount(), 2);
+}
+
+void TstGroup::aStatusChangesOnlyItsOwnRow()
+{
+    // /Status shows only on the player's own row; its group, name and
+    // reachability are in /SyncStatus.
+    QScopedPointer<PlayerModel> model(household(m_house, nullptr));
+    model->setPollAll(true);
+    for (int i = 0; i < m_house->size(); ++i)
+        QTRY_VERIFY(model->client(m_house->id(i))->online());
+    const int row = model->indexOf(m_house->id(1));
+    QSignalSpy changed(model.data(), &QAbstractItemModel::dataChanged);
+    m_house->setStatus(1, "<state>play</state><title1>Song</title1>");
+    QTRY_COMPARE(model->data(model->index(row), PlayerModel::NowPlayingRole).toString(), QStringLiteral("Song"));
+    QVERIFY(!changed.isEmpty());
+    for (const QList<QVariant> &args : changed) {
+        QCOMPARE(args.at(0).toModelIndex().row(), row);
+        QCOMPARE(args.at(1).toModelIndex().row(), row);
+    }
+}
+
+void TstGroup::perPlayerShowsTheCurrentGroup()
+{
+    // Now Playing's Per player: the current player and its members only.
+    QScopedPointer<PlayerModel> model(household(m_house, nullptr));
+    model->setCurrentId(m_house->id(0));
+    model->setPollAll(true);
+    Swell::CurrentGroupModel group;
+    group.setSourceModel(model.data());
+    QTRY_VERIFY(model->client(m_house->id(2))->online());
+    QCOMPARE(group.rowCount(), 1);
+    m_house->group(0, { 2 });
+    QTRY_COMPARE(group.rowCount(), 2);
+    QCOMPARE(group.data(group.index(1, 0), PlayerModel::IdRole).toString(), m_house->id(2));
+    model->leave(m_house->id(2), m_house->id(0));
+    QTRY_COMPARE(group.rowCount(), 1);
+    model->setCurrentId(m_house->id(1));
+    QCOMPARE(group.rowCount(), 1);
+    QCOMPARE(group.data(group.index(0, 0), PlayerModel::IdRole).toString(), m_house->id(1));
 }
 
 void TstGroup::onlyTheCurrentPlayerIsAskedForFirmware()

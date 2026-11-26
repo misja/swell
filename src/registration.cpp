@@ -21,6 +21,8 @@ void registerTypes()
                                                   QStringLiteral("Each player provides its queue"));
     // Players' list: one row per lone player or group.
     qmlRegisterType<Swell::PlayerListModel>("Swell", 1, 0, "PlayerList");
+    // Now Playing's Per player: the current player and its members.
+    qmlRegisterType<Swell::CurrentGroupModel>("Swell", 1, 0, "CurrentGroup");
     // One per Browse page, owned by that page.
     qmlRegisterType<Swell::QmlBrowseModel>("Swell", 1, 0, "BrowseModel");
 }

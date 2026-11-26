@@ -24,7 +24,6 @@ public:
         QHostAddress address;
         int port = 11000;
         QString name;
-        QString model;
         quint16 classId = 0;
     };
 
