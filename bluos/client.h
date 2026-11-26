@@ -46,6 +46,8 @@ class Client : public QObject
     Q_PROPERTY(bool canBack READ canBack NOTIFY statusChanged)
     Q_PROPERTY(int duration READ duration NOTIFY statusChanged)
     Q_PROPERTY(int position READ position NOTIFY positionChanged)
+    // The presets' version from /Status; it changes with every edit (spec 008).
+    Q_PROPERTY(QString prid READ prid NOTIFY statusChanged)
     Q_PROPERTY(BluOS::QueueModel *queue READ queue CONSTANT)
     Q_PROPERTY(GroupRole groupRole READ groupRole NOTIFY syncStatusChanged)
     Q_PROPERTY(QString groupName READ groupName NOTIFY syncStatusChanged)
@@ -203,6 +205,7 @@ public:
     // As the player lists them; images as given, see resolveImage. Cached per
     // player.
     QList<Preset> presets() const { return m_presets; }
+    QString prid() const { return m_status.prid; }
     QList<Input> inputs() const { return m_inputs; }
     QueueModel *queue() const { return m_queue; }
 
@@ -237,6 +240,12 @@ public slots:
     void setVolume(int level);
     void setMuted(bool muted);
     void playPreset(int id);
+    // Deletes preset id with /SetPreset?id=N, the official app's request
+    // (not in the API; spec 008). Only while online and while the presets
+    // are still the version prid the user saw; otherwise
+    // presetDeleteRefused() and nothing is sent. The list follows from the
+    // prid change; a reply that is not the list without id is commandFailed.
+    void deletePreset(int id, const QString &prid);
     // Plays a capture input by the URL attribute from /RadioBrowse?service=Capture,
     // sent byte for byte. A URL that would not form a valid query is refused.
     void playInput(const QString &encodedUrl);
@@ -284,6 +293,9 @@ signals:
     void commandFailed(const QString &path, const QString &error);
     // A removal was not sent because the queue no longer matched.
     void removeRefused();
+    // deletePreset() sent nothing: the presets changed (presetsChanged), or
+    // the player is not online.
+    void presetDeleteRefused(bool presetsChanged);
     // A context-menu action succeeded (type as in the menu, e.g. addAll-last).
     void actionDone(const QString &type);
 

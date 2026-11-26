@@ -402,6 +402,34 @@ void Client::playPreset(int id)
     send(QStringLiteral("/Preset"), encoded(query));
 }
 
+void Client::deletePreset(int id, const QString &prid)
+{
+    if (!online()) {
+        emit presetDeleteRefused(false);
+        return;
+    }
+    if (prid != m_status.prid) {
+        emit presetDeleteRefused(true);
+        return;
+    }
+    QUrlQuery query;
+    query.addQueryItem(QStringLiteral("id"), QString::number(id));
+    // Not through the merging gate: two deletes are two deletes.
+    fetch(QStringLiteral("/SetPreset"), encoded(query), [this, id](const QByteArray &body) {
+        // The player answers with the whole list (measured, spec 008).
+        const Presets after = parsePresets(body);
+        bool gone = after.ok;
+        for (const Preset &p : after.items)
+            gone = gone && p.id != id;
+        if (gone)
+            return;
+        QString error = parseError(body);
+        if (error.isEmpty())
+            error = body.isEmpty() ? QStringLiteral("no answer") : QStringLiteral("not deleted");
+        emit commandFailed(QStringLiteral("/SetPreset"), error);
+    });
+}
+
 void Client::playInput(const QString &encodedUrl)
 {
     // The attribute is already percent-encoded (API 11.1); passing it through
