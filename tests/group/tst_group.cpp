@@ -567,14 +567,22 @@ void TstGroup::aStatusChangesOnlyItsOwnRow()
     for (int i = 0; i < m_house->size(); ++i)
         QTRY_VERIFY(model->client(m_house->id(i))->online());
     const int row = model->indexOf(m_house->id(1));
+    qRegisterMetaType<QVector<int>>();
     QSignalSpy changed(model.data(), &QAbstractItemModel::dataChanged);
     m_house->setStatus(1, "<state>play</state><title1>Song</title1>");
     QTRY_COMPARE(model->data(model->index(row), PlayerModel::NowPlayingRole).toString(), QStringLiteral("Song"));
-    QVERIFY(!changed.isEmpty());
+    // Group roles may still change for others (a late /SyncStatus); what
+    // carries the status is this row alone.
+    int statusChanges = 0;
     for (const QList<QVariant> &args : changed) {
+        const QVector<int> roles = args.at(2).value<QVector<int>>();
+        if (!roles.isEmpty() && !roles.contains(PlayerModel::NowPlayingRole))
+            continue;
+        ++statusChanges;
         QCOMPARE(args.at(0).toModelIndex().row(), row);
         QCOMPARE(args.at(1).toModelIndex().row(), row);
     }
+    QVERIFY(statusChanges > 0);
 }
 
 void TstGroup::perPlayerShowsTheCurrentGroup()
