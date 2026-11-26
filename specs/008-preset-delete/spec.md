@@ -5,7 +5,7 @@ Status: draft 2026-11-26; widened scope reviewed by a separate agent
 - Deleting: scope reviewed (request changes, resolved in misja/swell#55),
   built and reviewed (approve with changes, resolved).
 - Widened the same day by the maintainer: a Presets page, a limited row on
-  Home, and adding. The new scope needs its own review.
+  Home, and adding.
 
 ## Owner and linked issue
 

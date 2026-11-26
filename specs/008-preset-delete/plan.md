@@ -34,7 +34,7 @@
     by send time;
   - add through `runAction`: the first free slot, then a duplicate.
 - `tests/browse`: a station as the NAD sent it offers `preset`. Its
-  `actionURL` passes `splitPlayerPath` unchanged (`%21`, `%2520`).
+  `actionURL` passes `splitPlayerPath` unchanged (`%21`, `%2521`).
 - `tests/qml` compiles the new pages. `tests/qmlruntime` is unchanged.
 - The pages themselves are checked on the device (spec, End states).
 

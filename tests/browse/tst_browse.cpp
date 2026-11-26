@@ -587,7 +587,7 @@ void TstBrowse::aReportedCountIsBounded()
 
 void TstBrowse::aStationOffersAddPreset()
 {
-    // The player's own action, kept and sent byte for byte (%21, %2520).
+    // The player's own action, kept and sent byte for byte (%21, %2521).
     startClient();
     QScopedPointer<BrowseModel> m(open(QStringLiteral("Stations")));
     QTRY_VERIFY(m->ready());

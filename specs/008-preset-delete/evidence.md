@@ -105,3 +105,25 @@ reported every `prid`.
   - a timeout row, and a list that is not read yet;
   - the README, and no station names here;
   - the page states are left to the device check (spec).
+- Widened scope, a separate agent, 2026-11-26: approve with changes.
+  Resolved:
+  - Home's row has no menu (the maintainer's decision 9);
+  - the page is a scrolling `SilicaGridView`;
+  - the tile is shared, but not the grid;
+  - `preset` is in `knownAction` with its own notice;
+  - the measured `actionURL` is tested against `splitPlayerPath`;
+  - the double for adding;
+  - the end states for leaving a page during a remorse
+    (RemorsePopup.qml:186–200), and for offline and rotation;
+  - stale texts.
+- Result of the widened scope, a separate agent, 2026-11-26: request
+  changes. Resolved:
+  - a stray upstream Qt source file was removed from the branch history
+    before any push;
+  - the double's comment;
+  - `%2521`;
+  - the README;
+  - the spec status;
+  - the request counts in the add test;
+  - `DISTFILES`;
+  - a stale comment in the runtime probe.

@@ -55,11 +55,12 @@ void TstPresets::init()
     m_prid = 4;
     m_player->serve(QStringLiteral("/SyncStatus"),
                     "<SyncStatus etag=\"s\" syncStat=\"s\" name=\"Den\" volume=\"20\"/>");
-    // As captured: a delete (only an id) answers the whole list without it,
-    // prid one higher. In the capture /Status showed the new prid about 40 ms
-    // after the reply; here it is published before. Other /SetPreset forms
-    // (an add) were not measured for this double and are answered with the
-    // list unchanged (invented).
+    // As measured (evidence.md): an id-only request deletes (captured from
+    // the official app); an add without an id takes the lowest free id (one
+    // gap measured) and allows a station twice. Both answer the whole list
+    // with prid one higher. In the capture /Status showed the new prid about
+    // 40 ms after the reply; here it is published before. Anything else (an
+    // add with an id, a full list) answers the list unchanged (invented).
     m_player->handle(QStringLiteral("/SetPreset"), [this](const QUrlQuery &q) {
         if (q.queryItems().size() == 1 && q.hasQueryItem(QStringLiteral("id"))) {
             // An id that is not there: invented, not measured.
@@ -67,9 +68,6 @@ void TstPresets::init()
             ++m_prid;
             publish();
         } else if (!q.hasQueryItem(QStringLiteral("id")) && q.hasQueryItem(QStringLiteral("url"))) {
-            // An add as measured (evidence.md, adding): the lowest free id,
-            // gaps filled, a station already there added again. A full list
-            // was not measured.
             int id = 1;
             while (m_presets.contains(id))
                 ++id;
@@ -233,10 +231,12 @@ void TstPresets::addTakesTheFirstFreeSlot()
     m_client->runAction(add, QStringLiteral("preset"));
     QTRY_COMPARE(done.size(), 1);
     QCOMPARE(done.first().first().toString(), QStringLiteral("preset"));
+    QCOMPARE(m_player->requests(QStringLiteral("/SetPreset")).size(), 1);
     QCOMPARE(QString::fromLatin1(m_player->requests(QStringLiteral("/SetPreset")).first().target), add);
     QTRY_COMPARE(ids(), QList<int>({ 1, 2, 3, 4, 7, 8 }));   // the gap at 4 filled
     m_client->runAction(add, QStringLiteral("preset"));        // the same station again
     QTRY_COMPARE(ids(), QList<int>({ 1, 2, 3, 4, 5, 7, 8 }));
+    QCOMPARE(m_player->requests(QStringLiteral("/SetPreset")).size(), 2);
 }
 
 void TstPresets::aFailedDeleteIsReported_data()

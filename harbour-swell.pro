@@ -23,6 +23,8 @@ DISTFILES += qml/harbour-swell.qml \
     qml/pages/HomePage.qml \
     qml/pages/NowPlayingPage.qml \
     qml/pages/QueuePage.qml \
+    qml/pages/PresetsPage.qml \
+    qml/pages/PresetTile.qml \
     qml/pages/BrowsePage.qml \
     qml/pages/LetterIndex.qml \
     qml/pages/CoverImage.qml \
