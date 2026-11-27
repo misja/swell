@@ -1,4 +1,4 @@
-# Tasks — 008 presets: a page, deleting and adding
+# Tasks — 008 presets: a page, deleting, adding and moving
 
 - [x] Measure the official app's delete (capture) and adding through the player's action (throwaways) — evidence.md
 - [x] Scope reviews by a separate agent (deleting; the widened scope); findings resolved
@@ -10,4 +10,8 @@
 - [x] `make check`
 - [x] Harbour validator (aarch64, armv7hl), at afeab31
 - [x] Result review by a separate agent; findings resolved
-- [ ] Device check on the NAD (the list in the spec)
+- [x] Input presets and notices: measured, scope review, built, tests
+- [x] Reordering: measured (capture, curl on throwaways), scope review, built, tests
+- [ ] Harbour validator and result review at the final commit
+- [x] Device check on the NAD (the list in the spec; evidence.md), except
+      Add preset from TuneIn and leaving the page during a remorse

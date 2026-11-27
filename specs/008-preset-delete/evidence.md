@@ -1,4 +1,4 @@
-# Evidence — 008 presets: a page, deleting and adding
+# Evidence — 008 presets: a page, deleting, adding and moving
 
 Raw files (reads, the capture, screenshots) stay local; they hold the
 player's address and the maintainer's stations.
@@ -158,6 +158,17 @@ assistant read `/Presets` and `/Status` every second.
     the preset now in 9 and 8 empty; nothing lost. Swell does not send
     this form.
   - The throwaways deleted (`prid` 50).
+
+## 2026-11-27, reordering on the device (builds 49aadd1, 220e283)
+
+- Eight moves from the Presets page, `prid` 49 → 57; each request one
+  move, nothing lost; the maintainer put the order back.
+- The maintainer: a "Done" item in the pull-down menu is not intuitive;
+  dropped for a tap that ends the mode (220e283).
+- 220e283, the maintainer reported all of these working: the mode and
+  its header, dragging, a swipe that flicks, rotation during a drag, a
+  tap ending the mode, Reorder disabled during a remorse. Edge scrolling
+  was not in that list (seven presets fit the screen).
 
 ## Reviews
 

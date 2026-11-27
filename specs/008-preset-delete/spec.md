@@ -1,4 +1,4 @@
-# Feature specification — 008 presets: a page, deleting and adding
+# Feature specification — 008 presets: a page, deleting, adding and moving
 
 Status: draft 2026-11-26; widened scope reviewed by a separate agent
 (approve with changes, resolved here).
