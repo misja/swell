@@ -156,7 +156,7 @@ Page {
             PageHeader {
                 id: pageHeader
                 visible: !page._tracks
-                title: page.root ? qsTr("Browse") : page.title
+                title: page.root ? qsTr("Music") : page.title
                 description: {
                     if (page.root) {
                         return page._player ? (page._player.name !== "" ? page._player.name : page._player.host) : ""
