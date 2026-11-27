@@ -15,6 +15,8 @@ Page {
     // Nothing to play (an emptied queue): a label instead of empty artwork,
     // titles and transport; volume and Per player stay.
     readonly property bool _empty: _player !== null && _player.online && !_player.hasContent
+    // Shuffle and repeat only while the queue is the source (API 2.1, streamUrl).
+    readonly property bool _queueModes: !_empty && _player !== null && !_player.streaming
     // Scroll along while Per player opens, until the user scrolls.
     property bool _followGrowth: false
     // Artwork edge: the short side of the page, flush with the page edges
@@ -192,6 +194,12 @@ Page {
                         spacing: Theme.paddingLarge
                         visible: !page._empty
 
+                        Loader {
+                            anchors.verticalCenter: parent.verticalCenter
+                            active: page.isLandscape && page._queueModes
+                            visible: active
+                            sourceComponent: shuffleSwitch
+                        }
                         // Hidden, not greyed, when the source has nothing to go back or
                         // forward to (plain radio: streamUrl without actions, API 4.8).
                         IconButton {
@@ -214,44 +222,28 @@ Page {
                             enabled: _player && _player.online
                             onClicked: _player.skip()
                         }
+                        Loader {
+                            anchors.verticalCenter: parent.verticalCenter
+                            active: page.isLandscape && page._queueModes
+                            visible: active
+                            sourceComponent: repeatSwitch
+                        }
                     }
 
-                    // Shuffle and repeat as the platform's media controls show them
-                    // (Sailfish.Media MediaPlayerControlsPanel: icon Switches that
-                    // follow the state). Only while the queue is the source (API 2.1).
+                    // Portrait: shuffle and repeat in a row of their own; landscape:
+                    // beside the transport row (above), so the volume stays in view.
                     Row {
                         anchors.horizontalCenter: parent.horizontalCenter
                         spacing: Theme.paddingLarge
-                        visible: !page._empty && _player !== null && !_player.streaming
+                        visible: !page.isLandscape && page._queueModes
 
-                        Switch {
-                            objectName: "shuffle"
-                            icon.source: "image://theme/icon-m-shuffle"
-                            automaticCheck: false
-                            checked: _player !== null && _player.shuffle
-                            enabled: _player !== null && _player.online
-                            onClicked: _player.setShuffle(!_player.shuffle)
+                        Loader {
+                            active: !page.isLandscape
+                            sourceComponent: shuffleSwitch
                         }
-                        Switch {
-                            objectName: "repeat"
-                            icon.source: _player !== null && _player.repeat === Player.RepeatTrack
-                                         ? "image://theme/icon-m-repeat-single" : "image://theme/icon-m-repeat"
-                            automaticCheck: false
-                            checked: _player !== null && _player.repeat !== Player.RepeatOff
-                            enabled: _player !== null && _player.online
-                            // Off, then the whole queue, then the track.
-                            onClicked: {
-                                switch (_player.repeat) {
-                                case Player.RepeatOff:
-                                    _player.setRepeat(Player.RepeatQueue)
-                                    break
-                                case Player.RepeatQueue:
-                                    _player.setRepeat(Player.RepeatTrack)
-                                    break
-                                default:
-                                    _player.setRepeat(Player.RepeatOff)
-                                }
-                            }
+                        Loader {
+                            active: !page.isLandscape
+                            sourceComponent: repeatSwitch
                         }
                     }
 
@@ -395,5 +387,44 @@ Page {
         }
 
         VerticalScrollDecorator {}
+    }
+
+    // Shuffle and repeat as the platform's media controls show them
+    // (Sailfish.Media MediaPlayerControlsPanel: icon Switches that follow the
+    // state), placed by the Loaders above.
+    Component {
+        id: shuffleSwitch
+        Switch {
+            objectName: "shuffle"
+            icon.source: "image://theme/icon-m-shuffle"
+            automaticCheck: false
+            checked: _player !== null && _player.shuffle
+            enabled: _player !== null && _player.online
+            onClicked: _player.setShuffle(!_player.shuffle)
+        }
+    }
+    Component {
+        id: repeatSwitch
+        Switch {
+            objectName: "repeat"
+            icon.source: _player !== null && _player.repeat === Player.RepeatTrack
+                         ? "image://theme/icon-m-repeat-single" : "image://theme/icon-m-repeat"
+            automaticCheck: false
+            checked: _player !== null && _player.repeat !== Player.RepeatOff
+            enabled: _player !== null && _player.online
+            // Off, then the whole queue, then the track.
+            onClicked: {
+                switch (_player.repeat) {
+                case Player.RepeatOff:
+                    _player.setRepeat(Player.RepeatQueue)
+                    break
+                case Player.RepeatQueue:
+                    _player.setRepeat(Player.RepeatTrack)
+                    break
+                default:
+                    _player.setRepeat(Player.RepeatOff)
+                }
+            }
+        }
     }
 }

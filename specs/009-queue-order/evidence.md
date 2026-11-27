@@ -106,3 +106,16 @@ Summary:
   `QueueModel.streaming`); a shared constant for "2 = off" (the xml layer
   does not know `Client`).
 - At 8c903d8, aarch64: 11 suites, 0 failed (queue 35, qmlruntime 21, xml 44).
+- Device check of 0.7.0-2 (8c903d8 with Release 2), 2026-11-27 21:12–21:24,
+  the maintainer on the phone, the NAD at volume 8 with a throwaway 8-track
+  queue; NAD status logged alongside. Seen (maintainer, five screenshots):
+  the Switches as in the Media app; shuffle on/off reached the player
+  (pid 44, 47–53), the queue order changed and came back, the playing entry
+  kept its place (also while paused, song 1); the repeat cycle all → one →
+  off → all (status 0 → 1 → 2 → 0), `icon-m-repeat-single` for one; the
+  Switches hidden on an input and back on the queue. Landscape: the volume
+  slider moved below the fold (screenshot 21:20:16); the maintainer chose
+  the Switches beside the transport row in landscape. Seen in the log, not
+  part of this feature: after shuffle off while paused on entry 1, play
+  started at entry 0 (21:22:09 → 21:22:29). Afterwards: queue cleared (only
+  the throwaway album), repeat 0, preset 2 playing, volume 32.

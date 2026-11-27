@@ -93,8 +93,12 @@ A. **Status.** `Status` parses `shuffle` and `repeat`. `Client` exposes
    or missing values count as off.
 
 B. **Shuffle and repeat on Now Playing.**
-   - A row of two Silica `Switch`es with icons below the transport row,
-     as the platform's media controls show them (Facts):
+   - Two Silica `Switch`es with icons: in portrait a row below the
+     transport row; in landscape at both ends of the transport row
+     (shuffle left, repeat right), so the volume slider stays in view (the
+     maintainer, 2026-11-27, after the device check). One `Component` each,
+     placed by a `Loader`. Shown as the platform's media controls show
+     them (Facts):
      `automaticCheck: false`, `checked` from the status; `icon-m-shuffle`;
      `icon-m-repeat`, `icon-m-repeat-single` for repeat one.
    - Visible under the transport row's condition (`_empty`: online and
