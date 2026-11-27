@@ -134,7 +134,7 @@
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="159"/>
-        <source>Browse</source>
+        <source>Music</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
@@ -221,11 +221,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="113"/>
-        <source>Browse</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../qml/pages/HomePage.qml" line="127"/>
         <source>No player chosen. Pull down to pick one.</source>
         <translation type="unfinished"></translation>
@@ -289,6 +284,16 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../qml/pages/HomePage.qml" line="113"/>
+        <source>Music</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="180"/>
+        <source>No presets on this player. Add them from Music or from the inputs below.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../qml/pages/HomePage.qml" line="244"/>
         <source>Add preset</source>
         <translation type="unfinished"></translation>
@@ -296,11 +301,6 @@
     <message>
         <location filename="../qml/pages/HomePage.qml" line="67"/>
         <source>Update available</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/HomePage.qml" line="180"/>
-        <source>No presets on this player. Add them from Browse or from the inputs below.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -561,6 +561,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="208"/>
+        <source>Long press a station in Music, or an input on Home, and choose Add preset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../qml/pages/PresetsPage.qml" line="117"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
@@ -573,11 +578,6 @@
     <message>
         <location filename="../qml/pages/PresetsPage.qml" line="207"/>
         <source>No presets</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="208"/>
-        <source>Long press a station in Browse, or an input on Home, and choose Add preset</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -631,6 +631,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../qml/pages/QueuePage.qml" line="292"/>
+        <source>Play a preset or an input, or add music</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../qml/pages/QueuePage.qml" line="142"/>
         <source>Removing</source>
         <translation type="unfinished"></translation>
@@ -648,11 +653,6 @@
     <message>
         <location filename="../qml/pages/QueuePage.qml" line="291"/>
         <source>Queue is empty</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/QueuePage.qml" line="292"/>
-        <source>Play a preset or an input, or add music from Browse</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
