@@ -78,3 +78,20 @@ Summary:
   `hasContent`; no `resetTo` for the shuffle reply; two PRs; acceptance
   criteria extended. After the review, the platform's `Switch`es replace
   the planned `IconButton`s (found on the phone).
+
+## PR 1: checks (2026-11-27, builder, automated)
+
+- At 10f051c, SDK 5.1.0.11 aarch64, `make check`: 11 suites, 0 failed
+  (queue 35, xml 44, qmlruntime 21, qml 21, presets 44, firmware 47, …).
+  New: `TstXml::statusShuffleAndRepeat` (6 rows), `shuffleAndRepeatReplies`,
+  `moveReply`; `TstQueue::shuffleAndRepeatFollowTheStatus`,
+  `shuffleReordersAfterTheCurrentEntryAndReloads`, `shuffleOffRestoresTheOrder`,
+  `repeatKeepsTheQueue`, `twoTapsBeforeTheStatusSendTheSameValue`,
+  `failedShuffleIsReported`; `TstQmlRuntime::shuffleAndRepeat`;
+  `TstQml::appFileCompiles(NowPlayingPage.qml)`. armv7hl tests not run.
+- RPMs (`no-fix-version`, 0.7.0-1): aarch64 6d9b0654…, armv7hl b5b2dab8…;
+  no compiler warnings. Harbour validator: 18 checks PASSED on both. rpmlint
+  reports two errors on both, also present on main (spec unchanged):
+  `no-changelogname-tag` (a branch build; release builds take the tag) and
+  `description-line-too-long` (`rpm/harbour-swell.spec` line 21).
+- Not run on the device yet.
