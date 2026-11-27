@@ -531,52 +531,52 @@
     </message>
     <message>
         <location filename="../qml/pages/PresetsPage.qml" line="52"/>
-        <location filename="../qml/pages/PresetsPage.qml" line="165"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="172"/>
         <source>Nothing was deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="164"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="171"/>
         <source>The presets have changed. Nothing was deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="168"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="175"/>
         <source>The presets have changed. Nothing was moved.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="169"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="176"/>
         <source>Nothing was moved.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="304"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="311"/>
         <source>Reorder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="322"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="329"/>
         <source>Presets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="233"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="240"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="323"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="330"/>
         <source>Drag to move, tap to stop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="329"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="336"/>
         <source>No presets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="330"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="337"/>
         <source>Long press a station in Browse, or an input on Home, and choose Add preset</source>
         <translation type="unfinished"></translation>
     </message>

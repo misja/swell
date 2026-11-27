@@ -533,52 +533,52 @@
     </message>
     <message>
         <location filename="../qml/pages/PresetsPage.qml" line="52"/>
-        <location filename="../qml/pages/PresetsPage.qml" line="165"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="172"/>
         <source>Nothing was deleted.</source>
         <translation>Er is niets verwijderd.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="164"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="171"/>
         <source>The presets have changed. Nothing was deleted.</source>
         <translation>De presets zijn gewijzigd. Er is niets verwijderd.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="168"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="175"/>
         <source>The presets have changed. Nothing was moved.</source>
         <translation>De presets zijn gewijzigd. Er is niets verplaatst.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="169"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="176"/>
         <source>Nothing was moved.</source>
         <translation>Er is niets verplaatst.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="304"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="311"/>
         <source>Reorder</source>
         <translation>Volgorde wijzigen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="322"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="329"/>
         <source>Presets</source>
         <translation>Presets</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="233"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="240"/>
         <source>Delete</source>
         <translation>Verwijderen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="323"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="330"/>
         <source>Drag to move, tap to stop</source>
         <translation>Sleep om te verplaatsen, tik om te stoppen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="329"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="336"/>
         <source>No presets</source>
         <translation>Geen presets</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="330"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="337"/>
         <source>Long press a station in Browse, or an input on Home, and choose Add preset</source>
         <translation>Houd een zender in Bladeren of een ingang op Home ingedrukt en kies Preset toevoegen</translation>
     </message>

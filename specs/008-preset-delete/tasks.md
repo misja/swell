@@ -12,6 +12,6 @@
 - [x] Result review by a separate agent; findings resolved
 - [x] Input presets and notices: measured, scope review, built, tests
 - [x] Reordering: measured (capture, curl on throwaways), scope review, built, tests
-- [ ] Harbour validator and result review at the final commit
+- [x] Harbour validator (aarch64, armv7hl) and final result review, at d7f4d61
 - [x] Device check on the NAD (the list in the spec; evidence.md; TuneIn and leaving the page during a remorse seen by the maintainer), except
       edge scrolling (seven presets fit the screen)
