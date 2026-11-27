@@ -14,7 +14,7 @@ album from the player's library was added; afterwards the queue was cleared.
 | `/Shuffle?state=1` | `<playlist length="8" id="26" modified="1" shuffle="1" repeat="0">` | 26 | playing entry stays at 0, rest shuffled | shuffle 1 |
 | `/Shuffle?state=1` again | same as before | 26 | unchanged | etag unchanged |
 | `/Shuffle?state=0` | `<playlist … id="27" shuffle="0">` | 27 | original order | shuffle 0 |
-| `/Repeat?state=1`, `2`, `0` | `<playlist … id="27" repeat="N">` | 27 | unchanged | repeat follows, etag changes |
+| `/Repeat?state=1`, `2`, `0` | `<playlist length="8" id="27" modified="1" shuffle="0" repeat="N">` | 27 | unchanged | repeat follows, etag changes |
 | `/Move?new=99&old=0` | `moved` | 27 | unchanged | etag unchanged |
 | `/Move?new=3&old=3` | `moved` | 28 | unchanged | etag changed |
 | `/Clear` | `<playlist length="0" id="29" …>` | 29 | empty | state stop |

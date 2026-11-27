@@ -234,7 +234,7 @@ Page {
                         }
                         Switch {
                             objectName: "repeat"
-                            icon.source: _player && _player.repeat === Player.RepeatTrack
+                            icon.source: _player !== null && _player.repeat === Player.RepeatTrack
                                          ? "image://theme/icon-m-repeat-single" : "image://theme/icon-m-repeat"
                             automaticCheck: false
                             checked: _player !== null && _player.repeat !== Player.RepeatOff

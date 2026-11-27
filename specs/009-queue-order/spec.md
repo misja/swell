@@ -97,9 +97,9 @@ B. **Shuffle and repeat on Now Playing.**
      as the platform's media controls show them (Facts):
      `automaticCheck: false`, `checked` from the status; `icon-m-shuffle`;
      `icon-m-repeat`, `icon-m-repeat-single` for repeat one.
-   - Visible under the same condition as the transport row and without
-     `streamUrl` (API §2.1). Not tied to `hasContent` (`xml.h:56`), which
-     is false for a stopped queue without `title1`. Enabled while online.
+   - Visible under the transport row's condition (`_empty`: online and
+     nothing to play, `hasContent`, `xml.h:56`), and without `streamUrl`
+     (API §2.1). Enabled while online.
    - Shuffle sends `/Shuffle?state=` the opposite of the status; repeat
      sends the next state (2 → 0 → 1 → 2). Through the existing gate by
      path.
@@ -184,7 +184,7 @@ E. **MPRIS** keeps `hasShuffle` and `hasLoopStatus` false (spec 003): they
 | Repeat tapped | `/Repeat?state=` next value | the new state after the status |
 | Shuffle/repeat changed by another controller | — | buttons follow the status |
 | An input or stream plays | — | shuffle and repeat hidden |
-| Queue stopped, no `title1` | — | buttons shown as with the transport row |
+| Nothing to play (stopped, no `title1`, no stream) | — | hidden with the transport row |
 | Player offline | — | buttons disabled |
 | Shuffle/repeat reply fails | one request | the failure notice; buttons keep the status |
 | Repeat one | — | `icon-m-repeat-single`, checked |
@@ -244,5 +244,6 @@ E. **MPRIS** keeps `hasShuffle` and `hasLoopStatus` false (spec 003): they
    shuffle on and off, the repeat cycle, the buttons hidden on an input;
    the reorder mode, a drag with hold and dwell, a flick, edge scrolling
    over unloaded rows, a tap ending the mode, a drag cancelled by
-   rotation, the Presets page's reordering unchanged.
+   rotation, the Presets page's reordering unchanged; in landscape the
+   volume slider is still reachable with the extra row.
 9. A separate result review before each PR. Own code named in the PR.

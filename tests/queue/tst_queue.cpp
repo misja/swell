@@ -739,17 +739,23 @@ void TstQueue::repeatKeepsTheQueue()
 
 void TstQueue::twoTapsBeforeTheStatusSendTheSameValue()
 {
-    // The page sends the opposite of the state shown; two taps before the
-    // status has changed both send state=1, the second after the interval.
-    // The player ignores the second (measured: same id, same etag).
-    m_player->delay(QStringLiteral("/Shuffle"), 300);
+    // The page sends the opposite of the state shown; two taps in a row both
+    // read the old state and send state=1, the second after the interval.
+    // The player ignores the second (measured: same id, same etag), so the
+    // state advances once.
     startClient();
+    const int pid = m_pid;
     m_client->setShuffle(!m_client->shuffle());
     m_client->setShuffle(!m_client->shuffle());
     QTRY_COMPARE(m_player->requests(QStringLiteral("/Shuffle")).size(), 2);
-    for (const auto &r : m_player->requests(QStringLiteral("/Shuffle")))
+    const QList<FakePlayer::Request> sent = m_player->requests(QStringLiteral("/Shuffle"));
+    for (const FakePlayer::Request &r : sent)
         QCOMPARE(r.target, QByteArray("/Shuffle?state=1"));
+    // Arrival times; the client spaces sends by minIntervalMs (200), transit varies.
+    QVERIFY2(sent.at(1).atMs - sent.at(0).atMs >= 150,
+             qPrintable(QStringLiteral("%1 ms apart").arg(sent.at(1).atMs - sent.at(0).atMs)));
     QTRY_VERIFY(m_client->shuffle());
+    QCOMPARE(m_pid, pid + 1);
 }
 
 void TstQueue::failedShuffleIsReported()

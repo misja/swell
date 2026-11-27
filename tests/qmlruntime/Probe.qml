@@ -126,6 +126,10 @@ Item {
 
     // NowPlayingPage: shuffle and repeat (spec 009), the expressions the two
     // Switches use.
+    function setRepeatTo(name) {
+        _player.setRepeat(Player[name])
+        return ""
+    }
     function shuffleRepeat() {
         return [!_player.streaming, _player.shuffle, _player.repeat !== Player.RepeatOff,
                 _player.repeat === Player.RepeatTrack].join(" ")
