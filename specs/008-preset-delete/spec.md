@@ -67,6 +67,41 @@ stay local; `evidence.md` has the record.
     and `prid` 23 → 24. The list holds the URL decoded, the same form as a
     preset of an input added with the official app (id 1).
   - It was deleted again with `/SetPreset?id=9`.
+- **Reordering** (2026-11-27; evidence.md has the requests):
+  - The official app (User-Agent `Bluesound/4.18.1`) sends one request
+    per move: `POST /Presets/edit?prid=N`, `Content-Type:
+    application/json`, body `{"ordering":[{"from":a,"to":b},…]}` holding
+    exactly the cycle of the slots between the old and the new place (7
+    to 2: 7→2, 2→3, …, 6→7). The reply is 200 and the whole `<presets>`
+    list with `prid` one higher.
+  - Each body lists the moves in ascending `to` order, `from` before
+    `to`, without spaces.
+  - With curl, on throwaways in slots 8 and 9: an old `prid` gives
+    **412** and changes nothing (one measurement, a `prid` one behind); no `?prid` gives **400**; an incomplete
+    permutation (`9→8` only) gives 200 and **deletes** the preset that was
+    in 8, as azzurro measured on a Powernode (4.16.22).
+  - Not in the API; `/Services` does not declare it. The player's own
+    `/ui/presets` offers "Reorder Presets".
+  - Across a gap (8 and 10 swapped, 9 empty): 200, the gap stays; the
+    permutation is over the occupied slots.
+  - Not measured: an `<error>` reply, a 412 for any other reason.
+- **Sailfish reordering:** Silica has no component for it. The home
+  screen's launcher and top menu reorder with their own
+  `EditableGridDelegate` (lipstick-jolla-home-qt5, `main/`, "License:
+  Proprietary"; it imports `Sailfish.Lipstick` and
+  `Sailfish.Silica.private`, which Harbour does not allow):
+  - a long press enters the edit mode and starts the drag at once
+    (LauncherGrid.qml:370–374);
+  - in the mode, a press held 150 ms lifts the item (scaled 1.1–1.3) and
+    it follows the finger; a press that moves earlier scrolls the view
+    (EditableGridDelegate.qml:68–79, 116–126, 298–302);
+  - held for 150 ms over another place, the model moves (`model.move`),
+    and the other items slide there in 150 ms (:217–232, 329–352);
+  - near the view's edge the view scrolls (:238–246);
+  - releasing ends the drag; the edit mode stays. A tap ends the mode
+    (LauncherGrid.qml:346–347).
+  No other app on the device reorders. Swell follows this behaviour with
+  Qt Quick's own drag handling; the code is Swell's (below).
 - **Silica notices:** `Notices` is a singleton in `Sailfish.Silica` 1.0,
   with `show(text)` up to `show(text, duration, anchor, hOffset, vOffset)`;
   `Notice.Short` is 3000 ms (plugins.qmltypes:1147–1225).
@@ -96,8 +131,8 @@ stay local; `evidence.md` has the record.
 4. Only the current player.
 5. The Presets page, the short row on Home and adding belong to 008.
 6. Adding goes to the first free slot; Swell does not ask for a slot.
-7. Moving presets (`/Presets/edit`) comes later; the per-preset volume is
-   left out.
+7. The per-preset volume is left out. Moving presets belongs to 008
+   (2026-11-27, decision 15).
 8. Standard implementations as far as possible, by the Sailfish design
    guidelines.
 9. Home's presets row only plays: no menu there (Home's input rows do
@@ -119,6 +154,12 @@ stay local; `evidence.md` has the record.
     parameters `/Services` declares for "Add preset".
 14. Notices use Silica's `Notices.show()` instead of Swell's own label
     (2026-11-27), everywhere in the app.
+15. Presets can be moved on the Presets page (2026-11-27), with the
+    official app's request, `/Presets/edit`. A pull-down item, "Reorder",
+    starts an edit mode like the home screen's; in it, tiles are dragged
+    and each drop sends one move. Delete stays in the context menu,
+    outside the edit mode. The list scrolls at the edge while dragging
+    (one drag, one request), and a tap ends the mode.
 
 ## Scope
 
@@ -201,6 +242,60 @@ F. **Notices.** `app.notify()` and its label are removed; every notice is
      (longer texts scroll), and takes taps over its area for its 3 s.
    - The pages still react only while active; `Notices` is global.
 
+G. **Reordering.** On the Presets page.
+   - **Mode.** A `PullDownMenu` with "Reorder" (and "Done" while it
+     runs). "Reorder" is enabled only while the player is online, the
+     list is current (`presetsCurrent`), there are two presets or more,
+     no remorse runs and no move is in flight. In the mode, a tile has
+     no context menu. The mode ends with "Done", a tap on a tile, or when
+     the page is left or the player goes offline; a drag in progress is
+     then put back and nothing is sent. The header says the mode is on.
+   - **Drag**, as the home screen:
+     - a press held 150 ms lifts the tile's content (scaled 1.1); only
+       then the drag starts, with `preventStealing`, so a quick swipe
+       still flicks and the pull-down menu and the back gesture keep out;
+     - the content follows the finger, moved out of the delegate while
+       dragged; the view keeps positioning the delegates;
+     - held 150 ms over another place, `DelegateModel` `items.move()`
+       moves the tile there in the view, and the others slide (`GridView`
+       `move` and `displaced` transitions, 150 ms). The model itself stays
+       `Player.presets`;
+     - near the top or bottom edge, the grid scrolls while the finger is
+       there;
+     - releasing sends the move; a release where it started sends
+       nothing.
+   - **During a drag:** a change of `Player.presets` resets the view; the
+     drag ends there and nothing is sent. A rotation puts the tile back
+     and sends nothing.
+   - **Sending.** `Client::movePreset(fromId, toId, prid)` builds the
+     cycle over the occupied slots, in the list's order: the moved preset
+     goes to `toId`, and each occupied slot from `toId` up to the old
+     place moves to the next occupied slot towards the old place. The
+     moves are listed by ascending `to`, as measured. Before sending, it
+     checks that the sources are distinct, the destinations are
+     distinct, both are the same set, and every source is in the list.
+     It sends `POST /Presets/edit?prid=N`,
+     `{"ordering":[{"from":a,"to":b},…]}`, paced per path, not merged.
+   - **Refusals**, nothing sent: offline ("Nothing was moved."); the list
+     not current, the `prid` not the one recorded at the drag's start,
+     or an id not in the list ("The presets have changed. Nothing was
+     moved."); `fromId == toId` (nothing to say).
+   - **Outcome.**
+     - 200 with a `<presets>` list holding as many presets as before and
+       the moved one at `toId`: done; the list follows from the `prid`
+       change.
+     - 412: the change notice, and the view put back.
+     - Anything else, a list that does not match included: the failure
+       notice, and the view put back.
+   - **One at a time.** `Player.presetMoving` (a property with NOTIFY)
+     is true while a move is in flight; then, and until the list is
+     current again, no drag starts.
+   - Home's row shows the first presets by id, so it follows the new
+     order.
+   - Own code, named in the pull request: the hold and dwell timers and
+     the edge scrolling (Silica has none; the home screen's is private),
+     and the cycle built in C++.
+
 ### Deleting (on the Presets page)
 
 1. **Menu.** A long press on a tile opens a `ContextMenu` with one item,
@@ -263,6 +358,20 @@ F. **Notices.** `app.notify()` and its label are removed; every notice is
 | Add an input: no answer, HTTP error, `<error>`, not a list, an unchanged `prid` | one request | the failure notice |
 | Add an input: unknown id, an invalid URL, or the list not current | nothing | the failure notice |
 | Add an input, Home no longer active when the reply comes | one request | no notice; the tile appears after the next status |
+| Reorder: a tile dropped at another place | one `POST /Presets/edit?prid=N` with the cycle | the new order; Home follows |
+| Reorder: dropped where it started, or the mode ended mid-drag | nothing | unchanged |
+| Reorder: a quick swipe in the mode | nothing | the grid flicks |
+| Reorder: dragged to the edge | — | the grid scrolls; one request on release |
+| Reorder: a tap on a tile in the mode | nothing | the mode ends |
+| Reorder: the list changed meanwhile (412) | one request | "The presets have changed. Nothing was moved."; the view put back |
+| Reorder: refused, list changed or not current | nothing | the same notice |
+| Reorder: refused, offline | nothing | "Nothing was moved." |
+| Reorder: no answer, HTTP error, `<error>`, not a list, a list that does not match | one request | the failure notice; the view put back |
+| Reorder: the list changes during a drag | nothing | the drag ends; the new list |
+| Reorder: rotation during a drag | nothing | the tile put back |
+| Reorder: a drag while a move is in flight or the list is not current | — | not possible |
+| Reorder chosen while a remorse runs, offline, or with fewer than two presets | — | "Reorder" disabled |
+| Reorder: page left or player offline during the mode | nothing | the mode ends |
 | No more presets than Home's rows hold | — | Home shows all |
 | More | — | Home shows the first by id; the page has all |
 | Rotation | — | Home switches between two rows and one |
@@ -286,7 +395,8 @@ The pages are not instantiated in the tests. The device check covers:
 
 ## Out of scope
 
-- Moving (reordering) presets, editing a preset, the per-preset volume.
+- Editing a preset, the per-preset volume.
+- Reordering on Home.
 - Choosing a slot when adding.
 - Presets of players other than the current one.
 
@@ -316,5 +426,16 @@ The pages are not instantiated in the tests. The device check covers:
    Tests against the double, whose add follows the measurement; the
    failures of an input add are invented there.
 10. Every notice is Silica's `Notices.show()`; no own notice label remains.
-11. Device check on the NAD with throwaway presets (the maintainer's
+11. A move sends one `POST /Presets/edit?prid=N`, JSON, with exactly the
+    cycle between the two places, by ascending `to`, byte for byte as
+    measured; the guard and the success check as in G. Tests: forward,
+    backward, adjacent and across a gap (bodies as in evidence.md); a 412
+    gives the change refusal and no `commandFailed`; 400, 500, a timeout
+    and a list missing a preset give `commandFailed`; each refusal sends
+    nothing; a second move while one is in flight. The double moves as
+    measured (412, 400, the silent delete). On the device: the mode, a
+    drag with the hold and the dwell, a swipe that flicks, edge
+    scrolling, a tap ending the mode, a drag cancelled by rotation, and
+    Reorder disabled during a remorse.
+12. Device check on the NAD with throwaway presets (the maintainer's
    approval): the list under End states.

@@ -113,6 +113,52 @@ maintainer used Swell; the screenshots stay local.
     maintainer found them rather small).
   - The throwaways deleted from the Presets page (`prid` 27, 29, 31, 32).
 
+## 2026-11-27, reordering (NAD C 379, 4.18.26)
+
+The maintainer moved a preset one place in the official app (Android,
+User-Agent `Bluesound/4.18.1`), and back; tcpdump on the phone, and the
+assistant read `/Presets` and `/Status` every second.
+
+- `POST /Presets/edit?prid=32`, `Content-Type: application/json`, body
+  `{"ordering":[{"from":7,"to":6},{"from":6,"to":7}]}`: only the two
+  slots that change, no `prid` in the body.
+- Reply: 200, gzip, the whole `<presets prid="33">` list with 6 and 7
+  swapped.
+- Back: `POST /Presets/edit?prid=33` with the same body; `prid` 34, the
+  order as before.
+- An earlier capture (16:17) held no edit request, and `prid` stayed 32;
+  why is not known.
+- With curl, on two throwaway presets in slots 8 and 9 (the maintainer's
+  approval; ids 1–7 were in no request and stayed as they were):
+  - `{"ordering":[{"from":9,"to":8},{"from":8,"to":9}]}` with the
+    current `prid` (36): 200, the list with 8 and 9 swapped, `prid` 37.
+  - The same with the old `prid` (36): **412**, an empty body, nothing
+    changed.
+  - Without `?prid`: **400**, `no prid`, nothing changed.
+  - An incomplete permutation, `{"from":9,"to":8}` only, with the current
+    `prid`: 200 and `prid` 38, the preset in 9 now in 8, and the one that
+    was in 8 **gone**. The silent delete azzurro measured also happens on
+    this player.
+  - The throwaway left was deleted (`prid` 39).
+- Moves of more than one place, the official app (`prid` 39 → 42):
+  - 7 to 2: `{"ordering":[{"from":7,"to":2},{"from":2,"to":3},{"from":3,"to":4},{"from":4,"to":5},{"from":5,"to":6},{"from":6,"to":7}]}`;
+    the others shift down one, `prid` 40.
+  - 2 to 6: `[{"from":3,"to":2},{"from":4,"to":3},{"from":5,"to":4},{"from":6,"to":5},{"from":2,"to":6}]`, `prid` 41.
+  - 6 to 7 as before, `prid` 42; the order as at the start.
+  - So one request per move, holding exactly the cycle of the slots
+    between the old and the new place; slots outside it are not sent.
+  - Every body lists the moves in ascending `to` order, `from` before
+    `to`, without spaces.
+- Across a gap, with curl, throwaways in 8 and 10, 9 empty (the
+  maintainer's approval; ids 1–7 in no request):
+  - `[{"from":10,"to":8},{"from":8,"to":10}]` at `prid` 46: 200,
+    `prid` 47, 8 and 10 swapped, 9 still empty. The permutation is over
+    the occupied slots.
+  - `[{"from":8,"to":9}]` (into the empty slot) at 47: 200, `prid` 48,
+    the preset now in 9 and 8 empty; nothing lost. Swell does not send
+    this form.
+  - The throwaways deleted (`prid` 50).
+
 ## Reviews
 
 - Scope, a separate agent, 2026-11-26: request changes. Resolved in the
@@ -182,3 +228,23 @@ maintainer used Swell; the screenshots stay local.
   - the test helper renamed (`setPresetRequests`);
   - the placeholder and Home's text name the inputs too;
   - spec F's open question closed; no Dutch quote here.
+- Reordering, scope, a separate agent, 2026-11-27: approve with changes.
+  Resolved in the spec:
+  - the home screen's behaviour corrected: a 150 ms hold before the drag
+    starts, the dwell, autoscroll at the edge, a tap ending the mode;
+  - the drag starts after the hold, with `preventStealing`, so a quick
+    swipe still flicks and the pulley and back gesture keep out;
+  - `DelegateModel` `items.move()` instead of a `ListModel` copy; the
+    tile's content dragged, not the delegate;
+  - end states: the list changing or rotation during a drag, a tap in the
+    mode, Reorder disabled during a remorse, offline, not current or
+    with fewer than two presets; separate notices;
+  - the cycle's wording, its order (ascending `to`), the guard (sources
+    and destinations distinct and the same set, all in the list), and a
+    stricter success check (the same count, the moved preset at its new
+    place);
+  - a move in flight owned by the client (`presetMoving`);
+  - the client's POST and status code; the double's POST bodies;
+  - the gap measured (above).
+  - The maintainer (2026-11-27): autoscroll yes, for the user and for
+    fewer requests (own code, named); a tap ends the mode.

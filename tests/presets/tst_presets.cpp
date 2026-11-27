@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: MIT
-// Deleting a preset (spec 008) against a FakePlayer that answers
-// /SetPreset?id=N as the NAD did in the capture of 2026-11-26
-// (specs/008-preset-delete/evidence.md): 200 with the whole list without
-// that preset, prid one higher in /Presets and /Status, the other ids kept.
+// Deleting, adding and moving presets (spec 008) against a FakePlayer that
+// answers as the NAD did in the measurements of 2026-11-26 and 2026-11-27
+// (specs/008-preset-delete/evidence.md): the whole list in the reply, prid
+// one higher in /Presets and /Status, gaps kept.
 #include <QtTest>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QNetworkAccessManager>
 
 #include "client.h"
@@ -35,6 +38,17 @@ private slots:
     void aFailedInputAddIsReported_data();
     void aFailedInputAddIsReported();
     void anInputIsNotAddedToAListNotYetRead();
+    void theCycleIsAsMeasured_data();
+    void theCycleIsAsMeasured();
+    void onlyPermutationsPass_data();
+    void onlyPermutationsPass();
+    void aMoveSendsOneRequestAndTheListFollows();
+    void aChangedListIsRefusedByThePlayer();
+    void aMoveIsRefusedBeforeSending_data();
+    void aMoveIsRefusedBeforeSending();
+    void oneMoveAtATime();
+    void aFailedMoveIsReported_data();
+    void aFailedMoveIsReported();
 
 private:
     QByteArray list() const;
@@ -76,6 +90,27 @@ void TstPresets::init()
     // with prid one higher. In the capture /Status showed the new prid about
     // 40 ms after the reply; here it is published before. Anything else (an
     // add with an id, a full list) answers the list unchanged (invented).
+    // As measured (evidence.md, 2026-11-27): /Presets/edit without ?prid is
+    // 400, with an old prid 412; otherwise each move puts the preset of
+    // `from` into `to`, a slot only vacated if no move fills it, so an
+    // incomplete permutation deletes; 200 with the list, prid one higher.
+    // The bodies of other errors are invented.
+    m_player->handlePost(QStringLiteral("/Presets/edit"), [this](const QUrlQuery &q, const QByteArray &body) {
+        if (!q.hasQueryItem(QStringLiteral("prid")))
+            return qMakePair(400, QByteArray("no prid"));
+        if (q.queryItemValue(QStringLiteral("prid")).toInt() != m_prid)
+            return qMakePair(412, QByteArray());
+        const QMap<int, QByteArray> before = m_presets;
+        const QJsonArray ordering = QJsonDocument::fromJson(body).object().value(QStringLiteral("ordering")).toArray();
+        for (const QJsonValue &m : ordering)
+            m_presets.remove(m.toObject().value(QStringLiteral("from")).toInt());
+        for (const QJsonValue &m : ordering)
+            m_presets.insert(m.toObject().value(QStringLiteral("to")).toInt(),
+                             before.value(m.toObject().value(QStringLiteral("from")).toInt()));
+        ++m_prid;
+        publish();
+        return qMakePair(200, list());
+    });
     m_player->handle(QStringLiteral("/SetPreset"), [this](const QUrlQuery &q) {
         if (q.queryItems().size() == 1 && q.hasQueryItem(QStringLiteral("id"))) {
             // An id that is not there: invented, not measured.
@@ -110,7 +145,7 @@ QByteArray TstPresets::list() const
     QByteArray xml = "<presets prid=\"" + QByteArray::number(m_prid) + "\">";
     for (auto it = m_presets.cbegin(); it != m_presets.cend(); ++it)
         xml += "<preset id=\"" + QByteArray::number(it.key()) + "\" name=\"" + QString::fromUtf8(it.value()).toHtmlEscaped().toUtf8()
-                + "\" url=\"Invented:" + QByteArray::number(it.key()) + "\"/>";
+                + "\" url=\"Invented:" + QUrl::toPercentEncoding(QString::fromUtf8(it.value())) + "\"/>";
     return xml + "</presets>";
 }
 
@@ -385,6 +420,226 @@ void TstPresets::anInputIsNotAddedToAListNotYetRead()
     QCOMPARE(failed.size(), 1);
     QCOMPARE(failed.first().at(1).toString(), QStringLiteral("presets not current"));
     QCOMPARE(setPresetRequests(), 0);
+}
+
+void TstPresets::theCycleIsAsMeasured_data()
+{
+    QTest::addColumn<QList<int>>("ids");
+    QTest::addColumn<int>("from");
+    QTest::addColumn<int>("to");
+    QTest::addColumn<QByteArray>("body");
+    const QList<int> seven({ 1, 2, 3, 4, 5, 6, 7 });
+    // The official app's bodies, byte for byte (evidence.md, 2026-11-27).
+    QTest::newRow("7 to 2") << seven << 7 << 2
+        << QByteArray("{\"ordering\":[{\"from\":7,\"to\":2},{\"from\":2,\"to\":3},{\"from\":3,\"to\":4},"
+                      "{\"from\":4,\"to\":5},{\"from\":5,\"to\":6},{\"from\":6,\"to\":7}]}");
+    QTest::newRow("2 to 6") << seven << 2 << 6
+        << QByteArray("{\"ordering\":[{\"from\":3,\"to\":2},{\"from\":4,\"to\":3},{\"from\":5,\"to\":4},"
+                      "{\"from\":6,\"to\":5},{\"from\":2,\"to\":6}]}");
+    QTest::newRow("7 to 6") << seven << 7 << 6
+        << QByteArray("{\"ordering\":[{\"from\":7,\"to\":6},{\"from\":6,\"to\":7}]}");
+    QTest::newRow("6 to 7") << seven << 6 << 7
+        << QByteArray("{\"ordering\":[{\"from\":7,\"to\":6},{\"from\":6,\"to\":7}]}");
+    // Over the occupied slots: 9 empty, as measured with curl.
+    QTest::newRow("across a gap") << QList<int>({ 1, 8, 10 }) << 10 << 8
+        << QByteArray("{\"ordering\":[{\"from\":10,\"to\":8},{\"from\":8,\"to\":10}]}");
+}
+
+void TstPresets::theCycleIsAsMeasured()
+{
+    QFETCH(QList<int>, ids);
+    QFETCH(int, from);
+    QFETCH(int, to);
+    QFETCH(QByteArray, body);
+    m_presets.clear();
+    for (int id : ids)
+        m_presets.insert(id, "Station " + QByteArray::number(id));
+    publish();
+    startClient();
+    QVERIFY(Client::isPermutation(Client::presetCycle(ids, from, to), ids));
+    QSignalSpy failed(m_client, &Client::commandFailed);
+    const QByteArray prid = m_client->presetsPrid().toUtf8();
+    m_client->movePreset(from, to, m_client->presetsPrid());
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Presets/edit")).size(), 1);
+    const FakePlayer::Request sent = m_player->requests(QStringLiteral("/Presets/edit")).first();
+    QCOMPARE(sent.method, QByteArray("POST"));
+    QCOMPARE(sent.contentType, QByteArray("application/json"));
+    QCOMPARE(sent.target, "/Presets/edit?prid=" + prid);
+    QCOMPARE(sent.body, body);
+    QTRY_VERIFY(!m_client->presetMoving());
+    QVERIFY(failed.isEmpty());
+}
+
+void TstPresets::onlyPermutationsPass_data()
+{
+    QTest::addColumn<QList<int>>("froms");
+    QTest::addColumn<QList<int>>("tos");
+    QTest::addColumn<bool>("ok");
+    QTest::newRow("a swap") << QList<int>({ 7, 6 }) << QList<int>({ 6, 7 }) << true;
+    // Measured: 9 to 8 alone deleted the preset in 8.
+    QTest::newRow("one move") << QList<int>({ 7 }) << QList<int>({ 6 }) << false;
+    QTest::newRow("a destination twice") << QList<int>({ 6, 7 }) << QList<int>({ 7, 7 }) << false;
+    QTest::newRow("a source twice") << QList<int>({ 7, 7 }) << QList<int>({ 6, 7 }) << false;
+    QTest::newRow("a source not there") << QList<int>({ 9, 6 }) << QList<int>({ 6, 9 }) << false;
+    QTest::newRow("nothing") << QList<int>() << QList<int>() << false;
+}
+
+void TstPresets::onlyPermutationsPass()
+{
+    QFETCH(QList<int>, froms);
+    QFETCH(QList<int>, tos);
+    QFETCH(bool, ok);
+    QList<Client::PresetMove> moves;
+    for (int i = 0; i < froms.size(); ++i)
+        moves.append({ froms.at(i), tos.at(i) });
+    QCOMPARE(Client::isPermutation(moves, { 1, 2, 3, 6, 7 }), ok);
+}
+
+void TstPresets::aMoveSendsOneRequestAndTheListFollows()
+{
+    startClient();   // 1, 2, 3, 7, 8
+    QSignalSpy failed(m_client, &Client::commandFailed);
+    QSignalSpy refused(m_client, &Client::presetMoveRefused);
+    QSignalSpy moving(m_client, &Client::presetMovingChanged);
+    m_client->movePreset(8, 2, m_client->presetsPrid());
+    QVERIFY(m_client->presetMoving());
+    QTRY_VERIFY(!m_client->presetMoving());
+    QCOMPARE(moving.size(), 2);
+    QCOMPARE(m_player->requests(QStringLiteral("/Presets/edit")).size(), 1);
+    // The list follows from the prid change; the ids stay, the names move.
+    auto names = [this]() {
+        QStringList list;
+        for (const Preset &p : m_client->presets())
+            list << QString::number(p.id) + QLatin1Char('=') + p.name.section(QLatin1Char(' '), 1);
+        return list.join(QLatin1Char(' '));
+    };
+    QTRY_COMPARE(names(), QStringLiteral("1=1 2=8 3=2 7=3 8=7"));
+    QVERIFY(failed.isEmpty());
+    QVERIFY(refused.isEmpty());
+}
+
+void TstPresets::aChangedListIsRefusedByThePlayer()
+{
+    // Another controller changed the list after Swell read it: the player
+    // answers 412 (measured) and nothing changes.
+    startClient();
+    m_player->handlePost(QStringLiteral("/Presets/edit"),
+                         [](const QUrlQuery &, const QByteArray &) { return qMakePair(412, QByteArray()); });
+    QSignalSpy failed(m_client, &Client::commandFailed);
+    QSignalSpy refused(m_client, &Client::presetMoveRefused);
+    m_client->movePreset(8, 2, m_client->presetsPrid());
+    QTRY_COMPARE(refused.size(), 1);
+    QCOMPARE(refused.first().first().toBool(), true);
+    QVERIFY(failed.isEmpty());
+    QVERIFY(!m_client->presetMoving());
+    QCOMPARE(ids(), QList<int>({ 1, 2, 3, 7, 8 }));
+}
+
+void TstPresets::aMoveIsRefusedBeforeSending_data()
+{
+    QTest::addColumn<QString>("why");
+    QTest::addColumn<int>("refusal");   // -1: none; 0: refused, offline; 1: refused, changed
+    QTest::newRow("offline") << "offline" << 0;
+    QTest::newRow("not current") << "not current" << 1;
+    QTest::newRow("an old prid") << "old prid" << 1;
+    QTest::newRow("an id not there") << "unknown id" << 1;
+    QTest::newRow("the same place") << "same" << -1;
+}
+
+void TstPresets::aMoveIsRefusedBeforeSending()
+{
+    QFETCH(QString, why);
+    QFETCH(int, refusal);
+    startClient();
+    QString prid = m_client->presetsPrid();
+    int from = 8;
+    int to = 2;
+    if (why == QLatin1String("offline")) {
+        m_client->stop();
+        m_player->failWith(QStringLiteral("/Status"), 500);
+        m_player->failWith(QStringLiteral("/SyncStatus"), 500);
+        m_client->start();
+        QTRY_VERIFY(!m_client->online());
+    } else if (why == QLatin1String("not current")) {
+        m_player->failWith(QStringLiteral("/Presets"), 500);
+        ++m_prid;
+        publish();
+        QTRY_VERIFY(!m_client->presetsCurrent());
+    } else if (why == QLatin1String("old prid")) {
+        prid = QStringLiteral("3");
+    } else if (why == QLatin1String("unknown id")) {
+        from = 5;
+    } else {
+        to = from;
+    }
+    QSignalSpy refused(m_client, &Client::presetMoveRefused);
+    QSignalSpy failed(m_client, &Client::commandFailed);
+    m_client->movePreset(from, to, prid);
+    if (refusal < 0) {
+        QVERIFY(refused.isEmpty());
+    } else {
+        QCOMPARE(refused.size(), 1);
+        QCOMPARE(refused.first().first().toBool(), refusal == 1);
+    }
+    QTest::qWait(300);   // nothing follows, which no signal shows
+    QVERIFY(failed.isEmpty());
+    QCOMPARE(m_player->requests(QStringLiteral("/Presets/edit")).size(), 0);
+}
+
+void TstPresets::oneMoveAtATime()
+{
+    startClient();
+    const QString prid = m_client->presetsPrid();
+    QSignalSpy refused(m_client, &Client::presetMoveRefused);
+    m_client->movePreset(8, 2, prid);
+    m_client->movePreset(7, 1, prid);
+    QCOMPARE(refused.size(), 1);
+    QCOMPARE(refused.first().first().toBool(), false);
+    QTRY_VERIFY(!m_client->presetMoving());
+    QTest::qWait(300);
+    QCOMPARE(m_player->requests(QStringLiteral("/Presets/edit")).size(), 1);
+}
+
+void TstPresets::aFailedMoveIsReported_data()
+{
+    // Invented, except the 400 (measured without ?prid; forced here).
+    QTest::addColumn<int>("http");   // -1: no answer within commandTimeoutMs; 0: the body with 200
+    QTest::addColumn<QByteArray>("body");
+    QTest::addColumn<QString>("error");
+    QTest::newRow("400") << 400 << QByteArray("no prid") << QStringLiteral("HTTP 400");
+    QTest::newRow("500") << 500 << QByteArray() << QStringLiteral("HTTP 500");
+    QTest::newRow("timeout") << -1 << QByteArray() << QStringLiteral("no answer");
+    QTest::newRow("error document") << 0 << QByteArray("<error><message>Nope</message></error>")
+                                    << QStringLiteral("Nope");
+    // A list that lost a preset, as an incomplete permutation does.
+    QTest::newRow("a preset lost") << 0
+        << QByteArray("<presets prid=\"5\"><preset id=\"1\" name=\"a\" url=\"Invented:Station%201\"/>"
+                      "<preset id=\"2\" name=\"b\" url=\"Invented:Station%208\"/></presets>")
+        << QStringLiteral("not moved");
+}
+
+void TstPresets::aFailedMoveIsReported()
+{
+    QFETCH(int, http);
+    QFETCH(QByteArray, body);
+    QFETCH(QString, error);
+    startClient();
+    if (http < 0) {
+        m_player->delay(QStringLiteral("/Presets/edit"), fastTiming().commandTimeoutMs + 2000);
+    } else {
+        const int status = http ? http : 200;
+        m_player->handlePost(QStringLiteral("/Presets/edit"), [status, body](const QUrlQuery &, const QByteArray &) {
+            return qMakePair(status, body);
+        });
+    }
+    QSignalSpy failed(m_client, &Client::commandFailed);
+    QSignalSpy refused(m_client, &Client::presetMoveRefused);
+    m_client->movePreset(8, 2, m_client->presetsPrid());
+    QTRY_COMPARE_WITH_TIMEOUT(failed.size(), 1, fastTiming().commandTimeoutMs + 2000);
+    QCOMPARE(failed.first().at(0).toString(), QStringLiteral("/Presets/edit"));
+    QCOMPARE(failed.first().at(1).toString(), error);
+    QVERIFY(refused.isEmpty());
+    QVERIFY(!m_client->presetMoving());
 }
 
 QTEST_GUILESS_MAIN(TstPresets)
