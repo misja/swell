@@ -25,7 +25,7 @@ Page {
         var prid = player.presetsPrid
         deleteRemorse.execute(qsTr("Deleting %1").arg(name), function() {
             if (!player || players.current !== player) {
-                app.notify(qsTr("Nothing was deleted."))
+                Notices.show(qsTr("Nothing was deleted."), Notice.Short)
                 return
             }
             player.deletePreset(id, prid)
@@ -34,8 +34,8 @@ Page {
 
     Connections {
         target: page._player
-        onPresetDeleteRefused: app.notify(presetsChanged ? qsTr("The presets have changed. Nothing was deleted.")
-                                                         : qsTr("Nothing was deleted."))
+        onPresetDeleteRefused: Notices.show(presetsChanged ? qsTr("The presets have changed. Nothing was deleted.")
+                                                           : qsTr("Nothing was deleted."), Notice.Short)
     }
 
     RemorsePopup { id: deleteRemorse }

@@ -36,6 +36,16 @@ Page {
     // A refusal belongs to the player it came from.
     on_PlayerChanged: _upgradeRefused = false
 
+    // Only while Home is in front, as Browse does; the app reports failures.
+    Connections {
+        target: page.status === PageStatus.Active ? page._player : null
+        onActionDone: {
+            if (type === "preset") {
+                Notices.show(qsTr("Added to presets"), Notice.Short)
+            }
+        }
+    }
+
     // The update notice's first line: the offer, or how a started update goes.
     function _upgradeText() {
         switch (_player.upgradePhase) {
@@ -227,6 +237,15 @@ Page {
                     contentHeight: Theme.itemSizeSmall
                     enabled: _player.online
                     onClicked: _player.playInput(modelData.url)
+                    // The player offers no action for an input (spec 008).
+                    menu: Component {
+                        ContextMenu {
+                            MenuItem {
+                                text: qsTr("Add preset")
+                                onClicked: _player.addInputPreset(modelData.id)
+                            }
+                        }
+                    }
 
                     Image {
                         id: inputIcon

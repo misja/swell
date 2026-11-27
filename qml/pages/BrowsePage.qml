@@ -118,15 +118,15 @@ Page {
         target: page.status === PageStatus.Active ? page._player : null
         onActionDone: {
             if (type.indexOf("favourite") === 0) {
-                app.notify(type === "favourite-add" ? qsTr("Added to favorites") : qsTr("Removed from favorites"))
+                Notices.show(type === "favourite-add" ? qsTr("Added to favorites") : qsTr("Removed from favorites"), Notice.Short)
                 browseModel.load()   // the menu label, and the Favourites list, change
                 if (favouritesModel.key !== "") {
                     favouritesModel.load()
                 }
             } else if (type === "preset") {
-                app.notify(qsTr("Added to presets"))
+                Notices.show(qsTr("Added to presets"), Notice.Short)
             } else if (!browseModel.startsPlayback(type)) {
-                app.notify(qsTr("Added to the queue"))
+                Notices.show(qsTr("Added to the queue"), Notice.Short)
             }
         }
     }

@@ -7,12 +7,6 @@ import "pages"
 ApplicationWindow {
     id: app
 
-    // Shows a short message, as about a failed command.
-    function notify(text) {
-        notice.text = text
-        noticeTimer.restart()
-    }
-
     // "m:ss" for a duration or position in seconds; empty when unknown.
     function formatTime(secs) {
         if (!(secs >= 0)) {
@@ -28,7 +22,7 @@ ApplicationWindow {
         target: players.current
         onCommandFailed: {
             console.warn("Command", path, "failed:", error)
-            app.notify(qsTr("The player did not accept that."))
+            Notices.show(qsTr("The player did not accept that."), Notice.Short)
         }
     }
 
@@ -234,22 +228,5 @@ ApplicationWindow {
                 pageStack.currentPage.openCurrent(true)
             }
         }
-    }
-
-    Label {
-        id: notice
-        parent: app.contentItem
-        anchors {
-            bottom: parent.bottom
-            bottomMargin: app.bottomMargin + Theme.paddingLarge
-            horizontalCenter: parent.horizontalCenter
-        }
-        width: parent.width - 2 * Theme.horizontalPageMargin
-        horizontalAlignment: Text.AlignHCenter
-        wrapMode: Text.Wrap
-        color: Theme.highlightColor
-        opacity: noticeTimer.running ? 1.0 : 0.0
-        Behavior on opacity { FadeAnimation {} }
-        Timer { id: noticeTimer; interval: 3000 }
     }
 }

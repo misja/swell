@@ -29,6 +29,11 @@ private slots:
     void addTakesTheFirstFreeSlot();
     void aFailedDeleteIsReported_data();
     void aFailedDeleteIsReported();
+    void anInputIsAdded();
+    void anInputThatCannotBeSentIsNotAdded_data();
+    void anInputThatCannotBeSentIsNotAdded();
+    void aFailedInputAddIsReported_data();
+    void aFailedInputAddIsReported();
 
 private:
     QByteArray list() const;
@@ -53,6 +58,15 @@ void TstPresets::init()
     for (int id : { 1, 2, 3, 7, 8 })
         m_presets.insert(id, "Station " + QByteArray::number(id));
     m_prid = 4;
+    // The inputs as /RadioBrowse?service=Capture gives them (spec 008 facts);
+    // the second with a URL that would not stay one parameter.
+    m_player->serve(QStringLiteral("/RadioBrowse"),
+                    "<radiotime service=\"Capture\">"
+                    "<item text=\"Phono &amp; Co\" inputType=\"phono\" id=\"in5\""
+                    " URL=\"Capture%3Ahw%3Asoundchassis%2C0%2F1%2F25%2F2%3Fid%3Dxdynamic-Source5\""
+                    " image=\"/images/capture/ic_vinyl.png\"/>"
+                    "<item text=\"Odd\" inputType=\"analog\" id=\"odd\" URL=\"Capture%3Ax&amp;level=100\"/>"
+                    "</radiotime>");
     m_player->serve(QStringLiteral("/SyncStatus"),
                     "<SyncStatus etag=\"s\" syncStat=\"s\" name=\"Den\" volume=\"20\"/>");
     // As measured (evidence.md): an id-only request deletes (captured from
@@ -113,6 +127,7 @@ void TstPresets::startClient()
     m_client->start();
     QTRY_VERIFY(m_client->online());
     QTRY_COMPARE(m_client->presets().size(), m_presets.size());
+    QTRY_COMPARE(m_client->inputs().size(), 2);
 }
 
 QList<int> TstPresets::ids() const
@@ -271,6 +286,87 @@ void TstPresets::aFailedDeleteIsReported()
     QTRY_COMPARE_WITH_TIMEOUT(failed.size(), 1, fastTiming().commandTimeoutMs + 2000);
     QCOMPARE(failed.first().at(0).toString(), QStringLiteral("/SetPreset"));
     QCOMPARE(failed.first().at(1).toString(), error);
+    QCOMPARE(ids(), QList<int>({ 1, 2, 3, 7, 8 }));
+}
+
+void TstPresets::anInputIsAdded()
+{
+    // The player offers no action for an input; Swell sends the parameters
+    // /Services declares, as in the curl measurement (spec 008).
+    startClient();
+    QSignalSpy done(m_client, &Client::actionDone);
+    QSignalSpy failed(m_client, &Client::commandFailed);
+    m_client->addInputPreset(QStringLiteral("in5"));
+    QTRY_COMPARE(done.size(), 1);
+    QCOMPARE(done.first().first().toString(), QStringLiteral("preset"));
+    QVERIFY(failed.isEmpty());
+    const auto sent = m_player->requests(QStringLiteral("/SetPreset"));
+    QCOMPARE(sent.size(), 1);
+    // The URL byte for byte; the name and the player's relative image encoded.
+    QCOMPARE(sent.first().target,
+             QByteArray("/SetPreset?name=Phono%20%26%20Co"
+                        "&url=Capture%3Ahw%3Asoundchassis%2C0%2F1%2F25%2F2%3Fid%3Dxdynamic-Source5"
+                        "&image=%2Fimages%2Fcapture%2Fic_vinyl.png"));
+    QTRY_COMPARE(ids(), QList<int>({ 1, 2, 3, 4, 7, 8 }));   // the first free slot
+}
+
+void TstPresets::anInputThatCannotBeSentIsNotAdded_data()
+{
+    QTest::addColumn<QString>("id");
+    QTest::addColumn<QString>("error");
+    QTest::newRow("unknown id") << QStringLiteral("gone") << QStringLiteral("unknown input");
+    QTest::newRow("invalid URL") << QStringLiteral("odd") << QStringLiteral("invalid input URL");
+}
+
+void TstPresets::anInputThatCannotBeSentIsNotAdded()
+{
+    QFETCH(QString, id);
+    QFETCH(QString, error);
+    startClient();
+    QSignalSpy failed(m_client, &Client::commandFailed);
+    m_client->addInputPreset(id);
+    QCOMPARE(failed.size(), 1);
+    QCOMPARE(failed.first().at(0).toString(), QStringLiteral("/SetPreset"));
+    QCOMPARE(failed.first().at(1).toString(), error);
+    QTest::qWait(300);   // nothing follows, which no signal shows
+    QCOMPARE(deletes(), 0);
+}
+
+void TstPresets::aFailedInputAddIsReported_data()
+{
+    // Invented: no failed add was measured (spec 008, "Not measured").
+    QTest::addColumn<int>("http");   // -1: no answer within commandTimeoutMs
+    QTest::addColumn<QByteArray>("body");
+    QTest::addColumn<QString>("error");
+    QTest::newRow("http error") << 500 << QByteArray() << QStringLiteral("no answer");
+    QTest::newRow("timeout") << -1 << QByteArray() << QStringLiteral("no answer");
+    QTest::newRow("error document") << 0 << QByteArray("<error><message>Nope</message></error>")
+                                    << QStringLiteral("Nope");
+    QTest::newRow("unchanged list") << 0 << QByteArray() << QStringLiteral("not added");
+}
+
+void TstPresets::aFailedInputAddIsReported()
+{
+    QFETCH(int, http);
+    QFETCH(QByteArray, body);
+    QFETCH(QString, error);
+    startClient();
+    if (http < 0) {
+        m_player->delay(QStringLiteral("/SetPreset"), fastTiming().commandTimeoutMs + 2000);
+    } else if (http) {
+        m_player->failWith(QStringLiteral("/SetPreset"), http);
+    } else {
+        // An empty body here stands for the list as it was, prid unchanged.
+        m_player->handle(QStringLiteral("/SetPreset"),
+                         [this, body](const QUrlQuery &) { return body.isEmpty() ? list() : body; });
+    }
+    QSignalSpy done(m_client, &Client::actionDone);
+    QSignalSpy failed(m_client, &Client::commandFailed);
+    m_client->addInputPreset(QStringLiteral("in5"));
+    QTRY_COMPARE_WITH_TIMEOUT(failed.size(), 1, fastTiming().commandTimeoutMs + 2000);
+    QCOMPARE(failed.first().at(0).toString(), QStringLiteral("/SetPreset"));
+    QCOMPARE(failed.first().at(1).toString(), error);
+    QVERIFY(done.isEmpty());
     QCOMPARE(ids(), QList<int>({ 1, 2, 3, 7, 8 }));
 }
 

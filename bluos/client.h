@@ -253,6 +253,12 @@ public slots:
     // Plays a capture input by the URL attribute from /RadioBrowse?service=Capture,
     // sent byte for byte. A URL that would not form a valid query is refused.
     void playInput(const QString &encodedUrl);
+    // Adds the input with this id (from inputs()) as a preset: /SetPreset
+    // with its URL as given, its name and its image, and no id, so the player
+    // takes the first free slot (measured, spec 008; the player offers no
+    // action for inputs). actionDone("preset") when the reply is the list
+    // with a new prid, otherwise commandFailed.
+    void addInputPreset(const QString &inputId);
     void refreshInputs();
     void playQueueEntry(int position);
     // Removes the entry at position, but only if the player confirms that the
@@ -314,6 +320,8 @@ private:
 
     static QString encoded(const QUrlQuery &query);
     QUrl url(const QString &path, const QString &encodedQuery = QString()) const;
+    // Whether an input's URL attribute, sent as given, stays one valid url= parameter.
+    bool validInputUrl(const QString &path, const QString &encodedUrl) const;
     // gateName names the gate within the path; by default the first parameter's
     // name, so a burst of the same setting collapses to its last value.
     void send(const QString &path, const QString &encodedQuery,

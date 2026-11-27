@@ -441,18 +441,63 @@ void Client::deletePreset(int id, const QString &prid)
     });
 }
 
-void Client::playInput(const QString &encodedUrl)
+bool Client::validInputUrl(const QString &path, const QString &encodedUrl) const
 {
     // The attribute is already percent-encoded (API 11.1); passing it through
-    // QUrlQuery would decode %3A, %2F and friends, so it is sent as given.
+    // QUrlQuery would decode %3A, %2F and friends, so it is sent as given,
+    // and only if it stays one parameter, byte for byte.
     const QString query = QStringLiteral("url=") + encodedUrl;
-    const QUrl check = url(QStringLiteral("/Play"), query);
-    if (encodedUrl.isEmpty() || !check.isValid() || encodedUrl.contains(QLatin1Char('&'))
-            || encodedUrl.contains(QLatin1Char('#')) || check.query(QUrl::FullyEncoded) != query) {
+    const QUrl check = url(path, query);
+    return !encodedUrl.isEmpty() && check.isValid() && !encodedUrl.contains(QLatin1Char('&'))
+            && !encodedUrl.contains(QLatin1Char('#')) && check.query(QUrl::FullyEncoded) == query;
+}
+
+void Client::playInput(const QString &encodedUrl)
+{
+    if (!validInputUrl(QStringLiteral("/Play"), encodedUrl)) {
         emit commandFailed(QStringLiteral("/Play"), QStringLiteral("invalid input URL"));
         return;
     }
-    send(QStringLiteral("/Play"), query);
+    send(QStringLiteral("/Play"), QStringLiteral("url=") + encodedUrl);
+}
+
+void Client::addInputPreset(const QString &inputId)
+{
+    const QString path = QStringLiteral("/SetPreset");
+    const Input *input = nullptr;
+    for (const Input &in : m_inputs)
+        if (in.id == inputId)
+            input = &in;
+    if (!input) {
+        emit commandFailed(path, QStringLiteral("unknown input"));
+        return;
+    }
+    if (!validInputUrl(path, input->url)) {
+        emit commandFailed(path, QStringLiteral("invalid input URL"));
+        return;
+    }
+    // The parameters /Services declares for "Add preset"; no id, so the
+    // player takes the first free slot (measured, spec 008).
+    QStringList items;
+    items << QStringLiteral("name=") + QString::fromLatin1(QUrl::toPercentEncoding(input->text))
+          << QStringLiteral("url=") + input->url;
+    if (!input->image.isEmpty())
+        items << QStringLiteral("image=") + QString::fromLatin1(QUrl::toPercentEncoding(input->image));
+    const QString before = m_presetsPrid;
+    // Not through the merging gate: two adds are two adds.
+    fetch(path, items.join(QLatin1Char('&')), [this, path, before](const QByteArray &body) {
+        // Every add raised prid by one (measured); a list with the old prid
+        // added nothing.
+        const Presets after = parsePresets(body);
+        if (after.ok && after.prid != before) {
+            emit actionDone(QStringLiteral("preset"));
+            return;
+        }
+        QString error = parseError(body);
+        if (error.isEmpty())
+            error = body.isEmpty() ? QStringLiteral("no answer") : QStringLiteral("not added");
+        emit commandFailed(path, error);
+    });
 }
 
 void Client::refreshInputs()

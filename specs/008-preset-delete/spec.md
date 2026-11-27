@@ -57,7 +57,29 @@ stay local; `evidence.md` has the record.
     `__silica_menu_height` (GridItem.qml:78–126).
   - `SilicaGridView` defines `__silica_menu_height` (SilicaGridView.qml:59)
     but does not add it to its `contentHeight`.
+- **An input as a preset** (2026-11-27, with curl, a throwaway preset):
+  - `/Browse` and `/RadioBrowse?service=Capture` give the inputs only a
+    play URL, no context menu, so the player sends no `preset` action.
+  - `/Services` declares "Add preset" as `/SetPreset` with `url`, `name`
+    and an optional `image`.
+  - `GET /SetPreset?name=Phono&url=<the input's URL attribute, as given>&image=/images/capture/ic_vinyl.png`
+    gave 200 and the whole list, with Phono in the first free slot (9),
+    and `prid` 23 → 24. The list holds the URL decoded, the same form as a
+    preset of an input added with the official app (id 1).
+  - It was deleted again with `/SetPreset?id=9`.
+- **Silica notices:** `Notices` is a singleton in `Sailfish.Silica` 1.0,
+  with `show(text)` up to `show(text, duration, anchor, hOffset, vOffset)`;
+  `Notice.Short` is 3000 ms (plugins.qmltypes:1147–1225).
+  - `ApplicationWindow` shows it above `max(bottomMargin, keyboard)`
+    (ApplicationWindow.qml:467–510; `stack.panelSize` is the keyboard,
+    l.349). Swell sets `bottomMargin` to the mini-player's visible size
+    (harbour-swell.qml:80), so a notice clears the mini-player.
+  - It is one line in a small font, scrolls when longer, and a tap
+    dismisses it (private/NoticeItem.qml). Its default anchor is set in
+    C++ and not visible in the target: checked on the device.
 - **Not measured:**
+  - playing a preset of an input added by Swell (it would switch the
+    amplifier's input);
   - other players or firmware;
   - an `<error>` or HTTP error reply;
   - deleting an id that is already gone;
@@ -78,7 +100,8 @@ stay local; `evidence.md` has the record.
    left out.
 8. Standard implementations as far as possible, by the Sailfish design
    guidelines.
-9. Home's row only plays: no menu there. The page is reached only from
+9. Home's presets row only plays: no menu there (Home's input rows do
+   get one, decision 13). The page is reached only from
    the pull-down menu.
 10. Home shows two rows of presets in portrait and one in landscape, the
     first by id. The page always has all of them. The columns follow
@@ -91,6 +114,11 @@ stay local; `evidence.md` has the record.
     Presets, Browse. The items for the current player are nearest the
     content, so they come first when pulling.
 12. Short texts: "Add preset" and "Added to presets".
+13. Adding an input as a preset belongs to 008 (2026-11-27). The player
+    offers no action for it, so Swell builds the request itself, with the
+    parameters `/Services` declares for "Add preset".
+14. Notices use Silica's `Notices.show()` instead of Swell's own label
+    (2026-11-27), everywhere in the app.
 
 ## Scope
 
@@ -139,6 +167,34 @@ D. **Adding.** In Browse, an item whose context menu from the player has
      (measured).
    - The notice is lost if Browse is no longer the active page when the
      reply comes, as for the other actions.
+
+E. **An input as a preset.** On Home, each input's row (a `ListItem`)
+   gets a context menu with "Add preset". The inputs are shown only on
+   Home; Browse leaves them out (browsemodel.cpp:308).
+   - `Client::addInputPreset(id)` takes the input's id. It looks the input
+     up in the list it read, and sends `/SetPreset` with `url` (the `URL`
+     attribute as given, already percent-encoded, checked as `playInput`
+     checks it, in one shared helper), `name` (its text) and `image` (the
+     player's relative path, not the resolved address QML shows), the
+     last two encoded with `QUrl::toPercentEncoding`. No `id`. It goes
+     through `fetch()`, not the merging gate.
+   - Success is a `<presets>` document whose `prid` differs from the one
+     Swell had read: every add raised it by one (measured). Swell then
+     emits `actionDone("preset")`. A URL cannot decide it: duplicates are
+     allowed and the list holds it decoded.
+   - Anything else, an unchanged list included, gives `commandFailed`. An
+     unknown id or an invalid URL sends nothing and gives `commandFailed`.
+   - Home shows "Added to presets", only while it is the active page, as
+     Browse does. The notice is lost otherwise.
+   - An input that is already a preset can be added again, as a station.
+F. **Notices.** `app.notify()` and its label are removed; every notice is
+   `Notices.show(text, Notice.Short)`, the platform's own (AGENTS.md,
+   platform mechanisms).
+   - Why the add notice was not seen in the device check of 2026-11-27 is
+     not known: the own label sat above the mini-player.
+   - What changes: the notice also clears the keyboard, is one line
+     (longer texts scroll), and takes taps over its area for its 3 s.
+   - The pages still react only while active; `Notices` is global.
 
 ### Deleting (on the Presets page)
 
@@ -198,6 +254,10 @@ D. **Adding.** In Browse, an item whose context menu from the player has
 | A group secondary is current (primary unknown) | as any player | not measured; no special handling |
 | Add preset | the player's `actionURL` | "Added to presets"; the tile appears after the next status |
 | Add while offline, no answer, HTTP error, `<error>` | one request (offline: the request fails) | the failure notice |
+| Add an input | one `/SetPreset?url=…&name=…&image=…` | "Added to presets"; the tile appears after the next status |
+| Add an input: no answer, HTTP error, `<error>`, not a list, an unchanged `prid` | one request | the failure notice |
+| Add an input: unknown id, or an invalid URL | nothing | the failure notice |
+| Add an input, Home no longer active when the reply comes | one request | no notice; the tile appears after the next status |
 | No more presets than Home's rows hold | — | Home shows all |
 | More | — | Home shows the first by id; the page has all |
 | Rotation | — | Home switches between two rows and one |
@@ -214,13 +274,15 @@ The pages are not instantiated in the tests. The device check covers:
 - the pull-down order;
 - the menu, a cancelled and a completed remorse;
 - leaving the page during a remorse;
-- add from Browse (Radio Paradise and TuneIn) and its notice.
+- add from Browse (Radio Paradise and TuneIn) and its notice;
+- add an input from Home, its notice, and playing that preset;
+- the other notices in their new form, with the mini-player open and in
+  landscape.
 
 ## Out of scope
 
 - Moving (reordering) presets, editing a preset, the per-preset volume.
 - Choosing a slot when adding.
-- Adding inputs as presets; the player sends no action for them.
 - Presets of players other than the current one.
 
 ## Acceptance criteria
@@ -242,5 +304,12 @@ The pages are not instantiated in the tests. The device check covers:
    pull-down order is as in decision 11. These are checked on the device.
 8. `tst_qmlruntime` `presets` and `presetsFollowThePlayer` still pass.
    `make check` and the Harbour validator pass. Dutch is complete.
-9. Device check on the NAD with throwaway presets (the maintainer's
+9. "Add preset" on an input sends one `/SetPreset` with the input's URL as
+   given, its name and relative image, encoded, and no `id`. A list with
+   a new `prid` gives `actionDone("preset")`; anything else, and an
+   unchanged list, gives the failure notice; an invalid URL sends nothing.
+   Tests against the double, whose add follows the measurement; the
+   failures of an input add are invented there.
+10. Every notice is Silica's `Notices.show()`; no own notice label remains.
+11. Device check on the NAD with throwaway presets (the maintainer's
    approval): the list under End states.

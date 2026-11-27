@@ -44,7 +44,7 @@ Page {
 
     Connections {
         target: page._player
-        onRemoveRefused: app.notify(qsTr("The queue has changed. Nothing was removed."))
+        onRemoveRefused: Notices.show(qsTr("The queue has changed. Nothing was removed."), Notice.Short)
     }
 
     RemorsePopup { id: clearRemorse }

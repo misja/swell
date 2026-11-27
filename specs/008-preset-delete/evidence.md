@@ -81,6 +81,26 @@ So without an `id`, the player takes the first free slot, and a gap is
 filled. It does not refuse a station that is already a preset. `/Status`
 reported every `prid`.
 
+## 2026-11-27, device check (build 86a69c1, NAD C 379, 4.18.26)
+
+The player's `/Presets` and `/Status` read every second while the
+maintainer used Swell; the screenshots stay local.
+
+- Home, portrait: 3 columns, 2 rows (6 of 7 presets). Landscape: 7
+  columns, 1 row. The Presets page: all 7, edge to edge, the header with
+  the player's name.
+- The tile menu opens at full width; the pull-down order is About,
+  Players, Settings, Presets, Browse (the maintainer).
+- Deleting, three tries (the maintainer: one cancelled): two requests.
+  `prid` 20 → 21 (id 9 gone), 21 → 22 (id 8 gone); the other ids kept.
+  `/Status` followed within about a second.
+- Adding from Radio Paradise: `prid` 22 → 23, the new preset in slot 8,
+  the first free one.
+- Swell's journal had no lines since the start of the check.
+- `/Browse` gives the inputs only a `playURL`, no context menu, so no
+  preset action. A preset of an input exists (id 1, `Capture:…`), added
+  with the official app.
+
 ## Reviews
 
 - Scope, a separate agent, 2026-11-26: request changes. Resolved in the
