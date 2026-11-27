@@ -98,6 +98,7 @@ Page {
         view: list
         delegateModel: queueModel
         proxy: dragProxy
+        vertical: true
         edge: Theme.itemSizeMedium
         step: Theme.paddingLarge
         // Only loaded rows: a placeholder has no identity to check.
@@ -297,8 +298,8 @@ Page {
         VerticalScrollDecorator {}
     }
 
-    // The lifted row, scaled as the home screen's (1.1), with the pressed
-    // row's highlight so it reads as one row over the others.
+    // The lifted row, with the pressed row's highlight so it reads as one row
+    // over the others. Not scaled: a full-width row would leave the screen.
     ListItem {
         id: dragProxy
         property string title
@@ -311,7 +312,6 @@ Page {
         width: list.width
         contentHeight: Theme.itemSizeMedium
         highlighted: true
-        scale: 1.1
         z: 1000
 
         QueueRow {

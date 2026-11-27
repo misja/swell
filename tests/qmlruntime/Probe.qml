@@ -361,6 +361,22 @@ Item {
         reorder.cancel()
         return [moved, reorderOrder(), reorderSent === "", reorder.dragged === null].join(" ")
     }
+    // The finger at x 80: a grid's copy follows it (80 - half its width),
+    // a list's stays at the row's x.
+    function reorderFollow() {
+        var xs = []
+        for (var v = 0; v < 2; ++v) {
+            reorderReset()
+            reorder.vertical = v === 1
+            reorder._lift(reorderModel.items.create(1))
+            reorder.follow(reorderView, 80, 40)
+            xs.push(reorderProxy.x + "," + reorderProxy.y)
+            reorder.cancel()
+        }
+        reorder.vertical = false
+        reorderReset()
+        return xs.join(" ")
+    }
     // end(), which the pages call on a new list: the drag ends where it is,
     // and a later release sends nothing.
     function reorderEnd() {

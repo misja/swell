@@ -139,6 +139,9 @@ C. **Reorder mode on the Queue page.**
      (`DelegateModel.inPersistedItems`) also when edge scrolling takes it
      past the cache buffer (SilicaListView.qml:66); held 150 ms over
      another place, the rows make room (`move`/`displaced` transitions);
+     the lifted copy moves only up and down and is not scaled (the
+     maintainer, 2026-11-27, after trying 0.7.0-5: a full-width row
+     scaled 1.1 left the screen and could be moved sideways);
      near the top or bottom edge the list scrolls; releasing sends one
      move; releasing where it started sends nothing. A window reply
      during a drag changes data by source row (`dataChanged`) and does not

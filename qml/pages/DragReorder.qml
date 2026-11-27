@@ -20,6 +20,8 @@ Item {
     property Item proxy
     // Whether a press may lift this delegate now (the page's conditions).
     property var canLift: function(delegate) { return true }
+    // A list: the copy moves only up and down, at the item's own x.
+    property bool vertical
     // The edge band and the step per 16 ms of edge scrolling.
     property real edge: 80
     property real step: 20
@@ -50,7 +52,9 @@ Item {
             return
         }
         var p = item.mapToItem(proxy.parent, x, y)
-        proxy.x = p.x - proxy.width / 2
+        if (!vertical) {
+            proxy.x = p.x - proxy.width / 2
+        }
         proxy.y = p.y - proxy.height / 2
         _aim()
         var v = view.mapFromItem(proxy.parent, 0, p.y).y

@@ -336,6 +336,8 @@ void TstQmlRuntime::reorderCancelAndReload()
 {
     QCOMPARE(call("reorderCancel"), QStringLiteral("abdefgc abcdefg true true"));
     QCOMPARE(call("reorderEnd"), QStringLiteral("true false true"));
+    // proxy at x,y: a grid follows the finger, a list only up and down
+    QCOMPARE(call("reorderFollow"), QStringLiteral("30,35 0,35"));
 }
 
 void TstQmlRuntime::rowActions()
