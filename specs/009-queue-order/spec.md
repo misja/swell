@@ -138,7 +138,8 @@ C. **Reorder mode on the Queue page.**
      row; a copy is moved by Qt (`MouseArea` `drag.target` set once
      lifted, `drag.axis: Drag.YAxis`, bounded to the page; Qt 5.6
      activates it only if the press kept the grab, so `preventStealing`
-     holds for the whole mode and the list scrolls only at its edges: the
+     holds for the whole mode on the rows: a press on a row never
+     scrolls the list, which scrolls at its edges during a drag; the
      maintainer, 2026-11-27), the delegate is hidden and kept
      (`DelegateModel.inPersistedItems`) also when edge scrolling takes it
      past the cache buffer (SilicaListView.qml:66); held 150 ms over
@@ -208,7 +209,8 @@ E. **MPRIS** keeps `hasShuffle` and `hasLoopStatus` false (spec 003): they
 | Reorder: fewer than two entries left | nothing | the mode ends |
 | Reorder: page left or offline, during a drag | nothing | the mode ends; the row back |
 | Reorder: a window reply during a drag | — | rows fill in; the drag continues |
-| Reorder: a quick swipe in the mode | nothing | nothing moves; the list scrolls only at its edges |
+| Reorder: a quick swipe on a row in the mode | nothing | released on it within 150 ms: a tap, the mode ends; longer: it lifts (Qt: the press keeps the grab, qquickmousearea.cpp:1172) |
+| Reorder: a swipe beside the rows (header, below the last) | nothing | the list scrolls; the pull-down menu and leaving the page work |
 | Reorder: dragged to the edge | — | the list scrolls, also past the cache buffer; placeholder rows load |
 | Reorder: held on a placeholder row | — | nothing lifts |
 | Reorder: a drag while a move or remove is in flight | — | no drag starts |

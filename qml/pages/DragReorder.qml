@@ -42,8 +42,7 @@ Item {
     property int _sentTo: -1
     property Item _pressed: null
 
-    // A press on delegate; it lifts after the hold unless released or moved
-    // into a flick first.
+    // A press on delegate; it lifts after the hold unless released first.
     function press(delegate) {
         _pressed = delegate
         hold.restart()

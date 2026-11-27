@@ -158,3 +158,10 @@ Summary:
 - Device check of 0.7.0-7, the maintainer: dragging presets works with Qt's
   drag (both axes). At 0f7047f, aarch64: 11 suites, 0 failed (queue 47,
   qmlruntime 24).
+- Review of 0f7047f (Qt drag), separate agent, 2026-11-27: approve with
+  changes. The drag.target use is correct for Qt 5.6.3 (target set at the
+  lift, no jump, copy and finger together during edge scrolling, the Page
+  as coordinate space). Applied: the end states in specs 008 and 009 now
+  say what Qt does: a quick swipe on a row or tile is a tap that ends the
+  mode (or lifts after 150 ms), a swipe beside them still scrolls; the
+  `press()` comment. Not changed: suppressing that tap would be own code.

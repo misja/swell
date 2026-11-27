@@ -255,9 +255,9 @@ G. **Reordering.** On the Presets page.
      put back and nothing is sent. The header says the mode is on and how
      it ends.
    - **Drag**, as the home screen:
-     - in the mode the tiles keep the press (`preventStealing`), so the
-       grid, the pull-down menu and the back gesture keep out; the grid
-       scrolls only at its edges (changed 2026-11-27 with spec 009: a
+     - in the mode the tiles keep the press (`preventStealing`), so a
+       press on a tile never scrolls the grid, and the grid scrolls at its
+       edges during a drag (changed 2026-11-27 with spec 009: a
        quick swipe no longer flicks; the maintainer accepted it to let
        Qt move the copy);
      - a press held 150 ms lifts the tile's content (scaled 1.1);
@@ -374,7 +374,8 @@ G. **Reordering.** On the Presets page.
 | Add an input, Home no longer active when the reply comes | one request | no notice; the tile appears after the next status |
 | Reorder: a tile dropped at another place | one `POST /Presets/edit?prid=N` with the cycle | the new order; Home follows |
 | Reorder: dropped where it started, or the mode ended mid-drag | nothing | unchanged |
-| Reorder: a quick swipe in the mode | nothing | nothing moves; the grid scrolls only at its edges (since spec 009) |
+| Reorder: a quick swipe on a tile in the mode | nothing | released on it within 150 ms: a tap, the mode ends; longer: it lifts (Qt: the press keeps the grab, qquickmousearea.cpp:1172) |
+| Reorder: a swipe beside the tiles (header, below the last) | nothing | the grid scrolls; the pull-down menu and leaving the page work |
 | Reorder: dragged to the edge | — | the grid scrolls; one request on release |
 | Reorder: a tap on a tile or beside the tiles in the mode | nothing | the mode ends |
 | Reorder: the list changed meanwhile (412) | one request | "The presets have changed. Nothing was moved."; the view put back |
