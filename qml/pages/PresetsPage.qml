@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 import QtQuick 2.4   // FontMetrics
-import QtQml.Models 2.2   // DelegateModel
+import QtQml.Models 2.1   // DelegateModel
 import Sailfish.Silica 1.0
 import Swell 1.0
 
@@ -57,9 +57,12 @@ Page {
     }
 
     function _startDrag(delegate) {
-        if (!_reordering || !_player.presetsCurrent || _player.presetMoving) {
+        // The delegate may be gone (a new list) by the time the hold ends.
+        if (!delegate || !_reordering || !_player.presetsCurrent || _player.presetMoving) {
             return
         }
+        // Kept while lifted, also when edge scrolling takes it out of view.
+        delegate.DelegateModel.inPersistedItems = true
         _dragged = delegate
         _draggedPreset = delegate.preset
         _dragStart = delegate.DelegateModel.itemsIndex
@@ -85,6 +88,10 @@ Page {
     function _endDrag() {
         dwell.stop()
         edgeScroll.stop()
+        hold.stop()
+        if (_dragged) {
+            _dragged.DelegateModel.inPersistedItems = false
+        }
         _dragged = null
         _draggedPreset = null
         _pendingIndex = -1

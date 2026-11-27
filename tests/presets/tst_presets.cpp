@@ -501,9 +501,14 @@ void TstPresets::aMoveSendsOneRequestAndTheListFollows()
     QSignalSpy failed(m_client, &Client::commandFailed);
     QSignalSpy refused(m_client, &Client::presetMoveRefused);
     QSignalSpy moving(m_client, &Client::presetMovingChanged);
+    QSignalSpy version(m_client, &Client::presetsVersionChanged);
     m_client->movePreset(8, 2, m_client->presetsPrid());
     QVERIFY(m_client->presetMoving());
     QTRY_VERIFY(!m_client->presetMoving());
+    // No second move on the old list: it is current again once read anew.
+    QVERIFY(!version.isEmpty());
+    QTRY_VERIFY(m_client->presetsCurrent());
+    QCOMPARE(m_client->presetsPrid(), QString::number(m_prid));
     QCOMPARE(moving.size(), 2);
     QCOMPARE(m_player->requests(QStringLiteral("/Presets/edit")).size(), 1);
     // The list follows from the prid change; the ids stay, the names move.

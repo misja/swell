@@ -1,11 +1,12 @@
 # Feature specification — 008 presets: a page, deleting, adding and moving
 
-Status: draft 2026-11-26; widened scope reviewed by a separate agent
-(approve with changes, resolved here).
+Status: built 2026-11-27, checked on the device; every scope and result
+review by a separate agent resolved (evidence.md, Reviews).
 - Deleting: scope reviewed (request changes, resolved in misja/swell#55),
   built and reviewed (approve with changes, resolved).
-- Widened the same day by the maintainer: a Presets page, a limited row on
-  Home, and adding.
+- Widened on 2026-11-26 by the maintainer: a Presets page, a limited row
+  on Home, and adding; on 2026-11-27: an input as a preset, Silica's
+  notices, and moving presets.
 
 ## Owner and linked issue
 
@@ -257,8 +258,11 @@ G. **Reordering.** On the Presets page.
      - a press held 150 ms lifts the tile's content (scaled 1.1); only
        then the drag starts, with `preventStealing`, so a quick swipe
        still flicks and the pull-down menu and the back gesture keep out;
-     - the content follows the finger, moved out of the delegate while
-       dragged; the view keeps positioning the delegates;
+     - a lifted copy of the tile, drawn above the grid, follows the
+       finger, and the delegate is hidden (opacity 0) and kept while
+       lifted (`DelegateModel.inPersistedItems`), also when edge
+       scrolling takes it out of view; the view keeps positioning the
+       delegates;
      - held 150 ms over another place, `DelegateModel` `items.move()`
        moves the tile there in the view, and the others slide (`GridView`
        `move` and `displaced` transitions, 150 ms). The model itself stays
@@ -282,7 +286,8 @@ G. **Reordering.** On the Presets page.
    - **Refusals**, nothing sent: offline ("Nothing was moved."); the list
      not current, the `prid` not the one recorded at the drag's start,
      or an id not in the list ("The presets have changed. Nothing was
-     moved."); `fromId == toId` (nothing to say).
+     moved."); a move already in flight ("Nothing was moved.");
+     `fromId == toId` (nothing to say).
    - **Outcome.**
      - 200 with a `<presets>` list holding as many presets as before and
        the moved one at `toId`: done; the list follows from the `prid`
@@ -292,12 +297,14 @@ G. **Reordering.** On the Presets page.
        notice, and the view put back.
    - **One at a time.** `Player.presetMoving` (a property with NOTIFY)
      is true while a move is in flight; then, and until the list is
-     current again, no drag starts.
+     current again, no drag starts. A successful move marks the list not
+     current until `/Presets` answers for the new `prid`.
    - Home's row shows the first presets by id, so it follows the new
      order.
-   - Own code, named in the pull request: the hold and dwell timers and
-     the edge scrolling (Silica has none; the home screen's is private),
-     and the cycle built in C++.
+   - Own code, named in the pull request: the hold and dwell timers, the
+     edge scrolling, the lifted copy of the tile and the tap beside the
+     tiles that ends the mode (Silica has none of these; the home
+     screen's is private), and the cycle built in C++.
 
 ### Deleting (on the Presets page)
 

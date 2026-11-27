@@ -694,8 +694,14 @@ void Client::movePreset(int fromId, int toId, const QString &prid)
         bool moved = false;
         for (const Preset &p : after.items)
             moved = moved || (p.id == toId && p.url == movedUrl);
-        if (http == 200 && after.ok && after.items.size() == count && moved)
+        if (http == 200 && after.ok && after.items.size() == count && moved) {
+            // The list shown is old until /Presets answers for the new prid.
+            if (m_presetsCurrent && after.prid != m_presetsPrid) {
+                m_presetsCurrent = false;
+                emit presetsVersionChanged();
+            }
             return;
+        }
         QString error = parseError(reply);
         if (error.isEmpty())
             error = http ? (http == 200 ? QStringLiteral("not moved") : QStringLiteral("HTTP %1").arg(http))
