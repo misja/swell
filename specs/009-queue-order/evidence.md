@@ -155,3 +155,6 @@ Summary:
   `Drag.YAxis`), with `preventStealing` for the whole mode (the maintainer
   chose edge scrolling only). Device check of 0.7.0-7, the maintainer: in the
   queue the row moves only up and down.
+- Device check of 0.7.0-7, the maintainer: dragging presets works with Qt's
+  drag (both axes). At 0f7047f, aarch64: 11 suites, 0 failed (queue 47,
+  qmlruntime 24).
