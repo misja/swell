@@ -601,10 +601,10 @@ void Client::fetchStatus(const QString &path, const QString &encodedQuery, const
 
 QList<Client::PresetMove> Client::presetCycle(const QList<int> &ids, int fromId, int toId)
 {
-    QList<int> slots = ids;
-    std::sort(slots.begin(), slots.end());
-    const int from = slots.indexOf(fromId);
-    const int to = slots.indexOf(toId);
+    QList<int> occupied = ids;
+    std::sort(occupied.begin(), occupied.end());
+    const int from = occupied.indexOf(fromId);
+    const int to = occupied.indexOf(toId);
     QList<PresetMove> moves;
     if (from < 0 || to < 0 || from == to)
         return moves;
@@ -613,10 +613,10 @@ QList<Client::PresetMove> Client::presetCycle(const QList<int> &ids, int fromId,
     moves.append({ fromId, toId });
     if (to < from) {
         for (int k = to; k < from; ++k)
-            moves.append({ slots.at(k), slots.at(k + 1) });
+            moves.append({ occupied.at(k), occupied.at(k + 1) });
     } else {
         for (int k = from + 1; k <= to; ++k)
-            moves.append({ slots.at(k), slots.at(k - 1) });
+            moves.append({ occupied.at(k), occupied.at(k - 1) });
     }
     std::sort(moves.begin(), moves.end(), [](const PresetMove &a, const PresetMove &b) { return a.to < b.to; });
     return moves;
