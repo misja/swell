@@ -148,3 +148,10 @@ Summary:
   first it is dropped as another queue's, and rows already shown stay "…"
   until they are shown again. The adopt read-back is sent first, so the
   order normally holds.
+- Device check of 0.7.0-5 (075b721), 2026-11-27, the maintainer: dragging in
+  the queue works; the lifted row (scaled 1.1, free to move sideways) left
+  the screen (screenshot 22:40). 0.7.0-6 (b6562ca) kept it vertical by hand;
+  replaced in 0.7.0-7 (0f7047f) by Qt's drag (`drag.target`,
+  `Drag.YAxis`), with `preventStealing` for the whole mode (the maintainer
+  chose edge scrolling only). Device check of 0.7.0-7, the maintainer: in the
+  queue the row moves only up and down.
