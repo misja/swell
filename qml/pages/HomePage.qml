@@ -177,7 +177,7 @@ Page {
                 wrapMode: Text.Wrap
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.secondaryHighlightColor
-                text: qsTr("No presets on this player. Add them from Browse.")
+                text: qsTr("No presets on this player. Add them from Browse or from the inputs below.")
             }
 
             // While the player offers a firmware update, and while one this

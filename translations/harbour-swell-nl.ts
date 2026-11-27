@@ -301,8 +301,8 @@
     </message>
     <message>
         <location filename="../qml/pages/HomePage.qml" line="180"/>
-        <source>No presets on this player. Add them from Browse.</source>
-        <translation>Geen presets op deze speler. Voeg ze toe vanuit Bladeren.</translation>
+        <source>No presets on this player. Add them from Browse or from the inputs below.</source>
+        <translation>Geen presets op deze speler. Voeg ze toe vanuit Bladeren of vanuit de ingangen hieronder.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HomePage.qml" line="221"/>
@@ -559,8 +559,8 @@
     </message>
     <message>
         <location filename="../qml/pages/PresetsPage.qml" line="81"/>
-        <source>Add them from Browse: long press a station and choose Add preset</source>
-        <translation>Voeg ze toe vanuit Bladeren: houd een zender ingedrukt en kies Preset toevoegen</translation>
+        <source>Long press a station in Browse, or an input on Home, and choose Add preset</source>
+        <translation>Houd een zender in Bladeren of een ingang op Home ingedrukt en kies Preset toevoegen</translation>
     </message>
 </context>
 <context>

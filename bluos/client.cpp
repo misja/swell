@@ -476,6 +476,12 @@ void Client::addInputPreset(const QString &inputId)
         emit commandFailed(path, QStringLiteral("invalid input URL"));
         return;
     }
+    // Success is judged by the reply's prid against the list Swell has; that
+    // needs the list read and still the one /Status reports.
+    if (!m_presetsCurrent) {
+        emit commandFailed(path, QStringLiteral("presets not current"));
+        return;
+    }
     // The parameters /Services declares for "Add preset"; no id, so the
     // player takes the first free slot (measured, spec 008).
     QStringList items;

@@ -34,13 +34,14 @@ private slots:
     void anInputThatCannotBeSentIsNotAdded();
     void aFailedInputAddIsReported_data();
     void aFailedInputAddIsReported();
+    void anInputIsNotAddedToAListNotYetRead();
 
 private:
     QByteArray list() const;
     void publish();
     void startClient();
     QList<int> ids() const;
-    int deletes() const;
+    int setPresetRequests() const;
 
     SendLog *m_nam = nullptr;
     FakePlayer *m_player = nullptr;
@@ -138,7 +139,7 @@ QList<int> TstPresets::ids() const
     return list;
 }
 
-int TstPresets::deletes() const
+int TstPresets::setPresetRequests() const
 {
     return m_player->requests(QStringLiteral("/SetPreset")).size();
 }
@@ -149,7 +150,7 @@ void TstPresets::deleteSendsOneRequestAndTheListFollows()
     QSignalSpy failed(m_client, &Client::commandFailed);
     QSignalSpy refused(m_client, &Client::presetDeleteRefused);
     m_client->deletePreset(7, m_client->presetsPrid());
-    QTRY_COMPARE(deletes(), 1);
+    QTRY_COMPARE(setPresetRequests(), 1);
     QCOMPARE(m_player->requests(QStringLiteral("/SetPreset")).first().target, QByteArray("/SetPreset?id=7"));
     // The list comes from the prid change; 8 keeps its id (a gap at 7).
     QTRY_COMPARE(ids(), QList<int>({ 1, 2, 3, 8 }));
@@ -182,7 +183,7 @@ void TstPresets::aChangedListIsNotTouched()
     QCOMPARE(refused.size(), 1);
     QCOMPARE(refused.first().first().toBool(), true);
     QTest::qWait(300);   // nothing follows, which no signal shows
-    QCOMPARE(deletes(), 0);
+    QCOMPARE(setPresetRequests(), 0);
 }
 
 void TstPresets::aListNotYetReadIsNotTouched()
@@ -201,7 +202,7 @@ void TstPresets::aListNotYetReadIsNotTouched()
     m_client->deletePreset(7, seen);
     QCOMPARE(refused.size(), 1);
     QCOMPARE(refused.first().first().toBool(), true);
-    QCOMPARE(deletes(), 0);
+    QCOMPARE(setPresetRequests(), 0);
 }
 
 void TstPresets::offlineSendsNothing()
@@ -217,7 +218,7 @@ void TstPresets::offlineSendsNothing()
     m_client->deletePreset(7, seen);
     QCOMPARE(refused.size(), 1);
     QCOMPARE(refused.first().first().toBool(), false);
-    QCOMPARE(deletes(), 0);
+    QCOMPARE(setPresetRequests(), 0);
 }
 
 void TstPresets::twoDeletesAreTwoRequests()
@@ -227,7 +228,7 @@ void TstPresets::twoDeletesAreTwoRequests()
     const QString seen = m_client->presetsPrid();
     m_client->deletePreset(7, seen);
     m_client->deletePreset(8, seen);
-    QTRY_COMPARE(deletes(), 2);
+    QTRY_COMPARE(setPresetRequests(), 2);
     const auto sent = m_player->requests(QStringLiteral("/SetPreset"));
     QCOMPARE(sent.at(0).target, QByteArray("/SetPreset?id=7"));
     QCOMPARE(sent.at(1).target, QByteArray("/SetPreset?id=8"));
@@ -329,7 +330,7 @@ void TstPresets::anInputThatCannotBeSentIsNotAdded()
     QCOMPARE(failed.first().at(0).toString(), QStringLiteral("/SetPreset"));
     QCOMPARE(failed.first().at(1).toString(), error);
     QTest::qWait(300);   // nothing follows, which no signal shows
-    QCOMPARE(deletes(), 0);
+    QCOMPARE(setPresetRequests(), 0);
 }
 
 void TstPresets::aFailedInputAddIsReported_data()
@@ -368,6 +369,22 @@ void TstPresets::aFailedInputAddIsReported()
     QCOMPARE(failed.first().at(1).toString(), error);
     QVERIFY(done.isEmpty());
     QCOMPARE(ids(), QList<int>({ 1, 2, 3, 7, 8 }));
+}
+
+void TstPresets::anInputIsNotAddedToAListNotYetRead()
+{
+    // /Status reports a newer list than /Presets gave: a reply's prid could
+    // not tell an add from that change, so nothing is sent.
+    startClient();
+    m_player->failWith(QStringLiteral("/Presets"), 500);
+    ++m_prid;
+    publish();
+    QTRY_VERIFY(!m_client->presetsCurrent());
+    QSignalSpy failed(m_client, &Client::commandFailed);
+    m_client->addInputPreset(QStringLiteral("in5"));
+    QCOMPARE(failed.size(), 1);
+    QCOMPARE(failed.first().at(1).toString(), QStringLiteral("presets not current"));
+    QCOMPARE(setPresetRequests(), 0);
 }
 
 QTEST_GUILESS_MAIN(TstPresets)

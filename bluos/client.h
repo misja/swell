@@ -257,7 +257,8 @@ public slots:
     // with its URL as given, its name and its image, and no id, so the player
     // takes the first free slot (measured, spec 008; the player offers no
     // action for inputs). actionDone("preset") when the reply is the list
-    // with a new prid, otherwise commandFailed.
+    // with a new prid, otherwise commandFailed; nothing is sent (commandFailed)
+    // while the list is not read or /Status reports a newer one.
     void addInputPreset(const QString &inputId);
     void refreshInputs();
     void playQueueEntry(int position);

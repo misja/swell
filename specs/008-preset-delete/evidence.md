@@ -101,6 +101,18 @@ maintainer used Swell; the screenshots stay local.
   preset action. A preset of an input exists (id 1, `Capture:…`), added
   with the official app.
 
+- Build afeab31, the same day:
+  - An input added from Home (Phono, twice): the first free slot (9),
+    `prid` 25 → 26 and 27 → 28; "Added to presets" shown; the preset
+    plays (the maintainer). Swell sends the image encoded
+    (`%2Fimages%2F…`), the curl measurement plain; the stored image was
+    not read back.
+  - Radio Paradise added again from Browse: a duplicate in slot 9
+    (`prid` 30), and the notice now shown.
+  - The notices are Silica's: small, above the mini-player (the
+    maintainer found them rather small).
+  - The throwaways deleted from the Presets page (`prid` 27, 29, 31, 32).
+
 ## Reviews
 
 - Scope, a separate agent, 2026-11-26: request changes. Resolved in the
@@ -162,3 +174,11 @@ maintainer used Swell; the screenshots stay local.
     of the notice's place.
   - Open: Silica's first version with `Notices` is not known from the
     target; `Requires: sailfishsilica-qt5 >= 0.10.9` is unchanged.
+- Result after 3a846cd (86a69c1, c120226, afeab31), a separate agent,
+  2026-11-27: approve with changes. Resolved:
+  - an input add is refused while the list is not current, since the
+    reply's `prid` could not tell the add apart; a test for it;
+  - the encoded image recorded as not read back;
+  - the test helper renamed (`setPresetRequests`);
+  - the placeholder and Home's text name the inputs too;
+  - spec F's open question closed; no Dutch quote here.

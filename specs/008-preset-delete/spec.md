@@ -132,7 +132,7 @@ A. **Presets page.** A new page, `PresetsPage.qml`, with all presets of
        columns as in decision 10;
      - a `PageHeader` in `header` ("Presets", with the player's name);
      - a `ViewPlaceholder` when there are none, which says presets are
-       added from Browse.
+       added from Browse or from an input on Home.
    - Each tile has a context menu with Delete (below). The menu takes the
      grid's width, which is the page's (ContextMenu.qml:96).
    - The page follows the current player. Its tiles are disabled while
@@ -146,7 +146,7 @@ B. **Home.** A row that only plays: two rows (portrait) or one
    - `Player.presets` is in the player's order, which was ascending by id
      in every measured list. Home takes the lowest ids itself, so it does
      not rely on that order.
-   - The text for no presets points to Browse.
+   - The text for no presets points to Browse and the inputs.
 C. **Shared.** The tile is one component, `PresetTile.qml` (a `GridItem`).
    It holds the cover or the input icon and the name, and has no menu.
    Each page sets the tile's `menu` itself. The remorse and the delete
@@ -183,15 +183,20 @@ E. **An input as a preset.** On Home, each input's row (a `ListItem`)
      emits `actionDone("preset")`. A URL cannot decide it: duplicates are
      allowed and the list holds it decoded.
    - Anything else, an unchanged list included, gives `commandFailed`. An
-     unknown id or an invalid URL sends nothing and gives `commandFailed`.
+     unknown id or an invalid URL sends nothing and gives `commandFailed`;
+     so does a list not read, or older than the one `/Status` reports
+     (`Player.presetsCurrent` false), since the reply's `prid` could not
+     tell the add from that change.
+   - If another controller changes the list while the request runs, the
+     new `prid` counts as success. Not measured; accepted.
    - Home shows "Added to presets", only while it is the active page, as
      Browse does. The notice is lost otherwise.
    - An input that is already a preset can be added again, as a station.
 F. **Notices.** `app.notify()` and its label are removed; every notice is
    `Notices.show(text, Notice.Short)`, the platform's own (AGENTS.md,
    platform mechanisms).
-   - Why the add notice was not seen in the device check of 2026-11-27 is
-     not known: the own label sat above the mini-player.
+   - Why the own label's add notice was not seen in the device check of
+     2026-11-27 is not known. With `Notices` it is shown (evidence.md).
    - What changes: the notice also clears the keyboard, is one line
      (longer texts scroll), and takes taps over its area for its 3 s.
    - The pages still react only while active; `Notices` is global.
@@ -256,12 +261,12 @@ F. **Notices.** `app.notify()` and its label are removed; every notice is
 | Add while offline, no answer, HTTP error, `<error>` | one request (offline: the request fails) | the failure notice |
 | Add an input | one `/SetPreset?url=…&name=…&image=…` | "Added to presets"; the tile appears after the next status |
 | Add an input: no answer, HTTP error, `<error>`, not a list, an unchanged `prid` | one request | the failure notice |
-| Add an input: unknown id, or an invalid URL | nothing | the failure notice |
+| Add an input: unknown id, an invalid URL, or the list not current | nothing | the failure notice |
 | Add an input, Home no longer active when the reply comes | one request | no notice; the tile appears after the next status |
 | No more presets than Home's rows hold | — | Home shows all |
 | More | — | Home shows the first by id; the page has all |
 | Rotation | — | Home switches between two rows and one |
-| No presets | — | the page's placeholder; Home's text points to Browse |
+| No presets | — | the page's placeholder; Home's text points to Browse and the inputs |
 
 Tests (`tests/presets`, `tests/browse`) cover the client and model side:
 - deleting, with each refusal and failure;

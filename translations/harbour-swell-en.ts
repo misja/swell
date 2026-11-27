@@ -301,7 +301,7 @@
     </message>
     <message>
         <location filename="../qml/pages/HomePage.qml" line="180"/>
-        <source>No presets on this player. Add them from Browse.</source>
+        <source>No presets on this player. Add them from Browse or from the inputs below.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -559,7 +559,7 @@
     </message>
     <message>
         <location filename="../qml/pages/PresetsPage.qml" line="81"/>
-        <source>Add them from Browse: long press a station and choose Add preset</source>
+        <source>Long press a station in Browse, or an input on Home, and choose Add preset</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
