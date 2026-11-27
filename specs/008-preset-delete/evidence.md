@@ -250,8 +250,8 @@ assistant read `/Presets` and `/Status` every second.
     starts, the dwell, autoscroll at the edge, a tap ending the mode;
   - the drag starts after the hold, with `preventStealing`, so a quick
     swipe still flicks and the pulley and back gesture keep out;
-  - `DelegateModel` `items.move()` instead of a `ListModel` copy; the
-    tile's content dragged, not the delegate;
+  - `DelegateModel` `items.move()` instead of a `ListModel` copy; a
+    lifted copy dragged, not the delegate;
   - end states: the list changing or rotation during a drag, a tap in the
     mode, Reorder disabled during a remorse, offline, not current or
     with fewer than two presets; separate notices;
@@ -264,3 +264,12 @@ assistant read `/Presets` and `/Status` every second.
   - the gap measured (above).
   - The maintainer (2026-11-27): autoscroll yes, for the user and for
     fewer requests (own code, named); a tap ends the mode.
+- Final result and standards review (fda7691..b8d3fee), a separate agent,
+  2026-11-27: approve with changes. Resolved:
+  - the dragged delegate kept while lifted (`inPersistedItems`), so edge
+    scrolling cannot release it;
+  - the hold ends with a new list (no drag on a destroyed delegate);
+  - a successful move marks the list not current until it is read anew;
+  - the spec's account of the lifted copy, the refusals, the own code and
+    its status line;
+  - `QtQml.Models 2.1`, the version that exports `DelegateModel`.
