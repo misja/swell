@@ -963,16 +963,20 @@ void TstQueue::moveEntryDiscardsAWindowInFlight()
     QTRY_COMPARE(title(0), QStringLiteral("Track 0"));
     m_player->delay(QStringLiteral("/Playlist"), 300);
     title(60);   // asks for the second window
-    QTRY_VERIFY(q->loading());
+    const auto secondWindowReads = [this]() {
+        int n = 0;
+        for (const auto &r : m_player->requests(QStringLiteral("/Playlist")))
+            n += r.target.contains("start=50&end=99") ? 1 : 0;
+        return n;
+    };
+    // Sent and held by the player (the delay): its reply has old positions.
+    QTRY_COMPARE(secondWindowReads(), 1);
     // A move settles meanwhile (here directly on the model, as after /Move).
     m_queue.move(0, 1);
     q->moveEntry(0, 1);
     QCOMPARE(title(1), QStringLiteral("Track 0"));
     QTRY_COMPARE(title(60), QStringLiteral("Track 60"));
-    int reads = 0;
-    for (const auto &r : m_player->requests(QStringLiteral("/Playlist")))
-        reads += r.target.contains("start=50&end=99") ? 1 : 0;
-    QCOMPARE(reads, 2);
+    QCOMPARE(secondWindowReads(), 2);
 }
 
 void TstQueue::aReportedLengthIsBounded()

@@ -317,50 +317,50 @@
 <context>
     <name>NowPlayingPage</name>
     <message numerus="yes">
-        <location filename="../qml/pages/NowPlayingPage.qml" line="47"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="49"/>
         <source>Leading %n player(s)</source>
         <translation type="unfinished">
             <numerusform></numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="50"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="52"/>
         <source>Reconnecting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="50"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="52"/>
         <source>In another player&apos;s group</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="251"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="282"/>
         <source>Group volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="285"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="316"/>
         <source>Per player</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="324"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="355"/>
         <source>%1: fixed volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="125"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="127"/>
         <source>Nothing to play</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="73"/>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="106"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="75"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="108"/>
         <source>Not reachable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="251"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="282"/>
         <source>Volume</source>
         <translation type="unfinished"></translation>
     </message>
@@ -525,58 +525,58 @@
 <context>
     <name>PresetsPage</name>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="50"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="43"/>
         <source>Deleting %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="52"/>
-        <location filename="../qml/pages/PresetsPage.qml" line="172"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="45"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="64"/>
         <source>Nothing was deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="171"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="63"/>
         <source>The presets have changed. Nothing was deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="175"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="67"/>
         <source>The presets have changed. Nothing was moved.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="176"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="68"/>
         <source>Nothing was moved.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="311"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="176"/>
         <source>Reorder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="329"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="194"/>
         <source>Presets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="240"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="117"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="330"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="195"/>
         <source>Drag to move, tap to stop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="336"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="201"/>
         <source>No presets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="337"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="202"/>
         <source>Long press a station in Browse, or an input on Home, and choose Add preset</source>
         <translation type="unfinished"></translation>
     </message>
@@ -584,54 +584,74 @@
 <context>
     <name>QueuePage</name>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="47"/>
+        <location filename="../qml/pages/QueuePage.qml" line="78"/>
         <source>The queue has changed. Nothing was removed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="61"/>
+        <location filename="../qml/pages/QueuePage.qml" line="81"/>
+        <source>The queue has changed. Nothing was moved.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/QueuePage.qml" line="82"/>
+        <source>Nothing was moved.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/QueuePage.qml" line="218"/>
         <source>Queue</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../qml/pages/QueuePage.qml" line="221"/>
+        <source>Drag to move, tap to stop</source>
+        <translation type="unfinished"></translation>
+    </message>
     <message numerus="yes">
-        <location filename="../qml/pages/QueuePage.qml" line="70"/>
+        <location filename="../qml/pages/QueuePage.qml" line="230"/>
         <source>%n tracks</source>
         <translation type="unfinished">
             <numerusform></numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="81"/>
+        <location filename="../qml/pages/QueuePage.qml" line="241"/>
         <source>Now playing %1. Tap a track to play the queue again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="95"/>
+        <location filename="../qml/pages/QueuePage.qml" line="255"/>
         <source>Clear queue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="96"/>
+        <location filename="../qml/pages/QueuePage.qml" line="257"/>
         <source>Clearing queue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="112"/>
+        <location filename="../qml/pages/QueuePage.qml" line="136"/>
         <source>Removing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="184"/>
+        <location filename="../qml/pages/QueuePage.qml" line="167"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="193"/>
+        <location filename="../qml/pages/QueuePage.qml" line="262"/>
+        <source>Reorder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/QueuePage.qml" line="281"/>
         <source>Queue is empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="194"/>
+        <location filename="../qml/pages/QueuePage.qml" line="282"/>
         <source>Play a preset or an input, or add music from Browse</source>
         <translation type="unfinished"></translation>
     </message>

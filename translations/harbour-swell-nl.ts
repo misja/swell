@@ -318,7 +318,7 @@
 <context>
     <name>NowPlayingPage</name>
     <message numerus="yes">
-        <location filename="../qml/pages/NowPlayingPage.qml" line="47"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="49"/>
         <source>Leading %n player(s)</source>
         <translation>
             <numerusform>Leidt %n speler</numerusform>
@@ -326,43 +326,43 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="50"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="52"/>
         <source>Reconnecting</source>
         <translation>Opnieuw verbinden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="50"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="52"/>
         <source>In another player&apos;s group</source>
         <translation>In de groep van een andere speler</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="251"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="282"/>
         <source>Group volume</source>
         <translation>Groepsvolume</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="285"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="316"/>
         <source>Per player</source>
         <translation>Per speler</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="324"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="355"/>
         <source>%1: fixed volume</source>
         <translation>%1: vast volume</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="125"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="127"/>
         <source>Nothing to play</source>
         <translation>Niets om af te spelen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="73"/>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="106"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="75"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="108"/>
         <source>Not reachable</source>
         <translation>Niet bereikbaar</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="251"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="282"/>
         <source>Volume</source>
         <translation>Volume</translation>
     </message>
@@ -527,58 +527,58 @@
 <context>
     <name>PresetsPage</name>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="50"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="43"/>
         <source>Deleting %1</source>
         <translation>%1 wordt verwijderd</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="52"/>
-        <location filename="../qml/pages/PresetsPage.qml" line="172"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="45"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="64"/>
         <source>Nothing was deleted.</source>
         <translation>Er is niets verwijderd.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="171"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="63"/>
         <source>The presets have changed. Nothing was deleted.</source>
         <translation>De presets zijn gewijzigd. Er is niets verwijderd.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="175"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="67"/>
         <source>The presets have changed. Nothing was moved.</source>
         <translation>De presets zijn gewijzigd. Er is niets verplaatst.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="176"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="68"/>
         <source>Nothing was moved.</source>
         <translation>Er is niets verplaatst.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="311"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="176"/>
         <source>Reorder</source>
         <translation>Volgorde wijzigen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="329"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="194"/>
         <source>Presets</source>
         <translation>Presets</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="240"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="117"/>
         <source>Delete</source>
         <translation>Verwijderen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="330"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="195"/>
         <source>Drag to move, tap to stop</source>
         <translation>Sleep om te verplaatsen, tik om te stoppen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="336"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="201"/>
         <source>No presets</source>
         <translation>Geen presets</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="337"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="202"/>
         <source>Long press a station in Browse, or an input on Home, and choose Add preset</source>
         <translation>Houd een zender in Bladeren of een ingang op Home ingedrukt en kies Preset toevoegen</translation>
     </message>
@@ -586,17 +586,32 @@
 <context>
     <name>QueuePage</name>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="47"/>
+        <location filename="../qml/pages/QueuePage.qml" line="78"/>
         <source>The queue has changed. Nothing was removed.</source>
         <translation>De wachtrij is veranderd. Er is niets verwijderd.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="61"/>
+        <location filename="../qml/pages/QueuePage.qml" line="81"/>
+        <source>The queue has changed. Nothing was moved.</source>
+        <translation>De wachtrij is veranderd. Er is niets verplaatst.</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/QueuePage.qml" line="82"/>
+        <source>Nothing was moved.</source>
+        <translation>Er is niets verplaatst.</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/QueuePage.qml" line="218"/>
         <source>Queue</source>
         <translation>Wachtrij</translation>
     </message>
+    <message>
+        <location filename="../qml/pages/QueuePage.qml" line="221"/>
+        <source>Drag to move, tap to stop</source>
+        <translation>Sleep om te verplaatsen, tik om te stoppen</translation>
+    </message>
     <message numerus="yes">
-        <location filename="../qml/pages/QueuePage.qml" line="70"/>
+        <location filename="../qml/pages/QueuePage.qml" line="230"/>
         <source>%n tracks</source>
         <translation>
             <numerusform>%n nummer</numerusform>
@@ -604,37 +619,42 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="81"/>
+        <location filename="../qml/pages/QueuePage.qml" line="241"/>
         <source>Now playing %1. Tap a track to play the queue again.</source>
         <translation>Nu speelt %1. Tik op een nummer om de wachtrij weer af te spelen.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="95"/>
+        <location filename="../qml/pages/QueuePage.qml" line="255"/>
         <source>Clear queue</source>
         <translation>Wachtrij wissen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="96"/>
+        <location filename="../qml/pages/QueuePage.qml" line="257"/>
         <source>Clearing queue</source>
         <translation>Wachtrij wordt gewist</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="112"/>
+        <location filename="../qml/pages/QueuePage.qml" line="136"/>
         <source>Removing</source>
         <translation>Wordt verwijderd</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="184"/>
+        <location filename="../qml/pages/QueuePage.qml" line="167"/>
         <source>Remove</source>
         <translation>Verwijderen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="193"/>
+        <location filename="../qml/pages/QueuePage.qml" line="262"/>
+        <source>Reorder</source>
+        <translation>Volgorde wijzigen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/QueuePage.qml" line="281"/>
         <source>Queue is empty</source>
         <translation>Wachtrij is leeg</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="194"/>
+        <location filename="../qml/pages/QueuePage.qml" line="282"/>
         <source>Play a preset or an input, or add music from Browse</source>
         <translation>Speel een preset of ingang af, of voeg muziek toe vanuit Bladeren</translation>
     </message>
