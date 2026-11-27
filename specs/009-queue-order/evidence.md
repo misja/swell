@@ -95,3 +95,14 @@ Summary:
   `no-changelogname-tag` (a branch build; release builds take the tag) and
   `description-line-too-long` (`rpm/harbour-swell.spec` line 21).
 - Not run on the device yet.
+- Result review of PR 1 (10f051c), separate agent, 2026-11-27: approve
+  with changes, no blocking findings. Applied in 8c903d8: a qmlruntime test
+  calls `setRepeat(Player.RepeatQueue|RepeatTrack)` from QML and checks
+  `/Repeat?state=0|1`; the two-taps test checks the spacing (≥ 150 ms
+  arrival) and a single id change; spec B wording on visibility (hidden
+  with the transport row); the measured `/Repeat` reply in full; one null
+  check form in the new QML; landscape added to the device check. Not
+  applied: renaming `streaming` (same name and meaning as
+  `QueueModel.streaming`); a shared constant for "2 = off" (the xml layer
+  does not know `Client`).
+- At 8c903d8, aarch64: 11 suites, 0 failed (queue 35, qmlruntime 21, xml 44).
