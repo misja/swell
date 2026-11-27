@@ -755,8 +755,10 @@ void Client::removeQueueEntry(int position, const QString &pid, const QString &i
         emit removeRefused();
         return;
     }
+    const bool was = queueEditing();
     m_removals.append({ position, pid, identity });
-    emit queueEditingChanged();
+    if (!was)
+        emit queueEditingChanged();
     processRemovals();
 }
 
@@ -792,12 +794,12 @@ void Client::processRemovals()
             m_removals.removeFirst();
             if (!error.isEmpty()) {
                 emit commandFailed(QStringLiteral("/Delete"), error);
-                finishRemoval();
+                finishEdit();
                 return;
             }
             if (m_queue->generation() != generation) {
                 m_queue->reload();  // read again meanwhile; it may or may not show this
-                finishRemoval();
+                finishEdit();
                 return;
             }
             m_queue->removeEntry(removal.position);
@@ -831,11 +833,11 @@ void Client::adoptQueueId(int position)
         } else {
             m_queue->reload();
         }
-        finishRemoval();
+        finishEdit();
     });
 }
 
-void Client::finishRemoval()
+void Client::finishEdit()
 {
     m_queue->setHoldPid(false);
     setEditing(false);
@@ -853,10 +855,10 @@ void Client::setEditing(bool editing)
 void Client::moveQueueEntry(int from, int to, const QString &pid, const QString &identity)
 {
     const int length = m_queue->length();
-    if (from == to || from < 0 || to < 0 || from >= length || to >= length) {
+    if (from == to) {
         return;
     }
-    if (!online() || queueEditing()) {
+    if (from < 0 || to < 0 || from >= length || to >= length || !online() || queueEditing()) {
         emit moveRefused(false);
         return;
     }
@@ -888,12 +890,12 @@ void Client::moveQueueEntry(int from, int to, const QString &pid, const QString 
             const QString error = body.isEmpty() ? QStringLiteral("no answer") : parseError(body);
             if (!error.isEmpty()) {
                 emit commandFailed(QStringLiteral("/Move"), error);
-                finishRemoval();
+                finishEdit();
                 return;
             }
             if (m_queue->generation() != generation) {
                 m_queue->reload();
-                finishRemoval();
+                finishEdit();
                 return;
             }
             // <moved> is also the answer when nothing moved (out of range,

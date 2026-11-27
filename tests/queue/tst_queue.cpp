@@ -60,6 +60,9 @@ private slots:
     void failedMoveLeavesTheRows();
     void moveAdoptMismatchReloads();
     void moveEntryDiscardsAWindowInFlight();
+    void moveWhileOfflineIsRefused();
+    void secondMoveWhileOneRunsIsRefused();
+    void removeDuringAMoveRunsAfterIt();
 
 private:
     void startClient();
@@ -855,7 +858,9 @@ void TstQueue::moveOfTheCurrentEntryKeepsTheMarker()
     m_client->moveQueueEntry(0, 7, q->pid(), q->identityAt(0));
     QTRY_COMPARE(title(7), QStringLiteral("Track 0"));
     QCOMPARE(q->currentIndex(), 5);
-    QTRY_COMPARE(q->currentIndex(), 5);   // the status agrees
+    // The status agrees (measured: song follows the playing entry).
+    QTRY_COMPARE(m_client->status().song, 5);
+    QCOMPARE(q->currentIndex(), 5);
 }
 
 void TstQueue::moveWithAStaleIdIsRefused()
@@ -916,10 +921,11 @@ void TstQueue::moveToTheSamePlaceSendsNothing()
     QTRY_COMPARE(title(2), QStringLiteral("Track 2"));
     QSignalSpy refused(m_client, &Client::moveRefused);
     m_client->moveQueueEntry(2, 2, q->pid(), q->identityAt(2));
+    QCOMPARE(refused.size(), 0);   // the view did not move either
     m_client->moveQueueEntry(2, 300, q->pid(), q->identityAt(2));
     m_client->moveQueueEntry(-1, 2, q->pid(), q->identityAt(2));
     QTest::qWait(300);
-    QCOMPARE(refused.size(), 0);
+    QCOMPARE(refused.size(), 2);
     QVERIFY(m_player->requests(QStringLiteral("/Move")).isEmpty());
     QVERIFY(!m_client->queueEditing());
 }
@@ -971,12 +977,69 @@ void TstQueue::moveEntryDiscardsAWindowInFlight()
     };
     // Sent and held by the player (the delay): its reply has old positions.
     QTRY_COMPARE(secondWindowReads(), 1);
-    // A move settles meanwhile (here directly on the model, as after /Move).
-    m_queue.move(0, 1);
-    q->moveEntry(0, 1);
-    QCOMPARE(title(1), QStringLiteral("Track 0"));
-    QTRY_COMPARE(title(60), QStringLiteral("Track 60"));
-    QCOMPARE(secondWindowReads(), 2);
+    // A move across that window settles meanwhile (here directly on the
+    // model, as after /Move): the held reply has old positions.
+    m_queue.move(0, 60);
+    q->moveEntry(0, 60);
+    // Asked again by moveEntry itself, before any row asks.
+    QTRY_COMPARE(secondWindowReads(), 2);
+    QTRY_COMPARE(title(59), QStringLiteral("Track 60"));
+    QCOMPARE(title(60), QStringLiteral("Track 0"));
+    QCOMPARE(title(61), QStringLiteral("Track 61"));
+}
+
+void TstQueue::moveWhileOfflineIsRefused()
+{
+    startClient();
+    QueueModel *q = m_client->queue();
+    q->setActive(true);
+    QTRY_COMPARE(title(2), QStringLiteral("Track 2"));
+    const QString pid = q->pid();
+    const QString identity = q->identityAt(2);
+    m_player->close();
+    QTRY_COMPARE_WITH_TIMEOUT(m_client->availability(), Client::Offline, 8000);
+    QSignalSpy refused(m_client, &Client::moveRefused);
+    m_client->moveQueueEntry(2, 5, pid, identity);
+    QCOMPARE(refused.size(), 1);
+    QCOMPARE(refused.first().at(0).toBool(), false);
+    QVERIFY(!m_client->queueEditing());
+}
+
+void TstQueue::secondMoveWhileOneRunsIsRefused()
+{
+    m_player->delay(QStringLiteral("/Move"), 500);
+    startClient();
+    QueueModel *q = m_client->queue();
+    q->setActive(true);
+    QTRY_COMPARE(title(5), QStringLiteral("Track 5"));
+    m_client->moveQueueEntry(2, 5, q->pid(), q->identityAt(2));
+    QSignalSpy refused(m_client, &Client::moveRefused);
+    m_client->moveQueueEntry(1, 3, q->pid(), q->identityAt(1));
+    QCOMPARE(refused.size(), 1);
+    QCOMPARE(refused.first().at(0).toBool(), false);
+    QTRY_VERIFY(!m_client->queueEditing());
+    QCOMPARE(m_player->requests(QStringLiteral("/Move")).size(), 1);
+    QCOMPARE(title(5), QStringLiteral("Track 2"));
+}
+
+void TstQueue::removeDuringAMoveRunsAfterIt()
+{
+    m_player->delay(QStringLiteral("/Move"), 500);
+    startClient();
+    QueueModel *q = m_client->queue();
+    q->setActive(true);
+    QTRY_COMPARE(title(5), QStringLiteral("Track 5"));
+    m_client->moveQueueEntry(2, 5, q->pid(), q->identityAt(2));
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Move")).size(), 1);
+    // A remove remorse that ran out meanwhile: queued behind the move, and
+    // checked against the queue after it.
+    m_client->removeQueueEntry(0, q->pid(), q->identityAt(0));
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Delete")).size(), 1);
+    QVERIFY(m_player->requests(QStringLiteral("/Delete")).first().atMs
+            >= m_player->requests(QStringLiteral("/Move")).first().atMs);
+    QTRY_VERIFY(!m_client->queueEditing());
+    QCOMPARE(title(0), QStringLiteral("Track 1"));
+    QCOMPARE(title(4), QStringLiteral("Track 2"));
 }
 
 void TstQueue::aReportedLengthIsBounded()

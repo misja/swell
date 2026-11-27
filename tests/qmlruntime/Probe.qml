@@ -361,13 +361,15 @@ Item {
         reorder.cancel()
         return [moved, reorderOrder(), reorderSent === "", reorder.dragged === null].join(" ")
     }
-    // A new list during a drag (a reload): the drag ends, nothing requested.
-    function reorderReload() {
+    // end(), which the pages call on a new list: the drag ends where it is,
+    // and a later release sends nothing.
+    function reorderEnd() {
         reorderReset()
         reorder._lift(reorderModel.items.create(1))
-        reorderReset()
+        reorderModel.items.move(1, 3)
+        reorder.end()
         var ended = reorder.dragged === null
-        reorder.release()
-        return [ended, reorderSent === ""].join(" ")
+        var released = reorder.release()
+        return [ended, released, reorderSent === ""].join(" ")
     }
 }

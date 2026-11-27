@@ -132,3 +132,19 @@ Summary:
   maintainer: in portrait the Switches in their own row; hidden on an
   input; a rotation while the queue plays moves them and keeps their
   state. At a586b2f, aarch64: 11 suites, 0 failed.
+- Result review of PR 2 (b32a66b, b3ade5f), separate agent, 2026-11-27:
+  approve with changes, nothing blocking. Applied: "Reorder" above "Clear
+  queue"; out-of-range moves emit `moveRefused(false)`; `queueEditingChanged`
+  only on a change; `finishRemoval` renamed `finishEdit`; the proxy row
+  disabled; `onModelReset` ends a drag as `onReloaded` does; `moveDisplaced`
+  instead of `displaced` on the Queue page; the remorse comment and an end
+  state for undoing the last of two remorses; tests: the window test moves
+  across the window and checks the second read before any row asks, the
+  status agreeing on `song`, refused while offline, a second move while one
+  runs, a remove queued during a move; the reload test replaced by an
+  `end()` test (the page wiring is for the device check); AC 4 and AC 6
+  wording. Kept, as a known risk shared with removes: `moveEntry` asks again
+  for a window before `adoptQueueId` takes the new id; if that reply comes
+  first it is dropped as another queue's, and rows already shown stay "…"
+  until they are shown again. The adopt read-back is sent first, so the
+  order normally holds.

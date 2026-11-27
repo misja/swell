@@ -407,7 +407,7 @@ private:
     void setPresetMoving(bool moving);
     void processRemovals();
     void adoptQueueId(int position);
-    void finishRemoval();
+    void finishEdit();
     void setEditing(bool editing);
     void fetchPresets();
     void updatePresetsVersion();

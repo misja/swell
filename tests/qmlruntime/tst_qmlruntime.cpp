@@ -335,7 +335,7 @@ void TstQmlRuntime::reorderDropAndPutBack()
 void TstQmlRuntime::reorderCancelAndReload()
 {
     QCOMPARE(call("reorderCancel"), QStringLiteral("abdefgc abcdefg true true"));
-    QCOMPARE(call("reorderReload"), QStringLiteral("true true"));
+    QCOMPARE(call("reorderEnd"), QStringLiteral("true false true"));
 }
 
 void TstQmlRuntime::rowActions()

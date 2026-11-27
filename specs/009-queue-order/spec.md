@@ -209,6 +209,7 @@ E. **MPRIS** keeps `hasShuffle` and `hasLoopStatus` false (spec 003): they
 | Reorder: an input plays, queue not empty | as any move | the new order (measured) |
 | Reorder while shuffled, then shuffle off | the move; later `/Shuffle?state=0` | the order from before the shuffle; the move is gone (player behaviour) |
 | "Reorder" with fewer than two entries, offline, a remove remorse pending or an edit in flight | — | disabled |
+| The last of two remove remorses undone while the first runs | — | "Reorder" enabled; a drag starts only after that remove is sent and settled (`queueEditing`) |
 | Rotation during a drag | nothing | the row back |
 
 ## Out of scope
@@ -233,15 +234,19 @@ E. **MPRIS** keeps `hasShuffle` and `hasLoopStatus` false (spec 003): they
 4. The double follows the measurement: id +1 on every move (also
    `new == old`) and on shuffle on/off; unchanged for repeat, for an
    out-of-range move and for shuffle on when already on; the playing
-   entry at 0 stays there on shuffle; shuffle off restores the order.
-   Marked invented in the double: a playing entry other than 0 on
-   shuffle, `song` after a move, shuffle off after a move made while
-   shuffled, moves while an input plays.
+   entry and those before it stay on shuffle; shuffle off restores the
+   order from before the shuffle; `song` follows the playing entry on a
+   move. The shuffled order itself is the double's own. Invented: the
+   failures.
 5. QML tests: the pages compile; the buttons hide on `streamUrl`.
 6. A qmlruntime test with a `DelegateModel` over a list model: after
    `items.move(1, 5)` and then the source model's move 1 → 5, the order on
-   screen is unchanged and the delegate is the same object; a reload
-   during a drag cancels it; a refusal puts the row back.
+   screen is unchanged and the delegate is the same object. DragReorder
+   on a plain ListView: a drop requests the move and `putBack()` restores
+   the order (forward and backward); `cancel()` restores it and requests
+   nothing; `end()` leaves no drag and a later release sends nothing. The
+   pages call `end()` on a reload or reset (`onReloaded`, `onModelReset`);
+   that wiring and the hold and dwell timers are checked on the device.
 7. `make check` and the Harbour validator pass (aarch64, armv7hl); Dutch
    complete.
 8. Device check by the maintainer on the NAD (playback will start):

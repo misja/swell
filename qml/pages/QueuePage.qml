@@ -13,8 +13,10 @@ Page {
 
     // The edit mode (spec 009, C); the drag is DragReorder's.
     property bool _reordering: false
-    // The last remove remorse started. All run the same time, so the last
-    // one ends last; a move checks the entry with the player first anyway.
+    // The last remove remorse started. All run the same time, so it ends
+    // last, unless it is undone while an earlier one still runs: then Reorder
+    // is enabled early. A drag does not start while the remove is sent
+    // (queueEditing), and a move checks the entry with the player first.
     property Item _remorse: null
     readonly property bool _canReorder: _player !== null && _player.online && _queue !== null
                                         && _queue.length > 1 && !_player.queueEditing
@@ -65,8 +67,12 @@ Page {
 
     Connections {
         target: page._queue
+        // A new queue: a drag in it ends, the mode stays (as for presets).
+        onModelReset: {
+            reorder.end()
+            reorder.forget()
+        }
         onReloaded: {
-            // A new queue: a drag in it ends, the mode stays (as for presets).
             reorder.end()
             reorder.forget()
             page._positionAtCurrent()
@@ -207,7 +213,7 @@ Page {
         move: Transition {
             NumberAnimation { properties: "y"; duration: 150; easing.type: Easing.InOutQuad }
         }
-        displaced: Transition {
+        moveDisplaced: Transition {
             NumberAnimation { properties: "y"; duration: 150; easing.type: Easing.InOutQuad }
         }
 
@@ -252,16 +258,16 @@ Page {
             visible: page._queue !== null && page._queue.length > 0
 
             MenuItem {
+                text: qsTr("Reorder")
+                enabled: !page._reordering && page._canReorder
+                onClicked: page._reordering = true
+            }
+            MenuItem {
                 text: qsTr("Clear queue")
                 enabled: !page._reordering
                 onClicked: clearRemorse.execute(qsTr("Clearing queue"), function() {
                     page._player.clearQueue()
                 })
-            }
-            MenuItem {
-                text: qsTr("Reorder")
-                enabled: !page._reordering && page._canReorder
-                onClicked: page._reordering = true
             }
         }
 
@@ -301,6 +307,7 @@ Page {
         property int duration
         property url image
         visible: reorder.dragged !== null
+        enabled: false
         width: list.width
         contentHeight: Theme.itemSizeMedium
         highlighted: true
