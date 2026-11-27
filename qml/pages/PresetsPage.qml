@@ -7,7 +7,8 @@ import Swell 1.0
 // All presets of the current player (spec 008): a standard Silica grid of
 // GridItems, each with a menu to delete it behind a remorse. "Reorder" in
 // the pull-down menu starts an edit mode as on the home screen: a tile held
-// 150 ms is lifted and dragged, and each drop moves one preset.
+// 150 ms is lifted and dragged, each drop moves one preset, and a tap ends
+// the mode.
 Page {
     id: page
     objectName: "presets"
@@ -300,21 +301,26 @@ Page {
 
         PullDownMenu {
             MenuItem {
-                text: page._reordering ? qsTr("Done") : qsTr("Reorder")
-                enabled: page._reordering || page._canReorder
-                onClicked: {
-                    if (page._reordering) {
-                        page._endReordering()
-                    } else {
-                        page._reordering = true
-                    }
-                }
+                text: qsTr("Reorder")
+                enabled: !page._reordering && page._canReorder
+                onClicked: page._reordering = true
             }
+        }
+
+        // In the edit mode, a tap beside the tiles ends it, as on the home
+        // screen; the tiles end it themselves.
+        MouseArea {
+            y: grid.originY
+            z: -1
+            width: grid.width
+            height: Math.max(grid.contentHeight, grid.height)
+            enabled: page._reordering
+            onClicked: page._endReordering()
         }
 
         header: PageHeader {
             title: qsTr("Presets")
-            description: page._reordering ? qsTr("Hold a preset and drag it")
+            description: page._reordering ? qsTr("Drag to move, tap to stop")
                                           : page._player ? (page._player.name !== "" ? page._player.name : page._player.host) : ""
         }
 

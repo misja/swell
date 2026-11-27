@@ -574,8 +574,8 @@
     </message>
     <message>
         <location filename="../qml/pages/PresetsPage.qml" line="317"/>
-        <source>Hold a preset and drag it</source>
-        <translation>Houd een preset vast en sleep hem</translation>
+        <source>Drag to move, tap to stop</source>
+        <translation>Sleep om te verplaatsen, tik om te stoppen</translation>
     </message>
     <message>
         <location filename="../qml/pages/PresetsPage.qml" line="323"/>

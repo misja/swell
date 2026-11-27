@@ -159,7 +159,9 @@ stay local; `evidence.md` has the record.
     starts an edit mode like the home screen's; in it, tiles are dragged
     and each drop sends one move. Delete stays in the context menu,
     outside the edit mode. The list scrolls at the edge while dragging
-    (one drag, one request), and a tap ends the mode.
+    (one drag, one request), and a tap ends the mode, as on the home
+    screen; a "Done" in the pull-down menu was dropped (the maintainer: a
+    pull-down item that changes is not intuitive).
 
 ## Scope
 
@@ -243,13 +245,14 @@ F. **Notices.** `app.notify()` and its label are removed; every notice is
    - The pages still react only while active; `Notices` is global.
 
 G. **Reordering.** On the Presets page.
-   - **Mode.** A `PullDownMenu` with "Reorder" (and "Done" while it
-     runs). "Reorder" is enabled only while the player is online, the
-     list is current (`presetsCurrent`), there are two presets or more,
-     no remorse runs and no move is in flight. In the mode, a tile has
-     no context menu. The mode ends with "Done", a tap on a tile, or when
-     the page is left or the player goes offline; a drag in progress is
-     then put back and nothing is sent. The header says the mode is on.
+   - **Mode.** A `PullDownMenu` with "Reorder", enabled only while the
+     mode is off, the player is online, the list is current
+     (`presetsCurrent`), there are two presets or more, no remorse runs
+     and no move is in flight. In the mode, a tile has no context menu.
+     The mode ends with a tap on a tile or beside the tiles, or when the
+     page is left or the player goes offline; a drag in progress is then
+     put back and nothing is sent. The header says the mode is on and how
+     it ends.
    - **Drag**, as the home screen:
      - a press held 150 ms lifts the tile's content (scaled 1.1); only
        then the drag starts, with `preventStealing`, so a quick swipe
@@ -362,7 +365,7 @@ G. **Reordering.** On the Presets page.
 | Reorder: dropped where it started, or the mode ended mid-drag | nothing | unchanged |
 | Reorder: a quick swipe in the mode | nothing | the grid flicks |
 | Reorder: dragged to the edge | — | the grid scrolls; one request on release |
-| Reorder: a tap on a tile in the mode | nothing | the mode ends |
+| Reorder: a tap on a tile or beside the tiles in the mode | nothing | the mode ends |
 | Reorder: the list changed meanwhile (412) | one request | "The presets have changed. Nothing was moved."; the view put back |
 | Reorder: refused, list changed or not current | nothing | the same notice |
 | Reorder: refused, offline | nothing | "Nothing was moved." |

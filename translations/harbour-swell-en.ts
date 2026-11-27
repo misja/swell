@@ -574,7 +574,7 @@
     </message>
     <message>
         <location filename="../qml/pages/PresetsPage.qml" line="317"/>
-        <source>Hold a preset and drag it</source>
+        <source>Drag to move, tap to stop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
