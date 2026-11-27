@@ -527,38 +527,63 @@
 <context>
     <name>PresetsPage</name>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="26"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="49"/>
         <source>Deleting %1</source>
         <translation>%1 wordt verwijderd</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="28"/>
-        <location filename="../qml/pages/PresetsPage.qml" line="38"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="51"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="164"/>
         <source>Nothing was deleted.</source>
         <translation>Er is niets verwijderd.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="37"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="163"/>
         <source>The presets have changed. Nothing was deleted.</source>
         <translation>De presets zijn gewijzigd. Er is niets verwijderd.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="56"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="167"/>
+        <source>The presets have changed. Nothing was moved.</source>
+        <translation>De presets zijn gewijzigd. Er is niets verplaatst.</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="168"/>
+        <source>Nothing was moved.</source>
+        <translation>Er is niets verplaatst.</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="303"/>
+        <source>Done</source>
+        <translation>Klaar</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="303"/>
+        <source>Reorder</source>
+        <translation>Volgorde wijzigen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="316"/>
         <source>Presets</source>
         <translation>Presets</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="68"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="232"/>
         <source>Delete</source>
         <translation>Verwijderen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="80"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="317"/>
+        <source>Hold a preset and drag it</source>
+        <translation>Houd een preset vast en sleep hem</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="323"/>
         <source>No presets</source>
         <translation>Geen presets</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="81"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="324"/>
         <source>Long press a station in Browse, or an input on Home, and choose Add preset</source>
         <translation>Houd een zender in Bladeren of een ingang op Home ingedrukt en kies Preset toevoegen</translation>
     </message>
