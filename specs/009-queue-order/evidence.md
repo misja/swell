@@ -128,3 +128,7 @@ Summary:
   shown (same rule as landscape); a comment on `visible: active`;
   acceptance criterion 8 updated. Open: portrait and a rotation on the
   build with this change (only landscape was checked on 0.7.0-3).
+- Device check of 0.7.0-4 (a586b2f with Release 4), 2026-11-27, the
+  maintainer: in portrait the Switches in their own row; hidden on an
+  input; a rotation while the queue plays moves them and keeps their
+  state. At a586b2f, aarch64: 11 suites, 0 failed.
