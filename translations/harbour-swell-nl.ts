@@ -635,8 +635,8 @@
     </message>
     <message>
         <location filename="../qml/pages/QueuePage.qml" line="194"/>
-        <source>Play a preset or an input, or add tracks from Music</source>
-        <translation>Speel een preset of ingang af, of voeg nummers toe vanuit Muziek</translation>
+        <source>Play a preset or an input, or add music</source>
+        <translation>Speel een preset of ingang af, of voeg muziek toe</translation>
     </message>
 </context>
 <context>
