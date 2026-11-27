@@ -553,12 +553,12 @@
         <translation>Er is niets verplaatst.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="176"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="182"/>
         <source>Reorder</source>
         <translation>Volgorde wijzigen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="194"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="200"/>
         <source>Presets</source>
         <translation>Presets</translation>
     </message>
@@ -568,17 +568,17 @@
         <translation>Verwijderen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="195"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="201"/>
         <source>Drag to move, tap to stop</source>
         <translation>Sleep om te verplaatsen, tik om te stoppen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="201"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="207"/>
         <source>No presets</source>
         <translation>Geen presets</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="202"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="208"/>
         <source>Long press a station in Browse, or an input on Home, and choose Add preset</source>
         <translation>Houd een zender in Bladeren of een ingang op Home ingedrukt en kies Preset toevoegen</translation>
     </message>
@@ -586,32 +586,32 @@
 <context>
     <name>QueuePage</name>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="78"/>
+        <location filename="../qml/pages/QueuePage.qml" line="84"/>
         <source>The queue has changed. Nothing was removed.</source>
         <translation>De wachtrij is veranderd. Er is niets verwijderd.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="81"/>
+        <location filename="../qml/pages/QueuePage.qml" line="87"/>
         <source>The queue has changed. Nothing was moved.</source>
         <translation>De wachtrij is veranderd. Er is niets verplaatst.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="82"/>
+        <location filename="../qml/pages/QueuePage.qml" line="88"/>
         <source>Nothing was moved.</source>
         <translation>Er is niets verplaatst.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="218"/>
+        <location filename="../qml/pages/QueuePage.qml" line="228"/>
         <source>Queue</source>
         <translation>Wachtrij</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="221"/>
+        <location filename="../qml/pages/QueuePage.qml" line="231"/>
         <source>Drag to move, tap to stop</source>
         <translation>Sleep om te verplaatsen, tik om te stoppen</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/pages/QueuePage.qml" line="230"/>
+        <location filename="../qml/pages/QueuePage.qml" line="240"/>
         <source>%n tracks</source>
         <translation>
             <numerusform>%n nummer</numerusform>
@@ -619,42 +619,42 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="241"/>
+        <location filename="../qml/pages/QueuePage.qml" line="251"/>
         <source>Now playing %1. Tap a track to play the queue again.</source>
         <translation>Nu speelt %1. Tik op een nummer om de wachtrij weer af te spelen.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="255"/>
+        <location filename="../qml/pages/QueuePage.qml" line="270"/>
         <source>Clear queue</source>
         <translation>Wachtrij wissen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="257"/>
+        <location filename="../qml/pages/QueuePage.qml" line="272"/>
         <source>Clearing queue</source>
         <translation>Wachtrij wordt gewist</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="136"/>
+        <location filename="../qml/pages/QueuePage.qml" line="142"/>
         <source>Removing</source>
         <translation>Wordt verwijderd</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="167"/>
+        <location filename="../qml/pages/QueuePage.qml" line="173"/>
         <source>Remove</source>
         <translation>Verwijderen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="262"/>
+        <location filename="../qml/pages/QueuePage.qml" line="265"/>
         <source>Reorder</source>
         <translation>Volgorde wijzigen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="281"/>
+        <location filename="../qml/pages/QueuePage.qml" line="291"/>
         <source>Queue is empty</source>
         <translation>Wachtrij is leeg</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="282"/>
+        <location filename="../qml/pages/QueuePage.qml" line="292"/>
         <source>Play a preset or an input, or add music from Browse</source>
         <translation>Speel een preset of ingang af, of voeg muziek toe vanuit Bladeren</translation>
     </message>
