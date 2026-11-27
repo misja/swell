@@ -169,6 +169,8 @@ assistant read `/Presets` and `/Status` every second.
   its header, dragging, a swipe that flicks, rotation during a drag, a
   tap ending the mode, Reorder disabled during a remorse. Edge scrolling
   was not in that list (seven presets fit the screen).
+- The maintainer also saw Add preset from TuneIn and leaving the Presets
+  page during a delete remorse work (2026-11-27).
 
 ## Reviews
 
@@ -230,7 +232,10 @@ assistant read `/Presets` and `/Status` every second.
   - end states for an invalid URL and an unchanged list; the device check
     of the notice's place.
   - Open: Silica's first version with `Notices` is not known from the
-    target; `Requires: sailfishsilica-qt5 >= 0.10.9` is unchanged.
+    target; the Silica documentation names no version either. The
+    maintainer chose to raise it: `Requires: sailfishsilica-qt5 >=
+    1.2.154`, the build target's (SailfishOS 5.1.0.11), the oldest one
+    verified to have `Notices`; the phone has 1.2.157 (5.2.0.22).
 - Result after 3a846cd (86a69c1, c120226, afeab31), a separate agent,
   2026-11-27: approve with changes. Resolved:
   - an input add is refused while the list is not current, since the

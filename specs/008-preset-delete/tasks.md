@@ -13,5 +13,5 @@
 - [x] Input presets and notices: measured, scope review, built, tests
 - [x] Reordering: measured (capture, curl on throwaways), scope review, built, tests
 - [ ] Harbour validator and result review at the final commit
-- [x] Device check on the NAD (the list in the spec; evidence.md), except
-      Add preset from TuneIn and leaving the page during a remorse
+- [x] Device check on the NAD (the list in the spec; evidence.md; TuneIn and leaving the page during a remorse seen by the maintainer), except
+      edge scrolling (seven presets fit the screen)
