@@ -7,12 +7,6 @@ import "pages"
 ApplicationWindow {
     id: app
 
-    // Shows a short message, as about a failed command.
-    function notify(text) {
-        notice.text = text
-        noticeTimer.restart()
-    }
-
     // "m:ss" for a duration or position in seconds; empty when unknown.
     function formatTime(secs) {
         if (!(secs >= 0)) {
@@ -28,7 +22,7 @@ ApplicationWindow {
         target: players.current
         onCommandFailed: {
             console.warn("Command", path, "failed:", error)
-            app.notify(qsTr("The player did not accept that."))
+            Notices.show(qsTr("The player did not accept that."), Notice.Short)
         }
     }
 
@@ -106,7 +100,8 @@ ApplicationWindow {
         var page = pageStack.currentPage
         if (page.objectName === "home") {
             pageStack.navigateForward()
-        } else if (page.objectName === "browse" || page.objectName === "search") {
+        } else if (page.objectName === "browse" || page.objectName === "search"
+                   || page.objectName === "presets") {
             var home = _homePage()
             if (home) {
                 home.openNowPlaying = true
@@ -152,6 +147,7 @@ ApplicationWindow {
         readonly property QtObject _player: players.current
         readonly property string _pageName: pageStack.currentPage ? pageStack.currentPage.objectName : ""
         readonly property bool _staysOpen: _pageName === "browse" || _pageName === "search"
+                                           || _pageName === "presets"
                                            || _pageName === "queue" || _pageName === "about"
 
         width: parent.width
@@ -232,22 +228,5 @@ ApplicationWindow {
                 pageStack.currentPage.openCurrent(true)
             }
         }
-    }
-
-    Label {
-        id: notice
-        parent: app.contentItem
-        anchors {
-            bottom: parent.bottom
-            bottomMargin: app.bottomMargin + Theme.paddingLarge
-            horizontalCenter: parent.horizontalCenter
-        }
-        width: parent.width - 2 * Theme.horizontalPageMargin
-        horizontalAlignment: Text.AlignHCenter
-        wrapMode: Text.Wrap
-        color: Theme.highlightColor
-        opacity: noticeTimer.running ? 1.0 : 0.0
-        Behavior on opacity { FadeAnimation {} }
-        Timer { id: noticeTimer; interval: 3000 }
     }
 }

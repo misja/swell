@@ -24,7 +24,7 @@ Item {
         var p = _player.inputs[i]
         return [p.id, p.text, String(p.image), p.url].join("|")
     }
-    // HomePage._inputImage
+    // PresetTile._inputImage
     function inputImage(inputId) {
         for (var i = 0; i < _player.inputs.length; ++i) {
             if (_player.inputs[i].id === inputId) {

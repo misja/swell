@@ -5,6 +5,8 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QSet>
+#include <algorithm>
 
 namespace BluOS {
 
@@ -402,18 +404,108 @@ void Client::playPreset(int id)
     send(QStringLiteral("/Preset"), encoded(query));
 }
 
-void Client::playInput(const QString &encodedUrl)
+void Client::updatePresetsVersion()
+{
+    // A player without prid in /Status: the list as read is all there is.
+    const bool current = m_presetsFetched && (m_status.prid.isEmpty() || m_status.prid == m_presetsPrid);
+    if (current == m_presetsCurrent && m_presetsPrid == m_notifiedPresetsPrid)
+        return;
+    m_presetsCurrent = current;
+    m_notifiedPresetsPrid = m_presetsPrid;
+    emit presetsVersionChanged();
+}
+
+void Client::deletePreset(int id, const QString &prid)
+{
+    if (!online()) {
+        emit presetDeleteRefused(false);
+        return;
+    }
+    if (prid != m_presetsPrid || !m_presetsCurrent) {
+        emit presetDeleteRefused(true);
+        return;
+    }
+    QUrlQuery query;
+    query.addQueryItem(QStringLiteral("id"), QString::number(id));
+    // Not through the merging gate: two deletes are two deletes.
+    fetch(QStringLiteral("/SetPreset"), encoded(query), [this, id](const QByteArray &body) {
+        // The player answers with the whole list (measured, spec 008).
+        const Presets after = parsePresets(body);
+        bool gone = after.ok;
+        for (const Preset &p : after.items)
+            gone = gone && p.id != id;
+        if (gone)
+            return;
+        QString error = parseError(body);
+        if (error.isEmpty())
+            error = body.isEmpty() ? QStringLiteral("no answer") : QStringLiteral("not deleted");
+        emit commandFailed(QStringLiteral("/SetPreset"), error);
+    });
+}
+
+bool Client::validInputUrl(const QString &path, const QString &encodedUrl) const
 {
     // The attribute is already percent-encoded (API 11.1); passing it through
-    // QUrlQuery would decode %3A, %2F and friends, so it is sent as given.
+    // QUrlQuery would decode %3A, %2F and friends, so it is sent as given,
+    // and only if it stays one parameter, byte for byte.
     const QString query = QStringLiteral("url=") + encodedUrl;
-    const QUrl check = url(QStringLiteral("/Play"), query);
-    if (encodedUrl.isEmpty() || !check.isValid() || encodedUrl.contains(QLatin1Char('&'))
-            || encodedUrl.contains(QLatin1Char('#')) || check.query(QUrl::FullyEncoded) != query) {
+    const QUrl check = url(path, query);
+    return !encodedUrl.isEmpty() && check.isValid() && !encodedUrl.contains(QLatin1Char('&'))
+            && !encodedUrl.contains(QLatin1Char('#')) && check.query(QUrl::FullyEncoded) == query;
+}
+
+void Client::playInput(const QString &encodedUrl)
+{
+    if (!validInputUrl(QStringLiteral("/Play"), encodedUrl)) {
         emit commandFailed(QStringLiteral("/Play"), QStringLiteral("invalid input URL"));
         return;
     }
-    send(QStringLiteral("/Play"), query);
+    send(QStringLiteral("/Play"), QStringLiteral("url=") + encodedUrl);
+}
+
+void Client::addInputPreset(const QString &inputId)
+{
+    const QString path = QStringLiteral("/SetPreset");
+    const Input *input = nullptr;
+    for (const Input &in : m_inputs)
+        if (in.id == inputId)
+            input = &in;
+    if (!input) {
+        emit commandFailed(path, QStringLiteral("unknown input"));
+        return;
+    }
+    if (!validInputUrl(path, input->url)) {
+        emit commandFailed(path, QStringLiteral("invalid input URL"));
+        return;
+    }
+    // Success is judged by the reply's prid against the list Swell has; that
+    // needs the list read and still the one /Status reports.
+    if (!m_presetsCurrent) {
+        emit commandFailed(path, QStringLiteral("presets not current"));
+        return;
+    }
+    // The parameters /Services declares for "Add preset"; no id, so the
+    // player takes the first free slot (measured, spec 008).
+    QStringList items;
+    items << QStringLiteral("name=") + QString::fromLatin1(QUrl::toPercentEncoding(input->text))
+          << QStringLiteral("url=") + input->url;
+    if (!input->image.isEmpty())
+        items << QStringLiteral("image=") + QString::fromLatin1(QUrl::toPercentEncoding(input->image));
+    const QString before = m_presetsPrid;
+    // Not through the merging gate: two adds are two adds.
+    fetch(path, items.join(QLatin1Char('&')), [this, path, before](const QByteArray &body) {
+        // Every add raised prid by one (measured); a list with the old prid
+        // added nothing.
+        const Presets after = parsePresets(body);
+        if (after.ok && after.prid != before) {
+            emit actionDone(QStringLiteral("preset"));
+            return;
+        }
+        QString error = parseError(body);
+        if (error.isEmpty())
+            error = body.isEmpty() ? QStringLiteral("no answer") : QStringLiteral("not added");
+        emit commandFailed(path, error);
+    });
 }
 
 void Client::refreshInputs()
@@ -455,6 +547,7 @@ void Client::fetchPresets()
         // Remember the status prid this answer belongs to, so a /Presets prid
         // that never matches cannot cause endless refetching.
         m_presetsPrid = requestedFor.isEmpty() ? presets.prid : requestedFor;
+        updatePresetsVersion();
         // The status may have moved on while this was in flight.
         if (m_status.ok && m_status.prid != requestedFor)
             fetchPresets();
@@ -481,6 +574,139 @@ void Client::fetch(const QString &path, const QString &encodedQuery,
     connect(reply, &QNetworkReply::finished, this, [reply, handler]() {
         reply->deleteLater();
         handler(reply->error() == QNetworkReply::NoError ? reply->readAll() : QByteArray());
+    });
+}
+
+void Client::fetchStatus(const QString &path, const QString &encodedQuery, const QByteArray &jsonBody,
+                         const std::function<void(int, const QByteArray &)> &handler)
+{
+    if (!m_running) {
+        QTimer::singleShot(0, this, [handler]() { handler(0, QByteArray()); });
+        return;
+    }
+    const int wait = msUntilAllowed(path);
+    if (wait > 0) {
+        QTimer::singleShot(wait, Qt::PreciseTimer, this, [this, path, encodedQuery, jsonBody, handler]() {
+            fetchStatus(path, encodedQuery, jsonBody, handler);
+        });
+        return;
+    }
+    QNetworkReply *reply = request(path, encodedQuery, m_timing.commandTimeoutMs, jsonBody);
+    connect(reply, &QNetworkReply::finished, this, [reply, handler]() {
+        reply->deleteLater();
+        // Qt reports a 412 as a content error; only the status tells it apart.
+        handler(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), reply->readAll());
+    });
+}
+
+QList<Client::PresetMove> Client::presetCycle(const QList<int> &ids, int fromId, int toId)
+{
+    QList<int> occupied = ids;
+    std::sort(occupied.begin(), occupied.end());
+    const int from = occupied.indexOf(fromId);
+    const int to = occupied.indexOf(toId);
+    QList<PresetMove> moves;
+    if (from < 0 || to < 0 || from == to)
+        return moves;
+    // The moved preset takes toId; each occupied slot from toId to the old
+    // place moves one occupied slot towards it.
+    moves.append({ fromId, toId });
+    if (to < from) {
+        for (int k = to; k < from; ++k)
+            moves.append({ occupied.at(k), occupied.at(k + 1) });
+    } else {
+        for (int k = from + 1; k <= to; ++k)
+            moves.append({ occupied.at(k), occupied.at(k - 1) });
+    }
+    std::sort(moves.begin(), moves.end(), [](const PresetMove &a, const PresetMove &b) { return a.to < b.to; });
+    return moves;
+}
+
+bool Client::isPermutation(const QList<PresetMove> &moves, const QList<int> &ids)
+{
+    QSet<int> sources;
+    QSet<int> destinations;
+    for (const PresetMove &m : moves) {
+        if (!ids.contains(m.from) || sources.contains(m.from) || destinations.contains(m.to))
+            return false;
+        sources.insert(m.from);
+        destinations.insert(m.to);
+    }
+    return !moves.isEmpty() && sources == destinations;
+}
+
+void Client::setPresetMoving(bool moving)
+{
+    if (m_presetMoving == moving)
+        return;
+    m_presetMoving = moving;
+    emit presetMovingChanged();
+}
+
+void Client::movePreset(int fromId, int toId, const QString &prid)
+{
+    if (!online() || m_presetMoving) {
+        emit presetMoveRefused(false);
+        return;
+    }
+    if (prid != m_presetsPrid || !m_presetsCurrent) {
+        emit presetMoveRefused(true);
+        return;
+    }
+    if (fromId == toId)
+        return;
+    QList<int> ids;
+    QString movedUrl;
+    for (const Preset &p : m_presets) {
+        ids << p.id;
+        if (p.id == fromId)
+            movedUrl = p.url;
+    }
+    const QList<PresetMove> moves = presetCycle(ids, fromId, toId);
+    if (moves.isEmpty()) {
+        emit presetMoveRefused(true);
+        return;
+    }
+    const QString path = QStringLiteral("/Presets/edit");
+    if (!isPermutation(moves, ids)) {
+        emit commandFailed(path, QStringLiteral("not a permutation"));
+        return;
+    }
+    // Byte for byte as the official app sends it (spec 008).
+    QStringList ordering;
+    for (const PresetMove &m : moves)
+        ordering << QStringLiteral("{\"from\":%1,\"to\":%2}").arg(m.from).arg(m.to);
+    const QByteArray body = QStringLiteral("{\"ordering\":[%1]}").arg(ordering.join(QLatin1Char(','))).toUtf8();
+    QUrlQuery query;
+    query.addQueryItem(QStringLiteral("prid"), prid);
+    const int count = ids.size();
+    setPresetMoving(true);
+    fetchStatus(path, encoded(query), body, [this, path, toId, movedUrl, count](int http, const QByteArray &reply) {
+        setPresetMoving(false);
+        if (http == 412) {
+            // The player's list is no longer the one sent for (measured).
+            emit presetMoveRefused(true);
+            return;
+        }
+        // The reply is the whole list (measured): as many presets as before,
+        // the moved one at its new place. Anything else may have lost one.
+        const Presets after = parsePresets(reply);
+        bool moved = false;
+        for (const Preset &p : after.items)
+            moved = moved || (p.id == toId && p.url == movedUrl);
+        if (http == 200 && after.ok && after.items.size() == count && moved) {
+            // The list shown is old until /Presets answers for the new prid.
+            if (m_presetsCurrent && after.prid != m_presetsPrid) {
+                m_presetsCurrent = false;
+                emit presetsVersionChanged();
+            }
+            return;
+        }
+        QString error = parseError(reply);
+        if (error.isEmpty())
+            error = http ? (http == 200 ? QStringLiteral("not moved") : QStringLiteral("HTTP %1").arg(http))
+                         : QStringLiteral("no answer");
+        emit commandFailed(path, error);
     });
 }
 
@@ -678,10 +904,22 @@ void Client::dispatch(const QString &key)
 
 QNetworkReply *Client::get(const QString &path, const QString &encodedQuery, int deadlineMs)
 {
+    return request(path, encodedQuery, deadlineMs, QByteArray());
+}
+
+QNetworkReply *Client::request(const QString &path, const QString &encodedQuery, int deadlineMs,
+                               const QByteArray &jsonBody)
+{
     m_lastSent[path].start();
     QNetworkRequest request(url(path, encodedQuery));
     request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
-    QNetworkReply *reply = m_nam->get(request);
+    QNetworkReply *reply;
+    if (jsonBody.isNull()) {
+        reply = m_nam->get(request);
+    } else {
+        request.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
+        reply = m_nam->post(request, jsonBody);
+    }
     // Owned by this client, so replacing or deleting it aborts what is in flight.
     reply->setParent(this);
     // Qt 5.6 has no transfer timeout; abort() at the deadline instead.
@@ -756,6 +994,7 @@ void Client::onStatusReply(QNetworkReply *reply)
     const bool changed = !m_status.ok || status.etag != m_status.etag;
     // secs is outside the etag; keep the position fresh either way.
     m_status = status;
+    updatePresetsVersion();
     m_statusAge.start();
     if (m_status.isPlaying())
         m_positionTimer.start();

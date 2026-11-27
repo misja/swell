@@ -76,7 +76,7 @@
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="45"/>
-        <location filename="../qml/pages/BrowsePage.qml" line="299"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="303"/>
         <source>Shuffle</source>
         <translation type="unfinished"></translation>
     </message>
@@ -101,34 +101,44 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="63"/>
-        <location filename="../qml/pages/BrowsePage.qml" line="223"/>
-        <location filename="../qml/pages/BrowsePage.qml" line="385"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="57"/>
+        <source>Add preset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/BrowsePage.qml" line="65"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="227"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="389"/>
         <source>Favorites</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="119"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="121"/>
         <source>Added to favorites</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="119"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="121"/>
         <source>Removed from favorites</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="125"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="127"/>
+        <source>Added to presets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/BrowsePage.qml" line="129"/>
         <source>Added to the queue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="155"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="159"/>
         <source>Browse</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/pages/BrowsePage.qml" line="211"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="215"/>
         <source>%n tracks</source>
         <translation>
             <numerusform>%n track</numerusform>
@@ -136,52 +146,52 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="291"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="295"/>
         <source>Search</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="304"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="308"/>
         <source>Play album</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="304"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="308"/>
         <source>Play all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="427"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="431"/>
         <source>Player not reachable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="430"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="434"/>
         <source>The player could not load this</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="432"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="436"/>
         <source>No favorites yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="432"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="436"/>
         <source>Nothing here</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="436"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="440"/>
         <source>Swell will try again when it is back</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="440"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="444"/>
         <source>No usable answer from the player</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="443"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="447"/>
         <source>Long press an album, artist or track and choose Add to favorites</source>
         <translation type="unfinished"></translation>
     </message>
@@ -197,12 +207,12 @@
 <context>
     <name>HomePage</name>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="90"/>
+        <location filename="../qml/pages/HomePage.qml" line="95"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="94"/>
+        <location filename="../qml/pages/HomePage.qml" line="103"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -212,84 +222,95 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="103"/>
+        <location filename="../qml/pages/HomePage.qml" line="113"/>
         <source>Browse</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="117"/>
+        <location filename="../qml/pages/HomePage.qml" line="127"/>
         <source>No player chosen. Pull down to pick one.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="126"/>
+        <location filename="../qml/pages/HomePage.qml" line="136"/>
         <source>Not a BluOS player</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="39"/>
-        <location filename="../qml/pages/HomePage.qml" line="48"/>
-        <location filename="../qml/pages/HomePage.qml" line="129"/>
+        <location filename="../qml/pages/HomePage.qml" line="56"/>
+        <location filename="../qml/pages/HomePage.qml" line="65"/>
+        <location filename="../qml/pages/HomePage.qml" line="139"/>
         <source>Updating firmware</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="131"/>
+        <location filename="../qml/pages/HomePage.qml" line="141"/>
         <source>Not reachable. Pull down to pick another player.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="123"/>
+        <location filename="../qml/pages/HomePage.qml" line="133"/>
         <source>Connecting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="37"/>
+        <location filename="../qml/pages/HomePage.qml" line="44"/>
+        <source>Added to presets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="54"/>
         <source>Starting update</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="41"/>
+        <location filename="../qml/pages/HomePage.qml" line="58"/>
         <source>Restarting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="43"/>
+        <location filename="../qml/pages/HomePage.qml" line="60"/>
         <source>The update did not start. Restart Swell to try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="45"/>
+        <location filename="../qml/pages/HomePage.qml" line="62"/>
         <source>The update did not finish. Restart Swell to try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="50"/>
+        <location filename="../qml/pages/HomePage.qml" line="67"/>
         <source>The update was not started.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="135"/>
+        <location filename="../qml/pages/HomePage.qml" line="108"/>
+        <location filename="../qml/pages/HomePage.qml" line="145"/>
         <source>Presets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="210"/>
-        <source>No presets on this player. Presets are made in the BluOS Controller app.</source>
+        <location filename="../qml/pages/HomePage.qml" line="244"/>
+        <source>Add preset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="50"/>
+        <location filename="../qml/pages/HomePage.qml" line="67"/>
         <source>Update available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="251"/>
+        <location filename="../qml/pages/HomePage.qml" line="180"/>
+        <source>No presets on this player. Add them from Browse or from the inputs below.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="221"/>
         <source>Firmware %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="257"/>
+        <location filename="../qml/pages/HomePage.qml" line="227"/>
         <source>Inputs</source>
         <translation type="unfinished"></translation>
     </message>
@@ -504,6 +525,65 @@
     </message>
 </context>
 <context>
+    <name>PresetsPage</name>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="50"/>
+        <source>Deleting %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="52"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="172"/>
+        <source>Nothing was deleted.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="171"/>
+        <source>The presets have changed. Nothing was deleted.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="175"/>
+        <source>The presets have changed. Nothing was moved.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="176"/>
+        <source>Nothing was moved.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="311"/>
+        <source>Reorder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="329"/>
+        <source>Presets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="240"/>
+        <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="330"/>
+        <source>Drag to move, tap to stop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="336"/>
+        <source>No presets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="337"/>
+        <source>Long press a station in Browse, or an input on Home, and choose Add preset</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QueuePage</name>
     <message>
         <location filename="../qml/pages/QueuePage.qml" line="47"/>
@@ -598,7 +678,7 @@
 <context>
     <name>harbour-swell</name>
     <message>
-        <location filename="../qml/harbour-swell.qml" line="31"/>
+        <location filename="../qml/harbour-swell.qml" line="25"/>
         <source>The player did not accept that.</source>
         <translation type="unfinished"></translation>
     </message>

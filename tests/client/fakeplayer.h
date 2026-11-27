@@ -14,6 +14,7 @@
 #include <QHash>
 #include <QList>
 #include <QObject>
+#include <QPair>
 #include <QPointer>
 #include <QTcpServer>
 #include <QTcpSocket>
@@ -31,6 +32,9 @@ public:
         QUrlQuery query;
         qint64 atMs;
         QByteArray target;   // the request target exactly as sent
+        QByteArray method;
+        QByteArray body;     // a POST's body as sent
+        QByteArray contentType;
     };
 
     explicit FakePlayer(QObject *parent = nullptr) : QObject(parent)
@@ -91,6 +95,12 @@ public:
     void handle(const QString &path, const std::function<QByteArray(const QUrlQuery &)> &handler)
     {
         m_handlers.insert(path, handler);
+    }
+    // Answers a POST on this path from its query and body, with a status.
+    void handlePost(const QString &path,
+                    const std::function<QPair<int, QByteArray>(const QUrlQuery &, const QByteArray &)> &handler)
+    {
+        m_postHandlers.insert(path, handler);
     }
     // Delays every answer on this path, like a player busy serving covers.
     void delay(const QString &path, int ms) { m_delays.insert(path, ms); }
@@ -158,6 +168,19 @@ private:
         const int end = buffer.indexOf("\r\n\r\n");
         if (end < 0)
             return;
+        // A body (POST) may come in a later read.
+        int length = 0;
+        QByteArray contentType;
+        for (const QByteArray &line : buffer.left(end).split('\n')) {
+            const QByteArray l = line.trimmed();
+            if (l.toLower().startsWith("content-length:"))
+                length = l.mid(15).trimmed().toInt();
+            else if (l.toLower().startsWith("content-type:"))
+                contentType = l.mid(13).trimmed();
+        }
+        if (buffer.size() < end + 4 + length)
+            return;
+        const QByteArray body = buffer.mid(end + 4, length);
         const QList<QByteArray> requestLine = buffer.left(buffer.indexOf("\r\n")).split(' ');
         m_buffers.remove(socket);
         if (requestLine.size() < 2)
@@ -166,7 +189,16 @@ private:
         const QUrl target = QUrl::fromEncoded(raw);
         const QUrlQuery query(target);
         const QString path = target.path();
-        m_requests.append({ path, query, m_clock.elapsed(), raw });
+        m_requests.append({ path, query, m_clock.elapsed(), raw, requestLine.at(0), body, contentType });
+        if (requestLine.at(0) == "POST" && m_postHandlers.contains(path) && !m_failures.contains(path)
+                && !m_delays.contains(path)) {
+            const QPair<int, QByteArray> answer = m_postHandlers.value(path)(query, body);
+            socket->write("HTTP/1.1 " + QByteArray::number(answer.first) + " X\r\nContent-Type: text/xml\r\n"
+                          "Content-Length: " + QByteArray::number(answer.second.size())
+                          + "\r\nConnection: close\r\n\r\n" + answer.second);
+            socket->disconnectFromHost();
+            return;
+        }
 
         if (m_silences.contains(path) && m_silences.value(path).matches(query)) {
             if (m_silences.value(path).how == Drop)
@@ -238,6 +270,7 @@ private:
     QHash<QString, int> m_failures;
     QHash<QString, std::function<QByteArray(const QUrlQuery &)>> m_handlers;
     QHash<QString, int> m_delays;
+    QHash<QString, std::function<QPair<int, QByteArray>(const QUrlQuery &, const QByteArray &)>> m_postHandlers;
     QHash<QTcpSocket *, QByteArray> m_buffers;
     QList<Held> m_held;
     QHash<QString, Silenced> m_silences;

@@ -1,0 +1,275 @@
+# Evidence — 008 presets: a page, deleting, adding and moving
+
+Raw files (reads, the capture, screenshots) stay local; they hold the
+player's address and the maintainer's stations.
+
+## 2026-11-26, NAD C 379, firmware 4.18.26
+
+Reads, the assistant, read-only:
+- `/Presets`: `prid="0"`, ids 1–7. `/Status` `<prid>0</prid>`.
+- `/Services`: `/SetPreset` is declared only in "Add preset" menu entries.
+  The "Remove favourite" entries are `/DeleteFavourite` for TuneIn and
+  Airable, not player presets.
+- `/ui/presets`: each preset has a `/ui/ContextMenu?…&type=preset`. The
+  footer has "Reorder Presets" (`/reorder-presets` → `/Presets/edit`), and
+  `refreshOnStatusChange key="prid"`.
+- `/ui/ContextMenu` for preset 7: Play (`/Preset?id=7`), Edit (a deep
+  link), Delete (`player-link /SetPreset?id=7`, `refreshScreen`).
+
+The maintainer, in the official app; the assistant read `/Presets` and
+`/Status` every second:
+
+| Time | Action | `/Presets` ids | `prid` |
+| --- | --- | --- | --- |
+| before 20:37 | add a station in slot 8 | 1–8 | 1 |
+| 20:41:19 | delete slot 8 | 1–7 | 2 |
+| 20:55:05 | add slot 7 (with "Overwrite Volume") | 1–7 | 4 |
+| 20:55:33 | add slot 8 | 1–8 | 5 |
+| 20:55:49 | delete slot 7 | 1–6, 8 | 6 |
+| 20:56:02 | delete slot 8 | 1–6 | 7 |
+
+Between 20:41 and 20:55 the maintainer deleted two presets without the
+watcher (`prid` 3).
+
+The capture covers 20:54 to 20:56. It was made with tcpdump on the phone,
+filtered on the player's address, and decoded on the workstation. The
+official app sent:
+- `GET /SetPreset?volume=66&image=…&encoded_url=…&name=…&canShuffle=0&id=7&shuffle=0`
+  → 200, `<presets prid="4">` with ids 1–7, id 7 with `volume="66"`;
+- `GET /SetPreset?image=…&encoded_url=…&name=…&canShuffle=0&id=8&shuffle=0`
+  → 200, `<presets prid="5">` with ids 1–8;
+- `GET /SetPreset?id=7` → 200, `<presets prid="6">` with ids 1–6 and 8
+  (gzip, decoded);
+- `GET /SetPreset?id=8` → 200, `<presets prid="7">` with ids 1–6.
+
+Before a delete the app read that preset's `/ui/ContextMenu`; after it, the
+app read `/ui/presets` again. In the screenshots the add flow is: source,
+name, preset number (it warns "will overwrite the current Preset 7"), then
+volume. The maintainer reports no confirmation before a delete.
+
+## 2026-11-26, adding (NAD C 379, 4.18.26)
+
+Reads by the assistant, read-only:
+- `/Browse?key=RadioParadise%3A&withContextMenuItems=1`: each station
+  carries a context menu item `type="preset"`, "Add preset", with
+  `actionURL="/SetPreset?image=…&name=…&service=RadioParadise&url=…"`. It has
+  no `id`.
+- A TuneIn station list has the same item on each station (177 in one
+  list).
+- Not seen on the second level of Airable, which is a menu, or on the
+  capture inputs (`/RadioBrowse?service=Capture`).
+- API v1.7 §7.1 documents `actionURL` ("may be invoked directly") but not
+  the type `preset`.
+- `/Services` declares "Add preset" as `/SetPreset` with `name`, `url` and
+  an optional `image`. One form takes them from browse items (`text`,
+  `URL`), one from now playing (`title1`, `streamUrl`).
+
+Writes by the assistant, with the maintainer's approval, on throwaway
+Radio Paradise stations. The maintainer's presets 1–9 were not touched.
+Each request was sent as the player's `actionURL`, or as `/SetPreset?id=N`:
+
+| Request | Reply | Presets after | `prid` |
+| --- | --- | --- | --- |
+| add The Main Mix (no `id`) | 200, the whole list | 1–10 | 13 |
+| add Mellow Mix (no `id`) | 200, the whole list | 1–11 | 14 |
+| `/SetPreset?id=10` | 200, the whole list | 1–9, 11 | 15 |
+| add RockIt! (no `id`) | 200, the whole list | 1–11 (RockIt! in 10) | 16 |
+| add Mellow Mix again | 200, the whole list | 1–12 (11 and 12 both Mellow Mix) | 17 |
+| delete 12, 11, 10 | 200 each | 1–9, as before | 18–20 |
+
+So without an `id`, the player takes the first free slot, and a gap is
+filled. It does not refuse a station that is already a preset. `/Status`
+reported every `prid`.
+
+## 2026-11-27, device check (build 86a69c1, NAD C 379, 4.18.26)
+
+The player's `/Presets` and `/Status` read every second while the
+maintainer used Swell; the screenshots stay local.
+
+- Home, portrait: 3 columns, 2 rows (6 of 7 presets). Landscape: 7
+  columns, 1 row. The Presets page: all 7, edge to edge, the header with
+  the player's name.
+- The tile menu opens at full width; the pull-down order is About,
+  Players, Settings, Presets, Browse (the maintainer).
+- Deleting, three tries (the maintainer: one cancelled): two requests.
+  `prid` 20 → 21 (id 9 gone), 21 → 22 (id 8 gone); the other ids kept.
+  `/Status` followed within about a second.
+- Adding from Radio Paradise: `prid` 22 → 23, the new preset in slot 8,
+  the first free one.
+- Swell's journal had no lines since the start of the check.
+- `/Browse` gives the inputs only a `playURL`, no context menu, so no
+  preset action. A preset of an input exists (id 1, `Capture:…`), added
+  with the official app.
+
+- Build afeab31, the same day:
+  - An input added from Home (Phono, twice): the first free slot (9),
+    `prid` 25 → 26 and 27 → 28; "Added to presets" shown; the preset
+    plays (the maintainer). Swell sends the image encoded
+    (`%2Fimages%2F…`), the curl measurement plain; the stored image was
+    not read back.
+  - Radio Paradise added again from Browse: a duplicate in slot 9
+    (`prid` 30), and the notice now shown.
+  - The notices are Silica's: small, above the mini-player (the
+    maintainer found them rather small).
+  - The throwaways deleted from the Presets page (`prid` 27, 29, 31, 32).
+
+## 2026-11-27, reordering (NAD C 379, 4.18.26)
+
+The maintainer moved a preset one place in the official app (Android,
+User-Agent `Bluesound/4.18.1`), and back; tcpdump on the phone, and the
+assistant read `/Presets` and `/Status` every second.
+
+- `POST /Presets/edit?prid=32`, `Content-Type: application/json`, body
+  `{"ordering":[{"from":7,"to":6},{"from":6,"to":7}]}`: only the two
+  slots that change, no `prid` in the body.
+- Reply: 200, gzip, the whole `<presets prid="33">` list with 6 and 7
+  swapped.
+- Back: `POST /Presets/edit?prid=33` with the same body; `prid` 34, the
+  order as before.
+- An earlier capture (16:17) held no edit request, and `prid` stayed 32;
+  why is not known.
+- With curl, on two throwaway presets in slots 8 and 9 (the maintainer's
+  approval; ids 1–7 were in no request and stayed as they were):
+  - `{"ordering":[{"from":9,"to":8},{"from":8,"to":9}]}` with the
+    current `prid` (36): 200, the list with 8 and 9 swapped, `prid` 37.
+  - The same with the old `prid` (36): **412**, an empty body, nothing
+    changed.
+  - Without `?prid`: **400**, `no prid`, nothing changed.
+  - An incomplete permutation, `{"from":9,"to":8}` only, with the current
+    `prid`: 200 and `prid` 38, the preset in 9 now in 8, and the one that
+    was in 8 **gone**. The silent delete azzurro measured also happens on
+    this player.
+  - The throwaway left was deleted (`prid` 39).
+- Moves of more than one place, the official app (`prid` 39 → 42):
+  - 7 to 2: `{"ordering":[{"from":7,"to":2},{"from":2,"to":3},{"from":3,"to":4},{"from":4,"to":5},{"from":5,"to":6},{"from":6,"to":7}]}`;
+    the others shift down one, `prid` 40.
+  - 2 to 6: `[{"from":3,"to":2},{"from":4,"to":3},{"from":5,"to":4},{"from":6,"to":5},{"from":2,"to":6}]`, `prid` 41.
+  - 6 to 7 as before, `prid` 42; the order as at the start.
+  - So one request per move, holding exactly the cycle of the slots
+    between the old and the new place; slots outside it are not sent.
+  - Every body lists the moves in ascending `to` order, `from` before
+    `to`, without spaces.
+- Across a gap, with curl, throwaways in 8 and 10, 9 empty (the
+  maintainer's approval; ids 1–7 in no request):
+  - `[{"from":10,"to":8},{"from":8,"to":10}]` at `prid` 46: 200,
+    `prid` 47, 8 and 10 swapped, 9 still empty. The permutation is over
+    the occupied slots.
+  - `[{"from":8,"to":9}]` (into the empty slot) at 47: 200, `prid` 48,
+    the preset now in 9 and 8 empty; nothing lost. Swell does not send
+    this form.
+  - The throwaways deleted (`prid` 50).
+
+## 2026-11-27, reordering on the device (builds 49aadd1, 220e283)
+
+- Eight moves from the Presets page, `prid` 49 → 57; each request one
+  move, nothing lost; the maintainer put the order back.
+- The maintainer: a "Done" item in the pull-down menu is not intuitive;
+  dropped for a tap that ends the mode (220e283).
+- 220e283, the maintainer reported all of these working: the mode and
+  its header, dragging, a swipe that flicks, rotation during a drag, a
+  tap ending the mode, Reorder disabled during a remorse. Edge scrolling
+  was not in that list (seven presets fit the screen).
+- The maintainer also saw Add preset from TuneIn and leaving the Presets
+  page during a delete remorse work (2026-11-27).
+
+## Reviews
+
+- Scope, a separate agent, 2026-11-26: request changes. Resolved in the
+  issue and this spec:
+  - the fixed route instead of reading `/ui/ContextMenu` (spec 004);
+  - `fetch()` instead of the merging gate;
+  - the remorse records the player, the id and `prid`;
+  - a refusal on a `prid` change;
+  - `GridItem` with a page `RemorsePopup`;
+  - the list from the `prid` refetch;
+  - the end-state table;
+  - observations labelled as such.
+- Result, a separate agent, 2026-11-26: approve with changes. Resolved:
+  - Swell records the version of the list shown, not the status `prid`.
+    `presetsCurrent` follows whether `/Status` reports a newer one;
+  - Delete is disabled while a remorse runs or the list is not current;
+  - a null player is guarded;
+  - the grid's height is as the Flow's;
+  - the double changes the list only for an id-only `/SetPreset`, and
+    marks the rest invented;
+  - the send-time check uses `SendLog`;
+  - a timeout row, and a list that is not read yet;
+  - the README, and no station names here;
+  - the page states are left to the device check (spec).
+- Widened scope, a separate agent, 2026-11-26: approve with changes.
+  Resolved:
+  - Home's row has no menu (the maintainer's decision 9);
+  - the page is a scrolling `SilicaGridView`;
+  - the tile is shared, but not the grid;
+  - `preset` is in `knownAction` with its own notice;
+  - the measured `actionURL` is tested against `splitPlayerPath`;
+  - the double for adding;
+  - the end states for leaving a page during a remorse
+    (RemorsePopup.qml:186–200), and for offline and rotation;
+  - stale texts.
+- Result of the widened scope, a separate agent, 2026-11-26: request
+  changes. Resolved:
+  - a stray upstream Qt source file was removed from the branch history
+    before any push;
+  - the double's comment;
+  - `%2521`;
+  - the README;
+  - the spec status;
+  - the request counts in the add test;
+  - `DISTFILES`;
+  - a stale comment in the runtime probe.
+- An input as a preset and Silica notices (decisions 13–14), scope, a
+  separate agent, 2026-11-27: approve with changes. Resolved:
+  - the image sent is the player's relative path, so C++ looks the input
+    up by id;
+  - success is a list with a new `prid`, as an unchanged list is a
+    failure;
+  - `playInput`'s URL check is shared; the name and image encoded with
+    `QUrl::toPercentEncoding`;
+  - `actionDone("preset")`, and Home's notice only while it is active;
+  - the notices fact corrected (`stack.panelSize` is the keyboard; the
+    own label was not under the mini-player);
+  - end states for an invalid URL and an unchanged list; the device check
+    of the notice's place.
+  - Open: Silica's first version with `Notices` is not known from the
+    target; the Silica documentation names no version either. The
+    maintainer chose to raise it: `Requires: sailfishsilica-qt5 >=
+    1.2.154`, the build target's (SailfishOS 5.1.0.11), the oldest one
+    verified to have `Notices`; the phone has 1.2.157 (5.2.0.22).
+- Result after 3a846cd (86a69c1, c120226, afeab31), a separate agent,
+  2026-11-27: approve with changes. Resolved:
+  - an input add is refused while the list is not current, since the
+    reply's `prid` could not tell the add apart; a test for it;
+  - the encoded image recorded as not read back;
+  - the test helper renamed (`setPresetRequests`);
+  - the placeholder and Home's text name the inputs too;
+  - spec F's open question closed; no Dutch quote here.
+- Reordering, scope, a separate agent, 2026-11-27: approve with changes.
+  Resolved in the spec:
+  - the home screen's behaviour corrected: a 150 ms hold before the drag
+    starts, the dwell, autoscroll at the edge, a tap ending the mode;
+  - the drag starts after the hold, with `preventStealing`, so a quick
+    swipe still flicks and the pulley and back gesture keep out;
+  - `DelegateModel` `items.move()` instead of a `ListModel` copy; a
+    lifted copy dragged, not the delegate;
+  - end states: the list changing or rotation during a drag, a tap in the
+    mode, Reorder disabled during a remorse, offline, not current or
+    with fewer than two presets; separate notices;
+  - the cycle's wording, its order (ascending `to`), the guard (sources
+    and destinations distinct and the same set, all in the list), and a
+    stricter success check (the same count, the moved preset at its new
+    place);
+  - a move in flight owned by the client (`presetMoving`);
+  - the client's POST and status code; the double's POST bodies;
+  - the gap measured (above).
+  - The maintainer (2026-11-27): autoscroll yes, for the user and for
+    fewer requests (own code, named); a tap ends the mode.
+- Final result and standards review (fda7691..b8d3fee), a separate agent,
+  2026-11-27: approve with changes. Resolved:
+  - the dragged delegate kept while lifted (`inPersistedItems`), so edge
+    scrolling cannot release it;
+  - the hold ends with a new list (no drag on a destroyed delegate);
+  - a successful move marks the list not current until it is read anew;
+  - the spec's account of the lifted copy, the refusals, the own code and
+    its status line;
+  - `QtQml.Models 2.1`, the version that exports `DelegateModel`.

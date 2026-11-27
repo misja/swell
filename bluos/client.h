@@ -46,6 +46,11 @@ class Client : public QObject
     Q_PROPERTY(bool canBack READ canBack NOTIFY statusChanged)
     Q_PROPERTY(int duration READ duration NOTIFY statusChanged)
     Q_PROPERTY(int position READ position NOTIFY positionChanged)
+    // The version (prid) of the presets list as read, and whether /Status
+    // still reports that version; prid changes with every edit (spec 008).
+    Q_PROPERTY(QString presetsPrid READ presetsPrid NOTIFY presetsVersionChanged)
+    Q_PROPERTY(bool presetsCurrent READ presetsCurrent NOTIFY presetsVersionChanged)
+    Q_PROPERTY(bool presetMoving READ presetMoving NOTIFY presetMovingChanged)
     Q_PROPERTY(BluOS::QueueModel *queue READ queue CONSTANT)
     Q_PROPERTY(GroupRole groupRole READ groupRole NOTIFY syncStatusChanged)
     Q_PROPERTY(QString groupName READ groupName NOTIFY syncStatusChanged)
@@ -203,6 +208,23 @@ public:
     // As the player lists them; images as given, see resolveImage. Cached per
     // player.
     QList<Preset> presets() const { return m_presets; }
+    QString presetsPrid() const { return m_presetsPrid; }
+    bool presetsCurrent() const { return m_presetsCurrent; }
+    bool presetMoving() const { return m_presetMoving; }
+
+    struct PresetMove {
+        int from;
+        int to;
+    };
+    // The moves that put the preset in slot fromId into slot toId, the
+    // occupied slots between shifting one occupied slot towards fromId:
+    // a cycle, listed by ascending to (as the official app sends it,
+    // spec 008). Empty if either id is not in ids or they are equal.
+    static QList<PresetMove> presetCycle(const QList<int> &ids, int fromId, int toId);
+    // Whether the moves only permute occupied slots: sources distinct,
+    // destinations distinct, the same set, all in ids. An occupied slot that
+    // is a destination but not a source would be deleted (measured).
+    static bool isPermutation(const QList<PresetMove> &moves, const QList<int> &ids);
     QList<Input> inputs() const { return m_inputs; }
     QueueModel *queue() const { return m_queue; }
 
@@ -237,9 +259,31 @@ public slots:
     void setVolume(int level);
     void setMuted(bool muted);
     void playPreset(int id);
+    // Deletes preset id with /SetPreset?id=N, the official app's request
+    // (not in the API; spec 008). Only while online and while the presets
+    // are still the version prid the user saw (presetsPrid when it was
+    // chosen) and /Status reports no newer one; otherwise
+    // presetDeleteRefused() and nothing is sent. The list follows from the
+    // prid change; a reply that is not the list without id is commandFailed.
+    void deletePreset(int id, const QString &prid);
     // Plays a capture input by the URL attribute from /RadioBrowse?service=Capture,
     // sent byte for byte. A URL that would not form a valid query is refused.
     void playInput(const QString &encodedUrl);
+    // Adds the input with this id (from inputs()) as a preset: /SetPreset
+    // with its URL as given, its name and its image, and no id, so the player
+    // takes the first free slot (measured, spec 008; the player offers no
+    // action for inputs). actionDone("preset") when the reply is the list
+    // with a new prid, otherwise commandFailed; nothing is sent (commandFailed)
+    // while the list is not read or /Status reports a newer one.
+    void addInputPreset(const QString &inputId);
+    // Moves the preset in slot fromId to slot toId with POST /Presets/edit
+    // (the official app's request, not in the API; spec 008). Only while
+    // online, the list is current and still the version prid, and no move
+    // is in flight; otherwise presetMoveRefused() and nothing is sent. A
+    // 412 (the list changed) is presetMoveRefused(true); a reply that is not
+    // the list with that preset at toId and as many presets is
+    // commandFailed. The list follows from the prid change.
+    void movePreset(int fromId, int toId, const QString &prid);
     void refreshInputs();
     void playQueueEntry(int position);
     // Removes the entry at position, but only if the player confirms that the
@@ -279,11 +323,19 @@ signals:
     // startUpgrade() sent nothing.
     void upgradeStartRefused();
     void presetsChanged();
+    void presetsVersionChanged();
     void inputsChanged();
     // A command request failed; the poll keeps running.
     void commandFailed(const QString &path, const QString &error);
     // A removal was not sent because the queue no longer matched.
     void removeRefused();
+    // deletePreset() sent nothing: the presets changed (presetsChanged), or
+    // the player is not online.
+    void presetDeleteRefused(bool presetsChanged);
+    // movePreset() was not carried out: the presets changed (also a 412), or
+    // the player is not online.
+    void presetMoveRefused(bool presetsChanged);
+    void presetMovingChanged();
     // A context-menu action succeeded (type as in the menu, e.g. addAll-last).
     void actionDone(const QString &type);
 
@@ -297,6 +349,8 @@ private:
 
     static QString encoded(const QUrlQuery &query);
     QUrl url(const QString &path, const QString &encodedQuery = QString()) const;
+    // Whether an input's URL attribute, sent as given, stays one valid url= parameter.
+    bool validInputUrl(const QString &path, const QString &encodedUrl) const;
     // gateName names the gate within the path; by default the first parameter's
     // name, so a burst of the same setting collapses to its last value.
     void send(const QString &path, const QString &encodedQuery,
@@ -304,16 +358,25 @@ private:
     void dispatch(const QString &path);
     int msUntilAllowed(const QString &path) const;
     QNetworkReply *get(const QString &path, const QString &encodedQuery, int deadlineMs);
+    // A GET, or a POST of jsonBody when it is not null.
+    QNetworkReply *request(const QString &path, const QString &encodedQuery, int deadlineMs,
+                           const QByteArray &jsonBody);
     // Sends a player-given action URL ("/Action?service=…&skip=…") as given.
     void sendAction(const QString &actionUrl);
     // One GET under the per-path interval; the handler gets the body on success.
     void fetch(const QString &path, const QString &encodedQuery,
                const std::function<void(const QByteArray &)> &handler, int deadlineMs = -1,
                bool paced = true);
+    // As fetch(), with the HTTP status (0 without an answer) and a JSON body
+    // to POST; the body is passed whatever the status.
+    void fetchStatus(const QString &path, const QString &encodedQuery, const QByteArray &jsonBody,
+                     const std::function<void(int, const QByteArray &)> &handler);
+    void setPresetMoving(bool moving);
     void processRemovals();
     void adoptQueueId(int position);
     void finishRemoval();
     void fetchPresets();
+    void updatePresetsVersion();
 
     void pollStatus();
     void onStatusReply(QNetworkReply *reply);
@@ -372,6 +435,9 @@ private:
     QList<Preset> m_presets;
     QList<Input> m_inputs;
     QString m_presetsPrid;
+    bool m_presetsCurrent = false;
+    bool m_presetMoving = false;
+    QString m_notifiedPresetsPrid;
     bool m_presetsLoading = false;
     bool m_inputsLoading = false;
     QueueModel *m_queue;

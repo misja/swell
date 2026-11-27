@@ -6,7 +6,8 @@ Release:    1
 License:    MIT
 URL:        https://github.com/misja/swell
 Source0:    %{name}-%{version}.tar.bz2
-Requires:   sailfishsilica-qt5 >= 0.10.9
+# Notices (spec 008): the oldest version verified to have it is the build target's.
+Requires:   sailfishsilica-qt5 >= 1.2.154
 Requires:   qml(Amber.Mpris)
 BuildRequires:  pkgconfig(sailfishapp) >= 1.0.2
 BuildRequires:  pkgconfig(Qt5Core)

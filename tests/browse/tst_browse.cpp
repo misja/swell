@@ -45,6 +45,7 @@ private slots:
     void songListsGetNoFavourites();
     void whatBrowsePageAsks();
     void aReportedCountIsBounded();
+    void aStationOffersAddPreset();
 
 private:
     void startClient();
@@ -105,6 +106,9 @@ void TstBrowse::init()
         if (key == QLatin1String("Index"))
             return "<browse type=\"sections\">" + section("A", "3") + section("B", "60") + section("C", "2")
                     + section("D", "4") + "</browse>";
+        // A station as the NAD sent it (4.18.26, 2026-11-26, spec 008).
+        if (key == QLatin1String("Stations"))
+            return QByteArray("<browse serviceName=\"Radio Paradise\" type=\"items\"><item contextMenuKey=\"RadioParadise:CM/RadioParadise-Item?URL=RadioParadise%3A%2F2%3A20%2FRockIt%2521&amp;text=RockIt%21\" playURL=\"/Play?url=RadioParadise%3A%2F2%3A20%2FRockIt%2521&amp;title=RockIt%21\" text=\"RockIt!\" type=\"audio\"><contextMenu><item actionURL=\"/SetPreset?image=https%3A%2F%2Fimg.radioparadise.com%2Fchannels%2F0%2F2%2Fcover_512x512%2F0.jpg&amp;name=RockIt%21&amp;service=RadioParadise&amp;url=RadioParadise%3A%2F2%3A20%2FRockIt%2521\" text=\"Add preset\" type=\"preset\"></item></contextMenu></item></browse>");
         if (key == QLatin1String("HugeIndex"))
             return "<browse type=\"sections\">" + section("A", "2000000000") + section("B", "2000000000")
                     + "</browse>";
@@ -580,6 +584,26 @@ void TstBrowse::aReportedCountIsBounded()
     QCOMPARE(m->rowCount(), MaxListLength);   // for all letters together
 }
 
+
+void TstBrowse::aStationOffersAddPreset()
+{
+    // The player's own action, kept and sent byte for byte (%21, %2521).
+    startClient();
+    QScopedPointer<BrowseModel> m(open(QStringLiteral("Stations")));
+    QTRY_VERIFY(m->ready());
+    const auto actions = m->data(m->index(0), BrowseModel::ActionsRole).value<QList<BrowseAction>>();
+    QCOMPARE(actions.size(), 1);
+    QCOMPARE(actions.first().type, QStringLiteral("preset"));
+    const QString url = actions.first().actionUrl;
+    QCOMPARE(url, QStringLiteral("/SetPreset?image=https%3A%2F%2Fimg.radioparadise.com%2Fchannels%2F0%2F2%2F"
+                                 "cover_512x512%2F0.jpg&name=RockIt%21&service=RadioParadise"
+                                 "&url=RadioParadise%3A%2F2%3A20%2FRockIt%2521"));
+    QString path;
+    QString query;
+    QVERIFY(m_client->splitPlayerPath(url, &path, &query));
+    QCOMPARE(path + QLatin1Char('?') + query, url);
+    QVERIFY(!m->startsPlayback(QStringLiteral("preset")));
+}
 
 QTEST_GUILESS_MAIN(TstBrowse)
 #include "tst_browse.moc"
