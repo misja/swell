@@ -123,3 +123,8 @@ Summary:
   maintainer: landscape screenshot shows shuffle left and repeat right of
   the transport row, the volume slider fully in view. At 25fde2d, aarch64:
   11 suites, 0 failed (qml: NowPlayingPage.qml compiles).
+- Review of 25fde2d (landscape placement), separate agent, 2026-11-27:
+  approve with changes. Applied: the portrait Loaders are active only when
+  shown (same rule as landscape); a comment on `visible: active`;
+  acceptance criterion 8 updated. Open: portrait and a rotation on the
+  build with this change (only landscape was checked on 0.7.0-3).

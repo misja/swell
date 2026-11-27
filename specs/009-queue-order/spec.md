@@ -249,5 +249,6 @@ E. **MPRIS** keeps `hasShuffle` and `hasLoopStatus` false (spec 003): they
    the reorder mode, a drag with hold and dwell, a flick, edge scrolling
    over unloaded rows, a tap ending the mode, a drag cancelled by
    rotation, the Presets page's reordering unchanged; in landscape the
-   volume slider is still reachable with the extra row.
+   Switches at both ends of the transport row and the volume slider in
+   view; in portrait their own row; a rotation while the queue plays.
 9. A separate result review before each PR. Own code named in the PR.
