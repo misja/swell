@@ -110,7 +110,7 @@ Page {
                 onClicked: pageStack.push(Qt.resolvedUrl("PresetsPage.qml"))
             }
             MenuItem {
-                text: qsTr("Browse")
+                text: qsTr("Music")
                 enabled: _player !== null
                 onClicked: pageStack.push(Qt.resolvedUrl("BrowsePage.qml"), { root: true })
             }
@@ -177,7 +177,7 @@ Page {
                 wrapMode: Text.Wrap
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.secondaryHighlightColor
-                text: qsTr("No presets on this player. Add them from Browse or from the inputs below.")
+                text: qsTr("No presets on this player. Add them from Music or from the inputs below.")
             }
 
             // While the player offers a firmware update, and while one this

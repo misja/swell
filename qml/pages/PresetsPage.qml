@@ -334,7 +334,7 @@ Page {
         ViewPlaceholder {
             enabled: grid.count === 0 && page._player !== null && page._player.online
             text: qsTr("No presets")
-            hintText: qsTr("Long press a station in Browse, or an input on Home, and choose Add preset")
+            hintText: qsTr("Long press a station in Music, or an input on Home, and choose Add preset")
         }
 
         VerticalScrollDecorator {}
