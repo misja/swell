@@ -108,7 +108,7 @@ QByteArray TstPresets::list() const
 {
     QByteArray xml = "<presets prid=\"" + QByteArray::number(m_prid) + "\">";
     for (auto it = m_presets.cbegin(); it != m_presets.cend(); ++it)
-        xml += "<preset id=\"" + QByteArray::number(it.key()) + "\" name=\"" + it.value()
+        xml += "<preset id=\"" + QByteArray::number(it.key()) + "\" name=\"" + QString::fromUtf8(it.value()).toHtmlEscaped().toUtf8()
                 + "\" url=\"Invented:" + QByteArray::number(it.key()) + "\"/>";
     return xml + "</presets>";
 }

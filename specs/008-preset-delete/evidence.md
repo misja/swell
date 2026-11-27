@@ -147,3 +147,18 @@ maintainer used Swell; the screenshots stay local.
   - the request counts in the add test;
   - `DISTFILES`;
   - a stale comment in the runtime probe.
+- An input as a preset and Silica notices (decisions 13–14), scope, a
+  separate agent, 2026-11-27: approve with changes. Resolved:
+  - the image sent is the player's relative path, so C++ looks the input
+    up by id;
+  - success is a list with a new `prid`, as an unchanged list is a
+    failure;
+  - `playInput`'s URL check is shared; the name and image encoded with
+    `QUrl::toPercentEncoding`;
+  - `actionDone("preset")`, and Home's notice only while it is active;
+  - the notices fact corrected (`stack.panelSize` is the keyboard; the
+    own label was not under the mini-player);
+  - end states for an invalid URL and an unchanged list; the device check
+    of the notice's place.
+  - Open: Silica's first version with `Notices` is not known from the
+    target; `Requires: sailfishsilica-qt5 >= 0.10.9` is unchanged.
