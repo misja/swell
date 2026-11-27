@@ -135,7 +135,11 @@ C. **Reorder mode on the Queue page.**
    - Only loaded rows can be lifted.
    - **Drag**, as on the Presets page, with a `DelegateModel` and
      `items.move()` for the order on screen: a press held 150 ms lifts the
-     row; a copy follows the finger, the delegate is hidden and kept
+     row; a copy is moved by Qt (`MouseArea` `drag.target` set once
+     lifted, `drag.axis: Drag.YAxis`, bounded to the page; Qt 5.6
+     activates it only if the press kept the grab, so `preventStealing`
+     holds for the whole mode and the list scrolls only at its edges: the
+     maintainer, 2026-11-27), the delegate is hidden and kept
      (`DelegateModel.inPersistedItems`) also when edge scrolling takes it
      past the cache buffer (SilicaListView.qml:66); held 150 ms over
      another place, the rows make room (`move`/`displaced` transitions);
@@ -204,7 +208,7 @@ E. **MPRIS** keeps `hasShuffle` and `hasLoopStatus` false (spec 003): they
 | Reorder: fewer than two entries left | nothing | the mode ends |
 | Reorder: page left or offline, during a drag | nothing | the mode ends; the row back |
 | Reorder: a window reply during a drag | — | rows fill in; the drag continues |
-| Reorder: a quick swipe in the mode | nothing | the list flicks |
+| Reorder: a quick swipe in the mode | nothing | nothing moves; the list scrolls only at its edges |
 | Reorder: dragged to the edge | — | the list scrolls, also past the cache buffer; placeholder rows load |
 | Reorder: held on a placeholder row | — | nothing lifts |
 | Reorder: a drag while a move or remove is in flight | — | no drag starts |
@@ -254,7 +258,7 @@ E. **MPRIS** keeps `hasShuffle` and `hasLoopStatus` false (spec 003): they
    complete.
 8. Device check by the maintainer on the NAD (playback will start):
    shuffle on and off, the repeat cycle, the buttons hidden on an input;
-   the reorder mode, a drag with hold and dwell, a flick, edge scrolling
+   the reorder mode, a drag with hold and dwell, edge scrolling
    over unloaded rows, a tap ending the mode, a drag cancelled by
    rotation, the Presets page's reordering unchanged; in landscape the
    Switches at both ends of the transport row and the volume slider in

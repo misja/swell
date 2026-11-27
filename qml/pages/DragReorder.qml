@@ -3,13 +3,18 @@ import QtQuick 2.0
 import QtQml.Models 2.1   // DelegateModel
 
 // Dragging items of a view into a new order, as on the home screen: a press
-// held 150 ms lifts the item, a copy (proxy) follows the finger, held 150 ms
-// over another place the item moves there in the view (DelegateModel
-// items.move(), the model itself unchanged), and near the top or bottom edge
-// the view scrolls. Releasing emits moveRequested(from, to); the page sends
-// it, and calls putBack() if the player does not take it.
-// Own code (specs 008 G, 009 C): Silica has no reordering, and the home
-// screen's (lipstick) is private. Used by the Presets and Queue pages.
+// held 150 ms lifts the item, held 150 ms over another place the item moves
+// there in the view (DelegateModel items.move(), the model itself
+// unchanged), and near the top or bottom edge the view scrolls. Releasing
+// emits moveRequested(from, to); the page sends it, and calls putBack() if
+// the player does not take it.
+// The copy (proxy) is moved by Qt: the delegate's MouseArea has drag.target
+// set to it once lifted, with drag.axis and drag.minimum/maximum, and
+// preventStealing for the whole mode (Qt 5.6 activates drag.target only if
+// the press already kept the grab, qquickmousearea.cpp:668, 718).
+// Own code (specs 008 G, 009 C): the hold, the dwell and the edge scrolling;
+// Silica has no reordering, and the home screen's (lipstick) is private.
+// Used by the Presets and Queue pages.
 Item {
     id: reorder
 
@@ -20,8 +25,6 @@ Item {
     property Item proxy
     // Whether a press may lift this delegate now (the page's conditions).
     property var canLift: function(delegate) { return true }
-    // A list: the copy moves only up and down, at the item's own x.
-    property bool vertical
     // The edge band and the step per 16 ms of edge scrolling.
     property real edge: 80
     property real step: 20
@@ -46,16 +49,13 @@ Item {
         hold.restart()
     }
 
-    // The finger moved over item at (x, y) while dragging.
+    // The finger moved over item at (x, y) while dragging; Qt has moved the
+    // copy (drag.target).
     function follow(item, x, y) {
         if (!_dragged) {
             return
         }
         var p = item.mapToItem(proxy.parent, x, y)
-        if (!vertical) {
-            proxy.x = p.x - proxy.width / 2
-        }
-        proxy.y = p.y - proxy.height / 2
         _aim()
         var v = view.mapFromItem(proxy.parent, 0, p.y).y
         edgeScroll.direction = v < edge ? -1 : v > view.height - edge ? 1 : 0

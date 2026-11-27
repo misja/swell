@@ -255,11 +255,15 @@ G. **Reordering.** On the Presets page.
      put back and nothing is sent. The header says the mode is on and how
      it ends.
    - **Drag**, as the home screen:
-     - a press held 150 ms lifts the tile's content (scaled 1.1); only
-       then the drag starts, with `preventStealing`, so a quick swipe
-       still flicks and the pull-down menu and the back gesture keep out;
-     - a lifted copy of the tile, drawn above the grid, follows the
-       finger, and the delegate is hidden (opacity 0) and kept while
+     - in the mode the tiles keep the press (`preventStealing`), so the
+       grid, the pull-down menu and the back gesture keep out; the grid
+       scrolls only at its edges (changed 2026-11-27 with spec 009: a
+       quick swipe no longer flicks; the maintainer accepted it to let
+       Qt move the copy);
+     - a press held 150 ms lifts the tile's content (scaled 1.1);
+     - a lifted copy of the tile, drawn above the grid, is moved by Qt
+       (`MouseArea` `drag.target`, `Drag.XAndYAxis`, bounded to the
+       page), and the delegate is hidden (opacity 0) and kept while
        lifted (`DelegateModel.inPersistedItems`), also when edge
        scrolling takes it out of view; the view keeps positioning the
        delegates;
@@ -370,7 +374,7 @@ G. **Reordering.** On the Presets page.
 | Add an input, Home no longer active when the reply comes | one request | no notice; the tile appears after the next status |
 | Reorder: a tile dropped at another place | one `POST /Presets/edit?prid=N` with the cycle | the new order; Home follows |
 | Reorder: dropped where it started, or the mode ended mid-drag | nothing | unchanged |
-| Reorder: a quick swipe in the mode | nothing | the grid flicks |
+| Reorder: a quick swipe in the mode | nothing | nothing moves; the grid scrolls only at its edges (since spec 009) |
 | Reorder: dragged to the edge | — | the grid scrolls; one request on release |
 | Reorder: a tap on a tile or beside the tiles in the mode | nothing | the mode ends |
 | Reorder: the list changed meanwhile (412) | one request | "The presets have changed. Nothing was moved."; the view put back |
@@ -444,7 +448,7 @@ The pages are not instantiated in the tests. The device check covers:
     and a list missing a preset give `commandFailed`; each refusal sends
     nothing; a second move while one is in flight. The double moves as
     measured (412, 400, the silent delete). On the device: the mode, a
-    drag with the hold and the dwell, a swipe that flicks, edge
+    drag with the hold and the dwell, edge
     scrolling, a tap ending the mode, a drag cancelled by rotation, and
     Reorder disabled during a remorse.
 12. Device check on the NAD with throwaway presets (the maintainer's

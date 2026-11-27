@@ -98,7 +98,6 @@ Page {
         view: list
         delegateModel: queueModel
         proxy: dragProxy
-        vertical: true
         edge: Theme.itemSizeMedium
         step: Theme.paddingLarge
         // Only loaded rows: a placeholder has no identity to check.
@@ -177,17 +176,21 @@ Page {
                 }
             }
 
-            // In the edit mode: a tap ends it; a press held 150 ms lifts the
-            // row, and from then on the list, the pull-down menu and the back
-            // gesture keep out (preventStealing). A press that moves earlier
-            // is the list's flick.
+            // In the edit mode: a tap ends it, and a press held 150 ms lifts
+            // the row, which Qt then moves up and down (drag). The list, the
+            // pull-down menu and the back gesture keep out for the whole mode
+            // (preventStealing); the list scrolls at its edges only.
             MouseArea {
                 id: dragArea
                 // This press lifted the row: its release is a drop, not a tap.
                 property bool lifted
                 anchors.fill: parent
                 enabled: page._reordering
-                preventStealing: reorder.dragged === item
+                preventStealing: page._reordering
+                drag.target: reorder.dragged === item ? dragProxy : null
+                drag.axis: Drag.YAxis
+                drag.minimumY: 0
+                drag.maximumY: page.height - dragProxy.height
                 onPressed: {
                     lifted = false
                     reorder.press(item)

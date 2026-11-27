@@ -123,17 +123,23 @@ Page {
                 }
             }
 
-            // In the edit mode: a tap ends it; a press held 150 ms lifts the
-            // tile, and from then on the grid, the pull-down menu and the
-            // back gesture keep out (preventStealing). A press that moves
-            // earlier is the grid's flick.
+            // In the edit mode: a tap ends it, and a press held 150 ms lifts
+            // the tile, which Qt then moves (drag). The grid, the pull-down
+            // menu and the back gesture keep out for the whole mode
+            // (preventStealing); the grid scrolls at its edges only.
             MouseArea {
                 id: dragArea
                 // This press lifted the tile: its release is a drop, not a tap.
                 property bool lifted
                 anchors.fill: parent
                 enabled: page._reordering
-                preventStealing: reorder.dragged === tile
+                preventStealing: page._reordering
+                drag.target: reorder.dragged === tile ? dragProxy : null
+                drag.axis: Drag.XAndYAxis
+                drag.minimumX: 0
+                drag.maximumX: page.width - dragProxy.width
+                drag.minimumY: 0
+                drag.maximumY: page.height - dragProxy.height
                 onPressed: {
                     lifted = false
                     reorder.press(tile)
