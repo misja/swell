@@ -119,3 +119,7 @@ Summary:
   part of this feature: after shuffle off while paused on entry 1, play
   started at entry 0 (21:22:09 → 21:22:29). Afterwards: queue cleared (only
   the throwaway album), repeat 0, preset 2 playing, volume 32.
+- Device check of 0.7.0-3 (25fde2d with Release 3), 2026-11-27 21:43, the
+  maintainer: landscape screenshot shows shuffle left and repeat right of
+  the transport row, the volume slider fully in view. At 25fde2d, aarch64:
+  11 suites, 0 failed (qml: NowPlayingPage.qml compiles).
