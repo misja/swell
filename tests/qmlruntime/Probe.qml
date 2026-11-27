@@ -124,6 +124,13 @@ Item {
         return playerRows.itemAt(0).keys
     }
 
+    // NowPlayingPage: shuffle and repeat (spec 009), the expressions the two
+    // Switches use.
+    function shuffleRepeat() {
+        return [!_player.streaming, _player.shuffle, _player.repeat !== Player.RepeatOff,
+                _player.repeat === Player.RepeatTrack].join(" ")
+    }
+
     // QueuePage and the mini-player: the player's queue, a typed pointer.
     readonly property QtObject _queue: _player ? _player.queue : null
     function queue() {

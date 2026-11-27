@@ -94,6 +94,11 @@ Status parseStatus(const QByteArray &xml)
         else if (n == QLatin1String("groupVolume")) s.groupVolume = toInt(reader.readElementText(), -1);
         else if (n == QLatin1String("volume")) s.volume = toInt(reader.readElementText(), -1);
         else if (n == QLatin1String("mute")) s.mute = toBool(reader.readElementText());
+        else if (n == QLatin1String("shuffle")) s.shuffle = toBool(reader.readElementText());
+        else if (n == QLatin1String("repeat")) {
+            const int repeat = toInt(reader.readElementText(), 2);
+            s.repeat = repeat >= 0 && repeat <= 2 ? repeat : 2;
+        }
         else reader.skipCurrentElement();
     }
     s.ok = finish(reader, &s.error);

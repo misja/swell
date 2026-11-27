@@ -30,6 +30,7 @@ private slots:
     void inputs();
     void queue();
     void groupValues();
+    void shuffleAndRepeat();
     void rowActions();
     void parentActionsArePassedOn();
     void favouritesAndUnreadRows();
@@ -284,6 +285,23 @@ void TstQmlRuntime::groupValues()
     // A lone player: what the pages read for a group reaches JavaScript.
     QCOMPARE(call("group"), QStringLiteral("true 0 false -1 false"));
     QTRY_COMPARE(call("playerRow"), QStringLiteral("0 true 0  20 0 false false"));
+}
+
+void TstQmlRuntime::shuffleAndRepeat()
+{
+    // shown (queue is the source), shuffled, repeat on, repeat one
+    m_player->setStatus("<status etag=\"r1\"><state>play</state><prid>1</prid>"
+                        "<shuffle>1</shuffle><repeat>1</repeat></status>");
+    QTRY_COMPARE(call("shuffleRepeat"), QStringLiteral("true true true true"));
+    m_player->setStatus("<status etag=\"r2\"><state>play</state><prid>1</prid>"
+                        "<shuffle>0</shuffle><repeat>0</repeat></status>");
+    QTRY_COMPARE(call("shuffleRepeat"), QStringLiteral("true false true false"));
+    // An input plays: hidden (API 2.1, streamUrl).
+    m_player->setStatus("<status etag=\"r3\"><state>stream</state><prid>1</prid>"
+                        "<streamUrl>Capture:x</streamUrl><repeat>2</repeat></status>");
+    QTRY_COMPARE(call("shuffleRepeat"), QStringLiteral("false false false false"));
+    m_player->setStatus("<status etag=\"r4\"><state>stop</state><prid>1</prid></status>");
+    QTRY_COMPARE(call("shuffleRepeat"), QStringLiteral("true false false false"));
 }
 
 void TstQmlRuntime::rowActions()

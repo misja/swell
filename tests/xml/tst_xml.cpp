@@ -30,6 +30,10 @@ private slots:
     void statusPrid();
     void statusStreamActions();
     void statusQueuePosition();
+    void statusShuffleAndRepeat_data();
+    void statusShuffleAndRepeat();
+    void shuffleAndRepeatReplies();
+    void moveReply();
     void playlistWindow();
     void playlistStatusForm();
     void playlistMalformed();
@@ -162,6 +166,55 @@ void TstXml::statusQueuePosition()
     QVERIFY(s.ok);
     QCOMPARE(s.pid, QStringLiteral("692"));
     QCOMPARE(s.song, 3);
+}
+
+void TstXml::statusShuffleAndRepeat_data()
+{
+    QTest::addColumn<QByteArray>("inner");
+    QTest::addColumn<bool>("shuffle");
+    QTest::addColumn<int>("repeat");
+    // As the NAD C 379 reported them (spec 009, evidence.md).
+    QTest::newRow("defaults of the NAD") << QByteArray("<shuffle>0</shuffle><repeat>0</repeat>") << false << 0;
+    QTest::newRow("shuffled, repeat track") << QByteArray("<shuffle>1</shuffle><repeat>1</repeat>") << true << 1;
+    QTest::newRow("repeat off") << QByteArray("<repeat>2</repeat>") << false << 2;
+    QTest::newRow("missing: off") << QByteArray() << false << 2;
+    QTest::newRow("unknown repeat: off") << QByteArray("<repeat>7</repeat>") << false << 2;
+    QTest::newRow("not a number: off") << QByteArray("<shuffle>x</shuffle><repeat>x</repeat>") << false << 2;
+}
+
+void TstXml::statusShuffleAndRepeat()
+{
+    QFETCH(QByteArray, inner);
+    QFETCH(bool, shuffle);
+    QFETCH(int, repeat);
+    const Status s = parseStatus("<status etag=\"e\"><state>play</state>" + inner + "</status>");
+    QVERIFY2(s.ok, qPrintable(s.error));
+    QCOMPARE(s.shuffle, shuffle);
+    QCOMPARE(s.repeat, repeat);
+}
+
+void TstXml::shuffleAndRepeatReplies()
+{
+    // The replies of /Shuffle and /Repeat, as measured: the queue's status form.
+    const Playlist shuffled = parsePlaylist(
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+        "<playlist length=\"8\" id=\"26\" modified=\"1\" shuffle=\"1\" repeat=\"0\"></playlist>");
+    QVERIFY(shuffled.ok);
+    QCOMPARE(shuffled.id, QStringLiteral("26"));
+    QCOMPARE(shuffled.length, 8);
+    const Playlist repeated = parsePlaylist(
+        "<playlist length=\"8\" id=\"27\" modified=\"1\" shuffle=\"0\" repeat=\"1\"></playlist>");
+    QVERIFY(repeated.ok);
+    QCOMPARE(repeated.id, QStringLiteral("27"));
+}
+
+void TstXml::moveReply()
+{
+    // /Move answers <moved>moved</moved>, also when it moved nothing (out of
+    // range, measured): not an error, and not a queue.
+    const QByteArray moved = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><moved>moved</moved>";
+    QVERIFY(parseError(moved).isEmpty());
+    QVERIFY(!parsePlaylist(moved).ok);
 }
 
 void TstXml::playlistWindow()

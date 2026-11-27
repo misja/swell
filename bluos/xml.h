@@ -44,7 +44,9 @@ struct Status {
     int volume = -1;        // 0..100, -1 = fixed volume
     bool mute = false;
     int groupVolume = -1;   // on a group's primary (section 2.1); -1 otherwise
-    bool hasStreamUrl = false; // queue not the source: no next/previous
+    bool hasStreamUrl = false; // queue not the source: no next/previous, shuffle or repeat
+    bool shuffle = false;   // the queue is shuffled (section 4.6)
+    int repeat = 2;         // 0 the queue, 1 the track, 2 off (section 4.7); unknown counts as off
     // Stream actions (section 4.8): the URL to call for skip/back, empty when
     // the stream does not offer it. Relevant only with hasStreamUrl.
     QString skipActionUrl;

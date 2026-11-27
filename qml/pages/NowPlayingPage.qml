@@ -216,6 +216,45 @@ Page {
                         }
                     }
 
+                    // Shuffle and repeat as the platform's media controls show them
+                    // (Sailfish.Media MediaPlayerControlsPanel: icon Switches that
+                    // follow the state). Only while the queue is the source (API 2.1).
+                    Row {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        spacing: Theme.paddingLarge
+                        visible: !page._empty && _player !== null && !_player.streaming
+
+                        Switch {
+                            objectName: "shuffle"
+                            icon.source: "image://theme/icon-m-shuffle"
+                            automaticCheck: false
+                            checked: _player !== null && _player.shuffle
+                            enabled: _player !== null && _player.online
+                            onClicked: _player.setShuffle(!_player.shuffle)
+                        }
+                        Switch {
+                            objectName: "repeat"
+                            icon.source: _player && _player.repeat === Player.RepeatTrack
+                                         ? "image://theme/icon-m-repeat-single" : "image://theme/icon-m-repeat"
+                            automaticCheck: false
+                            checked: _player !== null && _player.repeat !== Player.RepeatOff
+                            enabled: _player !== null && _player.online
+                            // Off, then the whole queue, then the track.
+                            onClicked: {
+                                switch (_player.repeat) {
+                                case Player.RepeatOff:
+                                    _player.setRepeat(Player.RepeatQueue)
+                                    break
+                                case Player.RepeatQueue:
+                                    _player.setRepeat(Player.RepeatTrack)
+                                    break
+                                default:
+                                    _player.setRepeat(Player.RepeatOff)
+                                }
+                            }
+                        }
+                    }
+
                     Row {
                         x: Theme.paddingMedium
                         width: parent.width - Theme.paddingMedium
