@@ -24,20 +24,13 @@ Page {
         return list
     }
 
-    // The edit mode, and the drag in it. Own code (spec 008, G): Silica has
-    // no reordering, and the home screen's (lipstick) is private.
+    // The edit mode (spec 008, G); the drag is DragReorder's.
     property bool _reordering: false
     readonly property bool _canReorder: _player !== null && _player.online && _player.presetsCurrent
                                         && !_player.presetMoving && _presets.length > 1
                                         && !deleteRemorse.active
-    property Item _dragged: null      // the delegate whose tile is lifted
     property var _draggedPreset: null
-    property int _dragStart: -1       // its index when the drag began
     property string _dragPrid
-    property int _pendingIndex: -1    // where the dwell will move it
-    // The last move sent, to put back if the player does not take it.
-    property int _sentFrom: -1
-    property int _sentTo: -1
 
     allowedOrientations: Orientation.All
 
@@ -56,114 +49,13 @@ Page {
         })
     }
 
-    function _startDrag(delegate) {
-        // The delegate may be gone (a new list) by the time the hold ends.
-        if (!delegate || !_reordering || !_player.presetsCurrent || _player.presetMoving) {
-            return
-        }
-        // Kept while lifted, also when edge scrolling takes it out of view.
-        delegate.DelegateModel.inPersistedItems = true
-        _dragged = delegate
-        _draggedPreset = delegate.preset
-        _dragStart = delegate.DelegateModel.itemsIndex
-        _dragPrid = _player.presetsPrid
-        _sentFrom = -1
-        var at = delegate.mapToItem(page, 0, 0)
-        dragProxy.x = at.x
-        dragProxy.y = at.y
-    }
-
-    // Puts a lifted tile back where it started; nothing is sent.
-    function _cancelDrag() {
-        if (!_dragged) {
-            return
-        }
-        var now = _dragged.DelegateModel.itemsIndex
-        if (now !== _dragStart && _dragStart >= 0 && now >= 0) {
-            presetsModel.items.move(now, _dragStart)
-        }
-        _endDrag()
-    }
-
-    function _endDrag() {
-        dwell.stop()
-        edgeScroll.stop()
-        hold.stop()
-        if (_dragged) {
-            _dragged.DelegateModel.inPersistedItems = false
-        }
-        _dragged = null
-        _draggedPreset = null
-        _pendingIndex = -1
-    }
-
-    function _dropDrag() {
-        var now = _dragged.DelegateModel.itemsIndex
-        var start = _dragStart
-        var preset = _draggedPreset
-        var prid = _dragPrid
-        _endDrag()
-        if (now === start) {
-            return
-        }
-        _sentFrom = now
-        _sentTo = start
-        // Slots stay where they are: the preset takes the slot that was at
-        // its new place (spec 008, G).
-        _player.movePreset(preset.id, _presets[now].id, prid)
-    }
-
-    function _putBack() {
-        if (_sentFrom >= 0 && _sentFrom < presetsModel.items.count) {
-            presetsModel.items.move(_sentFrom, _sentTo)
-        }
-        _sentFrom = -1
-    }
-
-    // Where the lifted tile's centre is over the grid; -1 when over none.
-    function _indexUnderProxy() {
-        var p = grid.mapFromItem(page, dragProxy.x + dragProxy.width / 2, dragProxy.y + dragProxy.height / 2)
-        return grid.indexAt(p.x + grid.contentX, p.y + grid.contentY)
-    }
-
-    function _followFinger(item, x, y) {
-        var p = item.mapToItem(page, x, y)
-        dragProxy.x = p.x - dragProxy.width / 2
-        dragProxy.y = p.y - dragProxy.height / 2
-        _aim()
-        // Near the grid's top or bottom edge, the grid scrolls.
-        var g = grid.mapFromItem(page, 0, p.y).y
-        var edge = Theme.itemSizeMedium
-        edgeScroll.step = g < edge ? -Theme.paddingLarge
-                        : g > grid.height - edge ? Theme.paddingLarge : 0
-        if (edgeScroll.step !== 0) {
-            edgeScroll.start()
-        } else {
-            edgeScroll.stop()
-        }
-    }
-
-    // Held over another place for 150 ms, the tile moves there.
-    function _aim() {
-        var index = _indexUnderProxy()
-        if (index >= 0 && _dragged && index !== _dragged.DelegateModel.itemsIndex) {
-            if (index !== _pendingIndex) {
-                _pendingIndex = index
-                dwell.restart()
-            }
-        } else {
-            _pendingIndex = -1
-            dwell.stop()
-        }
-    }
-
     function _endReordering() {
-        _cancelDrag()
+        reorder.cancel()
         _reordering = false
     }
 
     onStatusChanged: if (status !== PageStatus.Active) _endReordering()
-    onOrientationChanged: _cancelDrag()
+    onOrientationChanged: reorder.cancel()
     on_CanReorderChanged: if (!_player || !_player.online) _endReordering()
 
     Connections {
@@ -171,53 +63,38 @@ Page {
         onPresetDeleteRefused: Notices.show(presetsChanged ? qsTr("The presets have changed. Nothing was deleted.")
                                                            : qsTr("Nothing was deleted."), Notice.Short)
         onPresetMoveRefused: {
-            page._putBack()
+            reorder.putBack()
             Notices.show(presetsChanged ? qsTr("The presets have changed. Nothing was moved.")
                                         : qsTr("Nothing was moved."), Notice.Short)
         }
         // The app shows the failure notice.
-        onCommandFailed: if (path === "/Presets/edit") page._putBack()
+        onCommandFailed: if (path === "/Presets/edit") reorder.putBack()
         // A new list resets the view, and a drag in it ends.
         onQmlPresetsChanged: {
-            page._endDrag()
-            page._sentFrom = -1
+            reorder.end()
+            reorder.forget()
         }
     }
 
     RemorsePopup { id: deleteRemorse }
 
-    Timer {
-        id: hold
-        property Item target
-        interval: 150
-        onTriggered: page._startDrag(target)
-    }
-    Timer {
-        id: dwell
-        interval: 150
-        onTriggered: {
-            if (page._dragged && page._pendingIndex >= 0) {
-                presetsModel.items.move(page._dragged.DelegateModel.itemsIndex, page._pendingIndex)
-                page._pendingIndex = -1
-            }
+    DragReorder {
+        id: reorder
+        view: grid
+        delegateModel: presetsModel
+        proxy: dragProxy
+        edge: Theme.itemSizeMedium
+        step: Theme.paddingLarge
+        canLift: function(delegate) {
+            return page._reordering && page._player.presetsCurrent && !page._player.presetMoving
         }
-    }
-    Timer {
-        id: edgeScroll
-        property real step
-        interval: 16
-        repeat: true
-        onTriggered: {
-            var top = grid.originY
-            var bottom = grid.originY + grid.contentHeight - grid.height
-            var y = Math.max(top, Math.min(bottom, grid.contentY + step))
-            if (y === grid.contentY) {
-                stop()
-            } else {
-                grid.contentY = y
-                page._aim()
-            }
+        onLifted: {
+            page._draggedPreset = delegate.preset
+            page._dragPrid = page._player.presetsPrid
         }
+        // Slots stay where they are: the preset takes the slot that was at
+        // its new place (spec 008, G).
+        onMoveRequested: page._player.movePreset(page._draggedPreset.id, page._presets[to].id, page._dragPrid)
     }
 
     DelegateModel {
@@ -229,7 +106,7 @@ Page {
             inputs: page._inputs
             enabled: page._player.online
             // The lifted copy is drawn instead.
-            opacity: page._dragged === tile ? 0 : 1
+            opacity: reorder.dragged === tile ? 0 : 1
             onClicked: page._player.playPreset(modelData.id)
             menu: page._reordering ? null : deleteMenu
 
@@ -246,42 +123,36 @@ Page {
                 }
             }
 
-            // In the edit mode: a tap ends it; a press held 150 ms lifts the
-            // tile, and from then on the grid, the pull-down menu and the
-            // back gesture keep out (preventStealing). A press that moves
-            // earlier is the grid's flick.
+            // In the edit mode: a tap ends it, and a press held 150 ms lifts
+            // the tile, which Qt then moves (drag). The grid, the pull-down
+            // menu and the back gesture keep out for the whole mode
+            // (preventStealing); the grid scrolls at its edges only.
             MouseArea {
                 id: dragArea
                 // This press lifted the tile: its release is a drop, not a tap.
                 property bool lifted
                 anchors.fill: parent
                 enabled: page._reordering
-                preventStealing: page._dragged === tile
+                preventStealing: page._reordering
+                drag.target: reorder.dragged === tile ? dragProxy : null
+                drag.axis: Drag.XAndYAxis
+                drag.minimumX: 0
+                drag.maximumX: page.width - dragProxy.width
+                drag.minimumY: 0
+                drag.maximumY: page.height - dragProxy.height
                 onPressed: {
                     lifted = false
-                    hold.target = tile
-                    hold.restart()
+                    reorder.press(tile)
                 }
                 onPositionChanged: {
-                    if (page._dragged === tile) {
+                    if (reorder.dragged === tile) {
                         lifted = true
-                        page._followFinger(dragArea, mouse.x, mouse.y)
+                        reorder.follow(dragArea, mouse.x, mouse.y)
                     }
                 }
-                onReleased: {
-                    hold.stop()
-                    if (page._dragged === tile) {
-                        lifted = true
-                        page._dropDrag()
-                    }
-                }
+                onReleased: if (reorder.release()) lifted = true
                 onClicked: if (!lifted) page._endReordering()
-                onCanceled: {
-                    hold.stop()
-                    if (page._dragged === tile) {
-                        page._cancelDrag()
-                    }
-                }
+                onCanceled: reorder.cancel()
             }
         }
     }
@@ -343,7 +214,7 @@ Page {
     // The lifted tile, scaled as the home screen's (1.1).
     PresetTile {
         id: dragProxy
-        visible: page._dragged !== null
+        visible: reorder.dragged !== null
         enabled: false
         width: grid.cellWidth
         contentHeight: grid.cellHeight

@@ -69,6 +69,9 @@ public:
     int generation() const { return m_generation; }
     // The player removed this entry: drop the row, keep the rest.
     void removeEntry(int position);
+    // The player moved the entry at from to to (/Move, section 5.3): move the
+    // row, keep the rest.
+    void moveEntry(int from, int to);
     // While Swell's own delete settles, a pid change is not a new queue.
     void setHoldPid(bool hold);
     // Swell's own delete gave the queue this id; the rows already match.

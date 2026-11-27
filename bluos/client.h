@@ -45,12 +45,19 @@ class Client : public QObject
     Q_PROPERTY(bool canSkip READ canSkip NOTIFY statusChanged)
     Q_PROPERTY(bool canBack READ canBack NOTIFY statusChanged)
     Q_PROPERTY(int duration READ duration NOTIFY statusChanged)
+    // While an input or stream plays the queue is not the source, and shuffle
+    // and repeat should not be offered (section 2.1, streamUrl).
+    Q_PROPERTY(bool streaming READ streaming NOTIFY statusChanged)
+    Q_PROPERTY(bool shuffle READ shuffle NOTIFY statusChanged)
+    Q_PROPERTY(Repeat repeat READ repeat NOTIFY statusChanged)
     Q_PROPERTY(int position READ position NOTIFY positionChanged)
     // The version (prid) of the presets list as read, and whether /Status
     // still reports that version; prid changes with every edit (spec 008).
     Q_PROPERTY(QString presetsPrid READ presetsPrid NOTIFY presetsVersionChanged)
     Q_PROPERTY(bool presetsCurrent READ presetsCurrent NOTIFY presetsVersionChanged)
     Q_PROPERTY(bool presetMoving READ presetMoving NOTIFY presetMovingChanged)
+    // A queue remove or move is in flight or waiting; no move starts then.
+    Q_PROPERTY(bool queueEditing READ queueEditing NOTIFY queueEditingChanged)
     Q_PROPERTY(BluOS::QueueModel *queue READ queue CONSTANT)
     Q_PROPERTY(GroupRole groupRole READ groupRole NOTIFY syncStatusChanged)
     Q_PROPERTY(QString groupName READ groupName NOTIFY syncStatusChanged)
@@ -84,6 +91,14 @@ public:
         Secondary     // follows a primary; keeps its own volume
     };
     Q_ENUM(GroupRole)
+
+    // The API's values (section 4.7).
+    enum Repeat {
+        RepeatQueue = 0,
+        RepeatTrack = 1,
+        RepeatOff = 2
+    };
+    Q_ENUM(Repeat)
 
     // An update this client started (startUpgrade), as the player shows it.
     enum UpgradePhase {
@@ -204,6 +219,9 @@ public:
     bool canSkip() const { return m_status.ok && (!m_status.hasStreamUrl || !m_status.skipActionUrl.isEmpty()); }
     bool canBack() const { return m_status.ok && (!m_status.hasStreamUrl || !m_status.backActionUrl.isEmpty()); }
     int duration() const { return m_status.totlen; }
+    bool streaming() const { return m_status.ok && m_status.hasStreamUrl; }
+    bool shuffle() const { return m_status.ok && m_status.shuffle; }
+    Repeat repeat() const { return m_status.ok ? Repeat(m_status.repeat) : RepeatOff; }
     int position() const;
     // As the player lists them; images as given, see resolveImage. Cached per
     // player.
@@ -211,6 +229,7 @@ public:
     QString presetsPrid() const { return m_presetsPrid; }
     bool presetsCurrent() const { return m_presetsCurrent; }
     bool presetMoving() const { return m_presetMoving; }
+    bool queueEditing() const { return m_editing || !m_removals.isEmpty(); }
 
     struct PresetMove {
         int from;
@@ -258,6 +277,10 @@ public slots:
     void back();
     void setVolume(int level);
     void setMuted(bool muted);
+    // /Shuffle?state= and /Repeat?state= (sections 4.6, 4.7). The state shown
+    // follows /Status; the new queue id reaches the queue as a pid change.
+    void setShuffle(bool shuffle);
+    void setRepeat(BluOS::Client::Repeat repeat);
     void playPreset(int id);
     // Deletes preset id with /SetPreset?id=N, the official app's request
     // (not in the API; spec 008). Only while online and while the presets
@@ -290,6 +313,12 @@ public slots:
     // queue is still pid and the entry there is still identity. Removals run
     // one at a time; later ones move up as earlier ones succeed (section 5.2).
     void removeQueueEntry(int position, const QString &pid, const QString &identity);
+    // Moves the entry at from to to with /Move (section 5.3), but only if the
+    // player confirms that the queue is still pid and the entry at from is
+    // still identity, as for a remove. One edit at a time: refused while a
+    // remove or move is in flight or waiting. A refusal sends nothing and
+    // emits moveRefused(); a failed /Move is commandFailed.
+    void moveQueueEntry(int from, int to, const QString &pid, const QString &identity);
     void clearQueue();
     // Plays a playURL or autoplayURL from /Browse; the last tap wins.
     void playPath(const QString &playerPath);
@@ -329,6 +358,10 @@ signals:
     void commandFailed(const QString &path, const QString &error);
     // A removal was not sent because the queue no longer matched.
     void removeRefused();
+    // A move was not sent: the queue changed (queueChanged), or the player is
+    // offline, or another edit is running.
+    void moveRefused(bool queueChanged);
+    void queueEditingChanged();
     // deletePreset() sent nothing: the presets changed (presetsChanged), or
     // the player is not online.
     void presetDeleteRefused(bool presetsChanged);
@@ -374,7 +407,8 @@ private:
     void setPresetMoving(bool moving);
     void processRemovals();
     void adoptQueueId(int position);
-    void finishRemoval();
+    void finishEdit();
+    void setEditing(bool editing);
     void fetchPresets();
     void updatePresetsVersion();
 
@@ -447,7 +481,7 @@ private:
         QString identity;
     };
     QList<Removal> m_removals;
-    bool m_removing = false;
+    bool m_editing = false;   // a remove or a move is in flight
     bool m_presetsFetched = false;
     bool m_inputsFetched = false;
     UpgradeCheck m_upgrade;
