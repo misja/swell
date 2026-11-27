@@ -134,8 +134,8 @@
     </message>
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="159"/>
-        <source>Browse</source>
-        <translation>Bladeren</translation>
+        <source>Music</source>
+        <translation>Muziek</translation>
     </message>
     <message numerus="yes">
         <location filename="../qml/pages/BrowsePage.qml" line="215"/>
@@ -222,11 +222,6 @@
         <translation>Spelers</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HomePage.qml" line="113"/>
-        <source>Browse</source>
-        <translation>Bladeren</translation>
-    </message>
-    <message>
         <location filename="../qml/pages/HomePage.qml" line="127"/>
         <source>No player chosen. Pull down to pick one.</source>
         <translation>Geen speler gekozen. Trek omlaag om er een te kiezen.</translation>
@@ -290,6 +285,16 @@
         <translation>Presets</translation>
     </message>
     <message>
+        <location filename="../qml/pages/HomePage.qml" line="113"/>
+        <source>Music</source>
+        <translation>Muziek</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HomePage.qml" line="180"/>
+        <source>No presets on this player. Add them from Music or from the inputs below.</source>
+        <translation>Geen presets op deze speler. Voeg ze toe vanuit Muziek of vanuit de ingangen hieronder.</translation>
+    </message>
+    <message>
         <location filename="../qml/pages/HomePage.qml" line="244"/>
         <source>Add preset</source>
         <translation>Preset toevoegen</translation>
@@ -298,11 +303,6 @@
         <location filename="../qml/pages/HomePage.qml" line="67"/>
         <source>Update available</source>
         <translation>Update beschikbaar</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/HomePage.qml" line="180"/>
-        <source>No presets on this player. Add them from Browse or from the inputs below.</source>
-        <translation>Geen presets op deze speler. Voeg ze toe vanuit Bladeren of vanuit de ingangen hieronder.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HomePage.qml" line="221"/>
@@ -563,6 +563,11 @@
         <translation>Presets</translation>
     </message>
     <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="337"/>
+        <source>Long press a station in Music, or an input on Home, and choose Add preset</source>
+        <translation>Houd een zender in Muziek of een ingang op Home ingedrukt en kies Preset toevoegen</translation>
+    </message>
+    <message>
         <location filename="../qml/pages/PresetsPage.qml" line="240"/>
         <source>Delete</source>
         <translation>Verwijderen</translation>
@@ -576,11 +581,6 @@
         <location filename="../qml/pages/PresetsPage.qml" line="336"/>
         <source>No presets</source>
         <translation>Geen presets</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="337"/>
-        <source>Long press a station in Browse, or an input on Home, and choose Add preset</source>
-        <translation>Houd een zender in Bladeren of een ingang op Home ingedrukt en kies Preset toevoegen</translation>
     </message>
 </context>
 <context>
@@ -635,8 +635,8 @@
     </message>
     <message>
         <location filename="../qml/pages/QueuePage.qml" line="194"/>
-        <source>Play a preset or an input, or add music from Browse</source>
-        <translation>Speel een preset of ingang af, of voeg muziek toe vanuit Bladeren</translation>
+        <source>Play a preset or an input, or add tracks from Music</source>
+        <translation>Speel een preset of ingang af, of voeg nummers toe vanuit Muziek</translation>
     </message>
 </context>
 <context>
