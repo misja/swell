@@ -132,3 +132,36 @@ Summary:
   maintainer: in portrait the Switches in their own row; hidden on an
   input; a rotation while the queue plays moves them and keeps their
   state. At a586b2f, aarch64: 11 suites, 0 failed.
+- Result review of PR 2 (b32a66b, b3ade5f), separate agent, 2026-11-27:
+  approve with changes, nothing blocking. Applied: "Reorder" above "Clear
+  queue"; out-of-range moves emit `moveRefused(false)`; `queueEditingChanged`
+  only on a change; `finishRemoval` renamed `finishEdit`; the proxy row
+  disabled; `onModelReset` ends a drag as `onReloaded` does; `moveDisplaced`
+  instead of `displaced` on the Queue page; the remorse comment and an end
+  state for undoing the last of two remorses; tests: the window test moves
+  across the window and checks the second read before any row asks, the
+  status agreeing on `song`, refused while offline, a second move while one
+  runs, a remove queued during a move; the reload test replaced by an
+  `end()` test (the page wiring is for the device check); AC 4 and AC 6
+  wording. Kept, as a known risk shared with removes: `moveEntry` asks again
+  for a window before `adoptQueueId` takes the new id; if that reply comes
+  first it is dropped as another queue's, and rows already shown stay "…"
+  until they are shown again. The adopt read-back is sent first, so the
+  order normally holds.
+- Device check of 0.7.0-5 (075b721), 2026-11-27, the maintainer: dragging in
+  the queue works; the lifted row (scaled 1.1, free to move sideways) left
+  the screen (screenshot 22:40). 0.7.0-6 (b6562ca) kept it vertical by hand;
+  replaced in 0.7.0-7 (0f7047f) by Qt's drag (`drag.target`,
+  `Drag.YAxis`), with `preventStealing` for the whole mode (the maintainer
+  chose edge scrolling only). Device check of 0.7.0-7, the maintainer: in the
+  queue the row moves only up and down.
+- Device check of 0.7.0-7, the maintainer: dragging presets works with Qt's
+  drag (both axes). At 0f7047f, aarch64: 11 suites, 0 failed (queue 47,
+  qmlruntime 24).
+- Review of 0f7047f (Qt drag), separate agent, 2026-11-27: approve with
+  changes. The drag.target use is correct for Qt 5.6.3 (target set at the
+  lift, no jump, copy and finger together during edge scrolling, the Page
+  as coordinate space). Applied: the end states in specs 008 and 009 now
+  say what Qt does: a quick swipe on a row or tile is a tap that ends the
+  mode (or lifts after 150 ms), a swipe beside them still scrolls; the
+  `press()` comment. Not changed: suppressing that tap would be own code.

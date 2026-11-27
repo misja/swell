@@ -56,6 +56,8 @@ class Client : public QObject
     Q_PROPERTY(QString presetsPrid READ presetsPrid NOTIFY presetsVersionChanged)
     Q_PROPERTY(bool presetsCurrent READ presetsCurrent NOTIFY presetsVersionChanged)
     Q_PROPERTY(bool presetMoving READ presetMoving NOTIFY presetMovingChanged)
+    // A queue remove or move is in flight or waiting; no move starts then.
+    Q_PROPERTY(bool queueEditing READ queueEditing NOTIFY queueEditingChanged)
     Q_PROPERTY(BluOS::QueueModel *queue READ queue CONSTANT)
     Q_PROPERTY(GroupRole groupRole READ groupRole NOTIFY syncStatusChanged)
     Q_PROPERTY(QString groupName READ groupName NOTIFY syncStatusChanged)
@@ -227,6 +229,7 @@ public:
     QString presetsPrid() const { return m_presetsPrid; }
     bool presetsCurrent() const { return m_presetsCurrent; }
     bool presetMoving() const { return m_presetMoving; }
+    bool queueEditing() const { return m_editing || !m_removals.isEmpty(); }
 
     struct PresetMove {
         int from;
@@ -310,6 +313,12 @@ public slots:
     // queue is still pid and the entry there is still identity. Removals run
     // one at a time; later ones move up as earlier ones succeed (section 5.2).
     void removeQueueEntry(int position, const QString &pid, const QString &identity);
+    // Moves the entry at from to to with /Move (section 5.3), but only if the
+    // player confirms that the queue is still pid and the entry at from is
+    // still identity, as for a remove. One edit at a time: refused while a
+    // remove or move is in flight or waiting. A refusal sends nothing and
+    // emits moveRefused(); a failed /Move is commandFailed.
+    void moveQueueEntry(int from, int to, const QString &pid, const QString &identity);
     void clearQueue();
     // Plays a playURL or autoplayURL from /Browse; the last tap wins.
     void playPath(const QString &playerPath);
@@ -349,6 +358,10 @@ signals:
     void commandFailed(const QString &path, const QString &error);
     // A removal was not sent because the queue no longer matched.
     void removeRefused();
+    // A move was not sent: the queue changed (queueChanged), or the player is
+    // offline, or another edit is running.
+    void moveRefused(bool queueChanged);
+    void queueEditingChanged();
     // deletePreset() sent nothing: the presets changed (presetsChanged), or
     // the player is not online.
     void presetDeleteRefused(bool presetsChanged);
@@ -394,7 +407,8 @@ private:
     void setPresetMoving(bool moving);
     void processRemovals();
     void adoptQueueId(int position);
-    void finishRemoval();
+    void finishEdit();
+    void setEditing(bool editing);
     void fetchPresets();
     void updatePresetsVersion();
 
@@ -467,7 +481,7 @@ private:
         QString identity;
     };
     QList<Removal> m_removals;
-    bool m_removing = false;
+    bool m_editing = false;   // a remove or a move is in flight
     bool m_presetsFetched = false;
     bool m_inputsFetched = false;
     UpgradeCheck m_upgrade;

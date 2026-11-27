@@ -115,6 +115,39 @@ void QueueModel::removeEntry(int position)
     emit lengthChanged();
 }
 
+void QueueModel::moveEntry(int from, int to)
+{
+    if (from < 0 || to < 0 || from >= m_rows.size() || to >= m_rows.size() || from == to) {
+        return;
+    }
+    beginMoveRows(QModelIndex(), from, from, QModelIndex(), to > from ? to + 1 : to);
+    m_rows.move(from, to);
+    endMoveRows();
+    // As for a delete: a window read sent before has old positions.
+    const int again = m_inFlight >= 0 ? m_inFlight : m_wanted;
+    ++m_generation;
+    m_inFlight = -1;
+    m_wanted = -1;
+    m_failed.clear();
+    emit loadingChanged();
+    if (again >= 0 && again * WindowSize < m_rows.size()) {
+        want(again);
+    }
+    // The playing entry keeps playing; song follows it (measured, spec 009).
+    int current = m_current;
+    if (m_current == from) {
+        current = to;
+    } else if (from < m_current && to >= m_current) {
+        current = m_current - 1;
+    } else if (from > m_current && to <= m_current) {
+        current = m_current + 1;
+    }
+    if (current != m_current) {
+        m_current = current;
+        emit currentChanged();
+    }
+}
+
 void QueueModel::onStatus(const QString &pid, int song, bool streaming)
 {
     if (!m_holdPid && isChange(pid)) {

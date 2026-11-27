@@ -3,6 +3,7 @@
 // and the app's Mpris component, each read as one string so the test
 // compares plain text.
 import QtQuick 2.0
+import QtQml.Models 2.1
 import Swell 1.0
 import "../../qml"
 import "../../qml/pages"
@@ -271,5 +272,104 @@ Item {
         rootModel.load()
         indexModel.load()
         artistModel.load()
+    }
+
+    // DragReorder over a DelegateModel (specs 008 G, 009 C), on a plain
+    // ListView: the view's order during a drag, and how it is put back.
+    ListModel {
+        id: reorderList
+    }
+    DelegateModel {
+        id: reorderModel
+        model: reorderList
+        delegate: Item {
+            width: 100
+            height: 10
+            property string name: model.name
+        }
+    }
+    ListView {
+        id: reorderView
+        width: 100
+        height: 100
+        model: reorderModel
+    }
+    Item {
+        id: reorderProxy
+        width: 100
+        height: 10
+    }
+    property string reorderSent
+    DragReorder {
+        id: reorder
+        view: reorderView
+        delegateModel: reorderModel
+        proxy: reorderProxy
+        onMoveRequested: probe.reorderSent = from + ">" + to
+    }
+    function reorderReset() {
+        reorderList.clear()
+        var names = ["a", "b", "c", "d", "e", "f", "g"]
+        for (var i = 0; i < names.length; ++i) {
+            reorderList.append({ name: names[i] })
+        }
+        reorder.end()
+        reorder.forget()
+        reorderSent = ""
+        return ""
+    }
+    function reorderOrder() {
+        var names = []
+        for (var i = 0; i < reorderModel.items.count; ++i) {
+            names.push(reorderModel.items.get(i).model.name)
+        }
+        return names.join("")
+    }
+    // A view move, then the same move in the model (as after /Move): the
+    // model's move must not move the row a second time, and the delegate stays.
+    function compositor() {
+        reorderReset()
+        var lifted = reorderModel.items.create(1)
+        reorderModel.items.move(1, 5)
+        var before = reorderOrder()
+        reorderList.move(1, 5, 1)
+        var after = reorderOrder()
+        var same = reorderModel.items.create(5) === lifted
+        reorderReset()
+        return [before, after, same].join(" ")
+    }
+    // Lift row from, let the dwell move it to, release: the move requested
+    // and the order; then the page puts it back (the player refused).
+    function reorderDropForward() { return reorderDrop(1, 4) }
+    function reorderDropBackward() { return reorderDrop(5, 2) }
+    function reorderDrop(from, to) {
+        reorderReset()
+        reorder._lift(reorderModel.items.create(from))
+        reorderModel.items.move(from, to)
+        var lifted = reorder.dragged !== null
+        reorder.release()
+        var dropped = reorderOrder()
+        reorder.putBack()
+        return [lifted, reorderSent, dropped, reorderOrder(), reorder.dragged === null].join(" ")
+    }
+    // Lift, move, then cancel (rotation, leaving): back, nothing requested.
+    function reorderCancel() {
+        reorderReset()
+        reorder._lift(reorderModel.items.create(2))
+        reorderModel.items.move(2, 6)
+        var moved = reorderOrder()
+        reorder.cancel()
+        return [moved, reorderOrder(), reorderSent === "", reorder.dragged === null].join(" ")
+    }
+    // end(), which the pages call on a new list: the drag ends where it is,
+    // and a later release sends nothing.
+    function reorderEnd() {
+        reorderReset()
+        reorder._lift(reorderModel.items.create(1))
+        reorderModel.items.move(1, 3)
+        reorder.end()
+        var ended = reorder.dragged === null
+        var released = reorder.release()
+        return [ended, released, reorderSent === ""].join(" ")
     }
 }

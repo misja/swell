@@ -135,10 +135,18 @@ C. **Reorder mode on the Queue page.**
    - Only loaded rows can be lifted.
    - **Drag**, as on the Presets page, with a `DelegateModel` and
      `items.move()` for the order on screen: a press held 150 ms lifts the
-     row; a copy follows the finger, the delegate is hidden and kept
+     row; a copy is moved by Qt (`MouseArea` `drag.target` set once
+     lifted, `drag.axis: Drag.YAxis`, bounded to the page; Qt 5.6
+     activates it only if the press kept the grab, so `preventStealing`
+     holds for the whole mode on the rows: a press on a row never
+     scrolls the list, which scrolls at its edges during a drag; the
+     maintainer, 2026-11-27), the delegate is hidden and kept
      (`DelegateModel.inPersistedItems`) also when edge scrolling takes it
      past the cache buffer (SilicaListView.qml:66); held 150 ms over
      another place, the rows make room (`move`/`displaced` transitions);
+     the lifted copy moves only up and down and is not scaled (the
+     maintainer, 2026-11-27, after trying 0.7.0-5: a full-width row
+     scaled 1.1 left the screen and could be moved sideways);
      near the top or bottom edge the list scrolls; releasing sends one
      move; releasing where it started sends nothing. A window reply
      during a drag changes data by source row (`dataChanged`) and does not
@@ -201,7 +209,8 @@ E. **MPRIS** keeps `hasShuffle` and `hasLoopStatus` false (spec 003): they
 | Reorder: fewer than two entries left | nothing | the mode ends |
 | Reorder: page left or offline, during a drag | nothing | the mode ends; the row back |
 | Reorder: a window reply during a drag | — | rows fill in; the drag continues |
-| Reorder: a quick swipe in the mode | nothing | the list flicks |
+| Reorder: a quick swipe on a row in the mode | nothing | released on it within 150 ms: a tap, the mode ends; longer: it lifts (Qt: the press keeps the grab, qquickmousearea.cpp:1172) |
+| Reorder: a swipe beside the rows (header, below the last) | nothing | the list scrolls; the pull-down menu and leaving the page work |
 | Reorder: dragged to the edge | — | the list scrolls, also past the cache buffer; placeholder rows load |
 | Reorder: held on a placeholder row | — | nothing lifts |
 | Reorder: a drag while a move or remove is in flight | — | no drag starts |
@@ -209,6 +218,7 @@ E. **MPRIS** keeps `hasShuffle` and `hasLoopStatus` false (spec 003): they
 | Reorder: an input plays, queue not empty | as any move | the new order (measured) |
 | Reorder while shuffled, then shuffle off | the move; later `/Shuffle?state=0` | the order from before the shuffle; the move is gone (player behaviour) |
 | "Reorder" with fewer than two entries, offline, a remove remorse pending or an edit in flight | — | disabled |
+| The last of two remove remorses undone while the first runs | — | "Reorder" enabled; a drag starts only after that remove is sent and settled (`queueEditing`) |
 | Rotation during a drag | nothing | the row back |
 
 ## Out of scope
@@ -233,20 +243,24 @@ E. **MPRIS** keeps `hasShuffle` and `hasLoopStatus` false (spec 003): they
 4. The double follows the measurement: id +1 on every move (also
    `new == old`) and on shuffle on/off; unchanged for repeat, for an
    out-of-range move and for shuffle on when already on; the playing
-   entry at 0 stays there on shuffle; shuffle off restores the order.
-   Marked invented in the double: a playing entry other than 0 on
-   shuffle, `song` after a move, shuffle off after a move made while
-   shuffled, moves while an input plays.
+   entry and those before it stay on shuffle; shuffle off restores the
+   order from before the shuffle; `song` follows the playing entry on a
+   move. The shuffled order itself is the double's own. Invented: the
+   failures.
 5. QML tests: the pages compile; the buttons hide on `streamUrl`.
 6. A qmlruntime test with a `DelegateModel` over a list model: after
    `items.move(1, 5)` and then the source model's move 1 → 5, the order on
-   screen is unchanged and the delegate is the same object; a reload
-   during a drag cancels it; a refusal puts the row back.
+   screen is unchanged and the delegate is the same object. DragReorder
+   on a plain ListView: a drop requests the move and `putBack()` restores
+   the order (forward and backward); `cancel()` restores it and requests
+   nothing; `end()` leaves no drag and a later release sends nothing. The
+   pages call `end()` on a reload or reset (`onReloaded`, `onModelReset`);
+   that wiring and the hold and dwell timers are checked on the device.
 7. `make check` and the Harbour validator pass (aarch64, armv7hl); Dutch
    complete.
 8. Device check by the maintainer on the NAD (playback will start):
    shuffle on and off, the repeat cycle, the buttons hidden on an input;
-   the reorder mode, a drag with hold and dwell, a flick, edge scrolling
+   the reorder mode, a drag with hold and dwell, edge scrolling
    over unloaded rows, a tap ending the mode, a drag cancelled by
    rotation, the Presets page's reordering unchanged; in landscape the
    Switches at both ends of the transport row and the volume slider in
