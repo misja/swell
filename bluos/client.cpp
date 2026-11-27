@@ -756,15 +756,16 @@ void Client::removeQueueEntry(int position, const QString &pid, const QString &i
         return;
     }
     m_removals.append({ position, pid, identity });
+    emit queueEditingChanged();
     processRemovals();
 }
 
 void Client::processRemovals()
 {
-    if (m_removing || m_removals.isEmpty()) {
+    if (m_editing || m_removals.isEmpty()) {
         return;
     }
-    m_removing = true;
+    setEditing(true);
     const Removal removal = m_removals.first();
     const int generation = m_queue->generation();
     // Positions shift on every delete, and another controller may have changed
@@ -777,7 +778,7 @@ void Client::processRemovals()
                 && now.songs.first().identity() == removal.identity;
         if (!same) {
             m_removals.removeFirst();
-            m_removing = false;
+            setEditing(false);
             emit removeRefused();
             processRemovals();
             return;
@@ -837,8 +838,70 @@ void Client::adoptQueueId(int position)
 void Client::finishRemoval()
 {
     m_queue->setHoldPid(false);
-    m_removing = false;
+    setEditing(false);
     processRemovals();
+}
+
+void Client::setEditing(bool editing)
+{
+    const bool was = queueEditing();
+    m_editing = editing;
+    if (queueEditing() != was)
+        emit queueEditingChanged();
+}
+
+void Client::moveQueueEntry(int from, int to, const QString &pid, const QString &identity)
+{
+    const int length = m_queue->length();
+    if (from == to || from < 0 || to < 0 || from >= length || to >= length) {
+        return;
+    }
+    if (!online() || queueEditing()) {
+        emit moveRefused(false);
+        return;
+    }
+    if (pid.isEmpty() || identity.isEmpty() || pid != m_queue->pid()) {
+        emit moveRefused(true);
+        return;
+    }
+    setEditing(true);
+    const int generation = m_queue->generation();
+    // As for a remove: the player must still have this entry at from, in the
+    // queue the user saw.
+    fetchQueueWindow(from, from, this, [this, from, to, pid, identity, generation](const Playlist &now) {
+        const bool same = now.ok && now.id == pid && m_queue->pid() == pid
+                && m_queue->generation() == generation && now.length == m_queue->length()
+                && now.songs.size() == 1 && now.songs.first().position == from
+                && now.songs.first().identity() == identity;
+        if (!same) {
+            setEditing(false);
+            emit moveRefused(true);
+            processRemovals();
+            return;
+        }
+        QUrlQuery query;
+        query.addQueryItem(QStringLiteral("new"), QString::number(to));
+        query.addQueryItem(QStringLiteral("old"), QString::number(from));
+        m_queue->setHoldPid(true);
+        // Not through the merging gate: moves are not idempotent.
+        fetch(QStringLiteral("/Move"), encoded(query), [this, from, to, generation](const QByteArray &body) {
+            const QString error = body.isEmpty() ? QStringLiteral("no answer") : parseError(body);
+            if (!error.isEmpty()) {
+                emit commandFailed(QStringLiteral("/Move"), error);
+                finishRemoval();
+                return;
+            }
+            if (m_queue->generation() != generation) {
+                m_queue->reload();
+                finishRemoval();
+                return;
+            }
+            // <moved> is also the answer when nothing moved (out of range,
+            // measured): the read-back in adoptQueueId is the proof.
+            m_queue->moveEntry(from, to);
+            adoptQueueId(to);
+        });
+    });
 }
 
 void Client::clearQueue()

@@ -31,6 +31,9 @@ private slots:
     void queue();
     void groupValues();
     void shuffleAndRepeat();
+    void reorderViewAndModelMove();
+    void reorderDropAndPutBack();
+    void reorderCancelAndReload();
     void rowActions();
     void parentActionsArePassedOn();
     void favouritesAndUnreadRows();
@@ -313,6 +316,26 @@ void TstQmlRuntime::shuffleAndRepeat()
     QTRY_COMPARE(m_player->requests(QStringLiteral("/Repeat")).size(), 2);
     QCOMPARE(m_player->requests(QStringLiteral("/Repeat")).at(0).target, QByteArray("/Repeat?state=0"));
     QCOMPARE(m_player->requests(QStringLiteral("/Repeat")).at(1).target, QByteArray("/Repeat?state=1"));
+}
+
+void TstQmlRuntime::reorderViewAndModelMove()
+{
+    // Qt 5.6 DelegateModel: after items.move(1, 5) the model's own move 1 -> 5
+    // leaves the view as it is and keeps the delegate (spec 009, D).
+    QCOMPARE(call("compositor"), QStringLiteral("acdefbg acdefbg true"));
+}
+
+void TstQmlRuntime::reorderDropAndPutBack()
+{
+    // lifted, the move requested, the view after the drop, after putBack, ended
+    QCOMPARE(call("reorderDropForward"), QStringLiteral("true 1>4 acdebfg abcdefg true"));
+    QCOMPARE(call("reorderDropBackward"), QStringLiteral("true 5>2 abfcdeg abcdefg true"));
+}
+
+void TstQmlRuntime::reorderCancelAndReload()
+{
+    QCOMPARE(call("reorderCancel"), QStringLiteral("abdefgc abcdefg true true"));
+    QCOMPARE(call("reorderReload"), QStringLiteral("true true"));
 }
 
 void TstQmlRuntime::rowActions()

@@ -51,6 +51,15 @@ private slots:
     void repeatKeepsTheQueue();
     void twoTapsBeforeTheStatusSendTheSameValue();
     void failedShuffleIsReported();
+    void moveSendsOneMoveAndAdoptsTheId();
+    void moveOfTheCurrentEntryKeepsTheMarker();
+    void moveWithAStaleIdIsRefused();
+    void moveAfterAnotherControllerIsRefused();
+    void moveWhileARemoveRunsIsRefused();
+    void moveToTheSamePlaceSendsNothing();
+    void failedMoveLeavesTheRows();
+    void moveAdoptMismatchReloads();
+    void moveEntryDiscardsAWindowInFlight();
 
 private:
     void startClient();
@@ -71,6 +80,8 @@ private:
     int m_repeat = 0;
     QStringList m_unshuffled;   // the order to restore when shuffle goes off
     bool m_failShuffle = false;
+    bool m_failMove = false;
+    bool m_moveAlsoDeletes = false;   // another controller removes entry 0 meanwhile
 };
 
 void TstQueue::init()
@@ -117,6 +128,35 @@ void TstQueue::init()
     m_repeat = 0;
     m_unshuffled.clear();
     m_failShuffle = false;
+    m_failMove = false;
+    m_moveAlsoDeletes = false;
+    // /Move as measured on the NAD C 379 (spec 009, evidence.md): new is the
+    // destination; the id rises by one, also for new == old; out of range
+    // nothing changes and the id stays; the reply is <moved>moved</moved>
+    // either way; song follows the playing entry. Invented: the failure.
+    m_player->handle(QStringLiteral("/Move"), [this](const QUrlQuery &q) -> QByteArray {
+        if (m_failMove)
+            return "<error>invented failure</error>";
+        const int to = q.queryItemValue(QStringLiteral("new")).toInt();
+        const int from = q.queryItemValue(QStringLiteral("old")).toInt();
+        if (from >= 0 && to >= 0 && from < m_queue.size() && to < m_queue.size()) {
+            m_queue.move(from, to);
+            int song = m_song;
+            if (m_song == from)
+                song = to;
+            else if (from < m_song && to >= m_song)
+                --song;
+            else if (from > m_song && to <= m_song)
+                ++song;
+            ++m_pid;
+            if (m_moveAlsoDeletes) {
+                m_queue.removeFirst();
+                ++m_pid;
+            }
+            setStatus(song);
+        }
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><moved>moved</moved>";
+    });
     // /Shuffle and /Repeat as measured on the NAD C 379 (spec 009, evidence.md):
     // shuffle on reorders only the entries after the current one and gives a
     // new id; on again changes nothing; off restores the order from before the
@@ -767,6 +807,172 @@ void TstQueue::failedShuffleIsReported()
     QTRY_COMPARE(failed.size(), 1);
     QCOMPARE(failed.first().at(0).toString(), QStringLiteral("/Shuffle"));
     QVERIFY(!m_client->shuffle());
+}
+
+void TstQueue::moveSendsOneMoveAndAdoptsTheId()
+{
+    startClient();
+    QueueModel *q = m_client->queue();
+    q->setActive(true);
+    QTRY_COMPARE(title(5), QStringLiteral("Track 5"));
+    const int windowReads = [this]() {
+        int n = 0;
+        for (const auto &r : m_player->requests(QStringLiteral("/Playlist")))
+            n += r.target.contains("start=0&end=49") ? 1 : 0;
+        return n;
+    }();
+    QSignalSpy editing(m_client, &Client::queueEditingChanged);
+    m_client->moveQueueEntry(2, 5, q->pid(), q->identityAt(2));
+    QVERIFY(m_client->queueEditing());
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Move")).size(), 1);
+    QCOMPARE(m_player->requests(QStringLiteral("/Move")).first().target, QByteArray("/Move?new=5&old=2"));
+    QTRY_COMPARE(q->pid(), QString::number(m_pid));
+    QTRY_VERIFY(!m_client->queueEditing());
+    QVERIFY(editing.size() >= 2);
+    QCOMPARE(title(5), QStringLiteral("Track 2"));
+    QCOMPARE(title(2), QStringLiteral("Track 3"));
+    // Adopted, not read again.
+    int after = 0;
+    for (const auto &r : m_player->requests(QStringLiteral("/Playlist")))
+        after += r.target.contains("start=0&end=49") ? 1 : 0;
+    QCOMPARE(after, windowReads);
+    QCOMPARE(m_player->requests(QStringLiteral("/Move")).size(), 1);
+}
+
+void TstQueue::moveOfTheCurrentEntryKeepsTheMarker()
+{
+    setStatus(3);
+    startClient();
+    QueueModel *q = m_client->queue();
+    q->setActive(true);
+    QTRY_COMPARE(q->currentIndex(), 3);
+    QTRY_COMPARE(title(6), QStringLiteral("Track 6"));
+    m_client->moveQueueEntry(3, 6, q->pid(), q->identityAt(3));
+    QTRY_COMPARE(title(6), QStringLiteral("Track 3"));
+    QCOMPARE(q->currentIndex(), 6);
+    // From before the playing entry to after it: the marker moves up.
+    QTRY_VERIFY(!m_client->queueEditing());
+    m_client->moveQueueEntry(0, 7, q->pid(), q->identityAt(0));
+    QTRY_COMPARE(title(7), QStringLiteral("Track 0"));
+    QCOMPARE(q->currentIndex(), 5);
+    QTRY_COMPARE(q->currentIndex(), 5);   // the status agrees
+}
+
+void TstQueue::moveWithAStaleIdIsRefused()
+{
+    startClient();
+    QueueModel *q = m_client->queue();
+    q->setActive(true);
+    QTRY_COMPARE(title(2), QStringLiteral("Track 2"));
+    QSignalSpy refused(m_client, &Client::moveRefused);
+    m_client->moveQueueEntry(2, 5, QStringLiteral("6"), q->identityAt(2));
+    QCOMPARE(refused.size(), 1);
+    QCOMPARE(refused.first().at(0).toBool(), true);
+    QTest::qWait(300);
+    QVERIFY(m_player->requests(QStringLiteral("/Move")).isEmpty());
+    QVERIFY(!m_client->queueEditing());
+}
+
+void TstQueue::moveAfterAnotherControllerIsRefused()
+{
+    startClient();
+    QueueModel *q = m_client->queue();
+    q->setActive(true);
+    QTRY_COMPARE(title(2), QStringLiteral("Track 2"));
+    const QString pid = q->pid();
+    const QString identity = q->identityAt(2);
+    // Another controller changes the queue; Swell has not seen it yet.
+    m_queue.removeAt(1);
+    QSignalSpy refused(m_client, &Client::moveRefused);
+    m_client->moveQueueEntry(2, 5, pid, identity);
+    QTRY_COMPARE(refused.size(), 1);
+    QCOMPARE(refused.first().at(0).toBool(), true);
+    QVERIFY(m_player->requests(QStringLiteral("/Move")).isEmpty());
+    QTRY_VERIFY(!m_client->queueEditing());
+}
+
+void TstQueue::moveWhileARemoveRunsIsRefused()
+{
+    m_player->delay(QStringLiteral("/Delete"), 500);
+    startClient();
+    QueueModel *q = m_client->queue();
+    q->setActive(true);
+    QTRY_COMPARE(title(4), QStringLiteral("Track 4"));
+    m_client->removeQueueEntry(1, q->pid(), q->identityAt(1));
+    QVERIFY(m_client->queueEditing());
+    QSignalSpy refused(m_client, &Client::moveRefused);
+    m_client->moveQueueEntry(3, 4, q->pid(), q->identityAt(3));
+    QCOMPARE(refused.size(), 1);
+    QCOMPARE(refused.first().at(0).toBool(), false);
+    QTRY_VERIFY(!m_client->queueEditing());
+    QVERIFY(m_player->requests(QStringLiteral("/Move")).isEmpty());
+}
+
+void TstQueue::moveToTheSamePlaceSendsNothing()
+{
+    startClient();
+    QueueModel *q = m_client->queue();
+    q->setActive(true);
+    QTRY_COMPARE(title(2), QStringLiteral("Track 2"));
+    QSignalSpy refused(m_client, &Client::moveRefused);
+    m_client->moveQueueEntry(2, 2, q->pid(), q->identityAt(2));
+    m_client->moveQueueEntry(2, 300, q->pid(), q->identityAt(2));
+    m_client->moveQueueEntry(-1, 2, q->pid(), q->identityAt(2));
+    QTest::qWait(300);
+    QCOMPARE(refused.size(), 0);
+    QVERIFY(m_player->requests(QStringLiteral("/Move")).isEmpty());
+    QVERIFY(!m_client->queueEditing());
+}
+
+void TstQueue::failedMoveLeavesTheRows()
+{
+    m_failMove = true;
+    startClient();
+    QueueModel *q = m_client->queue();
+    q->setActive(true);
+    QTRY_COMPARE(title(5), QStringLiteral("Track 5"));
+    QSignalSpy failed(m_client, &Client::commandFailed);
+    m_client->moveQueueEntry(2, 5, q->pid(), q->identityAt(2));
+    QTRY_COMPARE(failed.size(), 1);
+    QCOMPARE(failed.first().at(0).toString(), QStringLiteral("/Move"));
+    QTRY_VERIFY(!m_client->queueEditing());
+    QCOMPARE(title(2), QStringLiteral("Track 2"));
+    QCOMPARE(title(5), QStringLiteral("Track 5"));
+}
+
+void TstQueue::moveAdoptMismatchReloads()
+{
+    m_moveAlsoDeletes = true;
+    startClient();
+    QueueModel *q = m_client->queue();
+    q->setActive(true);
+    QTRY_COMPARE(title(5), QStringLiteral("Track 5"));
+    QSignalSpy reloaded(q, &QueueModel::reloaded);
+    m_client->moveQueueEntry(2, 5, q->pid(), q->identityAt(2));
+    QTRY_VERIFY(reloaded.size() >= 1);
+    QTRY_COMPARE(q->length(), 299);
+    QTRY_COMPARE(title(0), QStringLiteral("Track 1"));
+    QCOMPARE(q->pid(), QString::number(m_pid));
+}
+
+void TstQueue::moveEntryDiscardsAWindowInFlight()
+{
+    startClient();
+    QueueModel *q = m_client->queue();
+    q->setActive(true);
+    QTRY_COMPARE(title(0), QStringLiteral("Track 0"));
+    m_player->delay(QStringLiteral("/Playlist"), 300);
+    title(60);   // asks for the second window
+    QTRY_VERIFY(q->loading());
+    // A move settles meanwhile (here directly on the model, as after /Move).
+    m_queue.move(0, 1);
+    q->moveEntry(0, 1);
+    QCOMPARE(title(1), QStringLiteral("Track 0"));
+    QTRY_COMPARE(title(60), QStringLiteral("Track 60"));
+    int reads = 0;
+    for (const auto &r : m_player->requests(QStringLiteral("/Playlist")))
+        reads += r.target.contains("start=50&end=99") ? 1 : 0;
+    QCOMPARE(reads, 2);
 }
 
 void TstQueue::aReportedLengthIsBounded()

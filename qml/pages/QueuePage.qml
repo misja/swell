@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 import QtQuick 2.0
+import QtQml.Models 2.1   // DelegateModel
 import Sailfish.Silica 1.0
 
 Page {
@@ -9,6 +10,18 @@ Page {
     readonly property QtObject _player: players.current
     readonly property QtObject _queue: _player ? _player.queue : null
     property QtObject _previousQueue: null
+
+    // The edit mode (spec 009, C); the drag is DragReorder's.
+    property bool _reordering: false
+    // The last remove remorse started. All run the same time, so the last
+    // one ends last; a move checks the entry with the player first anyway.
+    property Item _remorse: null
+    readonly property bool _canReorder: _player !== null && _player.online && _queue !== null
+                                        && _queue.length > 1 && !_player.queueEditing
+                                        && !(_remorse && _remorse.pending)
+    // What the drag was started on, for the player's check before /Move.
+    property string _dragPid
+    property string _dragIdentity
 
     allowedOrientations: Orientation.All
 
@@ -27,6 +40,19 @@ Page {
         }
     }
 
+    function _endReordering() {
+        reorder.cancel()
+        _reordering = false
+    }
+
+    onStatusChanged: if (status !== PageStatus.Active) _endReordering()
+    onOrientationChanged: reorder.cancel()
+    on_CanReorderChanged: {
+        if (!_player || !_player.online || !_queue || _queue.length < 2) {
+            _endReordering()
+        }
+    }
+
     // The queue loads only while this page is on screen (spec 002).
     Binding {
         target: page._queue
@@ -39,20 +65,151 @@ Page {
 
     Connections {
         target: page._queue
-        onReloaded: page._positionAtCurrent()
+        onReloaded: {
+            // A new queue: a drag in it ends, the mode stays (as for presets).
+            reorder.end()
+            reorder.forget()
+            page._positionAtCurrent()
+        }
     }
 
     Connections {
         target: page._player
         onRemoveRefused: Notices.show(qsTr("The queue has changed. Nothing was removed."), Notice.Short)
+        onMoveRefused: {
+            reorder.putBack()
+            Notices.show(queueChanged ? qsTr("The queue has changed. Nothing was moved.")
+                                      : qsTr("Nothing was moved."), Notice.Short)
+        }
+        // The app shows the failure notice.
+        onCommandFailed: if (path === "/Move") reorder.putBack()
     }
 
     RemorsePopup { id: clearRemorse }
 
+    DragReorder {
+        id: reorder
+        view: list
+        delegateModel: queueModel
+        proxy: dragProxy
+        edge: Theme.itemSizeMedium
+        step: Theme.paddingLarge
+        // Only loaded rows: a placeholder has no identity to check.
+        canLift: function(delegate) {
+            return page._reordering && delegate.loaded && !page._player.queueEditing
+        }
+        onLifted: {
+            page._dragPid = page._queue.pid
+            page._dragIdentity = delegate.identity
+            dragProxy.title = delegate.title
+            dragProxy.artist = delegate.artist
+            dragProxy.album = delegate.album
+            dragProxy.duration = delegate.duration
+            dragProxy.image = delegate.image
+        }
+        onMoveRequested: page._player.moveQueueEntry(from, to, page._dragPid, page._dragIdentity)
+    }
+
+    DelegateModel {
+        id: queueModel
+        model: page._queue
+
+        delegate: ListItem {
+            id: item
+
+            // For the drag: what the lifted copy shows and the check needs.
+            readonly property bool loaded: model.loaded
+            readonly property string identity: model.identity
+            readonly property string title: model.title
+            readonly property string artist: model.artist
+            readonly property string album: model.album
+            readonly property int duration: model.duration
+            readonly property url image: model.image
+
+            function remove() {
+                // The player confirms pid and identity before deleting. The row's
+                // index follows earlier removals; once the row is gone, the
+                // position recorded here is the best guess left.
+                var pid = page._queue.pid
+                var identity = model.identity
+                var position = model.position
+                page._remorse = remorseAction(qsTr("Removing"), function() {
+                    var now = typeof index === "number" && index >= 0 ? index : position
+                    page._player.removeQueueEntry(now, pid, identity)
+                })
+            }
+
+            contentHeight: Theme.itemSizeMedium
+            enabled: model.loaded
+            menu: page._reordering ? null : contextMenu
+            highlighted: down || menuOpen || (model.current && !page._queue.streaming)
+            // The lifted copy is drawn instead.
+            opacity: reorder.dragged === item ? 0 : 1
+
+            onClicked: if (!page._reordering) page._player.playQueueEntry(model.position)
+
+            QueueRow {
+                anchors.fill: parent
+                loaded: model.loaded
+                title: model.title
+                artist: model.artist
+                album: model.album
+                duration: model.duration
+                image: model.image
+                dimmed: model.current && page._queue.streaming
+                highlighted: item.highlighted
+            }
+
+            Component {
+                id: contextMenu
+                ContextMenu {
+                    MenuItem {
+                        text: qsTr("Remove")
+                        onClicked: item.remove()
+                    }
+                }
+            }
+
+            // In the edit mode: a tap ends it; a press held 150 ms lifts the
+            // row, and from then on the list, the pull-down menu and the back
+            // gesture keep out (preventStealing). A press that moves earlier
+            // is the list's flick.
+            MouseArea {
+                id: dragArea
+                // This press lifted the row: its release is a drop, not a tap.
+                property bool lifted
+                anchors.fill: parent
+                enabled: page._reordering
+                preventStealing: reorder.dragged === item
+                onPressed: {
+                    lifted = false
+                    reorder.press(item)
+                }
+                onPositionChanged: {
+                    if (reorder.dragged === item) {
+                        lifted = true
+                        reorder.follow(dragArea, mouse.x, mouse.y)
+                    }
+                }
+                onReleased: if (reorder.release()) lifted = true
+                onClicked: if (!lifted) page._endReordering()
+                onCanceled: reorder.cancel()
+            }
+        }
+    }
+
     SilicaListView {
         id: list
         anchors.fill: parent
-        model: page._queue
+        model: queueModel
+
+        // The others make room as the home screen's do.
+        move: Transition {
+            NumberAnimation { properties: "y"; duration: 150; easing.type: Easing.InOutQuad }
+        }
+        displaced: Transition {
+            NumberAnimation { properties: "y"; duration: 150; easing.type: Easing.InOutQuad }
+        }
 
         header: Column {
             width: list.width
@@ -60,6 +217,9 @@ Page {
             PageHeader {
                 title: qsTr("Queue")
                 description: {
+                    if (page._reordering) {
+                        return qsTr("Drag to move, tap to stop")
+                    }
                     if (!page._player) {
                         return ""
                     }
@@ -93,99 +253,27 @@ Page {
 
             MenuItem {
                 text: qsTr("Clear queue")
+                enabled: !page._reordering
                 onClicked: clearRemorse.execute(qsTr("Clearing queue"), function() {
                     page._player.clearQueue()
                 })
             }
+            MenuItem {
+                text: qsTr("Reorder")
+                enabled: !page._reordering && page._canReorder
+                onClicked: page._reordering = true
+            }
         }
 
-        delegate: ListItem {
-            id: item
-
-            function remove() {
-                // The player confirms pid and identity before deleting. The row's
-                // index follows earlier removals; once the row is gone, the
-                // position recorded here is the best guess left.
-                var pid = page._queue.pid
-                var identity = model.identity
-                var position = model.position
-                remorseAction(qsTr("Removing"), function() {
-                    var now = typeof index === "number" && index >= 0 ? index : position
-                    page._player.removeQueueEntry(now, pid, identity)
-                })
-            }
-
-            contentHeight: Theme.itemSizeMedium
-            enabled: model.loaded
-            menu: contextMenu
-            highlighted: down || menuOpen || (model.current && !page._queue.streaming)
-
-            onClicked: page._player.playQueueEntry(model.position)
-
-            CoverImage {
-                id: art
-                x: Theme.horizontalPageMargin
-                anchors.verticalCenter: parent.verticalCenter
-                width: Theme.itemSizeMedium - 2 * Theme.paddingSmall
-                height: width
-                highlighted: item.highlighted
-                source: model.image
-            }
-
-            Column {
-                anchors {
-                    left: art.right
-                    leftMargin: Theme.paddingLarge
-                    right: duration.left
-                    rightMargin: Theme.paddingMedium
-                    verticalCenter: parent.verticalCenter
-                }
-
-                Label {
-                    width: parent.width
-                    truncationMode: TruncationMode.Fade
-                    color: item.highlighted ? Theme.highlightColor : Theme.primaryColor
-                    opacity: model.current && page._queue.streaming ? Theme.opacityHigh : 1.0
-                    text: model.loaded ? model.title : "…"
-                }
-                Label {
-                    width: parent.width
-                    truncationMode: TruncationMode.Fade
-                    font.pixelSize: Theme.fontSizeExtraSmall
-                    color: item.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
-                    text: {
-                        if (!model.loaded) {
-                            return ""
-                        }
-                        if (model.artist !== "" && model.album !== "") {
-                            return model.artist + " · " + model.album
-                        }
-                        return model.artist + model.album
-                    }
-                }
-            }
-
-            Label {
-                id: duration
-                anchors {
-                    right: parent.right
-                    rightMargin: Theme.horizontalPageMargin
-                    verticalCenter: parent.verticalCenter
-                }
-                font.pixelSize: Theme.fontSizeExtraSmall
-                color: item.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
-                text: model.loaded ? app.formatTime(model.duration) : ""
-            }
-
-            Component {
-                id: contextMenu
-                ContextMenu {
-                    MenuItem {
-                        text: qsTr("Remove")
-                        onClicked: item.remove()
-                    }
-                }
-            }
+        // In the edit mode, a tap beside the rows ends it; the rows end it
+        // themselves.
+        MouseArea {
+            y: list.originY
+            z: -1
+            width: list.width
+            height: Math.max(list.contentHeight, list.height)
+            enabled: page._reordering
+            onClicked: page._endReordering()
         }
 
         ViewPlaceholder {
@@ -201,5 +289,33 @@ Page {
         }
 
         VerticalScrollDecorator {}
+    }
+
+    // The lifted row, scaled as the home screen's (1.1), with the pressed
+    // row's highlight so it reads as one row over the others.
+    ListItem {
+        id: dragProxy
+        property string title
+        property string artist
+        property string album
+        property int duration
+        property url image
+        visible: reorder.dragged !== null
+        width: list.width
+        contentHeight: Theme.itemSizeMedium
+        highlighted: true
+        scale: 1.1
+        z: 1000
+
+        QueueRow {
+            anchors.fill: parent
+            loaded: true
+            title: dragProxy.title
+            artist: dragProxy.artist
+            album: dragProxy.album
+            duration: dragProxy.duration
+            image: dragProxy.image
+            highlighted: true
+        }
     }
 }
