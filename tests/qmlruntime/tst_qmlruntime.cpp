@@ -30,6 +30,7 @@ private slots:
     void inputs();
     void queue();
     void groupValues();
+    void shuffleAndRepeat();
     void rowActions();
     void parentActionsArePassedOn();
     void favouritesAndUnreadRows();
@@ -85,6 +86,7 @@ void TstQmlRuntime::initTestCase()
                     "<preset id=\"5\" name=\"North Sea FM\" url=\"TuneIn:s1\" image=\"/Artwork?id=5\"/>"
                     "<preset id=\"7\" name=\"Turntable\" url=\"Capture:hw:1?id=input1\" image=\"/images/in.png\"/>"
                     "</presets>");
+    m_player->serve(QStringLiteral("/Repeat"), "<playlist length=\"0\" id=\"1\" shuffle=\"0\" repeat=\"0\"/>");
     m_player->serve(QStringLiteral("/RadioBrowse"),
                     "<radiotime service=\"Capture\">"
                     "<item text=\"Optical Input\" inputType=\"spdif\" id=\"input1\" URL=\"Capture%3Ahw%3A1\" image=\"/images/o.png\"/>"
@@ -284,6 +286,33 @@ void TstQmlRuntime::groupValues()
     // A lone player: what the pages read for a group reaches JavaScript.
     QCOMPARE(call("group"), QStringLiteral("true 0 false -1 false"));
     QTRY_COMPARE(call("playerRow"), QStringLiteral("0 true 0  20 0 false false"));
+}
+
+void TstQmlRuntime::shuffleAndRepeat()
+{
+    // shown (queue is the source), shuffled, repeat on, repeat one
+    m_player->setStatus("<status etag=\"r1\"><state>play</state><prid>1</prid>"
+                        "<shuffle>1</shuffle><repeat>1</repeat></status>");
+    QTRY_COMPARE(call("shuffleRepeat"), QStringLiteral("true true true true"));
+    m_player->setStatus("<status etag=\"r2\"><state>play</state><prid>1</prid>"
+                        "<shuffle>0</shuffle><repeat>0</repeat></status>");
+    QTRY_COMPARE(call("shuffleRepeat"), QStringLiteral("true false true false"));
+    // An input plays: hidden (API 2.1, streamUrl).
+    m_player->setStatus("<status etag=\"r3\"><state>stream</state><prid>1</prid>"
+                        "<streamUrl>Capture:x</streamUrl><repeat>2</repeat></status>");
+    QTRY_COMPARE(call("shuffleRepeat"), QStringLiteral("false false false false"));
+    // Stopped without a stream: only !streaming is checked here; the page
+    // also hides the row with the transport row (_empty).
+    m_player->setStatus("<status etag=\"r4\"><state>stop</state><prid>1</prid></status>");
+    QTRY_COMPARE(call("shuffleRepeat"), QStringLiteral("true false false false"));
+
+    // The enum reaches the slot from QML (Player.RepeatQueue is 0, RepeatTrack 1).
+    call("setRepeatTo", QStringLiteral("RepeatQueue"));
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Repeat")).size(), 1);
+    call("setRepeatTo", QStringLiteral("RepeatTrack"));
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Repeat")).size(), 2);
+    QCOMPARE(m_player->requests(QStringLiteral("/Repeat")).at(0).target, QByteArray("/Repeat?state=0"));
+    QCOMPARE(m_player->requests(QStringLiteral("/Repeat")).at(1).target, QByteArray("/Repeat?state=1"));
 }
 
 void TstQmlRuntime::rowActions()

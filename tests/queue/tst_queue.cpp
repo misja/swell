@@ -45,10 +45,17 @@ private slots:
     void failedClearIsReported();
     void clearReplyResets();
     void playFromSendsId();
+    void shuffleAndRepeatFollowTheStatus();
+    void shuffleReordersAfterTheCurrentEntryAndReloads();
+    void shuffleOffRestoresTheOrder();
+    void repeatKeepsTheQueue();
+    void twoTapsBeforeTheStatusSendTheSameValue();
+    void failedShuffleIsReported();
 
 private:
     void startClient();
     void setStatus(int song);
+    QByteArray playlistState() const;
     QString title(int row);
 
     QNetworkAccessManager *m_nam = nullptr;
@@ -59,6 +66,11 @@ private:
     qint64 m_reportedLength = -1;   // a length other than the queue's, when set
     int m_etag = 0;
     bool m_bumpOnDelete = true;
+    int m_song = 0;
+    bool m_shuffle = false;
+    int m_repeat = 0;
+    QStringList m_unshuffled;   // the order to restore when shuffle goes off
+    bool m_failShuffle = false;
 };
 
 void TstQueue::init()
@@ -101,7 +113,51 @@ void TstQueue::init()
         return "<playlist modified=\"0\" length=\"0\" id=\"" + QByteArray::number(m_pid) + "\"/>";
     });
     m_player->serve(QStringLiteral("/Play"), "<state>play</state>");
+    m_shuffle = false;
+    m_repeat = 0;
+    m_unshuffled.clear();
+    m_failShuffle = false;
+    // /Shuffle and /Repeat as measured on the NAD C 379 (spec 009, evidence.md):
+    // shuffle on reorders only the entries after the current one and gives a
+    // new id; on again changes nothing; off restores the order from before the
+    // shuffle (moves made meanwhile are dropped) with a new id. Repeat keeps
+    // the id. The shuffled order itself is the double's own (the tail
+    // reversed). Invented: shuffle off while not shuffled changes nothing.
+    m_player->handle(QStringLiteral("/Shuffle"), [this](const QUrlQuery &q) -> QByteArray {
+        if (m_failShuffle)
+            return "<error>invented failure</error>";
+        const bool on = q.queryItemValue(QStringLiteral("state")) == QLatin1String("1");
+        if (on && !m_shuffle) {
+            m_unshuffled = m_queue;
+            const QStringList tail = m_queue.mid(m_song + 1);
+            m_queue = m_queue.mid(0, m_song + 1);
+            for (int i = tail.size() - 1; i >= 0; --i)
+                m_queue << tail.at(i);
+            m_shuffle = true;
+            ++m_pid;
+            setStatus(m_song);
+        } else if (!on && m_shuffle) {
+            m_queue = m_unshuffled;
+            m_shuffle = false;
+            ++m_pid;
+            setStatus(m_song);
+        }
+        return "<playlist length=\"" + QByteArray::number(m_queue.size()) + "\" id=\""
+                + QByteArray::number(m_pid) + "\"" + playlistState() + "/>";
+    });
+    m_player->handle(QStringLiteral("/Repeat"), [this](const QUrlQuery &q) -> QByteArray {
+        m_repeat = q.queryItemValue(QStringLiteral("state")).toInt();
+        setStatus(m_song);
+        return "<playlist length=\"" + QByteArray::number(m_queue.size()) + "\" id=\""
+                + QByteArray::number(m_pid) + "\"" + playlistState() + "/>";
+    });
     setStatus(0);
+}
+
+QByteArray TstQueue::playlistState() const
+{
+    return " shuffle=\"" + QByteArray::number(m_shuffle ? 1 : 0) + "\" repeat=\""
+            + QByteArray::number(m_repeat) + "\"";
 }
 
 void TstQueue::cleanup()
@@ -116,9 +172,11 @@ void TstQueue::cleanup()
 
 void TstQueue::setStatus(int song)
 {
+    m_song = song;
     m_player->setStatus("<status etag=\"e" + QByteArray::number(++m_etag) + "\"><state>play</state><pid>"
                         + QByteArray::number(m_pid) + "</pid><song>" + QByteArray::number(song)
-                        + "</song></status>");
+                        + "</song><shuffle>" + QByteArray::number(m_shuffle ? 1 : 0) + "</shuffle><repeat>"
+                        + QByteArray::number(m_repeat) + "</repeat></status>");
 }
 
 void TstQueue::startClient()
@@ -601,6 +659,114 @@ void TstQueue::playFromSendsId()
     m_client->playQueueEntry(5);
     QTRY_COMPARE(m_player->requests(QStringLiteral("/Play")).size(), 1);
     QCOMPARE(m_player->requests(QStringLiteral("/Play")).first().target, QByteArray("/Play?id=5"));
+}
+
+void TstQueue::shuffleAndRepeatFollowTheStatus()
+{
+    m_shuffle = true;
+    m_repeat = 1;
+    setStatus(0);
+    startClient();
+    QTRY_VERIFY(m_client->shuffle());
+    QCOMPARE(m_client->repeat(), Client::RepeatTrack);
+    // Another controller turns both off.
+    m_shuffle = false;
+    m_repeat = 2;
+    setStatus(0);
+    QTRY_VERIFY(!m_client->shuffle());
+    QTRY_COMPARE(m_client->repeat(), Client::RepeatOff);
+}
+
+void TstQueue::shuffleReordersAfterTheCurrentEntryAndReloads()
+{
+    m_queue = QStringList { QStringLiteral("A"), QStringLiteral("B"), QStringLiteral("C"),
+                            QStringLiteral("D"), QStringLiteral("E") };
+    setStatus(1);
+    startClient();
+    QueueModel *q = m_client->queue();
+    q->setActive(true);
+    QTRY_COMPARE(title(4), QStringLiteral("E"));
+    const QString before = q->pid();
+    m_client->setShuffle(true);
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Shuffle")).size(), 1);
+    QCOMPARE(m_player->requests(QStringLiteral("/Shuffle")).first().target, QByteArray("/Shuffle?state=1"));
+    QTRY_VERIFY(m_client->shuffle());
+    // A new id is a new queue: the list is read again, in the new order.
+    QTRY_VERIFY(q->pid() != before);
+    QTRY_COMPARE(title(2), QStringLiteral("E"));
+    QCOMPARE(title(0), QStringLiteral("A"));
+    QCOMPARE(title(1), QStringLiteral("B"));
+    QCOMPARE(title(4), QStringLiteral("C"));
+}
+
+void TstQueue::shuffleOffRestoresTheOrder()
+{
+    m_queue = QStringList { QStringLiteral("A"), QStringLiteral("B"), QStringLiteral("C") };
+    startClient();
+    QueueModel *q = m_client->queue();
+    q->setActive(true);
+    m_client->setShuffle(true);
+    QTRY_VERIFY(m_client->shuffle());
+    QTRY_COMPARE(title(1), QStringLiteral("C"));
+    m_client->setShuffle(false);
+    QTRY_VERIFY(!m_client->shuffle());
+    QTRY_COMPARE(title(1), QStringLiteral("B"));
+    QCOMPARE(title(2), QStringLiteral("C"));
+    QCOMPARE(m_player->requests(QStringLiteral("/Shuffle")).last().target, QByteArray("/Shuffle?state=0"));
+}
+
+void TstQueue::repeatKeepsTheQueue()
+{
+    startClient();
+    QueueModel *q = m_client->queue();
+    q->setActive(true);
+    QTRY_COMPARE(title(0), QStringLiteral("Track 0"));
+    const int reads = m_player->requests(QStringLiteral("/Playlist")).size();
+    const QString pid = q->pid();
+    m_client->setRepeat(Client::RepeatTrack);
+    QTRY_COMPARE(m_client->repeat(), Client::RepeatTrack);
+    QCOMPARE(m_player->requests(QStringLiteral("/Repeat")).first().target, QByteArray("/Repeat?state=1"));
+    m_client->setRepeat(Client::RepeatOff);
+    QTRY_COMPARE(m_client->repeat(), Client::RepeatOff);
+    QCOMPARE(m_player->requests(QStringLiteral("/Repeat")).last().target, QByteArray("/Repeat?state=2"));
+    QCOMPARE(q->pid(), pid);
+    QCOMPARE(m_player->requests(QStringLiteral("/Playlist")).size(), reads);
+    // Not one of the API's values: nothing is sent.
+    m_client->setRepeat(Client::Repeat(5));
+    QTest::qWait(400);
+    QCOMPARE(m_player->requests(QStringLiteral("/Repeat")).size(), 2);
+}
+
+void TstQueue::twoTapsBeforeTheStatusSendTheSameValue()
+{
+    // The page sends the opposite of the state shown; two taps in a row both
+    // read the old state and send state=1, the second after the interval.
+    // The player ignores the second (measured: same id, same etag), so the
+    // state advances once.
+    startClient();
+    const int pid = m_pid;
+    m_client->setShuffle(!m_client->shuffle());
+    m_client->setShuffle(!m_client->shuffle());
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Shuffle")).size(), 2);
+    const QList<FakePlayer::Request> sent = m_player->requests(QStringLiteral("/Shuffle"));
+    for (const FakePlayer::Request &r : sent)
+        QCOMPARE(r.target, QByteArray("/Shuffle?state=1"));
+    // Arrival times; the client spaces sends by minIntervalMs (200), transit varies.
+    QVERIFY2(sent.at(1).atMs - sent.at(0).atMs >= 150,
+             qPrintable(QStringLiteral("%1 ms apart").arg(sent.at(1).atMs - sent.at(0).atMs)));
+    QTRY_VERIFY(m_client->shuffle());
+    QCOMPARE(m_pid, pid + 1);
+}
+
+void TstQueue::failedShuffleIsReported()
+{
+    m_failShuffle = true;
+    startClient();
+    QSignalSpy failed(m_client, &Client::commandFailed);
+    m_client->setShuffle(true);
+    QTRY_COMPARE(failed.size(), 1);
+    QCOMPARE(failed.first().at(0).toString(), QStringLiteral("/Shuffle"));
+    QVERIFY(!m_client->shuffle());
 }
 
 void TstQueue::aReportedLengthIsBounded()

@@ -45,6 +45,11 @@ class Client : public QObject
     Q_PROPERTY(bool canSkip READ canSkip NOTIFY statusChanged)
     Q_PROPERTY(bool canBack READ canBack NOTIFY statusChanged)
     Q_PROPERTY(int duration READ duration NOTIFY statusChanged)
+    // While an input or stream plays the queue is not the source, and shuffle
+    // and repeat should not be offered (section 2.1, streamUrl).
+    Q_PROPERTY(bool streaming READ streaming NOTIFY statusChanged)
+    Q_PROPERTY(bool shuffle READ shuffle NOTIFY statusChanged)
+    Q_PROPERTY(Repeat repeat READ repeat NOTIFY statusChanged)
     Q_PROPERTY(int position READ position NOTIFY positionChanged)
     // The version (prid) of the presets list as read, and whether /Status
     // still reports that version; prid changes with every edit (spec 008).
@@ -84,6 +89,14 @@ public:
         Secondary     // follows a primary; keeps its own volume
     };
     Q_ENUM(GroupRole)
+
+    // The API's values (section 4.7).
+    enum Repeat {
+        RepeatQueue = 0,
+        RepeatTrack = 1,
+        RepeatOff = 2
+    };
+    Q_ENUM(Repeat)
 
     // An update this client started (startUpgrade), as the player shows it.
     enum UpgradePhase {
@@ -204,6 +217,9 @@ public:
     bool canSkip() const { return m_status.ok && (!m_status.hasStreamUrl || !m_status.skipActionUrl.isEmpty()); }
     bool canBack() const { return m_status.ok && (!m_status.hasStreamUrl || !m_status.backActionUrl.isEmpty()); }
     int duration() const { return m_status.totlen; }
+    bool streaming() const { return m_status.ok && m_status.hasStreamUrl; }
+    bool shuffle() const { return m_status.ok && m_status.shuffle; }
+    Repeat repeat() const { return m_status.ok ? Repeat(m_status.repeat) : RepeatOff; }
     int position() const;
     // As the player lists them; images as given, see resolveImage. Cached per
     // player.
@@ -258,6 +274,10 @@ public slots:
     void back();
     void setVolume(int level);
     void setMuted(bool muted);
+    // /Shuffle?state= and /Repeat?state= (sections 4.6, 4.7). The state shown
+    // follows /Status; the new queue id reaches the queue as a pid change.
+    void setShuffle(bool shuffle);
+    void setRepeat(BluOS::Client::Repeat repeat);
     void playPreset(int id);
     // Deletes preset id with /SetPreset?id=N, the official app's request
     // (not in the API; spec 008). Only while online and while the presets

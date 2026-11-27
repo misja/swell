@@ -397,6 +397,22 @@ void Client::setMuted(bool muted)
     send(QStringLiteral("/Volume"), encoded(query));
 }
 
+void Client::setShuffle(bool shuffle)
+{
+    QUrlQuery query;
+    query.addQueryItem(QStringLiteral("state"), shuffle ? QStringLiteral("1") : QStringLiteral("0"));
+    send(QStringLiteral("/Shuffle"), encoded(query));
+}
+
+void Client::setRepeat(Repeat repeat)
+{
+    if (repeat != RepeatQueue && repeat != RepeatTrack && repeat != RepeatOff)
+        return;
+    QUrlQuery query;
+    query.addQueryItem(QStringLiteral("state"), QString::number(int(repeat)));
+    send(QStringLiteral("/Repeat"), encoded(query));
+}
+
 void Client::playPreset(int id)
 {
     QUrlQuery query;
