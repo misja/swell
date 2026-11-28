@@ -770,7 +770,7 @@ void Client::renamePreset(int id, const QString &name, const QString &prid)
             renamed = renamed || (p.id == id && p.name == newName && p.url == url);
         if (after.ok && after.prid != before && renamed) {
             // The list shown is old until /Presets answers for the new prid.
-            if (m_presetsCurrent) {
+            if (m_presetsCurrent && after.prid != m_presetsPrid) {
                 m_presetsCurrent = false;
                 emit presetsVersionChanged();
             }

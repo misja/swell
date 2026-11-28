@@ -38,7 +38,9 @@ private slots:
     void aPresetKeepsItsOwnVolume();
     void aRenameIsRefused_data();
     void aRenameIsRefused();
+    void aFailedRenameIsReported_data();
     void aFailedRenameIsReported();
+    void aRenameWhileAwayOrMovingIsRefused();
     void anInputThatCannotBeSentIsNotAdded_data();
     void anInputThatCannotBeSentIsNotAdded();
     void aFailedInputAddIsReported_data();
@@ -66,8 +68,8 @@ private:
     SendLog *m_nam = nullptr;
     FakePlayer *m_player = nullptr;
     Client *m_client = nullptr;
-    // A slot as the player lists it: the url decoded (measured, spec 008 E),
-    // invented values.
+    // A slot as the player lists it (the url as stored, spec 008 E); the
+    // values are invented, the default url with a literal % in it.
     struct Slot {
         Slot(const QByteArray &name = QByteArray())
             : name(name), url(QStringLiteral("Invented:") + QString::fromLatin1(QUrl::toPercentEncoding(QString::fromUtf8(name))))
@@ -79,6 +81,9 @@ private:
         int volume = -1;
     };
     QMap<int, Slot> m_presets;
+    // How the double answers a /SetPreset with a url (invented failures).
+    enum RenameAnswer { NormalAnswer, ErrorAnswer, UnchangedAnswer, OldNameAnswer };
+    RenameAnswer m_renameAnswer = NormalAnswer;
     int m_prid = 0;
 };
 
@@ -87,6 +92,7 @@ void TstPresets::init()
     m_nam = new SendLog(this);
     m_player = new FakePlayer(this);
     QVERIFY(m_player->listen());
+    m_renameAnswer = NormalAnswer;
     m_presets.clear();
     for (int id : { 1, 2, 3, 7, 8 })
         m_presets.insert(id, "Station " + QByteArray::number(id));
@@ -138,7 +144,12 @@ void TstPresets::init()
         } else if (q.hasQueryItem(QStringLiteral("url"))) {
             // With an id the slot is set again (a rename, measured 2026-11-28:
             // name, url and image as sent; volume only if sent); without one
-            // the first free slot.
+            // the first free slot. Invented: an unknown id with a url creates
+            // the slot; a request without image clears it.
+            if (m_renameAnswer == ErrorAnswer)
+                return QByteArray("<error>invented</error>");
+            if (m_renameAnswer == UnchangedAnswer)
+                return list();
             int id = q.queryItemValue(QStringLiteral("id")).toInt();
             if (!q.hasQueryItem(QStringLiteral("id"))) {
                 id = 1;
@@ -149,6 +160,8 @@ void TstPresets::init()
             slot.url = q.queryItemValue(QStringLiteral("url"), QUrl::FullyDecoded);
             slot.image = q.queryItemValue(QStringLiteral("image"), QUrl::FullyDecoded);
             slot.volume = q.hasQueryItem(QStringLiteral("volume")) ? q.queryItemValue(QStringLiteral("volume")).toInt() : -1;
+            if (m_renameAnswer == OldNameAnswer)
+                slot.name = m_presets.value(id).name;
             m_presets.insert(id, slot);
             ++m_prid;
             publish();
@@ -409,14 +422,17 @@ void TstPresets::aPresetIsRenamedInItsSlot()
 {
     // As the official app renames (measured 2026-11-28): the slot set again
     // with its own url and image and the new name.
+    m_presets[7].image = QStringLiteral("/images/capture/ic_vinyl.png");
+    publish();
     startClient();
     const QString prid = m_client->presetsPrid();
     QSignalSpy failed(m_client, &Client::commandFailed);
     QSignalSpy refused(m_client, &Client::presetRenameRefused);
-    m_client->renamePreset(7, QStringLiteral("Late & #2"), prid);
+    m_client->renamePreset(7, QString::fromUtf8("Caf\xc3\xa9 & #2"), prid);
     QTRY_COMPARE(setPresetRequests(), 1);
     QCOMPARE(m_player->requests(QStringLiteral("/SetPreset")).first().target,
-             QByteArray("/SetPreset?id=7&name=Late%20%26%20%232&url=Invented%3AStation%25207"));
+             QByteArray("/SetPreset?id=7&name=Caf%C3%A9%20%26%20%232&url=Invented%3AStation%25207"
+                        "&image=%2Fimages%2Fcapture%2Fic_vinyl.png"));
     QVERIFY(!m_client->presetsCurrent());   // until /Presets answers for the new prid
     QTRY_VERIFY(m_client->presetsCurrent());
     QCOMPARE(ids(), QList<int>({ 1, 2, 3, 7, 8 }));
@@ -424,7 +440,7 @@ void TstPresets::aPresetIsRenamedInItsSlot()
     for (const Preset &p : m_client->presets())
         if (p.id == 7)
             renamed = p.name;
-    QCOMPARE(renamed, QStringLiteral("Late & #2"));
+    QCOMPARE(renamed, QString::fromUtf8("Caf\xc3\xa9 & #2"));
     QVERIFY(failed.isEmpty());
     QVERIFY(refused.isEmpty());
 }
@@ -437,13 +453,20 @@ void TstPresets::aPresetKeepsItsOwnVolume()
     m_presets[8].image = QStringLiteral("http://images.example/8.png");
     publish();
     startClient();
-    QTRY_COMPARE(m_client->presets().last().volume, 52);
+    const auto slot8 = [this]() {
+        for (const Preset &p : m_client->presets())
+            if (p.id == 8)
+                return p;
+        return Preset();
+    };
+    QTRY_COMPARE(slot8().volume, 52);
     m_client->renamePreset(8, QStringLiteral("Eight"), m_client->presetsPrid());
     QTRY_COMPARE(setPresetRequests(), 1);
     QCOMPARE(m_player->requests(QStringLiteral("/SetPreset")).first().target,
              QByteArray("/SetPreset?id=8&name=Eight&url=Invented%3AStation%25208"
                         "&image=http%3A%2F%2Fimages.example%2F8.png&volume=52"));
-    QTRY_COMPARE(m_presets.value(8).volume, 52);
+    QTRY_COMPARE(slot8().name, QStringLiteral("Eight"));
+    QCOMPARE(slot8().volume, 52);
 }
 
 void TstPresets::aRenameIsRefused_data()
@@ -453,6 +476,7 @@ void TstPresets::aRenameIsRefused_data()
     QTest::addColumn<bool>("changed");
     QTest::newRow("stale prid") << 7 << true << true;
     QTest::newRow("unknown id") << 5 << false << true;
+    QTest::newRow("list not current") << -1 << false << true;
 }
 
 void TstPresets::aRenameIsRefused()
@@ -462,7 +486,14 @@ void TstPresets::aRenameIsRefused()
     QFETCH(bool, changed);
     startClient();
     QSignalSpy refused(m_client, &Client::presetRenameRefused);
-    m_client->renamePreset(id, QStringLiteral("New"), stalePrid ? QStringLiteral("0") : m_client->presetsPrid());
+    const QString prid = m_client->presetsPrid();
+    if (id < 0) {
+        // /Status reports a newer list than the one read.
+        m_player->setStatus("<status etag=\"n\"><state>stop</state><prid>99</prid><syncStat>s</syncStat></status>");
+        QTRY_VERIFY(!m_client->presetsCurrent());
+        id = 7;
+    }
+    m_client->renamePreset(id, QStringLiteral("New"), stalePrid ? QStringLiteral("0") : prid);
     QCOMPARE(refused.size(), 1);
     QCOMPARE(refused.first().first().toBool(), changed);
     // The same name, or an empty one: nothing to do.
@@ -473,14 +504,49 @@ void TstPresets::aRenameIsRefused()
     QCOMPARE(refused.size(), 1);
 }
 
+void TstPresets::aFailedRenameIsReported_data()
+{
+    QTest::addColumn<int>("answer");
+    QTest::newRow("HTTP 500") << -1;
+    QTest::newRow("<error>") << int(ErrorAnswer);
+    QTest::newRow("unchanged prid") << int(UnchangedAnswer);
+    QTest::newRow("old name") << int(OldNameAnswer);
+}
+
 void TstPresets::aFailedRenameIsReported()
 {
+    QFETCH(int, answer);
     startClient();
-    m_player->failWith(QStringLiteral("/SetPreset"), 500);
+    if (answer < 0)
+        m_player->failWith(QStringLiteral("/SetPreset"), 500);
+    else
+        m_renameAnswer = RenameAnswer(answer);
     QSignalSpy failed(m_client, &Client::commandFailed);
     m_client->renamePreset(7, QStringLiteral("New"), m_client->presetsPrid());
     QTRY_COMPARE(failed.size(), 1);
     QCOMPARE(failed.first().at(0).toString(), QStringLiteral("/SetPreset"));
+}
+
+void TstPresets::aRenameWhileAwayOrMovingIsRefused()
+{
+    startClient();
+    QSignalSpy refused(m_client, &Client::presetRenameRefused);
+    m_player->delay(QStringLiteral("/Presets/edit"), 800);
+    m_client->movePreset(8, 2, m_client->presetsPrid());
+    QTRY_VERIFY(m_client->presetMoving());
+    m_client->renamePreset(7, QStringLiteral("New"), m_client->presetsPrid());
+    QCOMPARE(refused.size(), 1);
+    QCOMPARE(refused.first().first().toBool(), false);
+    QTRY_VERIFY(!m_client->presetMoving());
+    QTRY_VERIFY(m_client->presetsCurrent());
+    const QString prid = m_client->presetsPrid();
+    const quint16 port = m_player->port();
+    m_player->close();
+    QTRY_COMPARE_WITH_TIMEOUT(m_client->availability(), Client::Offline, 8000);
+    m_client->renamePreset(7, QStringLiteral("New"), prid);
+    QCOMPARE(refused.size(), 2);
+    QCOMPARE(refused.last().first().toBool(), false);
+    Q_UNUSED(port)
 }
 
 void TstPresets::anInputThatCannotBeSentIsNotAdded_data()

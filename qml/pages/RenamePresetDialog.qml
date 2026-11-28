@@ -11,6 +11,7 @@ Dialog {
     property string name
     readonly property string newName: field.text.trim()
 
+    allowedOrientations: Orientation.All
     canAccept: newName !== "" && newName !== name
 
     DialogHeader {
@@ -25,7 +26,8 @@ Dialog {
         label: qsTr("Name")
         placeholderText: qsTr("Name")
         text: dialog.name
-        focus: true
+        // As Jolla's RenameDialog: focus once created, then select the name.
+        Component.onCompleted: focus = true
         onFocusChanged: if (focus) selectAll()
 
         EnterKey.iconSource: "image://theme/icon-m-enter-accept"
