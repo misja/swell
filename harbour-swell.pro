@@ -6,7 +6,7 @@ TARGET = harbour-swell
 CONFIG += sailfishapp
 QT += network
 
-VERSION = 0.7.0
+VERSION = 0.8.0
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 include(bluos/bluos.pri)
