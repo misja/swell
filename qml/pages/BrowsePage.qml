@@ -103,6 +103,24 @@ Page {
         root: page.root
         expandFirst: page.expandFirst
         Component.onCompleted: load()
+        onReadyChanged: page._show()
+        onCountChanged: page._show()
+    }
+
+    // A letter list loads the letters on screen; the list reports which rows
+    // it shows (Qt 5.6 views have no visible-range signal; indexAt is theirs).
+    // Plain lists page through the model's fetchMore instead.
+    function _show() {
+        if (!browseModel.sectioned || list.count === 0) {
+            return
+        }
+        var first = list.indexAt(0, list.contentY)
+        var last = list.indexAt(0, list.contentY + list.height - 1)
+        if (first < 0 && last < 0) {
+            return   // not laid out yet, or only the header in view
+        }
+        // A header above the rows, or the end of the list below them.
+        browseModel.show(first < 0 ? 0 : first, last < 0 ? list.count - 1 : last)
     }
 
     // The favourites of a library letter list, shown on top of it (B3/B4).
@@ -146,6 +164,9 @@ Page {
         anchors.fill: parent
         model: browseModel
         quickScroll: !browseModel.sectioned
+        onContentYChanged: page._show()
+        onContentHeightChanged: page._show()   // laid out
+        onHeightChanged: page._show()
         // No header per letter (the maintainer: it clutters the list); the
         // section gives currentSection, the letter in view for the index.
         section.property: "section"

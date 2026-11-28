@@ -13,7 +13,6 @@ namespace {
 // A page that failed is asked for again only after this pause.
 const int RetryAfterMs = 3000;
 // In a plain list, the next page is read when a row this close to the end is shown.
-const int ReadAhead = 10;
 
 // The leading number of a section's text2 ("65"), or -1.
 int countOf(const QString &text2)
@@ -171,11 +170,6 @@ QVariant BrowseModel::data(const QModelIndex &index, int role) const
     if (role == SectionRole)
         return s.title;
     const Row &r = s.rows.at(offset);
-    if (!r.loaded) {
-        want(segment);
-    } else if (!m_sectioned && !s.done && !s.nextKey.isEmpty() && offset >= s.rows.size() - ReadAhead) {
-        want(segment);
-    }
     switch (role) {
     case TypeRole: return r.item.type;
     case TextRole: return r.item.text;
@@ -243,8 +237,7 @@ void BrowseModel::readFirst(const QString &key)
 {
     ++m_generation;
     m_inFlight = -2;  // the first read, not a segment
-    m_wanted = -1;
-    m_failed.clear();
+    m_backoff.clear();
     emit loadingChanged();
     const int generation = m_generation;
     QPointer<BrowseModel> self(this);
@@ -252,7 +245,6 @@ void BrowseModel::readFirst(const QString &key)
         if (!self || generation != self->m_generation)
             return;  // the page went away, or it was read again
         self->m_inFlight = -1;
-        self->m_wanted = -1;
         self->onFirst(reply);
         emit self->loadingChanged();
     });
@@ -405,35 +397,57 @@ void BrowseModel::findFavourites()
     });
 }
 
-void BrowseModel::want(int segment) const
+bool BrowseModel::canFetchMore(const QModelIndex &parent) const
 {
-    if (!m_client || segment < 0 || segment >= m_segments.size() || segment == m_inFlight)
+    if (parent.isValid() || !m_client || !m_ready || m_sectioned || m_segments.size() != 1)
+        return false;
+    return !m_segments.first().done && m_inFlight == -1 && !m_backoff.contains(0);
+}
+
+void BrowseModel::fetchMore(const QModelIndex &parent)
+{
+    // The view calls this without asking canFetchMore again
+    // (qqmldelegatemodel.cpp:1104, Qt 5.6.3).
+    if (canFetchMore(parent))
+        request(0);
+}
+
+void BrowseModel::show(int first, int last)
+{
+    m_showFirst = qMin(first, last);
+    m_showLast = qMax(first, last);
+    next();
+}
+
+void BrowseModel::next()
+{
+    if (!m_client || !m_sectioned || m_inFlight != -1 || m_showFirst < 0)
         return;
-    const Segment &s = m_segments.at(segment);
-    if (s.done && s.loaded >= s.rows.size())
+    const int offsetRows = m_favourites ? 1 : 0;
+    int offset = 0;
+    const int from = segmentOf(qMax(0, m_showFirst - offsetRows), &offset);
+    const int to = segmentOf(qMin(rowCount() - 1, m_showLast) - offsetRows, &offset);
+    if (from < 0)
         return;
-    if (m_failed.contains(segment) && m_failed.value(segment).elapsed() < RetryAfterMs)
-        return;
-    if (m_inFlight != -1) {
-        m_wanted = segment;  // only the latest wish is kept
-        return;
+    const int end = to < 0 ? m_segments.size() - 1 : to;
+    // The first letter on screen with rows still to load, from where its
+    // loading stands (a big letter continues page by page).
+    for (int segment = from; segment <= end; ++segment) {
+        const Segment &s = m_segments.at(segment);
+        const bool more = s.loaded < s.rows.size() || (!s.done && s.started);
+        const int unloaded = offsetRows + firstRow(segment) + s.loaded;
+        if (more && unloaded <= m_showLast && !m_backoff.contains(segment)) {
+            request(segment);
+            return;
+        }
     }
-    // Called from data() while the view builds delegates: send it later.
-    m_inFlight = segment;
-    BrowseModel *self = const_cast<BrowseModel *>(this);
-    const int generation = m_generation;
-    QTimer::singleShot(0, self, [self, generation, segment]() {
-        if (generation == self->m_generation && self->m_inFlight == segment)
-            self->request(segment);
-    });
 }
 
 void BrowseModel::request(int segment)
 {
-    if (!m_client) {
-        m_inFlight = -1;
+    if (!m_client)
         return;
-    }
+    m_inFlight = segment;
     emit loadingChanged();
     const Segment &s = m_segments.at(segment);
     const QString key = s.started ? s.nextKey : s.key;
@@ -451,9 +465,8 @@ void BrowseModel::onPage(int generation, int segment, const QString &sentKey, co
         return;
     m_inFlight = -1;
     if (!reply.ok) {
-        retryLater(segment);
+        backOff(segment);
     } else {
-        m_failed.remove(segment);
         Segment &s = m_segments[segment];
         s.started = true;
         // A reply that points at itself again would only repeat its rows.
@@ -490,38 +503,30 @@ void BrowseModel::onPage(int generation, int segment, const QString &sentKey, co
             endRemoveRows();
             emit lettersChanged();
         } else if (!s.done && reply.items.isEmpty()) {
-            retryLater(segment);  // a page without rows: do not loop
+            backOff(segment);  // a page without rows: do not loop
         }
     }
     emit loadingChanged();
-    if (m_wanted >= 0) {
-        const int next = m_wanted;
-        m_wanted = -1;
-        want(next);
-    } else {
-        askAgain();
-    }
+    next();
 }
 
-void BrowseModel::askAgain()
+void BrowseModel::backOff(int segment)
 {
-    // Only one wish is kept, so other rows on screen may still be unloaded.
-    // Their delegates re-read on dataChanged and ask for their letter in turn;
-    // rows without a view are not touched.
-    if (m_inFlight == -1 && rowCount() > 0)
-        emit dataChanged(index(0), index(rowCount() - 1), { LoadedRole });
-}
-
-void BrowseModel::retryLater(int segment)
-{
-    m_failed[segment].start();
+    m_backoff.insert(segment);
     if (!m_client || !m_client->online())
         return;  // the page reloads when the player is back
+    // The retry interval itself, not a guess: then the letter (or the next
+    // page of a plain list) is read again if it is still wanted.
     const int generation = m_generation;
     QPointer<BrowseModel> self(this);
-    QTimer::singleShot(RetryAfterMs + 50, this, [self, generation]() {
-        if (self && generation == self->m_generation)
-            self->askAgain();
+    QTimer::singleShot(RetryAfterMs, this, [self, generation, segment]() {
+        if (!self || generation != self->m_generation)
+            return;
+        self->m_backoff.remove(segment);
+        if (self->m_sectioned)
+            self->next();
+        else if (self->canFetchMore(QModelIndex()))
+            self->request(segment);
     });
 }
 

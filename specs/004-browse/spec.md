@@ -293,9 +293,31 @@ that are not seen through `/Browse`.
 - The highlight overlay on rows with covers (`BrowsePage.qml`):
   BackgroundItem draws its highlight behind the content
   (BackgroundItem.qml:67-73).
-- The browse model reads from `data()` and forces a re-read of all rows
-  after each reply (`askAgain()`), with a retry 50 ms after the backoff.
-  Open: a replacement is tracked in #63.
+- Loading (2026-11-28, #63):
+  - A plain list pages through `nextKey` with `canFetchMore`/`fetchMore`:
+    the view asks when it creates its last delegate, and once right after
+    the reset (qqmldelegatemodel.cpp:984, 1104, 1494, Qt 5.6.3), so page 2
+    is read when a page opens. `fetchMore` checks again itself, since the
+    view does not.
+  - A letter list loads the letters of the rows on screen: `BrowsePage`
+    reports them with `BrowseModel::show(first, last)`, from `indexAt` on
+    `contentY`, height and layout changes. Own code: Qt 5.6 views have no
+    visible-range signal. When a letter answers, the first letter on
+    screen with rows left is read next; letters passed during a jump are
+    not read. A big letter continues page by page.
+  - A failed letter or page waits for the backoff (3 s), then is read again
+    if still wanted; offline, the page reloads when the player is back.
+    `data()` reads nothing.
+
+| State | Shown |
+| --- | --- |
+| The first read in flight | busy indicator |
+| Ready, empty | the placeholder |
+| The first read failed | the placeholder with the error; a reload when the player is back |
+| A letter or page failed | its rows stay placeholders; read again after 3 s if still on screen (letter) or still the end (page) |
+| Offline | no retry; a reload when the player is back |
+| All rows read | nothing more is sent |
+| The page left during a read or a backoff | nothing more is sent |
 - `CoverImage.qml` has a second placeholder on Now Playing (Image and
   Icon, `NowPlayingPage.qml`).
 - `BrowsePage.qml` places the letter index by hand (`topMargin:
