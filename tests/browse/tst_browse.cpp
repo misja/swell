@@ -3,6 +3,7 @@
 // FakePlayer. The /Browse replies are synthetic, shaped like those recorded
 // from a player (spec 004, "Facts").
 #include <QtTest>
+#include <QElapsedTimer>
 #include <QNetworkAccessManager>
 
 #include "browsemodel.h"
@@ -23,7 +24,7 @@ private slots:
     void rootKeepsLinksAndOffersFavourites();
     void rootWithoutLibraryFavourites();
     void sectionsHaveTheirLengthAtOnce();
-    void theLetterInViewLoadsAndOnlyTheLatestWishIsKept();
+    void theLetterInViewLoadsAndPassedLettersAreNot();
     void pagingContinuesWithinALetter();
     void countMismatchesFollowTheReply();
     void unusableCountsFallBackToLetterRows();
@@ -37,6 +38,11 @@ private slots:
     void lettersFollowInsertedRows();
     void aFailedLetterIsAskedForAgain();
     void aRepeatedNextKeyEndsTheList();
+    void aFailedPageIsReadAgainAfterTheBackoff();
+    void readingRowsLoadsNothing();
+    void aLetterFailedOfflineIsReadWhenThePlayerIsBack();
+    void nothingIsSentAfterLeavingDuringABackoff();
+    void aColdJumpReadsOnlyThatLetter();
     void playPathsGoThroughTheGateOrAreRefused();
     void searchEverywhereListsSources();
     void anArtistOpensOnItsAlbums();
@@ -271,20 +277,21 @@ void TstBrowse::sectionsHaveTheirLengthAtOnce()
     // A row of B is a placeholder with its letter; showing it reads B only.
     QCOMPARE(m->data(m->index(3), BrowseModel::SectionRole).toString(), QStringLiteral("B"));
     QCOMPARE(m->data(m->index(3), BrowseModel::LoadedRole).toBool(), false);
+    m->show(3, 3);
     QTRY_COMPARE(text(m.data(), 3), QStringLiteral("B album 0"));
     QCOMPARE(browseKeys(), QStringList({ QStringLiteral("Index"), QStringLiteral("Lib:S:B") }));
 }
 
-void TstBrowse::theLetterInViewLoadsAndOnlyTheLatestWishIsKept()
+void TstBrowse::theLetterInViewLoadsAndPassedLettersAreNot()
 {
     startClient();
     QScopedPointer<BrowseModel> m(open(QStringLiteral("Index")));
     QTRY_VERIFY(m->ready());
     m_player->delay(QStringLiteral("/Browse"), 300);
-    text(m.data(), 64);                 // C, in view after a jump
+    m->show(64, 64);                    // C, in view after a jump
     QTRY_VERIFY(m->loading());
-    text(m.data(), 0);                  // A passed on the way back…
-    text(m.data(), 4);                  // …then B: only B is still wanted
+    m->show(0, 0);                      // A passed on the way back…
+    m->show(4, 4);                      // …then B: what is shown when C answers
     QTRY_COMPARE(text(m.data(), 4), QStringLiteral("B album 1"));
     QTest::qWait(400);
     QCOMPARE(browseKeys(), QStringList({ QStringLiteral("Index"), QStringLiteral("Lib:S:C"), QStringLiteral("Lib:S:B") }));
@@ -296,8 +303,10 @@ void TstBrowse::pagingContinuesWithinALetter()
     startClient();
     QScopedPointer<BrowseModel> m(open(QStringLiteral("Index")));
     QTRY_VERIFY(m->ready());
+    m->show(3, 3);
     QTRY_COMPARE(text(m.data(), 3), QStringLiteral("B album 0"));
     QCOMPARE(m->data(m->index(3 + 55), BrowseModel::LoadedRole).toBool(), false);
+    m->show(3 + 55, 3 + 55);            // a jump into B: B pages on to that row
     QTRY_COMPARE(text(m.data(), 3 + 55), QStringLiteral("B album 55"));
     QVERIFY(browseKeys().contains(QStringLiteral("Lib:S:B?start=50")));
     QCOMPARE(m->rowCount(), 69);
@@ -308,11 +317,16 @@ void TstBrowse::countMismatchesFollowTheReply()
     startClient();
     QScopedPointer<BrowseModel> m(open(QStringLiteral("Index")));
     QTRY_VERIFY(m->ready());
-    text(m.data(), 63);                 // C: announced 2, three arrive
+    QSignalSpy changed(m.data(), &QAbstractItemModel::dataChanged);
+    m->show(63, 63);                    // C: announced 2, three arrive
     QTRY_COMPARE(m->rowCount(), 70);
     QCOMPARE(text(m.data(), 65), QStringLiteral("C album 2"));
+    // Only the rows that changed: C's two announced rows.
+    QCOMPARE(changed.size(), 1);
+    QCOMPARE(changed.first().at(0).toModelIndex().row(), 63);
+    QCOMPARE(changed.first().at(1).toModelIndex().row(), 64);
     QCOMPARE(m->data(m->index(66), BrowseModel::SectionRole).toString(), QStringLiteral("D"));
-    text(m.data(), 66);                 // D: announced 4, one arrives
+    m->show(66, 66);                    // D: announced 4, one arrives
     QTRY_COMPARE(m->rowCount(), 67);
     QCOMPARE(text(m.data(), 66), QStringLiteral("D album 0"));
 }
@@ -333,11 +347,14 @@ void TstBrowse::plainListGrowsThroughNextKey()
     QScopedPointer<BrowseModel> m(open(QStringLiteral("List")));
     QTRY_VERIFY(m->ready());
     QCOMPARE(m->rowCount(), 30);
-    text(m.data(), 5);
-    QTest::qWait(300);
-    QCOMPARE(m->rowCount(), 30);        // not near the end yet
-    text(m.data(), 25);
+    // The view asks for more when it creates its last delegate.
+    QVERIFY(m->canFetchMore(QModelIndex()));
+    m_player->delay(QStringLiteral("/Browse"), 300);
+    m->fetchMore(QModelIndex());
+    QVERIFY(!m->canFetchMore(QModelIndex()));
+    m->fetchMore(QModelIndex());        // in flight: sends nothing (no canFetchMore check by the view)
     QTRY_COMPARE(m->rowCount(), 45);
+    QCOMPARE(browseKeys().size(), 2);
     QCOMPARE(text(m.data(), 44), QStringLiteral("L album 44"));
     // Only the actions Swell understands are offered.
     const auto actions = m->data(m->index(0), BrowseModel::ActionsRole).value<QList<BrowseAction>>();
@@ -408,34 +425,23 @@ void TstBrowse::playerPathsAreSentAsGivenOrRefused()
     QCOMPARE(m_player->requests(QStringLiteral("/Add")).first().target, exact.toLatin1());
 }
 
-// Re-reads rows the way a view does on dataChanged: only the changed rows
-// that are "on screen".
-static void watch(BrowseModel *m, int first, int last)
-{
-    QObject::connect(m, &QAbstractItemModel::dataChanged, m,
-                     [m, first, last](const QModelIndex &from, const QModelIndex &to) {
-        for (int row = qMax(first, from.row()); row <= qMin(last, to.row()) && row < m->rowCount(); ++row)
-            m->data(m->index(row), BrowseModel::LoadedRole);
-    });
-}
-
 void TstBrowse::severalVisibleLettersAllLoad()
 {
     startClient();
     QScopedPointer<BrowseModel> m(open(QStringLiteral("Small")));
     QTRY_VERIFY(m->ready());
-    watch(m.data(), 0, 2);
-    // X, Y and Z are on screen together; only one wish is kept.
-    text(m.data(), 0);
-    text(m.data(), 1);
-    text(m.data(), 2);
-    // Without touching the rows again (that is the view's job), all three
-    // letters are read.
-    QTRY_VERIFY(browseKeys().contains(QStringLiteral("Lib:S:Y")));
+    QSignalSpy changed(m.data(), &QAbstractItemModel::dataChanged);
+    // X, Y and Z are on screen together: all three letters are read, one
+    // after the other, without the rows being read again.
+    m->show(0, 2);
+    QTRY_VERIFY(browseKeys().contains(QStringLiteral("Lib:S:Z")));
     QTRY_VERIFY(!m->loading());
     QVERIFY(browseKeys().contains(QStringLiteral("Lib:S:X")));
     QVERIFY(browseKeys().contains(QStringLiteral("Lib:S:Z")));
     QCOMPARE(text(m.data(), 1), QStringLiteral("Y album 0"));
+    // Each reply changes its own rows; nothing re-reads all rows.
+    for (const QList<QVariant> &args : changed)
+        QCOMPARE(args.at(0).toModelIndex().row(), args.at(1).toModelIndex().row());
 }
 
 void TstBrowse::lettersFollowInsertedRows()
@@ -444,7 +450,7 @@ void TstBrowse::lettersFollowInsertedRows()
     QScopedPointer<BrowseModel> m(open(QStringLiteral("Index")));
     QTRY_VERIFY(m->ready());
     QSignalSpy changed(m.data(), &BrowseModel::lettersChanged);
-    text(m.data(), 63);   // C: announced 2, three arrive
+    m->show(63, 63);   // C: announced 2, three arrive
     QTRY_COMPARE(m->rowCount(), 70);
     QVERIFY(changed.size() >= 1);
     QCOMPARE(m->letters().at(3).row, 66);
@@ -455,14 +461,17 @@ void TstBrowse::aFailedLetterIsAskedForAgain()
     startClient();
     QScopedPointer<BrowseModel> m(open(QStringLiteral("Small")));
     QTRY_VERIFY(m->ready());
-    watch(m.data(), 0, 0);
     m_player->failWith(QStringLiteral("/Browse"), 503);
-    text(m.data(), 0);
+    m->show(0, 0);
     QTRY_VERIFY(!m->loading());
     QCOMPARE(m->data(m->index(0), BrowseModel::LoadedRole).toBool(), false);
     m_player->stopFailing(QStringLiteral("/Browse"));
-    // Nothing touches the row: the model asks the view again by itself.
+    QElapsedTimer waited;
+    waited.start();
+    // Nothing touches the row: the model reads the letter again after the
+    // backoff (3 s), as it is still on screen.
     QTRY_COMPARE_WITH_TIMEOUT(text(m.data(), 0), QStringLiteral("X album 0"), 8000);
+    QVERIFY2(waited.elapsed() >= 2500, qPrintable(QString::number(waited.elapsed())));
 }
 
 void TstBrowse::aRepeatedNextKeyEndsTheList()
@@ -471,13 +480,90 @@ void TstBrowse::aRepeatedNextKeyEndsTheList()
     QScopedPointer<BrowseModel> m(open(QStringLiteral("Loop")));
     QTRY_VERIFY(m->ready());
     QCOMPARE(m->rowCount(), 20);
-    text(m.data(), 15);
+    m->fetchMore(QModelIndex());
     QTRY_VERIFY(browseKeys().size() >= 2);
     QTRY_VERIFY(!m->loading());
-    text(m.data(), 35);
-    text(m.data(), 15);
+    QVERIFY(!m->canFetchMore(QModelIndex()));
+    m->fetchMore(QModelIndex());
     QTest::qWait(300);
     QCOMPARE(browseKeys().size(), 2);   // the repeat was not followed again
+}
+
+void TstBrowse::aFailedPageIsReadAgainAfterTheBackoff()
+{
+    startClient();
+    QScopedPointer<BrowseModel> m(open(QStringLiteral("List")));
+    QTRY_VERIFY(m->ready());
+    m_player->failWith(QStringLiteral("/Browse"), 503);
+    m->fetchMore(QModelIndex());
+    QTRY_VERIFY(!m->loading());
+    QCOMPARE(m->rowCount(), 30);
+    QVERIFY(!m->canFetchMore(QModelIndex()));   // backing off
+    m_player->stopFailing(QStringLiteral("/Browse"));
+    QElapsedTimer waited;
+    waited.start();
+    QTRY_COMPARE_WITH_TIMEOUT(m->rowCount(), 45, 8000);
+    QVERIFY2(waited.elapsed() >= 2500, qPrintable(QString::number(waited.elapsed())));
+}
+
+void TstBrowse::readingRowsLoadsNothing()
+{
+    startClient();
+    QScopedPointer<BrowseModel> m(open(QStringLiteral("Index")));
+    QTRY_VERIFY(m->ready());
+    for (int row = 0; row < m->rowCount(); ++row)
+        text(m.data(), row);
+    QScopedPointer<BrowseModel> list(open(QStringLiteral("List")));
+    QTRY_VERIFY(list->ready());
+    for (int row = 0; row < list->rowCount(); ++row)
+        text(list.data(), row);
+    QTest::qWait(300);
+    QCOMPARE(browseKeys(), QStringList({ QStringLiteral("Index"), QStringLiteral("List") }));
+}
+
+void TstBrowse::aLetterFailedOfflineIsReadWhenThePlayerIsBack()
+{
+    startClient();
+    QScopedPointer<BrowseModel> m(open(QStringLiteral("Small")));
+    QTRY_VERIFY(m->ready());
+    const quint16 port = m_player->port();
+    m_player->close();
+    QTRY_COMPARE_WITH_TIMEOUT(m_client->availability(), Client::Offline, 8000);
+    m->show(0, 0);
+    QTRY_VERIFY(!m->loading());
+    QCOMPARE(m->data(m->index(0), BrowseModel::LoadedRole).toBool(), false);
+    // No retry while away; when the player is back, the letter on screen is
+    // read (the page reloads only when its first read failed).
+    QVERIFY(m_player->listen(port));
+    QTRY_COMPARE_WITH_TIMEOUT(m_client->availability(), Client::Online, 8000);
+    QTRY_COMPARE_WITH_TIMEOUT(text(m.data(), 0), QStringLiteral("X album 0"), 8000);
+}
+
+void TstBrowse::nothingIsSentAfterLeavingDuringABackoff()
+{
+    startClient();
+    BrowseModel *m = open(QStringLiteral("Small"));
+    QTRY_VERIFY(m->ready());
+    m_player->failWith(QStringLiteral("/Browse"), 503);
+    m->show(0, 0);
+    QTRY_VERIFY(!m->loading());
+    const int sent = browseKeys().size();
+    delete m;   // the page was popped during the backoff
+    m_player->stopFailing(QStringLiteral("/Browse"));
+    QTest::qWait(3500);
+    QCOMPARE(browseKeys().size(), sent);
+}
+
+void TstBrowse::aColdJumpReadsOnlyThatLetter()
+{
+    startClient();
+    QScopedPointer<BrowseModel> m(open(QStringLiteral("Index")));
+    QTRY_VERIFY(m->ready());
+    m->show(3 + 55, 3 + 55);   // a jump into B, nothing read yet
+    QTRY_COMPARE(text(m.data(), 3 + 55), QStringLiteral("B album 55"));
+    QTRY_VERIFY(!m->loading());
+    QCOMPARE(browseKeys(), QStringList({ QStringLiteral("Index"), QStringLiteral("Lib:S:B"),
+                                         QStringLiteral("Lib:S:B?start=50") }));
 }
 
 void TstBrowse::playPathsGoThroughTheGateOrAreRefused()

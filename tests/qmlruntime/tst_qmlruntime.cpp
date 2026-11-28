@@ -32,6 +32,7 @@ private slots:
     void groupValues();
     void shuffleAndRepeat();
     void reorderViewAndModelMove();
+    void aViewReadsTheNextPageByItself();
     void reorderDropAndPutBack();
     void reorderCancelAndReload();
     void rowActions();
@@ -103,6 +104,11 @@ void TstQmlRuntime::initTestCase()
         if (key == QLatin1String("LocalMusic:"))
             return "<browse serviceName=\"Library\" type=\"menu\">"
                    "<item browseKey=\"LocalMusic:MG/LocalMusic-Favourites\" text=\"Favoriten\" type=\"link\"/></browse>";
+        // Two pages: the second only through the view's fetchMore.
+        if (key == QLatin1String("Paged"))
+            return "<browse type=\"albums\" nextKey=\"Paged2\">" + album(0) + album(1) + "</browse>";
+        if (key == QLatin1String("Paged2"))
+            return "<browse type=\"albums\">" + album(2) + "</browse>";
         if (key == QLatin1String("List"))
             return "<browse type=\"albums\">"
                    + album(0, "<item actionURL=\"/Add?album=0&amp;shuffle=1\" text=\"Shuffle\" type=\"add-shuffle\"/>")
@@ -316,6 +322,13 @@ void TstQmlRuntime::shuffleAndRepeat()
     QTRY_COMPARE(m_player->requests(QStringLiteral("/Repeat")).size(), 2);
     QCOMPARE(m_player->requests(QStringLiteral("/Repeat")).at(0).target, QByteArray("/Repeat?state=0"));
     QCOMPARE(m_player->requests(QStringLiteral("/Repeat")).at(1).target, QByteArray("/Repeat?state=1"));
+}
+
+void TstQmlRuntime::aViewReadsTheNextPageByItself()
+{
+    // A first page that fits: the view (here a Repeater) asks for more
+    // through fetchMore when it creates its last item; nothing else asks.
+    QTRY_COMPARE(m_probe->property("pagedCount").toInt(), 3);
 }
 
 void TstQmlRuntime::reorderViewAndModelMove()

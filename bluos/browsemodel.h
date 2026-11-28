@@ -8,8 +8,8 @@
 #define BLUOS_BROWSEMODEL_H
 
 #include <QAbstractListModel>
-#include <QElapsedTimer>
 #include <QPointer>
+#include <QSet>
 #include <QUrl>
 #include <QVector>
 
@@ -80,6 +80,11 @@ public:
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role) const override;
+    // A plain list pages through nextKey when the view asks for more
+    // (QAbstractItemModel::fetchMore, called by the view when it creates its
+    // last delegate).
+    bool canFetchMore(const QModelIndex &parent) const override;
+    void fetchMore(const QModelIndex &parent) override;
     QHash<int, QByteArray> roleNames() const override;
 
     Client *client() const { return m_client; }
@@ -121,6 +126,10 @@ public:
     // §7.1: favourite-add, favourite-delete).
     Q_INVOKABLE bool changesFavourites(const QString &type) const;
 
+    // A sectioned list loads the letters of the rows on screen: the view
+    // reports the rows it shows (Qt 5.6 views expose no visible range).
+    Q_INVOKABLE void show(int first, int last);
+
 public slots:
     // Reads the level (again). Call once the properties are set.
     void load();
@@ -152,11 +161,10 @@ private:
 
     void onFirst(const Browse &reply);
     void setRows(const QList<BrowseItem> &items);
-    void want(int segment) const;
+    void next();
     void request(int segment);
     void onPage(int generation, int segment, const QString &sentKey, const Browse &reply);
-    void askAgain();
-    void retryLater(int segment);
+    void backOff(int segment);
     void findFavourites();
     void findListFavourites(const QString &kind);
     void readFirst(const QString &key);
@@ -182,9 +190,10 @@ private:
     QString m_error;
     bool m_playerError = false;
     int m_generation = 0;
-    mutable int m_inFlight = -1;   // segment being read, or -1
-    mutable int m_wanted = -1;     // the latest other wish
-    mutable QHash<int, QElapsedTimer> m_failed;
+    int m_inFlight = -1;      // segment being read, -2 the first read, or -1
+    QSet<int> m_backoff;      // segments that failed, until their retry
+    int m_showFirst = -1;     // the rows on screen (sectioned lists)
+    int m_showLast = -1;
 };
 
 } // namespace BluOS
