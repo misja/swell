@@ -7,14 +7,14 @@ import "pages"
 ApplicationWindow {
     id: app
 
-    // "m:ss" for a duration or position in seconds; empty when unknown.
+    // A duration or position in seconds as the Media app shows it
+    // (Sailfish.Media MediaListItem.qml:33): Silica's Format, long from an
+    // hour on. Empty when unknown.
     function formatTime(secs) {
         if (!(secs >= 0)) {
             return ""
         }
-        var m = Math.floor(secs / 60)
-        var s = secs % 60
-        return m + ":" + (s < 10 ? "0" : "") + s
+        return Format.formatDuration(secs, secs >= 3600 ? Format.DurationLong : Format.DurationShort)
     }
 
     // A command to the current player failed, from whichever page sent it.
