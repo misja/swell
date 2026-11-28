@@ -632,22 +632,17 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="250"/>
-        <source>Now playing %1. Tap a track to play the queue again.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/QueuePage.qml" line="269"/>
+        <location filename="../qml/pages/QueuePage.qml" line="258"/>
         <source>Clear queue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="271"/>
+        <location filename="../qml/pages/QueuePage.qml" line="260"/>
         <source>Clearing queue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="291"/>
+        <location filename="../qml/pages/QueuePage.qml" line="280"/>
         <source>Play a preset or an input, or add music</source>
         <translation type="unfinished"></translation>
     </message>
@@ -662,12 +657,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="264"/>
+        <location filename="../qml/pages/QueuePage.qml" line="253"/>
         <source>Reorder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="290"/>
+        <location filename="../qml/pages/QueuePage.qml" line="279"/>
         <source>Queue is empty</source>
         <translation type="unfinished"></translation>
     </message>
