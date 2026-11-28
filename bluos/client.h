@@ -302,6 +302,11 @@ public slots:
     // with a new prid, otherwise commandFailed; nothing is sent (commandFailed)
     // while the list is not read or /Status reports a newer one.
     void addInputPreset(const QString &inputId);
+    // Adds a preset from a URL already percent-encoded (sent as given), a
+    // name and an image: the same request, checks and outcome as for an
+    // input. Used for stations whose menu offers no preset action (spec 008,
+    // H: Radio/Airable, measured).
+    void addPreset(const QString &encodedUrl, const QString &name, const QString &image);
     // Moves the preset in slot fromId to slot toId with POST /Presets/edit
     // (the official app's request, not in the API; spec 008). Only while
     // online, the list is current and still the version prid, and no move

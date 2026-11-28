@@ -149,6 +149,23 @@ QList<BrowseAction> BrowseModel::actionsOf(const BrowseItem &item)
     return list;
 }
 
+QString BrowseModel::presetUrlOf(const QString &contextMenuKey)
+{
+    const int question = contextMenuKey.indexOf(QLatin1Char('?'));
+    if (question < 0)
+        return QString();
+    const QString prefix = QStringLiteral("preset_url=");
+    QString found;
+    int count = 0;
+    for (const QString &part : contextMenuKey.mid(question + 1).split(QLatin1Char('&'))) {
+        if (part.startsWith(prefix)) {
+            found = part.mid(prefix.size());
+            ++count;
+        }
+    }
+    return count == 1 ? found : QString();
+}
+
 QVariant BrowseModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid() || index.row() >= rowCount())
@@ -196,6 +213,19 @@ QVariant BrowseModel::data(const QModelIndex &index, int role) const
     case ActionsRole: return QVariant::fromValue(r.loaded ? actionsOf(r.item) : QList<BrowseAction>());
     case LoadedRole: return r.loaded;
     case FavouritesRole: return false;
+    case PresetRole: {
+        if (!r.loaded)
+            return QVariant();
+        for (const BrowseAction &a : actionsOf(r.item)) {
+            if (a.type == QLatin1String("preset"))
+                return QVariant();   // the player's own action is offered
+        }
+        const QString url = presetUrlOf(r.item.contextMenuKey);
+        if (url.isEmpty())
+            return QVariant();
+        return QVariantMap { { QStringLiteral("url"), url }, { QStringLiteral("name"), r.item.text },
+                             { QStringLiteral("image"), r.item.image } };
+    }
     }
     return QVariant();
 }
@@ -214,6 +244,7 @@ QHash<int, QByteArray> BrowseModel::roleNames() const
         { ActionsRole, "actions" },
         { SectionRole, "section" },
         { LoadedRole, "loaded" },
+        { PresetRole, "preset" },
         { FavouritesRole, "favourites" },
     };
 }

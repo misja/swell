@@ -63,7 +63,8 @@ public:
         ActionsRole,     // QList<BrowseAction>, known types only
         SectionRole,
         LoadedRole,
-        FavouritesRole
+        FavouritesRole,
+        PresetRole       // {url, name, image} to add as a preset, or empty
     };
 
     // The library's favourites, as the Library menu names them (observed on
@@ -171,6 +172,13 @@ private:
     int segmentOf(int row, int *offset) const;
     int firstRow(int segment) const;
     static QList<BrowseAction> actionsOf(const BrowseItem &item);
+public:
+    // The station URL in a context-menu key's preset_url parameter, as sent
+    // (percent-encoded once), or empty: Airable items carry it, their menus
+    // offer no preset action (measured, spec 008 H). Own code: the key's
+    // format is the player's, not documented.
+    static QString presetUrlOf(const QString &contextMenuKey);
+private:
 
     QPointer<Client> m_client;
     QString m_key;

@@ -40,6 +40,9 @@ private slots:
     void aRepeatedNextKeyEndsTheList();
     void aFailedPageIsReadAgainAfterTheBackoff();
     void readingRowsLoadsNothing();
+    void presetUrlOfAKey_data();
+    void presetUrlOfAKey();
+    void aStationWithoutAPresetActionOffersItsUrl();
     void aLetterFailedOfflineIsReadWhenThePlayerIsBack();
     void nothingIsSentAfterLeavingDuringABackoff();
     void aColdJumpReadsOnlyThatLetter();
@@ -130,6 +133,17 @@ void TstBrowse::init()
             return albums(QStringLiteral("C"), 0, 3);   // announced 2
         if (key == QLatin1String("Lib:S:D"))
             return albums(QStringLiteral("D"), 0, 1);   // announced 4
+        // Station rows as Radio (Airable) lists them (shape measured 2026-11-28,
+        // values invented): no preset action, preset_url in the key; and a
+        // station whose menu has the player's own preset action.
+        if (key == QLatin1String("Stations"))
+            return "<browse type=\"items\">"
+                   "<item contextMenuKey=\"Airable:CM/Airable-Item?URL=Airable%3Aradio%3Ax%2F42&amp;image=http%3A%2F%2Fimages.example%2F42.png&amp;preset_id=x&amp;preset_url=Airable%3Aradio%3Ax%2F42\""
+                   " text=\"Station 42\" image=\"http://images.example/42.png\" type=\"audio\">"
+                   "<contextMenu><item actionURL=\"/AddFavourite?service=Airable&amp;url=x\" text=\"Favourite\" type=\"favourite-add\"/></contextMenu></item>"
+                   "<item contextMenuKey=\"TuneIn:CM/x?preset_url=TuneIn%3As1\" text=\"Station 1\" type=\"audio\">"
+                   "<contextMenu><item actionURL=\"/SetPreset?name=Station%201&amp;url=TuneIn%3As1\" text=\"Add preset\" type=\"preset\"/></contextMenu></item>"
+                   "</browse>";
         if (key == QLatin1String("List"))
             return albums(QStringLiteral("L"), 0, 30, "List?start=30");
         if (key == QLatin1String("List?start=30"))
@@ -564,6 +578,38 @@ void TstBrowse::aColdJumpReadsOnlyThatLetter()
     QTRY_VERIFY(!m->loading());
     QCOMPARE(browseKeys(), QStringList({ QStringLiteral("Index"), QStringLiteral("Lib:S:B"),
                                          QStringLiteral("Lib:S:B?start=50") }));
+}
+
+void TstBrowse::presetUrlOfAKey_data()
+{
+    QTest::addColumn<QString>("key");
+    QTest::addColumn<QString>("url");
+    QTest::newRow("present") << "Airable:CM/Airable-Item?URL=a&preset_id=b&preset_url=Airable%3Aradio%3Ax" << "Airable%3Aradio%3Ax";
+    QTest::newRow("absent") << "Airable:CM/Airable-Item?URL=a&image=b" << "";
+    QTest::newRow("no query") << "Airable:CM/Airable-Item" << "";
+    QTest::newRow("empty") << "Airable:CM/x?preset_url=" << "";
+    QTest::newRow("twice") << "Airable:CM/x?preset_url=a&preset_url=b" << "";
+    QTest::newRow("not a prefix match") << "Airable:CM/x?xpreset_url=a" << "";
+}
+
+void TstBrowse::presetUrlOfAKey()
+{
+    QFETCH(QString, key);
+    QFETCH(QString, url);
+    QCOMPARE(BrowseModel::presetUrlOf(key), url);
+}
+
+void TstBrowse::aStationWithoutAPresetActionOffersItsUrl()
+{
+    startClient();
+    QScopedPointer<BrowseModel> m(open(QStringLiteral("Stations")));
+    QTRY_VERIFY(m->ready());
+    const QVariantMap preset = m->data(m->index(0), BrowseModel::PresetRole).toMap();
+    QCOMPARE(preset.value(QStringLiteral("url")).toString(), QStringLiteral("Airable%3Aradio%3Ax%2F42"));
+    QCOMPARE(preset.value(QStringLiteral("name")).toString(), QStringLiteral("Station 42"));
+    QCOMPARE(preset.value(QStringLiteral("image")).toString(), QStringLiteral("http://images.example/42.png"));
+    // The player's own action is offered instead, once.
+    QVERIFY(!m->data(m->index(1), BrowseModel::PresetRole).isValid());
 }
 
 void TstBrowse::playPathsGoThroughTheGateOrAreRefused()
