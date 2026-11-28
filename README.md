@@ -4,10 +4,10 @@
 
 A Sailfish OS controller for BluOS players.
 
-- See what's playing, with cover art, and control playback, shuffle,
-  repeat and volume
-- Play, add, reorder and delete presets, also radio stations, and switch
-  inputs
+- See what's playing, with cover art, and control playback, seeking,
+  shuffle, repeat and volume
+- Play, add, rename, reorder and delete presets, also radio stations, and
+  switch inputs
 - View the play queue, reorder it and remove tracks
 - Browse your music: library, radio and streaming services, and search
 - Group players, with group volume and each player's own volume
