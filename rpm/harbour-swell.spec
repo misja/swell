@@ -1,7 +1,7 @@
 Name:       harbour-swell
 
 Summary:    Controller for BluOS players
-Version:    0.8.0
+Version:    0.9.0
 Release:    1
 License:    MIT
 URL:        https://github.com/misja/swell
