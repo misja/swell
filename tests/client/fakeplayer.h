@@ -256,7 +256,11 @@ private:
             body = m_handlers.value(path)(query);
             head = "HTTP/1.1 200 OK\r\nContent-Type: text/xml\r\n";
         } else if (m_redirects.contains(path)) {
-            head = "HTTP/1.1 302 Found\r\nLocation: " + m_redirects.value(path).toEncoded() + "\r\n";
+            // As the player's /Artwork (NAD C 379, BluOS 4.18.26, 2026-11-28):
+            // 301 with a short HTML body.
+            const QByteArray to = m_redirects.value(path).toEncoded();
+            body = "<a href=\"" + to + "\">Moved Permanently</a>.\n\n";
+            head = "HTTP/1.1 301 Moved Permanently\r\nContent-Type: text/html; charset=utf-8\r\nLocation: " + to + "\r\n";
         } else if (m_routes.contains(path)) {
             body = m_routes.value(path);
             head = "HTTP/1.1 200 OK\r\nContent-Type: " + m_types.value(path, "text/xml") + "\r\n";
