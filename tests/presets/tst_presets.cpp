@@ -245,7 +245,7 @@ void TstPresets::aChangedListIsNotTouched()
     startClient();
     const QString seen = m_client->presetsPrid();
     m_presets.remove(7);
-    m_presets.insert(7, "Someone else's");
+    m_presets.insert(7, QByteArray("Someone else's"));
     ++m_prid;
     publish();
     // The list refreshes from the prid change.
@@ -272,7 +272,7 @@ void TstPresets::aListNotYetReadIsNotTouched()
     startClient();
     const QString seen = m_client->presetsPrid();
     m_player->failWith(QStringLiteral("/Presets"), 500);
-    m_presets.insert(7, "Someone else's");
+    m_presets.insert(7, QByteArray("Someone else's"));
     ++m_prid;
     publish();
     QTRY_VERIFY(!m_client->presetsCurrent());
