@@ -165,12 +165,12 @@ void TstCovers::aStationImageKeepsItsOwnFreshness()
     QTemporaryDir dir;
     FakePlayer server;
     QVERIFY(server.listen());
-    server.serve(QStringLiteral("/55/34/927136.png"), QByteArray(200, 'u'), "image/png");
-    server.addHeaders(QStringLiteral("/55/34/927136.png"),
+    server.serve(QStringLiteral("/images/station.png"), QByteArray(200, 'u'), "image/png");
+    server.addHeaders(QStringLiteral("/images/station.png"),
                       "Last-Modified: Fri, 26 Sep 2025 07:11:06 GMT\r\nETag: \"2682fe6-2b7b\"\r\n");
     Swell::CoverCacheFactory factory(dir.path());
     QScopedPointer<QNetworkAccessManager> nam(factory.create(nullptr));
-    const QUrl url(QStringLiteral("http://127.0.0.1:%1/55/34/927136.png").arg(server.port()));
+    const QUrl url(QStringLiteral("http://127.0.0.1:%1/images/station.png").arg(server.port()));
     QScopedPointer<QNetworkReply> first(get(nam.data(), url));
     const QNetworkCacheMetaData meta = nam->cache()->metaData(url);
     QVERIFY(meta.isValid());
@@ -179,7 +179,7 @@ void TstCovers::aStationImageKeepsItsOwnFreshness()
     // The double sends no Date, so Qt's Last-Modified freshness is nil: the
     // next load asks the server again, with its validators.
     QScopedPointer<QNetworkReply> again(get(nam.data(), url));
-    const QList<FakePlayer::Request> sent = server.requests(QStringLiteral("/55/34/927136.png"));
+    const QList<FakePlayer::Request> sent = server.requests(QStringLiteral("/images/station.png"));
     QCOMPARE(sent.size(), 2);
 }
 
