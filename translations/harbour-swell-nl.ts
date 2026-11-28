@@ -108,7 +108,7 @@
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="65"/>
         <location filename="../qml/pages/BrowsePage.qml" line="248"/>
-        <location filename="../qml/pages/BrowsePage.qml" line="410"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="413"/>
         <source>Favorites</source>
         <translation>Favorieten</translation>
     </message>
@@ -161,37 +161,37 @@
         <translation>Alles afspelen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="452"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="460"/>
         <source>Player not reachable</source>
         <translation>Speler niet bereikbaar</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="455"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="463"/>
         <source>The player could not load this</source>
         <translation>De speler kon dit niet laden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="457"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="465"/>
         <source>No favorites yet</source>
         <translation>Nog geen favorieten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="457"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="465"/>
         <source>Nothing here</source>
         <translation>Hier staat niets</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="461"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="469"/>
         <source>Swell will try again when it is back</source>
         <translation>Swell probeert het opnieuw zodra hij terug is</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="465"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="473"/>
         <source>No usable answer from the player</source>
         <translation>Geen bruikbaar antwoord van de speler</translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="468"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="476"/>
         <source>Long press an album, artist or track and choose Add to favorites</source>
         <translation>Houd een album, artiest of nummer ingedrukt en kies Toevoegen aan favorieten</translation>
     </message>

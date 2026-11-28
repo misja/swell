@@ -108,7 +108,7 @@
     <message>
         <location filename="../qml/pages/BrowsePage.qml" line="65"/>
         <location filename="../qml/pages/BrowsePage.qml" line="248"/>
-        <location filename="../qml/pages/BrowsePage.qml" line="410"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="413"/>
         <source>Favorites</source>
         <translation type="unfinished"></translation>
     </message>
@@ -161,37 +161,37 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="452"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="460"/>
         <source>Player not reachable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="455"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="463"/>
         <source>The player could not load this</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="457"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="465"/>
         <source>No favorites yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="457"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="465"/>
         <source>Nothing here</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="461"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="469"/>
         <source>Swell will try again when it is back</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="465"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="473"/>
         <source>No usable answer from the player</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/BrowsePage.qml" line="468"/>
+        <location filename="../qml/pages/BrowsePage.qml" line="476"/>
         <source>Long press an album, artist or track and choose Add to favorites</source>
         <translation type="unfinished"></translation>
     </message>
