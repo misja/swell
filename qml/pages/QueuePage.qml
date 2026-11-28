@@ -240,17 +240,6 @@ Page {
                 }
             }
 
-            Label {
-                x: Theme.horizontalPageMargin
-                width: parent.width - 2 * Theme.horizontalPageMargin
-                visible: page._queue !== null && page._queue.streaming && page._queue.length > 0
-                wrapMode: Text.Wrap
-                font.pixelSize: Theme.fontSizeSmall
-                color: Theme.secondaryHighlightColor
-                text: qsTr("Now playing %1. Tap a track to play the queue again.")
-                      .arg(page._player ? page._player.title1 : "")
-            }
-
             Item {
                 width: 1
                 height: Theme.paddingMedium
