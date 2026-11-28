@@ -140,12 +140,13 @@ struct Preset {
     QString name;
     QString image;          // may be relative and may redirect, or an absolute URL
     QString url;            // what the preset loads, e.g. "Capture:…?id=<input id>"
+    int volume = -1;        // the preset's own volume, or -1 (set in the official app)
     // The capture input this preset selects, from the id= in its url; empty otherwise.
     QString inputId() const;
 
     bool operator==(const Preset &o) const
     {
-        return id == o.id && name == o.name && image == o.image && url == o.url;
+        return id == o.id && name == o.name && image == o.image && url == o.url && volume == o.volume;
     }
     bool operator!=(const Preset &o) const { return !(*this == o); }
 };

@@ -49,6 +49,21 @@ Page {
         })
     }
 
+    // The dialog keeps the player and the version of the list it opened on;
+    // a list changed meanwhile is refused when sent (Client::renamePreset).
+    function _renamePreset(id, name) {
+        var player = _player
+        var prid = player.presetsPrid
+        var dialog = pageStack.push(Qt.resolvedUrl("RenamePresetDialog.qml"), { name: name })
+        dialog.accepted.connect(function() {
+            if (!player || players.current !== player) {
+                Notices.show(qsTr("Nothing was renamed."), Notice.Short)
+                return
+            }
+            player.renamePreset(id, dialog.newName, prid)
+        })
+    }
+
     function _endReordering() {
         reorder.cancel()
         _reordering = false
@@ -62,6 +77,8 @@ Page {
         target: page._player
         onPresetDeleteRefused: Notices.show(presetsChanged ? qsTr("The presets have changed. Nothing was deleted.")
                                                            : qsTr("Nothing was deleted."), Notice.Short)
+        onPresetRenameRefused: Notices.show(presetsChanged ? qsTr("The presets have changed. Nothing was renamed.")
+                                                           : qsTr("Nothing was renamed."), Notice.Short)
         onPresetMoveRefused: {
             reorder.putBack()
             Notices.show(presetsChanged ? qsTr("The presets have changed. Nothing was moved.")
@@ -113,6 +130,14 @@ Page {
             Component {
                 id: deleteMenu
                 ContextMenu {
+                    MenuItem {
+                        text: qsTr("Rename")
+                        // As Delete: not during a remorse or a move, and only
+                        // on the list as the player has it now.
+                        enabled: !deleteRemorse.active && page._player.presetsCurrent
+                                 && !page._player.presetMoving
+                        onClicked: page._renamePreset(modelData.id, modelData.name)
+                    }
                     MenuItem {
                         text: qsTr("Delete")
                         // One at a time, and only on the list as the player

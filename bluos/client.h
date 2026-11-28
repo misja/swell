@@ -307,6 +307,14 @@ public slots:
     // input. Used for stations whose menu offers no preset action (spec 008,
     // H: Radio/Airable, measured).
     void addPreset(const QString &encodedUrl, const QString &name, const QString &image);
+    // Renames preset id with /SetPreset?id=N, sending its own url, image and
+    // volume again (the slot is overwritten; without volume a preset's own
+    // volume is lost: measured, spec 008 I). Only while online, no move is in
+    // flight, and the list is current at prid and holds id; otherwise
+    // presetRenameRefused() and nothing is sent. Success is a list with a new
+    // prid holding id with the new name and the same url; anything else is
+    // commandFailed. The list is then read again (prid).
+    void renamePreset(int id, const QString &name, const QString &prid);
     // Moves the preset in slot fromId to slot toId with POST /Presets/edit
     // (the official app's request, not in the API; spec 008). Only while
     // online, the list is current and still the version prid, and no move
@@ -381,6 +389,9 @@ signals:
     void presetMoveRefused(bool presetsChanged);
     // A preset move failed after the checks (also reported as commandFailed).
     void presetMoveFailed();
+    // renamePreset() sent nothing: the presets changed (presetsChanged), or
+    // the player is offline or a move is in flight.
+    void presetRenameRefused(bool presetsChanged);
     void presetMovingChanged();
     // A context-menu action succeeded (type as in the menu, e.g. addAll-last).
     void actionDone(const QString &type);

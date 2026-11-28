@@ -533,52 +533,68 @@
     </message>
     <message>
         <location filename="../qml/pages/PresetsPage.qml" line="45"/>
-        <location filename="../qml/pages/PresetsPage.qml" line="64"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="79"/>
         <source>Nothing was deleted.</source>
         <translation>Er is niets verwijderd.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="63"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="60"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="81"/>
+        <source>Nothing was renamed.</source>
+        <translation>Er is niets hernoemd.</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="78"/>
         <source>The presets have changed. Nothing was deleted.</source>
         <translation>De presets zijn gewijzigd. Er is niets verwijderd.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="67"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="80"/>
+        <source>The presets have changed. Nothing was renamed.</source>
+        <translation>De presets zijn gewijzigd. Er is niets hernoemd.</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="84"/>
         <source>The presets have changed. Nothing was moved.</source>
         <translation>De presets zijn gewijzigd. Er is niets verplaatst.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="68"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="85"/>
         <source>Nothing was moved.</source>
         <translation>Er is niets verplaatst.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="182"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="134"/>
+        <source>Rename</source>
+        <translation>Hernoemen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PresetsPage.qml" line="207"/>
         <source>Reorder</source>
         <translation>Volgorde wijzigen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="200"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="225"/>
         <source>Presets</source>
         <translation>Presets</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="208"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="233"/>
         <source>Long press a station in Music, or an input on Home, and choose Add preset</source>
         <translation>Houd een zender in Muziek of een ingang op Home ingedrukt en kies Preset toevoegen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="117"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="142"/>
         <source>Delete</source>
         <translation>Verwijderen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="201"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="226"/>
         <source>Drag to move, tap to stop</source>
         <translation>Sleep om te verplaatsen, tik om te stoppen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PresetsPage.qml" line="207"/>
+        <location filename="../qml/pages/PresetsPage.qml" line="232"/>
         <source>No presets</source>
         <translation>Geen presets</translation>
     </message>
@@ -657,6 +673,20 @@
         <location filename="../qml/pages/QueuePage.qml" line="290"/>
         <source>Queue is empty</source>
         <translation>Wachtrij is leeg</translation>
+    </message>
+</context>
+<context>
+    <name>RenamePresetDialog</name>
+    <message>
+        <location filename="../qml/pages/RenamePresetDialog.qml" line="19"/>
+        <source>Rename</source>
+        <translation>Hernoemen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/RenamePresetDialog.qml" line="26"/>
+        <location filename="../qml/pages/RenamePresetDialog.qml" line="27"/>
+        <source>Name</source>
+        <translation>Naam</translation>
     </message>
 </context>
 <context>

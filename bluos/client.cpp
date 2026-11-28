@@ -734,6 +734,55 @@ void Client::movePreset(int fromId, int toId, const QString &prid)
     });
 }
 
+void Client::renamePreset(int id, const QString &name, const QString &prid)
+{
+    const QString path = QStringLiteral("/SetPreset");
+    const QString newName = name.trimmed();
+    if (!online() || m_presetMoving) {
+        emit presetRenameRefused(false);
+        return;
+    }
+    const Preset *preset = nullptr;
+    for (const Preset &p : m_presets)
+        if (p.id == id)
+            preset = &p;
+    if (!m_presetsCurrent || prid != m_presetsPrid || !preset) {
+        emit presetRenameRefused(true);
+        return;
+    }
+    if (newName.isEmpty() || newName == preset->name)
+        return;
+    // The slot is set again, as the official app renames (measured, spec 008 I).
+    QStringList items;
+    items << QStringLiteral("id=") + QString::number(id)
+          << QStringLiteral("name=") + QString::fromLatin1(QUrl::toPercentEncoding(newName))
+          << QStringLiteral("url=") + QString::fromLatin1(QUrl::toPercentEncoding(preset->url));
+    if (!preset->image.isEmpty())
+        items << QStringLiteral("image=") + QString::fromLatin1(QUrl::toPercentEncoding(preset->image));
+    if (preset->volume >= 0)
+        items << QStringLiteral("volume=") + QString::number(preset->volume);
+    const QString before = m_presetsPrid;
+    const QString url = preset->url;
+    fetch(path, items.join(QLatin1Char('&')), [this, path, before, id, newName, url](const QByteArray &body) {
+        const Presets after = parsePresets(body);
+        bool renamed = false;
+        for (const Preset &p : after.items)
+            renamed = renamed || (p.id == id && p.name == newName && p.url == url);
+        if (after.ok && after.prid != before && renamed) {
+            // The list shown is old until /Presets answers for the new prid.
+            if (m_presetsCurrent && after.prid != m_presetsPrid) {
+                m_presetsCurrent = false;
+                emit presetsVersionChanged();
+            }
+            return;
+        }
+        QString error = parseError(body);
+        if (error.isEmpty())
+            error = body.isEmpty() ? QStringLiteral("no answer") : QStringLiteral("not renamed");
+        emit commandFailed(path, error);
+    });
+}
+
 void Client::fetchQueueWindow(int start, int end, QObject *context,
                               const std::function<void(const Playlist &)> &handler)
 {

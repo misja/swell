@@ -328,6 +328,28 @@ H. **Adding a Radio (Airable) station** (#59, 2026-11-28). Its menus,
      entry is simply not offered. That the official app takes the URL
      from there is an inference: its capture shows the add, not the read.
 
+I. **Renaming** (#75, the maintainer, 2026-11-28: completes the presets).
+   - "Rename" in a preset's menu on the Presets page, above Delete, enabled
+     as Delete is and not while a move is in flight. It opens a Silica
+     `Dialog` (`RenamePresetDialog.qml`, as Jolla's file manager renames:
+     a header, the name pre-filled and selected, accept with the enter
+     key), which accepts only a non-empty, changed name.
+   - The official app renames by setting the slot again (captured):
+     `/SetPreset?…&id=N&name=…` with the preset's url and image. Swell
+     sends `/SetPreset?id=N&name=…&url=…&image=…`, with `volume=N` when the
+     preset has its own: without it the player drops the volume (measured
+     2026-11-28: 200, the whole list, `prid` + 1, the same slot, url and
+     image; the volume gone, and kept with `volume=`). `/Presets` lists
+     that volume as an attribute, which Swell now reads.
+   - `Client::renamePreset(id, name, prid)` sends nothing, and the page
+     says so, when the player is offline or a move is in flight ("Nothing
+     was renamed."), or the list is not current, has another `prid` or no
+     such id ("The presets have changed. Nothing was renamed."). Success is
+     a list with a new `prid` holding the id with the new name and the same
+     url; the list is then read again. Anything else gives the failure
+     notice. Another controller can still change the slot between the
+     check and the request: `/SetPreset` takes no `prid`, as for delete.
+
 ### Deleting (on the Presets page)
 
 1. **Menu.** A long press on a tile opens a `ContextMenu` with one item,
@@ -414,6 +436,11 @@ H. **Adding a Radio (Airable) station** (#59, 2026-11-28). Its menus,
 | Add a Radio station: no answer, HTTP error, `<error>`, an unchanged `prid` | one request | the failure notice |
 | A station with the player's own preset action | that action only | one "Add preset" |
 | Add a Radio station, Music no longer the active page when the reply comes | one request | no success notice; a failure still gives the failure notice |
+| Rename: a changed name accepted | one `/SetPreset?id=N&name=…&url=…&image=…[&volume=…]` | the new name after the next status; the slot, url, image and volume kept |
+| Rename: the dialog cancelled, or the same or an empty name | nothing | unchanged |
+| Rename: offline or a move in flight | nothing | "Nothing was renamed." |
+| Rename: the list changed or not current, or the id gone | nothing | "The presets have changed. Nothing was renamed." |
+| Rename: no answer, HTTP error, `<error>`, an unchanged `prid`, the old name in the reply | one request | the failure notice |
 
 Tests (`tests/presets`, `tests/browse`) cover the client and model side:
 - deleting, with each refusal and failure;
@@ -433,7 +460,7 @@ The pages are not instantiated in the tests. The device check covers:
 
 ## Out of scope
 
-- Editing a preset, the per-preset volume.
+- Editing a preset other than its name; setting the per-preset volume.
 - Reordering on Home.
 - Choosing a slot when adding.
 - Presets of players other than the current one.
@@ -487,6 +514,14 @@ The pages are not instantiated in the tests. The device check covers:
     check with a throwaway: add from Radio, the notice, the tile, play,
     delete; a TuneIn and a Radio Paradise station each show one "Add
     preset".
+
+14. A rename sends one `/SetPreset` with the id, the new name, the
+    preset's own url and image and, if it has one, its volume, byte for
+    byte; refusals send nothing and say so; a failed reply gives the
+    failure notice. Tests against the double, which sets the slot again
+    as measured. Device check with a throwaway: rename a station and an
+    input, a name with `&`, `#` and non-ASCII, a preset with its own
+    volume (kept), cancel; the tile and Home show the new name.
 
 ## Own code (named 2026-11-28, #63)
 

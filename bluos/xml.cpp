@@ -326,6 +326,11 @@ Presets parsePresets(const QByteArray &xml)
             preset.name = a.value(QLatin1String("name")).toString();
             preset.image = a.value(QLatin1String("image")).toString();
             preset.url = a.value(QLatin1String("url")).toString();
+            if (a.hasAttribute(QLatin1String("volume"))) {
+                bool level = false;
+                const int volume = a.value(QLatin1String("volume")).toString().toInt(&level);
+                preset.volume = level && volume >= 0 ? volume : -1;
+            }
             if (ok)
                 p.items.append(preset);
         }
