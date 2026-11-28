@@ -38,7 +38,7 @@ MprisPlayer {
         if (player.playing) {
             return Mpris.Playing
         }
-        return player.state === "pause" ? Mpris.Paused : Mpris.Stopped
+        return player.paused ? Mpris.Paused : Mpris.Stopped
     }
 
     metaData.title: _active ? player.title1 : ""

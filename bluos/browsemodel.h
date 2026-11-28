@@ -117,6 +117,9 @@ public:
     // An action that starts playback (add-now, addAll-now, add-shuffle)
     // rather than adding to the queue or changing a favourite.
     Q_INVOKABLE bool startsPlayback(const QString &type) const;
+    // The context-menu action types that add or remove a favourite (API v1.7
+    // §7.1: favourite-add, favourite-delete).
+    Q_INVOKABLE bool changesFavourites(const QString &type) const;
 
 public slots:
     // Reads the level (again). Call once the properties are set.

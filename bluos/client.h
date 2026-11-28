@@ -37,6 +37,8 @@ class Client : public QObject
     Q_PROPERTY(bool fixedVolume READ fixedVolume NOTIFY syncStatusChanged)
     Q_PROPERTY(QString state READ state NOTIFY statusChanged)
     Q_PROPERTY(bool playing READ playing NOTIFY statusChanged)
+    // state "pause" (section 2.1): /Play resumes; not in stop.
+    Q_PROPERTY(bool paused READ paused NOTIFY statusChanged)
     Q_PROPERTY(bool hasContent READ hasContent NOTIFY statusChanged)
     Q_PROPERTY(QString title1 READ title1 NOTIFY statusChanged)
     Q_PROPERTY(QString title2 READ title2 NOTIFY statusChanged)
@@ -155,6 +157,7 @@ public:
     bool fixedVolume() const { return m_sync.ok && m_sync.volume < 0; }
     QString state() const { return m_status.state; }
     bool playing() const { return m_status.isPlaying(); }
+    bool paused() const { return m_status.ok && m_status.state == QLatin1String("pause"); }
     QString title1() const { return m_status.title1; }
     QString title2() const { return m_status.title2; }
     QString title3() const { return m_status.title3; }

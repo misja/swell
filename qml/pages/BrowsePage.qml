@@ -117,7 +117,7 @@ Page {
     Connections {
         target: page.status === PageStatus.Active ? page._player : null
         onActionDone: {
-            if (type.indexOf("favourite") === 0) {
+            if (browseModel.changesFavourites(type)) {
                 Notices.show(type === "favourite-add" ? qsTr("Added to favorites") : qsTr("Removed from favorites"), Notice.Short)
                 browseModel.load()   // the menu label, and the Favourites list, change
                 if (favouritesModel.key !== "") {
