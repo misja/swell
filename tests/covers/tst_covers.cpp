@@ -19,6 +19,8 @@ private slots:
     void aRedirectedCoverIsReadOnce();
     void anErrorIsNotKept();
     void mustRevalidateGoesToThePlayer();
+    void anExpiredCoverIsReadAgain();
+    void aStationImageKeepsItsOwnFreshness();
     void theCacheHasALimit();
 
 private:
@@ -114,8 +116,8 @@ void TstCovers::anErrorIsNotKept()
 
 void TstCovers::mustRevalidateGoesToThePlayer()
 {
-    // Not seen on a server Swell uses; the cache backend refuses such
-    // entries, so they are always read from the network.
+    // Not seen on a server Swell uses; Qt does not reuse such entries
+    // without asking, so they are read from the network.
     QTemporaryDir dir;
     FakePlayer player;
     QVERIFY(player.listen());
@@ -130,6 +132,50 @@ void TstCovers::mustRevalidateGoesToThePlayer()
         QCOMPARE(reply->readAll().size(), 100);
     }
     QCOMPARE(player.requests(QStringLiteral("/Artwork")).size(), 2);
+}
+
+void TstCovers::anExpiredCoverIsReadAgain()
+{
+    // Without headers a cover is fresh for the factory's max age (30 days in
+    // the app, 1 s here), then read from the player again.
+    QTemporaryDir dir;
+    FakePlayer player;
+    QVERIFY(player.listen());
+    player.serve(QStringLiteral("/Artwork"), QByteArray(500, 'v'), "image/jpeg");
+    Swell::CoverCacheFactory factory(dir.path(), 1);
+    QScopedPointer<QNetworkAccessManager> nam(factory.create(nullptr));
+    const QUrl url(QStringLiteral("http://127.0.0.1:%1/Artwork?album=D").arg(player.port()));
+    QScopedPointer<QNetworkReply> first(get(nam.data(), url));
+    const QDateTime expiry = nam->cache()->metaData(url).expirationDate();
+    QVERIFY(expiry.isValid());
+    QVERIFY(qAbs(QDateTime::currentDateTimeUtc().secsTo(expiry) - 1) <= 1);
+    QScopedPointer<QNetworkReply> fresh(get(nam.data(), url));
+    QVERIFY(fresh->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool());
+    QCOMPARE(player.requests(QStringLiteral("/Artwork")).size(), 1);
+    QTest::qWait(2500);
+    QScopedPointer<QNetworkReply> stale(get(nam.data(), url));
+    QVERIFY(!stale->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool());
+    QCOMPARE(player.requests(QStringLiteral("/Artwork")).size(), 2);
+}
+
+void TstCovers::aStationImageKeepsItsOwnFreshness()
+{
+    // As static.airable.io answers (2026-11-28): Last-Modified and ETag. No
+    // expiry is added; Qt derives freshness from Last-Modified itself.
+    QTemporaryDir dir;
+    FakePlayer server;
+    QVERIFY(server.listen());
+    server.serve(QStringLiteral("/55/34/927136.png"), QByteArray(200, 'u'), "image/png");
+    server.addHeaders(QStringLiteral("/55/34/927136.png"),
+                      "Last-Modified: Fri, 26 Sep 2025 07:11:06 GMT\r\nETag: \"2682fe6-2b7b\"\r\n");
+    Swell::CoverCacheFactory factory(dir.path());
+    QScopedPointer<QNetworkAccessManager> nam(factory.create(nullptr));
+    const QUrl url(QStringLiteral("http://127.0.0.1:%1/55/34/927136.png").arg(server.port()));
+    QScopedPointer<QNetworkReply> first(get(nam.data(), url));
+    const QNetworkCacheMetaData meta = nam->cache()->metaData(url);
+    QVERIFY(meta.isValid());
+    QVERIFY(meta.lastModified().isValid());
+    QVERIFY(!meta.expirationDate().isValid());
 }
 
 // The setting only; eviction is QNetworkDiskCache's.
