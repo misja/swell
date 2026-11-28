@@ -678,13 +678,13 @@
 <context>
     <name>RenamePresetDialog</name>
     <message>
-        <location filename="../qml/pages/RenamePresetDialog.qml" line="18"/>
+        <location filename="../qml/pages/RenamePresetDialog.qml" line="19"/>
         <source>Rename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RenamePresetDialog.qml" line="25"/>
         <location filename="../qml/pages/RenamePresetDialog.qml" line="26"/>
+        <location filename="../qml/pages/RenamePresetDialog.qml" line="27"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
