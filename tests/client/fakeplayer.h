@@ -96,6 +96,8 @@ public:
     }
 
     void redirect(const QString &path, const QUrl &to) { m_redirects.insert(path, to); }
+    // Extra header lines ("Name: value\r\n") on this path's answers.
+    void addHeaders(const QString &path, const QByteArray &lines) { m_headers.insert(path, lines); }
     // Answers this path from its query, e.g. /Playlist windows.
     void handle(const QString &path, const std::function<QByteArray(const QUrlQuery &)> &handler)
     {
@@ -262,6 +264,7 @@ private:
             body = "<html><body>Not found</body></html>";
             head = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n";
         }
+        head += m_headers.value(path);
         head += "Content-Length: " + QByteArray::number(body.size()) + "\r\nConnection: close\r\n\r\n";
         socket->write(head + body);
         socket->disconnectFromHost();
@@ -273,6 +276,7 @@ private:
     QHash<QString, QByteArray> m_routes;
     QHash<QString, QByteArray> m_types;
     QHash<QString, QUrl> m_redirects;
+    QHash<QString, QByteArray> m_headers;
     QHash<QString, int> m_failures;
     QHash<QString, std::function<QByteArray(const QUrlQuery &)>> m_handlers;
     QHash<QString, int> m_delays;

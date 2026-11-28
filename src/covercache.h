@@ -10,6 +10,7 @@
 #define SWELL_COVERCACHE_H
 
 #include <QNetworkAccessManager>
+#include <QNetworkCacheMetaData>
 #include <QQmlNetworkAccessManagerFactory>
 #include <QString>
 
@@ -19,13 +20,18 @@ namespace Swell {
 // (AlwaysCache, which skips the freshness check: qnetworkaccessmanager.cpp
 // 1138-1154), from the network otherwise. Qt 5.6 has no such setting for a
 // manager, only the per-request attribute. A changed cover is read again only
-// once it has dropped out of the bounded cache.
+// once it has dropped out of the bounded cache, which removes the oldest
+// files first (QNetworkDiskCache::expire).
 class CoverNetworkAccessManager : public QNetworkAccessManager
 {
     Q_OBJECT
 
 public:
     using QNetworkAccessManager::QNetworkAccessManager;
+
+    // Whether the cache can serve this entry: present, and not marked
+    // must-revalidate (the cache backend refuses those).
+    static bool servable(const QNetworkCacheMetaData &metaData);
 
 protected:
     QNetworkReply *createRequest(Operation op, const QNetworkRequest &request,

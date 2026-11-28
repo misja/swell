@@ -7,10 +7,24 @@
 
 namespace Swell {
 
+bool CoverNetworkAccessManager::servable(const QNetworkCacheMetaData &metaData)
+{
+    if (!metaData.isValid())
+        return false;
+    // The cache backend refuses these entries (qnetworkaccesscachebackend.cpp
+    // 83-87, Qt 5.6.3): reading one with AlwaysCache would fail every time.
+    for (const QNetworkCacheMetaData::RawHeader &header : metaData.rawHeaders()) {
+        if (header.first.compare("Cache-Control", Qt::CaseInsensitive) == 0
+                && header.second.contains("must-revalidate"))
+            return false;
+    }
+    return true;
+}
+
 QNetworkReply *CoverNetworkAccessManager::createRequest(Operation op, const QNetworkRequest &request,
                                                         QIODevice *outgoingData)
 {
-    if (op != GetOperation || !cache() || !cache()->metaData(request.url()).isValid())
+    if (op != GetOperation || !cache() || !servable(cache()->metaData(request.url())))
         return QNetworkAccessManager::createRequest(op, request, outgoingData);
     QNetworkRequest cached(request);
     cached.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::AlwaysCache);
