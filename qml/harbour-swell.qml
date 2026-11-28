@@ -124,6 +124,10 @@ ApplicationWindow {
         }
     }
 
+    // True until the remembered player is restored; the Players page opens
+    // its Home at start (in whichever order Silica shows the initial page).
+    property bool restoring: true
+
     Component.onCompleted: {
         var hosts = manualHosts.value
         for (var i = 0; i < hosts.length; ++i) {
@@ -132,6 +136,7 @@ ApplicationWindow {
         if (currentId.value !== "") {
             players.restoreCurrent(currentId.value, currentNodeId.value)
         }
+        restoring = false
     }
 
     // The docked mini-player: on every page except Now Playing, only with a
