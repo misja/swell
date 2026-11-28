@@ -133,7 +133,7 @@ the session bus.
 
 - Volume through MPRIS. The lock screen does not offer it, and the volume
   keys stay the phone's.
-- Seeking: Swell has no seek command.
+- Seeking on the lock screen (#74); Now Playing seeks since #73.
 - Publishing more than one player, a player per BluOS device, and track
   lists.
 - A C++ MPRIS implementation (libambermpris is not an allowed library).

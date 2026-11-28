@@ -47,6 +47,7 @@ private slots:
     void playFromSendsId();
     void shuffleAndRepeatFollowTheStatus();
     void pausedFollowsTheState();
+    void seekIsSentWithinTheTrack();
     void shuffleReordersAfterTheCurrentEntryAndReloads();
     void shuffleOffRestoresTheOrder();
     void repeatKeepsTheQueue();
@@ -703,6 +704,33 @@ void TstQueue::playFromSendsId()
     m_client->playQueueEntry(5);
     QTRY_COMPARE(m_player->requests(QStringLiteral("/Play")).size(), 1);
     QCOMPARE(m_player->requests(QStringLiteral("/Play")).first().target, QByteArray("/Play?id=5"));
+}
+
+void TstQueue::seekIsSentWithinTheTrack()
+{
+    // As measured (#73): a radio station has canSeek 0 and no totlen; a queue
+    // track canSeek 1 and totlen; a seek past the end plays the next track.
+    m_player->setStatus("<status etag=\"r\"><state>stream</state><canSeek>0</canSeek>"
+                        "<streamUrl>Invented:radio</streamUrl></status>");
+    startClient();
+    QTRY_COMPARE(m_client->state(), QStringLiteral("stream"));
+    QVERIFY(!m_client->seekable());
+    m_client->seek(30);
+    m_player->setStatus("<status etag=\"t\"><state>play</state><canSeek>0</canSeek><totlen>183</totlen></status>");
+    QTRY_COMPARE(m_client->duration(), 183);
+    QVERIFY(!m_client->seekable());   // a length alone is not enough
+    m_client->seek(30);
+    QTest::qWait(300);
+    QVERIFY(m_player->requests(QStringLiteral("/Play")).isEmpty());
+
+    m_player->setStatus("<status etag=\"s\"><state>play</state><canSeek>1</canSeek><totlen>183</totlen></status>");
+    QTRY_VERIFY(m_client->seekable());
+    m_client->seek(60);
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Play")).size(), 1);
+    QCOMPARE(m_player->requests(QStringLiteral("/Play")).first().target, QByteArray("/Play?seek=60"));
+    m_client->seek(9999);
+    QTRY_COMPARE(m_player->requests(QStringLiteral("/Play")).size(), 2);
+    QCOMPARE(m_player->requests(QStringLiteral("/Play")).last().target, QByteArray("/Play?seek=182"));
 }
 
 void TstQueue::pausedFollowsTheState()

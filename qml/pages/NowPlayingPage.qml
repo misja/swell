@@ -158,13 +158,36 @@ Page {
                         }
                     }
 
-                    // Display only: the MVP does not seek.
+                    // The position; a seek slider when the track can be moved
+                    // within (as the Media app's, MediaPlayerControlsPanel.qml:112),
+                    // a bar otherwise (spec 001, #73).
                     Column {
                         x: Theme.horizontalPageMargin
                         width: parent.width - 2 * Theme.horizontalPageMargin
                         visible: _player && _player.duration > 0
 
+                        Slider {
+                            id: seekSlider
+                            visible: _player !== null && _player.seekable
+                            width: parent.width
+                            leftMargin: 0
+                            rightMargin: 0
+                            handleVisible: false
+                            minimumValue: 0
+                            maximumValue: _player && _player.duration > 0 ? _player.duration : 1
+                            enabled: _player !== null && _player.online
+                            // Follow the player, except while the finger is on it.
+                            Binding {
+                                target: seekSlider
+                                property: "value"
+                                value: _player && _player.position > 0 ? _player.position : 0
+                                when: !seekSlider.down
+                            }
+                            // Once, on release (a cancelled drag sends nothing).
+                            onReleased: _player.seek(Math.round(value))
+                        }
                         ProgressBar {
+                            visible: !seekSlider.visible
                             width: parent.width
                             leftMargin: 0
                             rightMargin: 0
@@ -179,8 +202,10 @@ Page {
                                 id: elapsed
                                 font.pixelSize: Theme.fontSizeExtraSmall
                                 color: Theme.secondaryColor
-                                // In the total's format, so both labels match.
-                                text: _player ? app.formatTime(_player.position, _player.duration) : ""
+                                // In the total's format, so both labels match; the
+                                // finger's place while seeking.
+                                text: _player ? app.formatTime(seekSlider.down ? Math.round(seekSlider.value) : _player.position,
+                                                               _player.duration) : ""
                             }
                             Label {
                                 anchors.right: parent.right

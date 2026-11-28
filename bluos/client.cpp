@@ -397,6 +397,15 @@ void Client::setMuted(bool muted)
     send(QStringLiteral("/Volume"), encoded(query));
 }
 
+void Client::seek(int secs)
+{
+    if (!seekable())
+        return;
+    QUrlQuery query;
+    query.addQueryItem(QStringLiteral("seek"), QString::number(qBound(0, secs, m_status.totlen - 1)));
+    send(QStringLiteral("/Play"), encoded(query));
+}
+
 void Client::setShuffle(bool shuffle)
 {
     QUrlQuery query;

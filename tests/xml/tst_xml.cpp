@@ -30,6 +30,7 @@ private slots:
     void statusPrid();
     void statusStreamActions();
     void statusQueuePosition();
+    void statusCanSeek();
     void statusShuffleAndRepeat_data();
     void statusShuffleAndRepeat();
     void shuffleAndRepeatReplies();
@@ -166,6 +167,19 @@ void TstXml::statusQueuePosition()
     QVERIFY(s.ok);
     QCOMPARE(s.pid, QStringLiteral("692"));
     QCOMPARE(s.song, 3);
+}
+
+void TstXml::statusCanSeek()
+{
+    // As the NAD C 379 reported them (#73): a queue track, a radio station.
+    const Status track = parseStatus("<status etag=\"e\"><canSeek>1</canSeek><totlen>183</totlen></status>");
+    QVERIFY(track.ok);
+    QVERIFY(track.canSeek);
+    QCOMPARE(track.totlen, 183);
+    const Status radio = parseStatus("<status etag=\"e\"><canSeek>0</canSeek><streamUrl>x</streamUrl></status>");
+    QVERIFY(!radio.canSeek);
+    QCOMPARE(radio.totlen, -1);
+    QVERIFY(!parseStatus("<status etag=\"e\"><totlen>183</totlen></status>").canSeek);
 }
 
 void TstXml::statusShuffleAndRepeat_data()

@@ -131,6 +131,10 @@ Item {
         _player.setRepeat(Player[name])
         return ""
     }
+    // NowPlayingPage: the seek slider's condition (#73).
+    function seekable() {
+        return _player.seekable
+    }
     function shuffleRepeat() {
         return [!_player.streaming, _player.shuffle, _player.repeat !== Player.RepeatOff,
                 _player.repeat === Player.RepeatTrack].join(" ")
