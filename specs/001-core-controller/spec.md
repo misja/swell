@@ -323,5 +323,9 @@ Still open: player settings (006), to be discussed.
 | Released at the end | `/Play?seek=` totlen − 1 | the end of the track |
 | A drag cancelled | nothing | unchanged |
 | Not seekable (`canSeek` 0) or no `totlen` | — | the bar, or no bar |
-| Offline | nothing | the slider disabled |
+| Offline | nothing | no bar (the status is cleared) |
 | The track changes during a drag | the seek within the new track | the new track |
+| The source stops being seekable during a drag | nothing | the bar |
+
+The position after a seek is shown on the device only: the test double does
+not model a seek.

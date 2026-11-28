@@ -731,6 +731,14 @@ void TstQueue::seekIsSentWithinTheTrack()
     m_client->seek(9999);
     QTRY_COMPARE(m_player->requests(QStringLiteral("/Play")).size(), 2);
     QCOMPARE(m_player->requests(QStringLiteral("/Play")).last().target, QByteArray("/Play?seek=182"));
+
+    // Unreachable: the status is cleared, nothing is sent.
+    m_player->close();
+    QTRY_COMPARE_WITH_TIMEOUT(m_client->availability(), Client::Offline, 8000);
+    QVERIFY(!m_client->seekable());
+    m_client->seek(30);
+    QTest::qWait(300);
+    QCOMPARE(m_player->requests(QStringLiteral("/Play")).size(), 2);
 }
 
 void TstQueue::pausedFollowsTheState()
