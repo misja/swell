@@ -14,8 +14,7 @@ bool CoverNetworkAccessManager::servable(const QNetworkCacheMetaData &metaData)
     // The cache backend refuses these entries (qnetworkaccesscachebackend.cpp
     // 83-87, Qt 5.6.3): reading one with AlwaysCache would fail every time.
     for (const QNetworkCacheMetaData::RawHeader &header : metaData.rawHeaders()) {
-        if (header.first.compare("Cache-Control", Qt::CaseInsensitive) == 0
-                && header.second.contains("must-revalidate"))
+        if (header.first.toLower() == "cache-control" && header.second.contains("must-revalidate"))
             return false;
     }
     return true;
