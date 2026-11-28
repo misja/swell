@@ -305,17 +305,21 @@ that are not seen through `/Browse`.
     visible-range signal. When a letter answers, the first letter on
     screen with rows left is read next; letters passed during a jump are
     not read. A big letter continues page by page.
-  - A failed letter or page waits for the backoff (3 s), then is read again
-    if still wanted; offline, the page reloads when the player is back.
-    `data()` reads nothing.
+  - A failed letter waits for the backoff (3 s), then is read again if it
+    is still on screen. A failed page of a plain list is read again after
+    the backoff, and again every 3 s while it keeps failing, also when its
+    page is hidden under another (the view asks for a page only when it
+    creates its last delegate). A read that failed while the player was
+    away is tried again when it is back. `data()` reads nothing.
 
 | State | Shown |
 | --- | --- |
 | The first read in flight | busy indicator |
 | Ready, empty | the placeholder |
 | The first read failed | the placeholder with the error; a reload when the player is back |
-| A letter or page failed | its rows stay placeholders; read again after 3 s if still on screen (letter) or still the end (page) |
-| Offline | no retry; a reload when the player is back |
+| A letter failed | its rows stay placeholders; read again after 3 s if still on screen |
+| A page of a plain list failed | read again every 3 s until it answers, also while the page is hidden |
+| Offline | no retry; when the player is back, a failed first read reloads the page, a failed letter or page is read again |
 | All rows read | nothing more is sent |
 | The page left during a read or a backoff | nothing more is sent |
 - `CoverImage.qml` has a second placeholder on Now Playing (Image and

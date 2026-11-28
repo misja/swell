@@ -181,6 +181,18 @@ Item {
 
     // The favourites row on the top level, and a row not read yet.
     BrowseModel {
+        id: pagedModel
+        client: probe._player
+        key: "Paged"
+    }
+    Repeater {
+        id: pagedRows
+        model: pagedModel
+        Item {}
+    }
+    readonly property int pagedCount: pagedRows.count
+
+    BrowseModel {
         id: rootModel
         client: probe._player
         root: true
@@ -269,6 +281,7 @@ Item {
     readonly property bool ready: listModel.ready && rootModel.ready && indexModel.ready && artistModel.ready
     function loadAll() {
         listModel.load()
+        pagedModel.load()
         rootModel.load()
         indexModel.load()
         artistModel.load()

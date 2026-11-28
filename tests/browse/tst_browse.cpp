@@ -40,6 +40,9 @@ private slots:
     void aRepeatedNextKeyEndsTheList();
     void aFailedPageIsReadAgainAfterTheBackoff();
     void readingRowsLoadsNothing();
+    void aLetterFailedOfflineIsReadWhenThePlayerIsBack();
+    void nothingIsSentAfterLeavingDuringABackoff();
+    void aColdJumpReadsOnlyThatLetter();
     void playPathsGoThroughTheGateOrAreRefused();
     void searchEverywhereListsSources();
     void anArtistOpensOnItsAlbums();
@@ -516,6 +519,51 @@ void TstBrowse::readingRowsLoadsNothing()
         text(list.data(), row);
     QTest::qWait(300);
     QCOMPARE(browseKeys(), QStringList({ QStringLiteral("Index"), QStringLiteral("List") }));
+}
+
+void TstBrowse::aLetterFailedOfflineIsReadWhenThePlayerIsBack()
+{
+    startClient();
+    QScopedPointer<BrowseModel> m(open(QStringLiteral("Small")));
+    QTRY_VERIFY(m->ready());
+    const quint16 port = m_player->port();
+    m_player->close();
+    QTRY_COMPARE_WITH_TIMEOUT(m_client->availability(), Client::Offline, 8000);
+    m->show(0, 0);
+    QTRY_VERIFY(!m->loading());
+    QCOMPARE(m->data(m->index(0), BrowseModel::LoadedRole).toBool(), false);
+    // No retry while away; when the player is back, the letter on screen is
+    // read (the page reloads only when its first read failed).
+    QVERIFY(m_player->listen(port));
+    QTRY_COMPARE_WITH_TIMEOUT(m_client->availability(), Client::Online, 8000);
+    QTRY_COMPARE_WITH_TIMEOUT(text(m.data(), 0), QStringLiteral("X album 0"), 8000);
+}
+
+void TstBrowse::nothingIsSentAfterLeavingDuringABackoff()
+{
+    startClient();
+    BrowseModel *m = open(QStringLiteral("Small"));
+    QTRY_VERIFY(m->ready());
+    m_player->failWith(QStringLiteral("/Browse"), 503);
+    m->show(0, 0);
+    QTRY_VERIFY(!m->loading());
+    const int sent = browseKeys().size();
+    delete m;   // the page was popped during the backoff
+    m_player->stopFailing(QStringLiteral("/Browse"));
+    QTest::qWait(3500);
+    QCOMPARE(browseKeys().size(), sent);
+}
+
+void TstBrowse::aColdJumpReadsOnlyThatLetter()
+{
+    startClient();
+    QScopedPointer<BrowseModel> m(open(QStringLiteral("Index")));
+    QTRY_VERIFY(m->ready());
+    m->show(3 + 55, 3 + 55);   // a jump into B, nothing read yet
+    QTRY_COMPARE(text(m.data(), 3 + 55), QStringLiteral("B album 55"));
+    QTRY_VERIFY(!m->loading());
+    QCOMPARE(browseKeys(), QStringList({ QStringLiteral("Index"), QStringLiteral("Lib:S:B"),
+                                         QStringLiteral("Lib:S:B?start=50") }));
 }
 
 void TstBrowse::playPathsGoThroughTheGateOrAreRefused()

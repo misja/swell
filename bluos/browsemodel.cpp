@@ -12,7 +12,6 @@ const char *const BrowseModel::FavouritesKey = "LocalMusic:MG/LocalMusic-Favouri
 namespace {
 // A page that failed is asked for again only after this pause.
 const int RetryAfterMs = 3000;
-// In a plain list, the next page is read when a row this close to the end is shown.
 
 // The leading number of a section's text2 ("65"), or -1.
 int countOf(const QString &text2)
@@ -66,7 +65,22 @@ void BrowseModel::setClient(Client *client)
 {
     if (m_client == client)
         return;
+    if (m_client)
+        disconnect(m_client, nullptr, this, nullptr);
     m_client = client;
+    // A read that failed while the player was away is tried again when it is
+    // back; the page itself reloads only if its first read failed.
+    if (m_client) {
+        connect(m_client, &Client::availabilityChanged, this, [this]() {
+            if (!m_client->online() || m_backoff.isEmpty())
+                return;
+            m_backoff.clear();
+            if (m_sectioned)
+                next();
+            else if (canFetchMore(QModelIndex()))
+                request(0);
+        });
+    }
     emit clientChanged();
 }
 
@@ -399,7 +413,9 @@ void BrowseModel::findFavourites()
 
 bool BrowseModel::canFetchMore(const QModelIndex &parent) const
 {
-    if (parent.isValid() || !m_client || !m_ready || m_sectioned || m_segments.size() != 1)
+    // Not before the first read (no segment) nor during a read (in flight):
+    // the view asks once inside endResetModel, before ready is set.
+    if (parent.isValid() || !m_client || m_sectioned || m_segments.size() != 1)
         return false;
     return !m_segments.first().done && m_inFlight == -1 && !m_backoff.contains(0);
 }
@@ -435,7 +451,7 @@ void BrowseModel::next()
     for (int segment = from; segment <= end; ++segment) {
         const Segment &s = m_segments.at(segment);
         const bool more = s.loaded < s.rows.size() || (!s.done && s.started);
-        const int unloaded = offsetRows + firstRow(segment) + s.loaded;
+        const int unloaded = firstRow(segment) + s.loaded;   // firstRow counts the favourites row
         if (more && unloaded <= m_showLast && !m_backoff.contains(segment)) {
             request(segment);
             return;
