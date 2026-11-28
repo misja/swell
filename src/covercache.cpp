@@ -17,6 +17,8 @@ QNetworkReply *CoverNetworkAccessManager::createRequest(Operation op, const QNet
     return QNetworkAccessManager::createRequest(op, cached, outgoingData);
 }
 
+const qint64 CoverCacheFactory::MaxCacheBytes;
+
 CoverCacheFactory::CoverCacheFactory(const QString &directory)
     : m_directory(directory)
 {
