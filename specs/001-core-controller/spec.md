@@ -289,3 +289,7 @@ Still open: player settings (006), to be discussed.
   that keep the mini-player) and the `openNowPlaying` flag (`HomePage.qml`):
   identifiers set in code, not derived from data. Silica's PageStack has
   no per-page property for this.
+- Now Playing centres its controls in the space beside or below the
+  artwork with a `ColumnLayout` and two fillers (`Layout.fillHeight`,
+  QtQuick.Layouts 1.1, allowed for Harbour); its height is that space or
+  the content's, whichever is larger (#63).
