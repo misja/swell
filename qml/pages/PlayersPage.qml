@@ -20,8 +20,22 @@ Page {
         pageStack.navigateForward(immediate ? PageStackAction.Immediate : PageStackAction.Animated)
     }
 
+    // The first time this page is shown, the remembered player (restored
+    // before) opens on Home at once.
+    property bool _started: false
+
     onStatusChanged: {
-        if (status === PageStatus.Active && players.current && pageStack.nextPage(page) === null) {
+        if (status !== PageStatus.Active) {
+            return
+        }
+        if (!_started) {
+            _started = true
+            if (players.current) {
+                openCurrent(true)
+                return
+            }
+        }
+        if (players.current && pageStack.nextPage(page) === null) {
             pageStack.pushAttached(Qt.resolvedUrl("HomePage.qml"))
         }
     }

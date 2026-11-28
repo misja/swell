@@ -2,6 +2,7 @@
 import QtQuick 2.0
 import QtQml.Models 2.1   // DelegateModel
 import Sailfish.Silica 1.0
+import Sailfish.Media 1.0   // MediaListItem
 
 Page {
     id: page
@@ -40,6 +41,14 @@ Page {
         if (_queue && _queue.currentIndex >= 0 && _queue.currentIndex < list.count) {
             list.positionViewAtIndex(_queue.currentIndex, ListView.Center)
         }
+    }
+
+    // "artist · album", either alone, as before (spec 002).
+    function _subtitle(artist, album) {
+        if (artist !== "" && album !== "") {
+            return artist + " · " + album
+        }
+        return artist + album
     }
 
     function _endReordering() {
@@ -108,10 +117,8 @@ Page {
             page._dragPid = page._queue.pid
             page._dragIdentity = delegate.identity
             dragProxy.title = delegate.title
-            dragProxy.artist = delegate.artist
-            dragProxy.album = delegate.album
+            dragProxy.subtitle = delegate.subtitle
             dragProxy.duration = delegate.duration
-            dragProxy.image = delegate.image
         }
         onMoveRequested: page._player.moveQueueEntry(from, to, page._dragPid, page._dragIdentity)
     }
@@ -120,17 +127,14 @@ Page {
         id: queueModel
         model: page._queue
 
-        delegate: ListItem {
+        // The Media app's row (Sailfish.Media MediaListItem): duration, title,
+        // "artist · album", the playing entry highlighted.
+        delegate: MediaListItem {
             id: item
 
-            // For the drag: what the lifted copy shows and the check needs.
+            // For the drag: whether it can lift, and the player's check.
             readonly property bool loaded: model.loaded
             readonly property string identity: model.identity
-            readonly property string title: model.title
-            readonly property string artist: model.artist
-            readonly property string album: model.album
-            readonly property int duration: model.duration
-            readonly property url image: model.image
 
             function remove() {
                 // The player confirms pid and identity before deleting. The row's
@@ -145,26 +149,21 @@ Page {
                 })
             }
 
-            contentHeight: Theme.itemSizeMedium
             enabled: model.loaded
             menu: page._reordering ? null : contextMenu
-            highlighted: down || menuOpen || (model.current && !page._queue.streaming)
+            highlighted: down || menuOpen
+            // While an input or stream plays, the current entry is only where
+            // playback resumes (spec 002): not marked as playing.
+            playing: model.current && !page._queue.streaming
+            duration: model.loaded && model.duration > 0 ? model.duration : undefined
+            title: model.loaded ? model.title : "…"
+            // Titles from the player are text, not markup.
+            textFormat: Text.PlainText
+            subtitle: model.loaded ? page._subtitle(model.artist, model.album) : ""
             // The lifted copy is drawn instead.
             opacity: reorder.dragged === item ? 0 : 1
 
             onClicked: if (!page._reordering) page._player.playQueueEntry(model.position)
-
-            QueueRow {
-                anchors.fill: parent
-                loaded: model.loaded
-                title: model.title
-                artist: model.artist
-                album: model.album
-                duration: model.duration
-                image: model.image
-                dimmed: model.current && page._queue.streaming
-                highlighted: item.highlighted
-            }
 
             Component {
                 id: contextMenu
@@ -303,29 +302,12 @@ Page {
 
     // The lifted row, with the pressed row's highlight so it reads as one row
     // over the others. Not scaled: a full-width row would leave the screen.
-    ListItem {
+    MediaListItem {
         id: dragProxy
-        property string title
-        property string artist
-        property string album
-        property int duration
-        property url image
         visible: reorder.dragged !== null
         enabled: false
         width: list.width
-        contentHeight: Theme.itemSizeMedium
         highlighted: true
         z: 1000
-
-        QueueRow {
-            anchors.fill: parent
-            loaded: true
-            title: dragProxy.title
-            artist: dragProxy.artist
-            album: dragProxy.album
-            duration: dragProxy.duration
-            image: dragProxy.image
-            highlighted: true
-        }
     }
 }
