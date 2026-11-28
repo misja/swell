@@ -23,12 +23,13 @@ Spotify Connect or another controller has filled.
 Agreed with the maintainer on 2026-11-06:
 1. A **Queue page** attached to Now Playing (swipe left; swipe right returns).
    The header is "Queue", with "<n> tracks · <player>" as description.
-2. Rows show artwork, title, "artist · album" and the duration when the player
-   gives one. The duration may be dropped after the device check (the maintainer: "see
-   how it works").
-3. The playing entry is marked, and the list scrolls to it when the page opens,
-   even in a long queue. While an input or stream plays, the marker is dimmed,
-   because `song` then means where playback resumes.
+2. Rows are the Media app's (Sailfish.Media `MediaListItem`): the duration
+   when the player gives one, the title and "artist · album"; no artwork
+   (the maintainer, 2026-11-28, #63; before: an own row with artwork).
+3. The playing entry is marked (`playing`), and the list scrolls to it when
+   the page opens, even in a long queue. While an input or stream plays, no
+   entry is marked, because `song` then means where playback resumes
+   (before #63: a dimmed marker; `MediaListItem` has no dimmed state).
 4. **Play from an entry** by tapping it.
 5. **Remove an entry**: long press gives Remove, which runs a remorse in the
    row before the request.
