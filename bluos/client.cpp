@@ -686,6 +686,7 @@ void Client::movePreset(int fromId, int toId, const QString &prid)
     const QString path = QStringLiteral("/Presets/edit");
     if (!isPermutation(moves, ids)) {
         emit commandFailed(path, QStringLiteral("not a permutation"));
+        emit presetMoveFailed();
         return;
     }
     // Byte for byte as the official app sends it (spec 008).
@@ -723,6 +724,7 @@ void Client::movePreset(int fromId, int toId, const QString &prid)
             error = http ? (http == 200 ? QStringLiteral("not moved") : QStringLiteral("HTTP %1").arg(http))
                          : QStringLiteral("no answer");
         emit commandFailed(path, error);
+        emit presetMoveFailed();
     });
 }
 
@@ -890,6 +892,7 @@ void Client::moveQueueEntry(int from, int to, const QString &pid, const QString 
             const QString error = body.isEmpty() ? QStringLiteral("no answer") : parseError(body);
             if (!error.isEmpty()) {
                 emit commandFailed(QStringLiteral("/Move"), error);
+                emit moveFailed();
                 finishEdit();
                 return;
             }

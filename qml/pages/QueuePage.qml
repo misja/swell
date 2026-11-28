@@ -88,7 +88,7 @@ Page {
                                       : qsTr("Nothing was moved."), Notice.Short)
         }
         // The app shows the failure notice.
-        onCommandFailed: if (path === "/Move") reorder.putBack()
+        onMoveFailed: reorder.putBack()
     }
 
     RemorsePopup { id: clearRemorse }

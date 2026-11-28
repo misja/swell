@@ -938,8 +938,10 @@ void TstQueue::failedMoveLeavesTheRows()
     q->setActive(true);
     QTRY_COMPARE(title(5), QStringLiteral("Track 5"));
     QSignalSpy failed(m_client, &Client::commandFailed);
+    QSignalSpy moveFailed(m_client, &Client::moveFailed);
     m_client->moveQueueEntry(2, 5, q->pid(), q->identityAt(2));
     QTRY_COMPARE(failed.size(), 1);
+    QCOMPARE(moveFailed.size(), 1);
     QCOMPARE(failed.first().at(0).toString(), QStringLiteral("/Move"));
     QTRY_VERIFY(!m_client->queueEditing());
     QCOMPARE(title(2), QStringLiteral("Track 2"));

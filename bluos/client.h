@@ -361,6 +361,9 @@ signals:
     // A move was not sent: the queue changed (queueChanged), or the player is
     // offline, or another edit is running.
     void moveRefused(bool queueChanged);
+    // A /Move was sent and failed (also reported as commandFailed): the view
+    // that anticipated it goes back.
+    void moveFailed();
     void queueEditingChanged();
     // deletePreset() sent nothing: the presets changed (presetsChanged), or
     // the player is not online.
@@ -368,6 +371,8 @@ signals:
     // movePreset() was not carried out: the presets changed (also a 412), or
     // the player is not online.
     void presetMoveRefused(bool presetsChanged);
+    // A preset move failed after the checks (also reported as commandFailed).
+    void presetMoveFailed();
     void presetMovingChanged();
     // A context-menu action succeeded (type as in the menu, e.g. addAll-last).
     void actionDone(const QString &type);

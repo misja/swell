@@ -639,8 +639,10 @@ void TstPresets::aFailedMoveIsReported()
     }
     QSignalSpy failed(m_client, &Client::commandFailed);
     QSignalSpy refused(m_client, &Client::presetMoveRefused);
+    QSignalSpy moveFailed(m_client, &Client::presetMoveFailed);
     m_client->movePreset(8, 2, m_client->presetsPrid());
     QTRY_COMPARE_WITH_TIMEOUT(failed.size(), 1, fastTiming().commandTimeoutMs + 2000);
+    QCOMPARE(moveFailed.size(), 1);
     QCOMPARE(failed.first().at(0).toString(), QStringLiteral("/Presets/edit"));
     QCOMPARE(failed.first().at(1).toString(), error);
     QVERIFY(refused.isEmpty());
