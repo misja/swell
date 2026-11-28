@@ -488,8 +488,10 @@ void TstPresets::aRenameIsRefused()
     QSignalSpy refused(m_client, &Client::presetRenameRefused);
     const QString prid = m_client->presetsPrid();
     if (id < 0) {
-        // /Status reports a newer list than the one read.
-        m_player->setStatus("<status etag=\"n\"><state>stop</state><prid>99</prid><syncStat>s</syncStat></status>");
+        // /Status reports a newer list than the one read (held back).
+        m_player->delay(QStringLiteral("/Presets"), 2000);
+        ++m_prid;
+        publish();
         QTRY_VERIFY(!m_client->presetsCurrent());
         id = 7;
     }
