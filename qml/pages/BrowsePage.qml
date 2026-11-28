@@ -352,7 +352,7 @@ Page {
                 visible: page._images && model.image.toString() !== ""
                 x: Theme.horizontalPageMargin
                 anchors.verticalCenter: parent.verticalCenter
-                width: !visible ? 0 : (item._cover ? Theme.itemSizeMedium - 2 * Theme.paddingSmall : Theme.iconSizeMedium)
+                width: item._cover ? Theme.itemSizeMedium - 2 * Theme.paddingSmall : Theme.iconSizeMedium
                 height: width
                 placeholder: model.type !== "section"
                 // The Media player's icon for the kind of row.

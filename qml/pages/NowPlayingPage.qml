@@ -197,7 +197,6 @@ Page {
                         Loader {
                             anchors.verticalCenter: parent.verticalCenter
                             active: page.isLandscape && page._queueModes
-                            visible: active   // no spacing for an empty end
                             sourceComponent: shuffleSwitch
                         }
                         // Hidden, not greyed, when the source has nothing to go back or
@@ -225,7 +224,6 @@ Page {
                         Loader {
                             anchors.verticalCenter: parent.verticalCenter
                             active: page.isLandscape && page._queueModes
-                            visible: active   // no spacing for an empty end
                             sourceComponent: repeatSwitch
                         }
                     }
