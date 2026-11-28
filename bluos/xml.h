@@ -41,6 +41,7 @@ struct Status {
     int song = -1;          // current queue position; where playback resumes while streaming
     int secs = -1;          // position at the time of the response
     int totlen = -1;
+    bool canSeek = false;   // /Play?seek= works (section 2.1); only with totlen
     int volume = -1;        // 0..100, -1 = fixed volume
     bool mute = false;
     int groupVolume = -1;   // on a group's primary (section 2.1); -1 otherwise

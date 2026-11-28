@@ -47,6 +47,9 @@ class Client : public QObject
     Q_PROPERTY(bool canSkip READ canSkip NOTIFY statusChanged)
     Q_PROPERTY(bool canBack READ canBack NOTIFY statusChanged)
     Q_PROPERTY(int duration READ duration NOTIFY statusChanged)
+    // The current track can be moved within: canSeek and a length (API v1.7
+    // §4.1 requires totlen; a live stream reports neither, measured).
+    Q_PROPERTY(bool seekable READ seekable NOTIFY statusChanged)
     // While an input or stream plays the queue is not the source, and shuffle
     // and repeat should not be offered (section 2.1, streamUrl).
     Q_PROPERTY(bool streaming READ streaming NOTIFY statusChanged)
@@ -222,6 +225,7 @@ public:
     bool canSkip() const { return m_status.ok && (!m_status.hasStreamUrl || !m_status.skipActionUrl.isEmpty()); }
     bool canBack() const { return m_status.ok && (!m_status.hasStreamUrl || !m_status.backActionUrl.isEmpty()); }
     int duration() const { return m_status.totlen; }
+    bool seekable() const { return m_status.ok && m_status.canSeek && m_status.totlen > 0; }
     bool streaming() const { return m_status.ok && m_status.hasStreamUrl; }
     bool shuffle() const { return m_status.ok && m_status.shuffle; }
     Repeat repeat() const { return m_status.ok ? Repeat(m_status.repeat) : RepeatOff; }
@@ -283,6 +287,10 @@ public slots:
     // /Shuffle?state= and /Repeat?state= (sections 4.6, 4.7). The state shown
     // follows /Status; the new queue id reaches the queue as a pid change.
     void setShuffle(bool shuffle);
+    // /Play?seek=secs (section 4.1), kept within the track: a seek past its
+    // end plays the next track (measured). A seek while paused starts
+    // playback, as the player does (spec 001). Only while seekable.
+    void seek(int secs);
     void setRepeat(BluOS::Client::Repeat repeat);
     void playPreset(int id);
     // Deletes preset id with /SetPreset?id=N, the official app's request

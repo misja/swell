@@ -314,6 +314,11 @@ void TstQmlRuntime::shuffleAndRepeat()
     // also hides the row with the transport row (_empty).
     m_player->setStatus("<status etag=\"r4\"><state>stop</state><prid>1</prid></status>");
     QTRY_COMPARE(call("shuffleRepeat"), QStringLiteral("true false false false"));
+    QCOMPARE(call("seekable"), QStringLiteral("false"));
+    m_player->setStatus("<status etag=\"r5\"><state>play</state><prid>1</prid><canSeek>1</canSeek><totlen>183</totlen></status>");
+    QTRY_COMPARE(call("seekable"), QStringLiteral("true"));
+    m_player->setStatus("<status etag=\"r6\"><state>stop</state><prid>1</prid></status>");
+    QTRY_COMPARE(call("seekable"), QStringLiteral("false"));
 
     // The enum reaches the slot from QML (Player.RepeatQueue is 0, RepeatTrack 1).
     call("setRepeatTo", QStringLiteral("RepeatQueue"));

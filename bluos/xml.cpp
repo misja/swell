@@ -91,6 +91,7 @@ Status parseStatus(const QByteArray &xml)
         else if (n == QLatin1String("song")) s.song = toInt(reader.readElementText(), -1);
         else if (n == QLatin1String("secs")) s.secs = toInt(reader.readElementText(), -1);
         else if (n == QLatin1String("totlen")) s.totlen = toInt(reader.readElementText(), -1);
+        else if (n == QLatin1String("canSeek")) s.canSeek = toBool(reader.readElementText());
         else if (n == QLatin1String("groupVolume")) s.groupVolume = toInt(reader.readElementText(), -1);
         else if (n == QLatin1String("volume")) s.volume = toInt(reader.readElementText(), -1);
         else if (n == QLatin1String("mute")) s.mute = toBool(reader.readElementText());

@@ -62,7 +62,8 @@ This first increment (the MVP) includes:
    follow the source: the queue uses `/Skip`/`/Back`; a stream uses the skip/back
    actions it offers (API §4.8); otherwise the buttons are hidden. The cover
    then shows play/pause only. It shows cover
-   art, the `title1`–`title3` lines, progress (display only, no seeking),
+   art, the `title1`–`title3` lines, progress (a seek slider since #73 when
+   the track has `canSeek` and `totlen`, display only otherwise),
    play/pause, next/previous, volume and mute. The volume control is hidden
    when the player reports a fixed volume (`volume=-1`). It is updated through the `/Status` long poll (etag +
    timeout), not a polling loop.
@@ -299,3 +300,32 @@ Still open: player settings (006), to be discussed.
   pushes the initial page in its own `onCompleted`, ApplicationWindow.qml
   583-590; on the device it came first, 2026-11-28). Done once, so a later
   choice of player does not jump to Home again.
+
+## Seeking (#73, 2026-11-28)
+
+- Measured (NAD C 379, BluOS 4.18.26): a radio station reports `canSeek`
+  0 and no `totlen`; a queue track `canSeek` 1 and `totlen`. `/Play?seek=N`
+  while playing sets `secs` at once and the status returns; while paused it
+  starts playback; past the end it plays the next track.
+- Now Playing shows a Silica `Slider` (as the Media app's,
+  MediaPlayerControlsPanel.qml:112: no handle, the value only while not
+  pressed) when `canSeek` and `totlen` > 0, the `ProgressBar` otherwise.
+  Releasing sends one `/Play?seek=` within the track; a cancelled drag
+  sends nothing. A seek while paused starts playback, as the player and
+  the official app do (the maintainer, 2026-11-28).
+- Assumed, not measured: streams with `totlen` but `canSeek` 0, and
+  inputs, are not seekable.
+
+| Situation | Sent | Shown |
+| --- | --- | --- |
+| Seekable, released at a new place | one `/Play?seek=N` | the position there after the status |
+| Seekable and paused | one `/Play?seek=N` | playback starts there |
+| Released at the end | `/Play?seek=` totlen − 1 | the end of the track |
+| A drag cancelled | nothing | unchanged |
+| Not seekable (`canSeek` 0) or no `totlen` | — | the bar, or no bar |
+| Offline | nothing | no bar (the status is cleared) |
+| The track changes during a drag | the seek within the new track | the new track |
+| The source stops being seekable during a drag | nothing | the bar |
+
+The position after a seek is shown on the device only: the test double does
+not model a seek.
