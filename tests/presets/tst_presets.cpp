@@ -33,6 +33,7 @@ private slots:
     void aFailedDeleteIsReported_data();
     void aFailedDeleteIsReported();
     void anInputIsAdded();
+    void aStationIsAddedFromItsUrl();
     void anInputThatCannotBeSentIsNotAdded_data();
     void anInputThatCannotBeSentIsNotAdded();
     void aFailedInputAddIsReported_data();
@@ -346,12 +347,40 @@ void TstPresets::anInputIsAdded()
     QTRY_COMPARE(ids(), QList<int>({ 1, 2, 3, 4, 7, 8 }));   // the first free slot
 }
 
+void TstPresets::aStationIsAddedFromItsUrl()
+{
+    // A Radio (Airable) station: its menu offers no preset action; Swell
+    // sends the station URL as given, its name and its absolute image, no id
+    // (measured on the NAD C 379, 2026-11-28; values here invented).
+    startClient();
+    QSignalSpy done(m_client, &Client::actionDone);
+    m_client->addPreset(QStringLiteral("Airable%3Aradio%3Ahttps%3A%2F%2Fexample.airable.io%2Fradio%2Fstation%2F42"),
+                        QStringLiteral("Station 42"), QStringLiteral("http://images.example/station.png"));
+    QTRY_COMPARE(done.size(), 1);
+    QCOMPARE(done.first().first().toString(), QStringLiteral("preset"));
+    const auto sent = m_player->requests(QStringLiteral("/SetPreset"));
+    QCOMPARE(sent.size(), 1);
+    QCOMPARE(sent.first().target,
+             QByteArray("/SetPreset?name=Station%2042"
+                        "&url=Airable%3Aradio%3Ahttps%3A%2F%2Fexample.airable.io%2Fradio%2Fstation%2F42"
+                        "&image=http%3A%2F%2Fimages.example%2Fstation.png"));
+    QTRY_COMPARE(ids(), QList<int>({ 1, 2, 3, 4, 7, 8 }));   // the first free slot
+
+    // A URL that would not stay one parameter is not sent.
+    QSignalSpy failed(m_client, &Client::commandFailed);
+    m_client->addPreset(QStringLiteral("a#b"), QStringLiteral("Bad"), QString());
+    QCOMPARE(failed.size(), 1);
+    QCOMPARE(failed.first().at(1).toString(), QStringLiteral("invalid URL"));
+    QTest::qWait(200);
+    QCOMPARE(m_player->requests(QStringLiteral("/SetPreset")).size(), 1);
+}
+
 void TstPresets::anInputThatCannotBeSentIsNotAdded_data()
 {
     QTest::addColumn<QString>("id");
     QTest::addColumn<QString>("error");
     QTest::newRow("unknown id") << QStringLiteral("gone") << QStringLiteral("unknown input");
-    QTest::newRow("invalid URL") << QStringLiteral("odd") << QStringLiteral("invalid input URL");
+    QTest::newRow("invalid URL") << QStringLiteral("odd") << QStringLiteral("invalid URL");
 }
 
 void TstPresets::anInputThatCannotBeSentIsNotAdded()

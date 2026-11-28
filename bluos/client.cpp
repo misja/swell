@@ -490,8 +490,14 @@ void Client::addInputPreset(const QString &inputId)
         emit commandFailed(path, QStringLiteral("unknown input"));
         return;
     }
-    if (!validInputUrl(path, input->url)) {
-        emit commandFailed(path, QStringLiteral("invalid input URL"));
+    addPreset(input->url, input->text, input->image);
+}
+
+void Client::addPreset(const QString &encodedUrl, const QString &name, const QString &image)
+{
+    const QString path = QStringLiteral("/SetPreset");
+    if (!validInputUrl(path, encodedUrl)) {
+        emit commandFailed(path, QStringLiteral("invalid URL"));
         return;
     }
     // Success is judged by the reply's prid against the list Swell has; that
@@ -503,10 +509,10 @@ void Client::addInputPreset(const QString &inputId)
     // The parameters /Services declares for "Add preset"; no id, so the
     // player takes the first free slot (measured, spec 008).
     QStringList items;
-    items << QStringLiteral("name=") + QString::fromLatin1(QUrl::toPercentEncoding(input->text))
-          << QStringLiteral("url=") + input->url;
-    if (!input->image.isEmpty())
-        items << QStringLiteral("image=") + QString::fromLatin1(QUrl::toPercentEncoding(input->image));
+    items << QStringLiteral("name=") + QString::fromLatin1(QUrl::toPercentEncoding(name))
+          << QStringLiteral("url=") + encodedUrl;
+    if (!image.isEmpty())
+        items << QStringLiteral("image=") + QString::fromLatin1(QUrl::toPercentEncoding(image));
     const QString before = m_presetsPrid;
     // Not through the merging gate: two adds are two adds.
     fetch(path, items.join(QLatin1Char('&')), [this, path, before](const QByteArray &body) {

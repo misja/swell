@@ -344,7 +344,10 @@ Page {
             readonly property bool _cover: page._images && model.type !== "link"
             contentHeight: _cover ? Theme.itemSizeMedium : Theme.itemSizeSmall
             enabled: model.loaded
-            menu: model.actions.length > 0 ? contextMenu : null
+            // A station without the player's own preset action can still be
+            // added from its URL (spec 008, H).
+            readonly property var _preset: model.preset
+            menu: model.actions.length > 0 || _preset ? contextMenu : null
 
             onClicked: {
                 if (model.browseKey !== "") {
@@ -440,6 +443,11 @@ Page {
                             text: page._actionText(modelData.type)
                             onClicked: page._run(modelData.url, modelData.type)
                         }
+                    }
+                    MenuItem {
+                        visible: !!item._preset
+                        text: page._actionText("preset")
+                        onClicked: page._player.addPreset(item._preset.url, item._preset.name, item._preset.image)
                     }
                 }
             }

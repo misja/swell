@@ -63,7 +63,8 @@ public:
         ActionsRole,     // QList<BrowseAction>, known types only
         SectionRole,
         LoadedRole,
-        FavouritesRole
+        FavouritesRole,
+        PresetRole       // {url, name, image} to add as a preset, or empty
     };
 
     // The library's favourites, as the Library menu names them (observed on
@@ -119,6 +120,11 @@ public:
     // The context-menu types Swell understands (section 7.1, plus the
     // observed add-shuffle and preset); other actions are not offered.
     static bool knownAction(const QString &type);
+    // The station URL in a context-menu key's preset_url parameter, as sent
+    // (percent-encoded once), or empty: Airable items carry it, their menus
+    // offer no preset action (measured, spec 008 H). Own code: the key's
+    // format is the player's, not documented.
+    static QString presetUrlOf(const QString &contextMenuKey);
     // An action that starts playback (add-now, addAll-now, add-shuffle)
     // rather than adding to the queue or changing a favourite.
     Q_INVOKABLE bool startsPlayback(const QString &type) const;

@@ -310,6 +310,24 @@ G. **Reordering.** On the Presets page.
      tiles that ends the mode (Silica has none of these; the home
      screen's is private), and the cycle built in C++.
 
+H. **Adding a Radio (Airable) station** (#59, 2026-11-28). Its menus,
+   inline and fetched (`/Browse?key=<contextMenuKey>`), offer only
+   Favourite. Its `contextMenuKey` carries `preset_url`, the station's URL,
+   percent-encoded once (measured on the NAD C 379, BluOS 4.18.26).
+   - A Browse row whose key has exactly one `preset_url` and whose menu has
+     no `preset` action gets "Add preset" (`BrowseModel` role `preset`:
+     the URL as given, the row's text, its image as given). Rows with the
+     player's own action keep only that (TuneIn, Radio Paradise).
+   - It sends what Swell sends for an input, through the same
+     `Client::addPreset`: `/SetPreset?name=…&url=<preset_url>&image=…`,
+     no id. Measured with a throwaway: the first free slot, stored as the
+     official app stores it, and it plays. Same refusals, check (a list
+     with a new `prid`) and notices as for an input.
+   - Own code: reading `preset_url` from the key (`presetUrlOf`); the
+     key's format is the player's and not documented. If it changes, the
+     entry is simply not offered. That the official app takes the URL
+     from there is an inference: its capture shows the add, not the read.
+
 ### Deleting (on the Presets page)
 
 1. **Menu.** A long press on a tile opens a `ContextMenu` with one item,
@@ -391,6 +409,11 @@ G. **Reordering.** On the Presets page.
 | More | — | Home shows the first by id; the page has all |
 | Rotation | — | Home switches between two rows and one |
 | No presets | — | the page's placeholder; Home's text points to Browse and the inputs |
+| Add a Radio station (preset_url, no player action) | one `/SetPreset?name=…&url=…&image=…` | "Added to presets"; the tile appears after the next status |
+| Add a Radio station: list not current, invalid URL | nothing | the failure notice |
+| Add a Radio station: no answer, HTTP error, `<error>`, an unchanged `prid` | one request | the failure notice |
+| A station with the player's own preset action | that action only | one "Add preset" |
+| Add a Radio station, Music no longer the active page when the reply comes | one request | no success notice; a failure still gives the failure notice |
 
 Tests (`tests/presets`, `tests/browse`) cover the client and model side:
 - deleting, with each refusal and failure;
@@ -454,6 +477,16 @@ The pages are not instantiated in the tests. The device check covers:
     Reorder disabled during a remorse.
 12. Device check on the NAD with throwaway presets (the maintainer's
    approval): the list under End states.
+
+13. "Add preset" is offered on a row whose key has exactly one
+    `preset_url` and whose menu has no `preset` action, and nowhere else;
+    it sends the URL byte for byte with the name and image encoded, and no
+    `id`; the outcome as in 9. Tests: the parser (present, absent, no
+    query, empty, twice), the model role (set; unset beside the player's
+    action), the request bytes and the outcome against the double. Device
+    check with a throwaway: add from Radio, the notice, the tile, play,
+    delete; a TuneIn and a Radio Paradise station each show one "Add
+    preset".
 
 ## Own code (named 2026-11-28, #63)
 
