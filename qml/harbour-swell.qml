@@ -9,12 +9,14 @@ ApplicationWindow {
 
     // A duration or position in seconds as the Media app shows it
     // (Sailfish.Media MediaListItem.qml:33): Silica's Format, long from an
-    // hour on. Empty when unknown.
-    function formatTime(secs) {
+    // hour on, judged by total when given (a position in its track's format).
+    // Empty when unknown.
+    function formatTime(secs, total) {
         if (!(secs >= 0)) {
             return ""
         }
-        return Format.formatDuration(secs, secs >= 3600 ? Format.DurationLong : Format.DurationShort)
+        var scale = total >= 0 ? total : secs
+        return Format.formatDuration(secs, scale >= 3600 ? Format.DurationLong : Format.DurationShort)
     }
 
     // A command to the current player failed, from whichever page sent it.

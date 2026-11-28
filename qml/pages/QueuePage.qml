@@ -157,6 +157,8 @@ Page {
             playing: model.current && !page._queue.streaming
             duration: model.loaded && model.duration > 0 ? model.duration : undefined
             title: model.loaded ? model.title : "…"
+            // Titles from the player are text, not markup.
+            textFormat: Text.PlainText
             subtitle: model.loaded ? page._subtitle(model.artist, model.album) : ""
             // The lifted copy is drawn instead.
             opacity: reorder.dragged === item ? 0 : 1

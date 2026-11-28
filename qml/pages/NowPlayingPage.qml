@@ -100,7 +100,10 @@ Page {
             // room taking the rest above and below them (Layout.fillHeight).
             ColumnLayout {
                 width: page.isLandscape ? page.width - page._artSize - layout.spacing : page.width
-                height: Math.max(implicitHeight, page.height - (page.isLandscape ? 0 : artColumn.height))
+                // The page's height less what is above (artwork and the Flow's
+                // spacing in portrait) and the flickable's bottom padding.
+                height: Math.max(implicitHeight, page.height - Theme.paddingLarge
+                                 - (page.isLandscape ? 0 : artColumn.height + layout.spacing))
                 spacing: Theme.paddingMedium
 
                 PageHeader {
@@ -176,7 +179,8 @@ Page {
                                 id: elapsed
                                 font.pixelSize: Theme.fontSizeExtraSmall
                                 color: Theme.secondaryColor
-                                text: _player ? app.formatTime(_player.position) : ""
+                                // In the total's format, so both labels match.
+                                text: _player ? app.formatTime(_player.position, _player.duration) : ""
                             }
                             Label {
                                 anchors.right: parent.right
@@ -199,7 +203,7 @@ Page {
                         visible: !page._empty
                         columns: 5
                         columnSpacing: Theme.paddingLarge
-                        rowSpacing: 0
+                        rowSpacing: Theme.paddingMedium
 
                         Switch {
                             objectName: "shuffle"
@@ -334,7 +338,6 @@ Page {
                     // The group scrolls the opened section into view
                     // (ExpandingSectionGroup.qml, animateToExpandedSection).
                     ExpandingSectionGroup {
-                        width: parent.width
                         visible: page._leads
 
                         ExpandingSection {
