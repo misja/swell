@@ -5,6 +5,11 @@
 // the same way), can redirect a path to
 // another server, can leave a request unanswered, and logs every request it
 // receives.
+// Invented, not measured on a player: every answer closes the connection
+// (Connection: close); a held long poll is answered at once on a change or
+// exactly at its timeout (API v1.7 §2.1 describes it, the timing is not
+// measured); delay() (a slow answer); the 404 page and error bodies. The
+// documents served are each test's own and cite their source there.
 #ifndef FAKEPLAYER_H
 #define FAKEPLAYER_H
 
@@ -102,7 +107,8 @@ public:
     {
         m_postHandlers.insert(path, handler);
     }
-    // Delays every answer on this path, like a player busy serving covers.
+    // Delays every answer on this path (invented: a slow player; spec 002 cites
+    // an azzurro observation, not a measurement).
     void delay(const QString &path, int ms) { m_delays.insert(path, ms); }
 
     // Answers this path with an HTTP error status instead of its document.

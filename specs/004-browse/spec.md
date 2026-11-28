@@ -251,7 +251,7 @@ that are not seen through `/Browse`.
   It is not exported in that module's qmldir, and it is tied to the contacts
   display-label model. Swell therefore needs a small letter index of its own:
   a column of letters on the side that jumps with `positionViewAtIndex`. It
-  follows the look of `SymbolScrollBar` (Theme sizes, highlight colour).
+  takes its Theme colours and highlight from `SymbolScrollBar`, with a smaller box and no magnifier (see Own code).
 
 ## Library size (read-only, NAD C 379, 2026-11-06)
 
@@ -273,3 +273,24 @@ that are not seen through `/Browse`.
   signed in; Radio "My stations"). Not seen yet.
 - How long lists are paged in practice (all 73 albums of a section came in one
   reply).
+
+## Own code (named 2026-11-28, #63)
+
+- `CoverImage.qml`: own placeholder (gradient, icon, fade). The target has
+  no public album-art item (Sailfish.Media exports MediaListItem,
+  MediaPlayerControlsPanel, MprisPlayerControls and
+  MediaPlayerPanelBackground only).
+- `LetterIndex.qml`: own (SymbolScrollBar is not exported by
+  Sailfish.Contacts and imports org.nemomobile.contacts). Its look differs
+  from SymbolScrollBar: a smaller box (`fontSizeExtraSmall +
+  paddingSmall`) and no magnifier.
+- Behaviour from browse-key contents (`browsemodel.cpp`: favourite albums,
+  the list kind, the favourites link): observed library structure, not in
+  the API.
+- Comparisons with the API's own values in QML (`listType`, item `type`):
+  documented enumerations (§7), not labels.
+- The highlight overlay on rows with covers (`BrowsePage.qml`):
+  BackgroundItem draws its highlight behind the content
+  (BackgroundItem.qml:67-73).
+- The browse model's reading from `data()` and its forced re-read are to
+  be replaced (#63, the visible-range route).

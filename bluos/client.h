@@ -119,7 +119,7 @@ public:
         int pollTimeoutSecs = 100;   // API 2.1: recommended 100 s, never below 10 s
         int deadlineGraceMs = 15000; // added to the poll timeout before aborting
         int commandTimeoutMs = 10000;
-        int readTimeoutMs = 30000;  // queue and browse reads; the player answers after serving covers
+        int readTimeoutMs = 30000;  // queue and browse reads; azzurro saw the player answer after serving covers (not measured here)
         int queueRetryMs = 3000;         // pause before a failed window is read again
         int minIntervalMs = 1000;    // API 2: same resource at most once per second
         int backoffInitialMs = 1000;

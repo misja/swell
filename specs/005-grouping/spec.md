@@ -262,3 +262,8 @@ needs the official app for that.
    Behaviour that only real grouped hardware can show is recorded as not
    verified.
 7. A separate result review before the PR.
+
+## Own code (named 2026-11-28, #63)
+
+- Member names in the player list come from a parallel array next to the
+  member ids (`PlayersPage.qml`), not from a model of their own.
