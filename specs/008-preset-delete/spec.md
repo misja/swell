@@ -413,6 +413,7 @@ H. **Adding a Radio (Airable) station** (#59, 2026-11-28). Its menus,
 | Add a Radio station: list not current, invalid URL | nothing | the failure notice |
 | Add a Radio station: no answer, HTTP error, `<error>`, an unchanged `prid` | one request | the failure notice |
 | A station with the player's own preset action | that action only | one "Add preset" |
+| Add a Radio station, Music no longer the active page when the reply comes | one request | no success notice; a failure still gives the failure notice |
 
 Tests (`tests/presets`, `tests/browse`) cover the client and model side:
 - deleting, with each refusal and failure;
@@ -474,6 +475,9 @@ The pages are not instantiated in the tests. The device check covers:
     drag with the hold and the dwell, edge
     scrolling, a tap ending the mode, a drag cancelled by rotation, and
     Reorder disabled during a remorse.
+12. Device check on the NAD with throwaway presets (the maintainer's
+   approval): the list under End states.
+
 13. "Add preset" is offered on a row whose key has exactly one
     `preset_url` and whose menu has no `preset` action, and nowhere else;
     it sends the URL byte for byte with the name and image encoded, and no
@@ -483,8 +487,6 @@ The pages are not instantiated in the tests. The device check covers:
     check with a throwaway: add from Radio, the notice, the tile, play,
     delete; a TuneIn and a Radio Paradise station each show one "Add
     preset".
-12. Device check on the NAD with throwaway presets (the maintainer's
-   approval): the list under End states.
 
 ## Own code (named 2026-11-28, #63)
 

@@ -365,6 +365,14 @@ void TstPresets::aStationIsAddedFromItsUrl()
                         "&url=Airable%3Aradio%3Ahttps%3A%2F%2Fexample.airable.io%2Fradio%2Fstation%2F42"
                         "&image=http%3A%2F%2Fimages.example%2Fstation.png"));
     QTRY_COMPARE(ids(), QList<int>({ 1, 2, 3, 4, 7, 8 }));   // the first free slot
+
+    // A URL that would not stay one parameter is not sent.
+    QSignalSpy failed(m_client, &Client::commandFailed);
+    m_client->addPreset(QStringLiteral("a#b"), QStringLiteral("Bad"), QString());
+    QCOMPARE(failed.size(), 1);
+    QCOMPARE(failed.first().at(1).toString(), QStringLiteral("invalid URL"));
+    QTest::qWait(200);
+    QCOMPARE(m_player->requests(QStringLiteral("/SetPreset")).size(), 1);
 }
 
 void TstPresets::anInputThatCannotBeSentIsNotAdded_data()

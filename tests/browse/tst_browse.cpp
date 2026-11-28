@@ -135,7 +135,8 @@ void TstBrowse::init()
             return albums(QStringLiteral("D"), 0, 1);   // announced 4
         // Station rows as Radio (Airable) lists them (shape measured 2026-11-28,
         // values invented): no preset action, preset_url in the key; and a
-        // station whose menu has the player's own preset action.
+        // station whose menu has the player's own preset action (its key with
+        // a preset_url is invented, to show that the player's action wins).
         if (key == QLatin1String("Stations"))
             return "<browse type=\"items\">"
                    "<item contextMenuKey=\"Airable:CM/Airable-Item?URL=Airable%3Aradio%3Ax%2F42&amp;image=http%3A%2F%2Fimages.example%2F42.png&amp;preset_id=x&amp;preset_url=Airable%3Aradio%3Ax%2F42\""
@@ -590,6 +591,7 @@ void TstBrowse::presetUrlOfAKey_data()
     QTest::newRow("empty") << "Airable:CM/x?preset_url=" << "";
     QTest::newRow("twice") << "Airable:CM/x?preset_url=a&preset_url=b" << "";
     QTest::newRow("not a prefix match") << "Airable:CM/x?xpreset_url=a" << "";
+    QTest::newRow("an encoded &") << "Airable:CM/x?preset_url=a%26b&image=c" << "a%26b";
 }
 
 void TstBrowse::presetUrlOfAKey()
@@ -610,6 +612,10 @@ void TstBrowse::aStationWithoutAPresetActionOffersItsUrl()
     QCOMPARE(preset.value(QStringLiteral("image")).toString(), QStringLiteral("http://images.example/42.png"));
     // The player's own action is offered instead, once.
     QVERIFY(!m->data(m->index(1), BrowseModel::PresetRole).isValid());
+    // A row not yet loaded (a letter list's placeholder) offers nothing.
+    QScopedPointer<BrowseModel> index(open(QStringLiteral("Index")));
+    QTRY_VERIFY(index->ready());
+    QVERIFY(!index->data(index->index(3), BrowseModel::PresetRole).isValid());
 }
 
 void TstBrowse::playPathsGoThroughTheGateOrAreRefused()
