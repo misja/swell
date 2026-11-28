@@ -25,6 +25,7 @@ DISTFILES += qml/harbour-swell.qml \
     qml/pages/QueuePage.qml \
     qml/pages/DragReorder.qml \
     qml/pages/PresetsPage.qml \
+    qml/pages/RenamePresetDialog.qml \
     qml/pages/PresetTile.qml \
     qml/pages/BrowsePage.qml \
     qml/pages/LetterIndex.qml \
