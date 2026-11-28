@@ -7,14 +7,16 @@ import "pages"
 ApplicationWindow {
     id: app
 
-    // "m:ss" for a duration or position in seconds; empty when unknown.
-    function formatTime(secs) {
+    // A duration or position in seconds as the Media app shows it
+    // (Sailfish.Media MediaListItem.qml:33): Silica's Format, long from an
+    // hour on, judged by total when given (a position in its track's format).
+    // Empty when unknown.
+    function formatTime(secs, total) {
         if (!(secs >= 0)) {
             return ""
         }
-        var m = Math.floor(secs / 60)
-        var s = secs % 60
-        return m + ":" + (s < 10 ? "0" : "") + s
+        var scale = total >= 0 ? total : secs
+        return Format.formatDuration(secs, scale >= 3600 ? Format.DurationLong : Format.DurationShort)
     }
 
     // A command to the current player failed, from whichever page sent it.
@@ -129,7 +131,6 @@ ApplicationWindow {
         }
         if (currentId.value !== "") {
             players.restoreCurrent(currentId.value, currentNodeId.value)
-            startOnHome.start()
         }
     }
 
@@ -214,18 +215,6 @@ ApplicationWindow {
                 icon.source: miniPlayer._player && miniPlayer._player.playing
                              ? "image://theme/icon-m-pause" : "image://theme/icon-m-play"
                 onClicked: miniPlayer._player.playing ? miniPlayer._player.pause() : miniPlayer._player.play()
-            }
-        }
-    }
-
-    // The initial page exists only once the window is complete; open the
-    // remembered player's Home right after.
-    Timer {
-        id: startOnHome
-        interval: 0
-        onTriggered: {
-            if (pageStack.currentPage && pageStack.currentPage.objectName === "players") {
-                pageStack.currentPage.openCurrent(true)
             }
         }
     }

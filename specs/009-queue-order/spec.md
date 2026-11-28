@@ -93,12 +93,12 @@ A. **Status.** `Status` parses `shuffle` and `repeat`. `Client` exposes
    or missing values count as off.
 
 B. **Shuffle and repeat on Now Playing.**
-   - Two Silica `Switch`es with icons: in portrait a row below the
-     transport row; in landscape at both ends of the transport row
-     (shuffle left, repeat right), so the volume slider stays in view (the
-     maintainer, 2026-11-27, after the device check). One `Component` each,
-     placed by a `Loader`. Shown as the platform's media controls show
-     them (Facts):
+   - Two Silica `Switch`es with icons, in one `GridLayout` with the
+     transport buttons (QtQuick.Layouts, #63): in portrait in a second row
+     under previous and next; in landscape at both ends of the transport
+     row (shuffle left, repeat right), so the volume slider stays in view
+     (the maintainer, 2026-11-27, after the device check). Shown as the
+     platform's media controls show them (Facts):
      `automaticCheck: false`, `checked` from the status; `icon-m-shuffle`;
      `icon-m-repeat`, `icon-m-repeat-single` for repeat one.
    - Visible under the transport row's condition (`_empty`: online and
@@ -266,10 +266,3 @@ E. **MPRIS** keeps `hasShuffle` and `hasLoopStatus` false (spec 003): they
    Switches at both ends of the transport row and the volume slider in
    view; in portrait their own row; a rotation while the queue plays.
 9. A separate result review before each PR. Own code named in the PR.
-
-## Own code (named 2026-11-28, #63)
-
-- Shuffle and repeat are two `Component`s placed by four `Loader`s (two
-  per orientation) on Now Playing; the landscape ones hide when inactive,
-  since an inactive Loader keeps its last size (qquickloader.cpp:338-362).
-  To be replaced with QtQuick.Layouts (#63, the maintainer, 2026-11-28).

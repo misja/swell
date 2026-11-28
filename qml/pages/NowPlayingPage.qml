@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 import QtQuick 2.0
+import QtQuick.Layouts 1.1   // ColumnLayout
 import Sailfish.Silica 1.0
 import Swell 1.0
 
@@ -17,8 +18,6 @@ Page {
     readonly property bool _empty: _player !== null && _player.online && !_player.hasContent
     // Shuffle and repeat only while the queue is the source (API 2.1, streamUrl).
     readonly property bool _queueModes: !_empty && _player !== null && !_player.streaming
-    // Scroll along while Per player opens, until the user scrolls.
-    property bool _followGrowth: false
     // Artwork edge: the short side of the page, flush with the page edges
     // (Silica pitfalls); beside the controls in landscape.
     readonly property real _artSize: isLandscape ? height : width
@@ -57,7 +56,6 @@ Page {
     SilicaFlickable {
         id: flickable
         anchors.fill: parent
-        onMovementStarted: page._followGrowth = false
         contentHeight: Math.max(height, layout.height + Theme.paddingLarge)
 
         Flow {
@@ -97,29 +95,32 @@ Page {
                 }
             }
 
-            Column {
+            // The controls centred in the space beside (landscape) or below
+            // (portrait) the artwork: a layout filling that space, with
+            // room taking the rest above and below them (Layout.fillHeight).
+            ColumnLayout {
                 width: page.isLandscape ? page.width - page._artSize - layout.spacing : page.width
+                // The page's height less what is above (artwork and the Flow's
+                // spacing in portrait) and the flickable's bottom padding.
+                height: Math.max(implicitHeight, page.height - Theme.paddingLarge
+                                 - (page.isLandscape ? 0 : artColumn.height + layout.spacing))
                 spacing: Theme.paddingMedium
 
                 PageHeader {
                     id: sideHeader
+                    Layout.fillWidth: true
                     visible: page.isLandscape
                     title: _player ? (_player.name !== "" ? _player.name : _player.host) : ""
                     description: _player && !_player.online ? qsTr("Not reachable") : page._groupText()
                 }
 
-                // Centres the controls in the space left beside (landscape) or
-                // below (portrait) the artwork, instead of leaving it empty.
                 Item {
-                    width: parent.width
-                    height: Math.max(0, Math.floor((page.height
-                                                    - (page.isLandscape ? sideHeader.height : artColumn.height)
-                                                    - controls.height) / 2) - Theme.paddingMedium)
+                    Layout.fillHeight: true
                 }
 
                 Column {
                     id: controls
-                    width: parent.width
+                    Layout.fillWidth: true
                     spacing: Theme.paddingMedium
 
                     InfoLabel {
@@ -178,7 +179,8 @@ Page {
                                 id: elapsed
                                 font.pixelSize: Theme.fontSizeExtraSmall
                                 color: Theme.secondaryColor
-                                text: _player ? app.formatTime(_player.position) : ""
+                                // In the total's format, so both labels match.
+                                text: _player ? app.formatTime(_player.position, _player.duration) : ""
                             }
                             Label {
                                 anchors.right: parent.right
@@ -189,65 +191,84 @@ Page {
                         }
                     }
 
-                    Row {
+                    // The transport, with shuffle and repeat as the platform's
+                    // media controls show them (Sailfish.Media
+                    // MediaPlayerControlsPanel: icon Switches that follow the
+                    // state), only while the queue is the source (API 2.1). One
+                    // grid: in portrait the Switches sit in a second row under
+                    // previous and next; in landscape at both ends of the first,
+                    // so the volume stays in view.
+                    GridLayout {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        spacing: Theme.paddingLarge
                         visible: !page._empty
+                        columns: 5
+                        columnSpacing: Theme.paddingLarge
+                        rowSpacing: Theme.paddingMedium
 
-                        Loader {
-                            anchors.verticalCenter: parent.verticalCenter
-                            active: page.isLandscape && page._queueModes
-                            // An inactive Loader keeps its last size
-                            // (qquickloader.cpp:338-362, Qt 5.6.3).
-                            visible: active
-                            sourceComponent: shuffleSwitch
+                        Switch {
+                            objectName: "shuffle"
+                            Layout.row: page.isLandscape ? 0 : 1
+                            Layout.column: page.isLandscape ? 0 : 1
+                            Layout.alignment: Qt.AlignCenter
+                            visible: page._queueModes
+                            icon.source: "image://theme/icon-m-shuffle"
+                            automaticCheck: false
+                            checked: _player !== null && _player.shuffle
+                            enabled: _player !== null && _player.online
+                            onClicked: _player.setShuffle(!_player.shuffle)
                         }
                         // Hidden, not greyed, when the source has nothing to go back or
                         // forward to (plain radio: streamUrl without actions, API 4.8).
                         IconButton {
-                            anchors.verticalCenter: parent.verticalCenter
+                            Layout.row: 0
+                            Layout.column: 1
+                            Layout.alignment: Qt.AlignCenter
                             icon.source: "image://theme/icon-m-previous"
                             visible: _player && _player.canBack
                             enabled: _player && _player.online
                             onClicked: _player.back()
                         }
                         IconButton {
-                            anchors.verticalCenter: parent.verticalCenter
+                            Layout.row: 0
+                            Layout.column: 2
+                            Layout.alignment: Qt.AlignCenter
                             icon.source: _player && _player.playing ? "image://theme/icon-l-pause" : "image://theme/icon-l-play"
                             enabled: _player && _player.online
                             onClicked: _player.playing ? _player.pause() : _player.play()
                         }
                         IconButton {
-                            anchors.verticalCenter: parent.verticalCenter
+                            Layout.row: 0
+                            Layout.column: 3
+                            Layout.alignment: Qt.AlignCenter
                             icon.source: "image://theme/icon-m-next"
                             visible: _player && _player.canSkip
                             enabled: _player && _player.online
                             onClicked: _player.skip()
                         }
-                        Loader {
-                            anchors.verticalCenter: parent.verticalCenter
-                            active: page.isLandscape && page._queueModes
-                            // An inactive Loader keeps its last size
-                            // (qquickloader.cpp:338-362, Qt 5.6.3).
-                            visible: active
-                            sourceComponent: repeatSwitch
-                        }
-                    }
-
-                    // Portrait: shuffle and repeat in a row of their own; landscape:
-                    // beside the transport row (above), so the volume stays in view.
-                    Row {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        spacing: Theme.paddingLarge
-                        visible: !page.isLandscape && page._queueModes
-
-                        Loader {
-                            active: !page.isLandscape && page._queueModes
-                            sourceComponent: shuffleSwitch
-                        }
-                        Loader {
-                            active: !page.isLandscape && page._queueModes
-                            sourceComponent: repeatSwitch
+                        Switch {
+                            objectName: "repeat"
+                            Layout.row: page.isLandscape ? 0 : 1
+                            Layout.column: page.isLandscape ? 4 : 3
+                            Layout.alignment: Qt.AlignCenter
+                            visible: page._queueModes
+                            icon.source: _player !== null && _player.repeat === Player.RepeatTrack
+                                         ? "image://theme/icon-m-repeat-single" : "image://theme/icon-m-repeat"
+                            automaticCheck: false
+                            checked: _player !== null && _player.repeat !== Player.RepeatOff
+                            enabled: _player !== null && _player.online
+                            // Off, then the whole queue, then the track.
+                            onClicked: {
+                                switch (_player.repeat) {
+                                case Player.RepeatOff:
+                                    _player.setRepeat(Player.RepeatQueue)
+                                    break
+                                case Player.RepeatQueue:
+                                    _player.setRepeat(Player.RepeatTrack)
+                                    break
+                                default:
+                                    _player.setRepeat(Player.RepeatOff)
+                                }
+                            }
                         }
                     }
 
@@ -314,71 +335,66 @@ Page {
                     }
 
                     // Silica's own fold-out; members are watched only while open.
-                    ExpandingSection {
-                        id: perPlayer
+                    // The group scrolls the opened section into view
+                    // (ExpandingSectionGroup.qml, animateToExpandedSection).
+                    ExpandingSectionGroup {
                         visible: page._leads
-                        title: qsTr("Per player")
-                        onExpandedChanged: {
-                            page._perPlayer = expanded
-                            // The members sit below the fold: keep the bottom in
-                            // view while the section grows.
-                            page._followGrowth = expanded
-                        }
-                        onHeightChanged: {
-                            if (page._followGrowth) {
-                                flickable.scrollToBottom()
-                            }
-                        }
 
-                        content.sourceComponent: Column {
-                            width: perPlayer.width
-                            Repeater {
-                                model: CurrentGroup {
-                                    sourceModel: players
-                                }
-                                delegate: Row {
-                                    x: Theme.paddingMedium
-                                    width: parent.width - Theme.paddingMedium
+                        ExpandingSection {
+                            id: perPlayer
+                            title: qsTr("Per player")
+                            onExpandedChanged: page._perPlayer = expanded
 
-                                    // This member's own mute.
-                                    IconButton {
-                                        width: mute.width
-                                        height: Theme.itemSizeSmall
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        // The theme's small volume icons, drawn for this size.
-                                        icon.source: model.muted ? "image://theme/icon-system-volume-mute" : "image://theme/icon-system-volume"
-                                        enabled: model.online
-                                        onClicked: players.setPlayerMuted(model.playerId, !model.muted)
+                            content.sourceComponent: Column {
+                                width: perPlayer.width
+                                Repeater {
+                                    model: CurrentGroup {
+                                        sourceModel: players
                                     }
+                                    delegate: Row {
+                                        x: Theme.paddingMedium
+                                        width: parent.width - Theme.paddingMedium
 
-                                    // A member with a fixed volume: its name only.
-                                    Label {
-                                        visible: model.volume < 0
-                                        width: parent.width - mute.width
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: qsTr("%1: fixed volume").arg(model.name)
-                                        color: Theme.secondaryColor
-                                    }
-                                    Slider {
-                                        id: member
-                                        visible: model.volume >= 0
-                                        width: parent.width - mute.width
-                                        enabled: model.online
-                                        minimumValue: 0
-                                        maximumValue: 100
-                                        stepSize: 1
-                                        label: model.name
-                                        valueText: Math.round(value)
-
-                                        Binding {
-                                            target: member
-                                            property: "value"
-                                            value: Math.max(0, model.volume)
-                                            when: !member.down
+                                        // This member's own mute.
+                                        IconButton {
+                                            width: mute.width
+                                            height: Theme.itemSizeSmall
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            // The theme's small volume icons, drawn for this size.
+                                            icon.source: model.muted ? "image://theme/icon-system-volume-mute" : "image://theme/icon-system-volume"
+                                            enabled: model.online
+                                            onClicked: players.setPlayerMuted(model.playerId, !model.muted)
                                         }
-                                        onValueChanged: {
-                                            if (down) {
-                                                players.setPlayerVolume(model.playerId, Math.round(value))
+
+                                        // A member with a fixed volume: its name only.
+                                        Label {
+                                            visible: model.volume < 0
+                                            width: parent.width - mute.width
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            text: qsTr("%1: fixed volume").arg(model.name)
+                                            color: Theme.secondaryColor
+                                        }
+                                        Slider {
+                                            id: member
+                                            visible: model.volume >= 0
+                                            width: parent.width - mute.width
+                                            enabled: model.online
+                                            minimumValue: 0
+                                            maximumValue: 100
+                                            stepSize: 1
+                                            label: model.name
+                                            valueText: Math.round(value)
+
+                                            Binding {
+                                                target: member
+                                                property: "value"
+                                                value: Math.max(0, model.volume)
+                                                when: !member.down
+                                            }
+                                            onValueChanged: {
+                                                if (down) {
+                                                    players.setPlayerVolume(model.playerId, Math.round(value))
+                                                }
                                             }
                                         }
                                     }
@@ -387,48 +403,13 @@ Page {
                         }
                     }
                 }
+
+                Item {
+                    Layout.fillHeight: true
+                }
             }
         }
 
         VerticalScrollDecorator {}
-    }
-
-    // Shuffle and repeat as the platform's media controls show them
-    // (Sailfish.Media MediaPlayerControlsPanel: icon Switches that follow the
-    // state), placed by the Loaders above.
-    Component {
-        id: shuffleSwitch
-        Switch {
-            objectName: "shuffle"
-            icon.source: "image://theme/icon-m-shuffle"
-            automaticCheck: false
-            checked: _player !== null && _player.shuffle
-            enabled: _player !== null && _player.online
-            onClicked: _player.setShuffle(!_player.shuffle)
-        }
-    }
-    Component {
-        id: repeatSwitch
-        Switch {
-            objectName: "repeat"
-            icon.source: _player !== null && _player.repeat === Player.RepeatTrack
-                         ? "image://theme/icon-m-repeat-single" : "image://theme/icon-m-repeat"
-            automaticCheck: false
-            checked: _player !== null && _player.repeat !== Player.RepeatOff
-            enabled: _player !== null && _player.online
-            // Off, then the whole queue, then the track.
-            onClicked: {
-                switch (_player.repeat) {
-                case Player.RepeatOff:
-                    _player.setRepeat(Player.RepeatQueue)
-                    break
-                case Player.RepeatQueue:
-                    _player.setRepeat(Player.RepeatTrack)
-                    break
-                default:
-                    _player.setRepeat(Player.RepeatOff)
-                }
-            }
-        }
     }
 }

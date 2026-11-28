@@ -23,7 +23,6 @@ DISTFILES += qml/harbour-swell.qml \
     qml/pages/HomePage.qml \
     qml/pages/NowPlayingPage.qml \
     qml/pages/QueuePage.qml \
-    qml/pages/QueueRow.qml \
     qml/pages/DragReorder.qml \
     qml/pages/PresetsPage.qml \
     qml/pages/PresetTile.qml \
