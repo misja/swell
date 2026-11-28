@@ -129,7 +129,6 @@ ApplicationWindow {
         }
         if (currentId.value !== "") {
             players.restoreCurrent(currentId.value, currentNodeId.value)
-            startOnHome.start()
         }
     }
 
@@ -214,18 +213,6 @@ ApplicationWindow {
                 icon.source: miniPlayer._player && miniPlayer._player.playing
                              ? "image://theme/icon-m-pause" : "image://theme/icon-m-play"
                 onClicked: miniPlayer._player.playing ? miniPlayer._player.pause() : miniPlayer._player.play()
-            }
-        }
-    }
-
-    // The initial page exists only once the window is complete; open the
-    // remembered player's Home right after.
-    Timer {
-        id: startOnHome
-        interval: 0
-        onTriggered: {
-            if (pageStack.currentPage && pageStack.currentPage.objectName === "players") {
-                pageStack.currentPage.openCurrent(true)
             }
         }
     }
