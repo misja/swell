@@ -326,3 +326,17 @@ that are not seen through `/Browse`.
   Icon, `NowPlayingPage.qml`).
 - `BrowsePage.qml` places the letter index by hand (`topMargin:
   Theme.itemSizeLarge`) and repeats its width in three places.
+- Covers from a disk cache (#67, the maintainer, 2026-11-28): the QML
+  engine's network access (`src/covercache.cpp`) has a `QNetworkDiskCache`
+  of 20 MB in the app's cache location (`QQmlNetworkAccessManagerFactory`,
+  both standard Qt). Own code: `CoverDiskCache::prepare` gives a 200 or 301
+  without any `Expires`, `ETag`, `Last-Modified` or `Cache-Control` an
+  expiry of 30 days from storing;
+  Qt's own freshness check then serves it from the cache until then and
+  reads it again after. Measured 2026-11-28 (NAD C 379, BluOS 4.18.26): a
+  library cover answers 301 (with a short body) to port 11004, then 200,
+  chunked, without cache headers; Qt 5.6.3 reuses only fresh replies
+  (qnetworkreplyhttpimpl.cpp:564-580), and without the expiry such a reply
+  is never fresh. Station images (static.airable.io: `Last-Modified`,
+  `ETag`) keep Qt's own freshness and revalidation. Errors are not kept;
+  redirects are, with their target.

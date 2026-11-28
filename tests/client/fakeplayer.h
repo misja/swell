@@ -96,6 +96,8 @@ public:
     }
 
     void redirect(const QString &path, const QUrl &to) { m_redirects.insert(path, to); }
+    // Extra header lines ("Name: value\r\n") on this path's answers.
+    void addHeaders(const QString &path, const QByteArray &lines) { m_headers.insert(path, lines); }
     // Answers this path from its query, e.g. /Playlist windows.
     void handle(const QString &path, const std::function<QByteArray(const QUrlQuery &)> &handler)
     {
@@ -254,7 +256,11 @@ private:
             body = m_handlers.value(path)(query);
             head = "HTTP/1.1 200 OK\r\nContent-Type: text/xml\r\n";
         } else if (m_redirects.contains(path)) {
-            head = "HTTP/1.1 302 Found\r\nLocation: " + m_redirects.value(path).toEncoded() + "\r\n";
+            // As the player's /Artwork (NAD C 379, BluOS 4.18.26, 2026-11-28):
+            // 301 with a short HTML body.
+            const QByteArray to = m_redirects.value(path).toEncoded();
+            body = "<a href=\"" + to + "\">Moved Permanently</a>.\n\n";
+            head = "HTTP/1.1 301 Moved Permanently\r\nContent-Type: text/html; charset=utf-8\r\nLocation: " + to + "\r\n";
         } else if (m_routes.contains(path)) {
             body = m_routes.value(path);
             head = "HTTP/1.1 200 OK\r\nContent-Type: " + m_types.value(path, "text/xml") + "\r\n";
@@ -262,6 +268,7 @@ private:
             body = "<html><body>Not found</body></html>";
             head = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n";
         }
+        head += m_headers.value(path);
         head += "Content-Length: " + QByteArray::number(body.size()) + "\r\nConnection: close\r\n\r\n";
         socket->write(head + body);
         socket->disconnectFromHost();
@@ -273,6 +280,7 @@ private:
     QHash<QString, QByteArray> m_routes;
     QHash<QString, QByteArray> m_types;
     QHash<QString, QUrl> m_redirects;
+    QHash<QString, QByteArray> m_headers;
     QHash<QString, int> m_failures;
     QHash<QString, std::function<QByteArray(const QUrlQuery &)>> m_handlers;
     QHash<QString, int> m_delays;
