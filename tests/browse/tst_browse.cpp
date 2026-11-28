@@ -137,7 +137,7 @@ void TstBrowse::init()
         // values invented): no preset action, preset_url in the key; and a
         // station whose menu has the player's own preset action (its key with
         // a preset_url is invented, to show that the player's action wins).
-        if (key == QLatin1String("Stations"))
+        if (key == QLatin1String("AirableStations"))
             return "<browse type=\"items\">"
                    "<item contextMenuKey=\"Airable:CM/Airable-Item?URL=Airable%3Aradio%3Ax%2F42&amp;image=http%3A%2F%2Fimages.example%2F42.png&amp;preset_id=x&amp;preset_url=Airable%3Aradio%3Ax%2F42\""
                    " text=\"Station 42\" image=\"http://images.example/42.png\" type=\"audio\">"
@@ -604,7 +604,7 @@ void TstBrowse::presetUrlOfAKey()
 void TstBrowse::aStationWithoutAPresetActionOffersItsUrl()
 {
     startClient();
-    QScopedPointer<BrowseModel> m(open(QStringLiteral("Stations")));
+    QScopedPointer<BrowseModel> m(open(QStringLiteral("AirableStations")));
     QTRY_VERIFY(m->ready());
     const QVariantMap preset = m->data(m->index(0), BrowseModel::PresetRole).toMap();
     QCOMPARE(preset.value(QStringLiteral("url")).toString(), QStringLiteral("Airable%3Aradio%3Ax%2F42"));
