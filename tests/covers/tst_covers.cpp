@@ -185,7 +185,7 @@ void TstCovers::theCacheHasALimit()
     Swell::CoverCacheFactory factory(dir.path());
     QScopedPointer<QNetworkAccessManager> nam(factory.create(nullptr));
     QVERIFY(nam->cache());
-    QCOMPARE(nam->cache()->metaObject()->className(), "QNetworkDiskCache");
+    QVERIFY(qobject_cast<QNetworkDiskCache *>(nam->cache()));
     QCOMPARE(qobject_cast<QNetworkDiskCache *>(nam->cache())->maximumCacheSize(),
              Swell::CoverCacheFactory::MaxCacheBytes);
 }
