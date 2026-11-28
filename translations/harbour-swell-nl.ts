@@ -454,72 +454,72 @@
 <context>
     <name>PlayersPage</name>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="55"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="72"/>
         <source>Connecting</source>
         <translation>Verbinden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="56"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="73"/>
         <source>Not reachable</source>
         <translation>Niet bereikbaar</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="57"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="74"/>
         <source>Not a BluOS player</source>
         <translation>Geen BluOS-speler</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="58"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="75"/>
         <source>Updating firmware</source>
         <translation>Firmware wordt bijgewerkt</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="72"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="89"/>
         <source>Players</source>
         <translation>Spelers</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="77"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="94"/>
         <source>About</source>
         <translation>Over</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="81"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="98"/>
         <source>Add player</source>
         <translation>Speler toevoegen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="85"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="102"/>
         <source>Search again</source>
         <translation>Opnieuw zoeken</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="147"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="164"/>
         <source>Follow %1</source>
         <translation>%1 volgen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="153"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="170"/>
         <source>Add %1</source>
         <translation>%1 toevoegen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="158"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="175"/>
         <source>Remove</source>
         <translation>Verwijderen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="208"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="225"/>
         <source>Leave group</source>
         <translation>Groep verlaten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="220"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="237"/>
         <source>No players found</source>
         <translation>Geen spelers gevonden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlayersPage.qml" line="221"/>
+        <location filename="../qml/pages/PlayersPage.qml" line="238"/>
         <source>Pull down to search again or to add a player by address</source>
         <translation>Trek omlaag om opnieuw te zoeken of een speler op adres toe te voegen</translation>
     </message>

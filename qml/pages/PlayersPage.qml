@@ -20,21 +20,38 @@ Page {
         pageStack.navigateForward(immediate ? PageStackAction.Immediate : PageStackAction.Animated)
     }
 
-    // The first time this page is shown, the remembered player (restored
-    // before) opens on Home at once.
-    property bool _started: false
+    // At start, the remembered player opens on Home at once: when this page
+    // is active and the window has restored the player. Silica may show this
+    // page before or after the window's Component.onCompleted (measured:
+    // before, 2026-11-28), so both changes are followed. Done once.
+    property bool _startDone: false
+
+    function _startOnHome() {
+        if (_startDone || status !== PageStatus.Active) {
+            return
+        }
+        if (players.current) {
+            _startDone = true
+            openCurrent(true)
+        } else if (!app.restoring) {
+            _startDone = true   // nothing remembered
+        }
+    }
+
+    Connections {
+        target: players
+        onCurrentChanged: if (app.restoring) page._startOnHome()
+    }
+    Connections {
+        target: app
+        onRestoringChanged: page._startOnHome()
+    }
 
     onStatusChanged: {
         if (status !== PageStatus.Active) {
             return
         }
-        if (!_started) {
-            _started = true
-            if (players.current) {
-                openCurrent(true)
-                return
-            }
-        }
+        _startOnHome()
         if (players.current && pageStack.nextPage(page) === null) {
             pageStack.pushAttached(Qt.resolvedUrl("HomePage.qml"))
         }

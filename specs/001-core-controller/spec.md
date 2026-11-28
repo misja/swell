@@ -293,8 +293,9 @@ Still open: player settings (006), to be discussed.
   artwork with a `ColumnLayout` and two fillers (`Layout.fillHeight`,
   QtQuick.Layouts 1.1, allowed for Harbour); its height is that space or
   the content's, whichever is larger (#63).
-- Start on Home: the Players page opens the remembered player's Home the
-  first time it becomes active (`PlayersPage.qml` `_started`). It relies on
-  the window's `Component.onCompleted` (which restores the player) running
-  before Silica pushes the initial page in its own (ApplicationWindow.qml
-  583-590); Qt does not document that order. To check on the device.
+- Start on Home: the window is `restoring` until its `Component.onCompleted`
+  has restored the remembered player; the Players page opens that player's
+  Home once it is active and the player is there, in either order (Silica
+  pushes the initial page in its own `onCompleted`, ApplicationWindow.qml
+  583-590; on the device it came first, 2026-11-28). Done once, so a later
+  choice of player does not jump to Home again.
