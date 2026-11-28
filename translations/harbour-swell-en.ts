@@ -336,17 +336,17 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="307"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="332"/>
         <source>Group volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="345"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="370"/>
         <source>Per player</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="374"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="399"/>
         <source>%1: fixed volume</source>
         <translation type="unfinished"></translation>
     </message>
@@ -362,7 +362,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="307"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="332"/>
         <source>Volume</source>
         <translation type="unfinished"></translation>
     </message>
