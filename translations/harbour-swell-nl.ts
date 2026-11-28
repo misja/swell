@@ -336,17 +336,17 @@
         <translation>In de groep van een andere speler</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="282"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="286"/>
         <source>Group volume</source>
         <translation>Groepsvolume</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="316"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="320"/>
         <source>Per player</source>
         <translation>Per speler</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="355"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="359"/>
         <source>%1: fixed volume</source>
         <translation>%1: vast volume</translation>
     </message>
@@ -362,7 +362,7 @@
         <translation>Niet bereikbaar</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NowPlayingPage.qml" line="282"/>
+        <location filename="../qml/pages/NowPlayingPage.qml" line="286"/>
         <source>Volume</source>
         <translation>Volume</translation>
     </message>

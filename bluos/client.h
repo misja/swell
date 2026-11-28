@@ -37,6 +37,8 @@ class Client : public QObject
     Q_PROPERTY(bool fixedVolume READ fixedVolume NOTIFY syncStatusChanged)
     Q_PROPERTY(QString state READ state NOTIFY statusChanged)
     Q_PROPERTY(bool playing READ playing NOTIFY statusChanged)
+    // state "pause" (section 2.1): /Play resumes; not in stop.
+    Q_PROPERTY(bool paused READ paused NOTIFY statusChanged)
     Q_PROPERTY(bool hasContent READ hasContent NOTIFY statusChanged)
     Q_PROPERTY(QString title1 READ title1 NOTIFY statusChanged)
     Q_PROPERTY(QString title2 READ title2 NOTIFY statusChanged)
@@ -117,7 +119,7 @@ public:
         int pollTimeoutSecs = 100;   // API 2.1: recommended 100 s, never below 10 s
         int deadlineGraceMs = 15000; // added to the poll timeout before aborting
         int commandTimeoutMs = 10000;
-        int readTimeoutMs = 30000;  // queue and browse reads; the player answers after serving covers
+        int readTimeoutMs = 30000;  // queue and browse reads; azzurro saw the player answer after serving covers (not measured here)
         int queueRetryMs = 3000;         // pause before a failed window is read again
         int minIntervalMs = 1000;    // API 2: same resource at most once per second
         int backoffInitialMs = 1000;
@@ -155,6 +157,7 @@ public:
     bool fixedVolume() const { return m_sync.ok && m_sync.volume < 0; }
     QString state() const { return m_status.state; }
     bool playing() const { return m_status.isPlaying(); }
+    bool paused() const { return m_status.ok && m_status.state == QLatin1String("pause"); }
     QString title1() const { return m_status.title1; }
     QString title2() const { return m_status.title2; }
     QString title3() const { return m_status.title3; }
@@ -361,6 +364,9 @@ signals:
     // A move was not sent: the queue changed (queueChanged), or the player is
     // offline, or another edit is running.
     void moveRefused(bool queueChanged);
+    // A /Move was sent and failed (also reported as commandFailed): the view
+    // that anticipated it goes back.
+    void moveFailed();
     void queueEditingChanged();
     // deletePreset() sent nothing: the presets changed (presetsChanged), or
     // the player is not online.
@@ -368,6 +374,8 @@ signals:
     // movePreset() was not carried out: the presets changed (also a 412), or
     // the player is not online.
     void presetMoveRefused(bool presetsChanged);
+    // A preset move failed after the checks (also reported as commandFailed).
+    void presetMoveFailed();
     void presetMovingChanged();
     // A context-menu action succeeded (type as in the menu, e.g. addAll-last).
     void actionDone(const QString &type);

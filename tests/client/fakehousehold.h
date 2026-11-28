@@ -6,6 +6,10 @@
 // /Status, and /AddSlave, /RemoveSlave and /Volume take the forms with
 // several players and tell_slaves. How real players remove a primary is not
 // documented; this does what Home Assistant assumes (spec 005).
+// None of this grouped behaviour is measured: there is no grouped hardware
+// (spec 005 evidence). It follows the API, azzurro's demo and pyblu; what
+// those do not say (a secondary serving its primary's /Status with its
+// syncStat, refusing a loop) is invented.
 #ifndef FAKEHOUSEHOLD_H
 #define FAKEHOUSEHOLD_H
 

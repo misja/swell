@@ -454,3 +454,10 @@ The pages are not instantiated in the tests. The device check covers:
     Reorder disabled during a remorse.
 12. Device check on the NAD with throwaway presets (the maintainer's
    approval): the list under End states.
+
+## Own code (named 2026-11-28, #63)
+
+- Presets and inputs are `QVariantList`s, sorted in JavaScript on the
+  pages; each change resets the view.
+- `DragReorder.qml` edge scrolling steps with a 16 ms repeating timer; a
+  Qt animation on `contentY` would be frame-paced (optional).

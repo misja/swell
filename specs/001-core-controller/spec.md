@@ -282,3 +282,10 @@ Decisions (the maintainer, 2026-11-06):
   follows the agreed structure.
 
 Still open: player settings (006), to be discussed.
+
+## Own code (named 2026-11-28, #63)
+
+- Page navigation by `objectName` (`qml/harbour-swell.qml`, the pages
+  that keep the mini-player) and the `openNowPlaying` flag (`HomePage.qml`):
+  identifiers set in code, not derived from data. Silica's PageStack has
+  no per-page property for this.

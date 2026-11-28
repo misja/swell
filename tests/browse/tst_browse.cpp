@@ -570,6 +570,10 @@ void TstBrowse::whatBrowsePageAsks()
     for (const char *type : { "add-next", "add-last", "addAll-next", "addAll-last", "favourite-add",
                               "favourite-delete" })
         QVERIFY2(!m.startsPlayback(QLatin1String(type)), type);
+    for (const char *type : { "favourite-add", "favourite-delete" })
+        QVERIFY2(m.changesFavourites(QLatin1String(type)), type);
+    for (const char *type : { "add-now", "add-last", "preset", "favourite", "favourites-add" })
+        QVERIFY2(!m.changesFavourites(QLatin1String(type)), type);
     QVERIFY(!m.favouritesList());
     m.setKey(QString::fromLatin1(BrowseModel::FavouritesKey));
     QVERIFY(m.favouritesList());

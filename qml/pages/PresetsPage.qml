@@ -68,7 +68,7 @@ Page {
                                         : qsTr("Nothing was moved."), Notice.Short)
         }
         // The app shows the failure notice.
-        onCommandFailed: if (path === "/Presets/edit") reorder.putBack()
+        onPresetMoveFailed: reorder.putBack()
         // A new list resets the view, and a drag in it ends.
         onQmlPresetsChanged: {
             reorder.end()

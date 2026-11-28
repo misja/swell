@@ -53,6 +53,11 @@ bool BrowseModel::startsPlayback(const QString &type) const
             || type == QLatin1String("add-shuffle");
 }
 
+bool BrowseModel::changesFavourites(const QString &type) const
+{
+    return type == QLatin1String("favourite-add") || type == QLatin1String("favourite-delete");
+}
+
 bool BrowseModel::favouriteAlbums() const
 {
     return m_favouritesKey.startsWith(QLatin1String("LocalMusic:Album/"));

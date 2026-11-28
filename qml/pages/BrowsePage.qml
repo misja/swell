@@ -117,7 +117,7 @@ Page {
     Connections {
         target: page.status === PageStatus.Active ? page._player : null
         onActionDone: {
-            if (type.indexOf("favourite") === 0) {
+            if (browseModel.changesFavourites(type)) {
                 Notices.show(type === "favourite-add" ? qsTr("Added to favorites") : qsTr("Removed from favorites"), Notice.Short)
                 browseModel.load()   // the menu label, and the Favourites list, change
                 if (favouritesModel.key !== "") {
@@ -352,7 +352,7 @@ Page {
                 visible: page._images && model.image.toString() !== ""
                 x: Theme.horizontalPageMargin
                 anchors.verticalCenter: parent.verticalCenter
-                width: !visible ? 0 : (item._cover ? Theme.itemSizeMedium - 2 * Theme.paddingSmall : Theme.iconSizeMedium)
+                width: item._cover ? Theme.itemSizeMedium - 2 * Theme.paddingSmall : Theme.iconSizeMedium
                 height: width
                 placeholder: model.type !== "section"
                 // The Media player's icon for the kind of row.

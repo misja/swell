@@ -145,3 +145,16 @@ repeat.
 - API v1.7 §5 and §4.1 were read on 2026-11-06.
 - Assumption: `time` and `image` are present on most services (azzurro
   observation). Rows work without them.
+
+## Own code (named 2026-11-28, #63)
+
+- Windows fetched from `data()` (`queuemodel.cpp`: `want()` with
+  `const_cast`, the request deferred with a 0 ms timer). Qt has no class
+  for a sparse list of known length; `QFileSystemModel` does the same
+  from its const accessors (qtbase v5.6.3 `qfilesystemmodel.cpp:441-468`). The deferral is needed:
+  `data()` runs while the view builds delegates.
+- `QueuePage.qml` `_previousQueue`: switches the old player's queue off by
+  hand, because a `Binding` whose target changes leaves the old target at
+  its value (qtdeclarative v5.6.3 `qqmlbind.cpp:304-327`).
+- Open, not seen on a device: a window that fails after the length is
+  known is read again only when a row of it is shown again.

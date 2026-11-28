@@ -197,7 +197,9 @@ Page {
                         Loader {
                             anchors.verticalCenter: parent.verticalCenter
                             active: page.isLandscape && page._queueModes
-                            visible: active   // no spacing for an empty end
+                            // An inactive Loader keeps its last size
+                            // (qquickloader.cpp:338-362, Qt 5.6.3).
+                            visible: active
                             sourceComponent: shuffleSwitch
                         }
                         // Hidden, not greyed, when the source has nothing to go back or
@@ -225,7 +227,9 @@ Page {
                         Loader {
                             anchors.verticalCenter: parent.verticalCenter
                             active: page.isLandscape && page._queueModes
-                            visible: active   // no spacing for an empty end
+                            // An inactive Loader keeps its last size
+                            // (qquickloader.cpp:338-362, Qt 5.6.3).
+                            visible: active
                             sourceComponent: repeatSwitch
                         }
                     }

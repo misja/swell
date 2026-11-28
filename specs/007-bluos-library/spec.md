@@ -167,3 +167,9 @@ Dropped after review:
    - Queue;
    - Browse: letters, artist pulley, context menus.
 7. A separate result review before the PR.
+
+## Own code (named 2026-11-28, #63)
+
+- `Client::send()` names its gate after the first parameter of the query
+  the client itself builds, unless a name is passed; a burst of the same
+  setting collapses to its last value.
