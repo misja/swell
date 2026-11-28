@@ -635,22 +635,17 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="250"/>
-        <source>Now playing %1. Tap a track to play the queue again.</source>
-        <translation>Nu speelt %1. Tik op een nummer om de wachtrij weer af te spelen.</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/QueuePage.qml" line="269"/>
+        <location filename="../qml/pages/QueuePage.qml" line="258"/>
         <source>Clear queue</source>
         <translation>Wachtrij wissen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="271"/>
+        <location filename="../qml/pages/QueuePage.qml" line="260"/>
         <source>Clearing queue</source>
         <translation>Wachtrij wordt gewist</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="291"/>
+        <location filename="../qml/pages/QueuePage.qml" line="280"/>
         <source>Play a preset or an input, or add music</source>
         <translation>Speel een preset of ingang af, of voeg muziek toe</translation>
     </message>
@@ -665,12 +660,12 @@
         <translation>Verwijderen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="264"/>
+        <location filename="../qml/pages/QueuePage.qml" line="253"/>
         <source>Reorder</source>
         <translation>Volgorde wijzigen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/QueuePage.qml" line="290"/>
+        <location filename="../qml/pages/QueuePage.qml" line="279"/>
         <source>Queue is empty</source>
         <translation>Wachtrij is leeg</translation>
     </message>
