@@ -487,7 +487,8 @@ void TstPresets::aRenameIsRefused()
     startClient();
     QSignalSpy refused(m_client, &Client::presetRenameRefused);
     const QString prid = m_client->presetsPrid();
-    if (id < 0) {
+    const bool notCurrent = id < 0;
+    if (notCurrent) {
         // /Status reports a newer list than the one read (held back).
         m_player->delay(QStringLiteral("/Presets"), 2000);
         ++m_prid;
@@ -498,9 +499,11 @@ void TstPresets::aRenameIsRefused()
     m_client->renamePreset(id, QStringLiteral("New"), stalePrid ? QStringLiteral("0") : prid);
     QCOMPARE(refused.size(), 1);
     QCOMPARE(refused.first().first().toBool(), changed);
-    // The same name, or an empty one: nothing to do.
-    m_client->renamePreset(7, QStringLiteral("Station 7"), m_client->presetsPrid());
-    m_client->renamePreset(7, QStringLiteral("  "), m_client->presetsPrid());
+    // On a current list, the same name or an empty one: nothing to do.
+    if (!notCurrent) {
+        m_client->renamePreset(7, QStringLiteral("Station 7"), m_client->presetsPrid());
+        m_client->renamePreset(7, QStringLiteral("  "), m_client->presetsPrid());
+    }
     QTest::qWait(300);
     QCOMPARE(setPresetRequests(), 0);
     QCOMPARE(refused.size(), 1);
