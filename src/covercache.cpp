@@ -3,6 +3,7 @@
 
 #include <QDateTime>
 #include <QNetworkAccessManager>
+#include <QNetworkRequest>
 
 namespace Swell {
 
@@ -16,7 +17,16 @@ CoverDiskCache::CoverDiskCache(qint64 maxAgeSecs, QObject *parent)
 
 QIODevice *CoverDiskCache::prepare(const QNetworkCacheMetaData &metaData)
 {
-    if (metaData.expirationDate().isValid() || metaData.lastModified().isValid())
+    // Only a 200 or a permanent redirect (as the players send them) without
+    // any cache header of its own; anything else keeps Qt's handling.
+    const int status = metaData.attributes().value(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    bool headers = false;
+    for (const QNetworkCacheMetaData::RawHeader &header : metaData.rawHeaders()) {
+        const QByteArray name = header.first.toLower();
+        headers = headers || name == "expires" || name == "etag" || name == "last-modified"
+                || name == "cache-control";
+    }
+    if (headers || (status != 200 && status != 301))
         return QNetworkDiskCache::prepare(metaData);
     QNetworkCacheMetaData dated(metaData);
     dated.setExpirationDate(QDateTime::currentDateTimeUtc().addSecs(m_maxAgeSecs));

@@ -12,13 +12,14 @@
 
 namespace Swell {
 
-// A disk cache that gives a reply without freshness information of its own
-// (no Expires, no Last-Modified) an expiry of maxAge from the moment it is
-// stored. The players serve their library covers that way, and Qt reuses a
+// A disk cache that gives a reply without cache headers of its own (no
+// Expires, ETag, Last-Modified or Cache-Control; a 200 or a 301) an expiry of
+// maxAge from the moment it is stored. The players serve their library covers that way, and Qt reuses a
 // cached reply only while it is fresh (qnetworkreplyhttpimpl.cpp:564-580,
 // Qt 5.6.3). Until then the cover comes from the cache; after that Qt reads it
-// from the player again and stores it anew. Replies with Last-Modified or
-// ETag (station images) keep Qt's own freshness and revalidation.
+// from the player again and stores it anew. Replies with any of those headers
+// (station images: Last-Modified and ETag) keep Qt's own freshness and
+// revalidation.
 class CoverDiskCache : public QNetworkDiskCache
 {
     Q_OBJECT

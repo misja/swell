@@ -176,6 +176,11 @@ void TstCovers::aStationImageKeepsItsOwnFreshness()
     QVERIFY(meta.isValid());
     QVERIFY(meta.lastModified().isValid());
     QVERIFY(!meta.expirationDate().isValid());
+    // The double sends no Date, so Qt's Last-Modified freshness is nil: the
+    // next load asks the server again, with its validators.
+    QScopedPointer<QNetworkReply> again(get(nam.data(), url));
+    const QList<FakePlayer::Request> sent = server.requests(QStringLiteral("/55/34/927136.png"));
+    QCOMPARE(sent.size(), 2);
 }
 
 // The setting only; eviction is QNetworkDiskCache's.
