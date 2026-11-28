@@ -9,7 +9,7 @@
 // None of this grouped behaviour is measured: there is no grouped hardware
 // (spec 005 evidence). It follows the API, azzurro's demo and pyblu; what
 // those do not say (a secondary serving its primary's /Status with its
-// syncStat, dropping a bad /AddSlave silently, refusing a loop) is invented.
+// syncStat, refusing a loop) is invented.
 #ifndef FAKEHOUSEHOLD_H
 #define FAKEHOUSEHOLD_H
 

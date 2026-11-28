@@ -46,6 +46,7 @@ private slots:
     void clearReplyResets();
     void playFromSendsId();
     void shuffleAndRepeatFollowTheStatus();
+    void pausedFollowsTheState();
     void shuffleReordersAfterTheCurrentEntryAndReloads();
     void shuffleOffRestoresTheOrder();
     void repeatKeepsTheQueue();
@@ -702,6 +703,17 @@ void TstQueue::playFromSendsId()
     m_client->playQueueEntry(5);
     QTRY_COMPARE(m_player->requests(QStringLiteral("/Play")).size(), 1);
     QCOMPARE(m_player->requests(QStringLiteral("/Play")).first().target, QByteArray("/Play?id=5"));
+}
+
+void TstQueue::pausedFollowsTheState()
+{
+    startClient();
+    QTRY_COMPARE(m_client->state(), QStringLiteral("play"));
+    QVERIFY(!m_client->paused());
+    m_player->setStatus("<status etag=\"p1\"><state>pause</state></status>");
+    QTRY_VERIFY(m_client->paused());
+    m_player->setStatus("<status etag=\"p2\"><state>stop</state></status>");
+    QTRY_VERIFY(!m_client->paused());
 }
 
 void TstQueue::shuffleAndRepeatFollowTheStatus()

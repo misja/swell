@@ -266,3 +266,10 @@ E. **MPRIS** keeps `hasShuffle` and `hasLoopStatus` false (spec 003): they
    Switches at both ends of the transport row and the volume slider in
    view; in portrait their own row; a rotation while the queue plays.
 9. A separate result review before each PR. Own code named in the PR.
+
+## Own code (named 2026-11-28, #63)
+
+- Shuffle and repeat are two `Component`s placed by four `Loader`s (two
+  per orientation) on Now Playing; the landscape ones hide when inactive,
+  since an inactive Loader keeps its last size (qquickloader.cpp:338-362).
+  To be replaced with QtQuick.Layouts (#63, the maintainer, 2026-11-28).

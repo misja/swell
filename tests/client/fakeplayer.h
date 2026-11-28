@@ -8,8 +8,8 @@
 // Invented, not measured on a player: every answer closes the connection
 // (Connection: close); a held long poll is answered at once on a change or
 // exactly at its timeout (API v1.7 §2.1 describes it, the timing is not
-// measured); delay() (a slow answer); the 404 page and error bodies. The
-// documents served are each test's own and cite their source there.
+// measured); delay() (a slow answer); the 404 page, the error bodies and the
+// POST reason phrase. The documents served are each test's own.
 #ifndef FAKEPLAYER_H
 #define FAKEPLAYER_H
 

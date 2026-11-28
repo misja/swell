@@ -251,7 +251,8 @@ that are not seen through `/Browse`.
   It is not exported in that module's qmldir, and it is tied to the contacts
   display-label model. Swell therefore needs a small letter index of its own:
   a column of letters on the side that jumps with `positionViewAtIndex`. It
-  takes its Theme colours and highlight from `SymbolScrollBar`, with a smaller box and no magnifier (see Own code).
+  takes its Theme colours and highlight from `SymbolScrollBar`, with a
+  smaller box and no magnifier (see Own code).
 
 ## Library size (read-only, NAD C 379, 2026-11-06)
 
@@ -292,5 +293,10 @@ that are not seen through `/Browse`.
 - The highlight overlay on rows with covers (`BrowsePage.qml`):
   BackgroundItem draws its highlight behind the content
   (BackgroundItem.qml:67-73).
-- The browse model's reading from `data()` and its forced re-read are to
-  be replaced (#63, the visible-range route).
+- The browse model reads from `data()` and forces a re-read of all rows
+  after each reply (`askAgain()`), with a retry 50 ms after the backoff.
+  Open: a replacement is tracked in #63.
+- `CoverImage.qml` has a second placeholder on Now Playing (Image and
+  Icon, `NowPlayingPage.qml`).
+- `BrowsePage.qml` places the letter index by hand (`topMargin:
+  Theme.itemSizeLarge`) and repeats its width in three places.
